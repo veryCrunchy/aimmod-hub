@@ -49,6 +49,14 @@ export function slugifyScenarioName(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function displayScenarioType(value?: string | null) {
+  const normalized = value?.trim();
+  if (!normalized || normalized === "Unknown") {
+    return null;
+  }
+  return normalized;
+}
+
 export async function fetchRun(runId: string) {
   return hubClient.getRun(new GetRunRequest({ runId }));
 }

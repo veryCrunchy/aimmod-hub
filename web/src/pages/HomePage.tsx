@@ -8,7 +8,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
-import { fetchOverview, formatDurationMs } from "../lib/api";
+import { displayScenarioType, fetchOverview, formatDurationMs } from "../lib/api";
 
 export function HomePage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
@@ -88,6 +88,9 @@ export function HomePage() {
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
               {overview.topScenarios.slice(0, 6).map((scenario) => (
+                (() => {
+                  const scenarioType = displayScenarioType(scenario.scenarioType);
+                  return (
                 <Link
                   key={scenario.scenarioSlug}
                   to={`/scenarios/${scenario.scenarioSlug}`}
@@ -96,11 +99,13 @@ export function HomePage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <strong className="block text-text">{scenario.scenarioName}</strong>
-                      <p className="mt-1 text-sm text-muted">{scenario.scenarioType || "Unknown"}</p>
+                      {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
                     </div>
                     <span className="text-sm text-mint">{scenario.runCount.toLocaleString()} runs</span>
                   </div>
                 </Link>
+                  );
+                })()
               ))}
               </div>
             </ScrollArea>
@@ -122,6 +127,9 @@ export function HomePage() {
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
               {overview.activeProfiles.slice(0, 6).map((profile) => (
+                (() => {
+                  const primaryType = displayScenarioType(profile.primaryScenarioType);
+                  return (
                 <Link
                   key={profile.userHandle}
                   to={`/profiles/${profile.userHandle}`}
@@ -135,9 +143,12 @@ export function HomePage() {
                     <span className="text-sm text-cyan">{profile.runCount.toLocaleString()} runs</span>
                   </div>
                   <p className="mt-3 text-sm text-muted">
-                    {profile.scenarioCount.toLocaleString()} scenarios • {profile.primaryScenarioType || "Unknown"}
+                    {profile.scenarioCount.toLocaleString()} scenarios
+                    {primaryType ? ` • ${primaryType}` : ""}
                   </p>
                 </Link>
+                  );
+                })()
               ))}
               </div>
             </ScrollArea>

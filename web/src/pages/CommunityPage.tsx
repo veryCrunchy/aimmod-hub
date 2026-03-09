@@ -7,7 +7,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
-import { fetchOverview, formatDurationMs } from "../lib/api";
+import { displayScenarioType, fetchOverview, formatDurationMs } from "../lib/api";
 
 export function CommunityPage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
@@ -67,9 +67,12 @@ export function CommunityPage() {
                 </thead>
                 <tbody>
                   {overview.topScenarios.map((scenario) => (
+                    (() => {
+                      const scenarioType = displayScenarioType(scenario.scenarioType);
+                      return (
                     <tr key={scenario.scenarioSlug} className="border-b border-white/6 last:border-b-0">
                       <td className="px-4 py-3 text-text">{scenario.scenarioName}</td>
-                      <td className="px-4 py-3 text-text">{scenario.scenarioType || "Unknown"}</td>
+                      <td className="px-4 py-3 text-text">{scenarioType || "—"}</td>
                       <td className="px-4 py-3 text-text">{scenario.runCount.toLocaleString()}</td>
                       <td className="px-4 py-3 text-text">
                         <Link className="text-cyan underline underline-offset-3" to={`/scenarios/${scenario.scenarioSlug}`}>
@@ -77,6 +80,8 @@ export function CommunityPage() {
                         </Link>
                       </td>
                     </tr>
+                      );
+                    })()
                   ))}
                 </tbody>
               </table>
@@ -96,6 +101,9 @@ export function CommunityPage() {
             <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
               <div className="grid gap-3">
               {overview.activeProfiles.map((profile) => (
+                (() => {
+                  const primaryType = displayScenarioType(profile.primaryScenarioType);
+                  return (
                 <Link
                   key={profile.userHandle}
                   to={`/profiles/${profile.userHandle}`}
@@ -109,9 +117,12 @@ export function CommunityPage() {
                     <span className="text-sm text-mint">{profile.runCount.toLocaleString()} runs</span>
                   </div>
                   <p className="mt-3 text-sm text-muted">
-                    {profile.scenarioCount.toLocaleString()} scenarios • {profile.primaryScenarioType || "Unknown"}
+                    {profile.scenarioCount.toLocaleString()} scenarios
+                    {primaryType ? ` • ${primaryType}` : ""}
                   </p>
                 </Link>
+                  );
+                })()
               ))}
               </div>
             </ScrollArea>
