@@ -38,15 +38,16 @@ export function HomePage() {
 
   return (
     <PageStack>
-      <PageSection className="bg-[linear-gradient(135deg,rgba(57,208,255,0.12),rgba(50,240,170,0.07)_45%,rgba(255,217,86,0.06)),linear-gradient(180deg,rgba(3,9,23,0.9),rgba(6,11,24,0.96))] p-[30px]">
-        <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
+      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] p-[30px] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
+        <div className="absolute inset-y-0 right-[8%] w-[28%] rounded-full bg-[radial-gradient(circle,rgba(121,201,151,0.14),transparent_68%)] blur-3xl" />
+        <div className="relative text-[12px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
         <h1 className="my-4 text-[clamp(42px,6vw,88px)] leading-[0.96] tracking-[-0.04em]">
           Shared practice data that is finally useful.
         </h1>
-        <p className="max-w-[760px] text-lg leading-8 text-muted">
+        <p className="max-w-[760px] text-lg leading-8 text-[#cbe4d7]">
           AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and learn from.
         </p>
-        <div className="mt-[22px] flex flex-wrap gap-3">
+        <div className="relative mt-[22px] flex flex-wrap gap-3">
           <Button to="/community" variant="primary">
             Explore community data
           </Button>

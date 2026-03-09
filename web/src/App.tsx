@@ -8,6 +8,7 @@ import { HomePage } from "./pages/HomePage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RunPage } from "./pages/RunPage";
 import { ScenarioPage } from "./pages/ScenarioPage";
+import { SearchPage } from "./pages/SearchPage";
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/link-device" element={<DeviceLinkPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/profiles/:handle" element={<ProfilePage />} />
             <Route path="/scenarios/:slug" element={<ScenarioPage />} />
             <Route path="/runs/:runId" element={<RunPage />} />

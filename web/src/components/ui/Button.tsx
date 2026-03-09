@@ -4,8 +4,8 @@ import { cn } from "../../lib/cn";
 
 const buttonStyles = {
   base: "inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors",
-  primary: "border-mint/35 bg-mint/12 text-mint hover:border-mint/55 hover:bg-mint/18",
-  secondary: "border-line bg-white/4 text-text hover:border-line-strong hover:bg-white/6"
+  primary: "border-mint/70 bg-mint text-[color:var(--color-bg)] hover:border-cyan hover:bg-cyan",
+  secondary: "border-line bg-[rgba(255,255,255,0.03)] text-text hover:border-line-strong hover:bg-[rgba(121,201,151,0.08)]"
 } as const;
 
 type ButtonVariant = keyof typeof buttonStyles;

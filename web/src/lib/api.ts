@@ -13,6 +13,8 @@ const transport = createConnectTransport({
   baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
 });
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
 export const hubClient = createClient(HubService, transport);
 
 export function summaryValueToString(value?: SessionSummaryValue) {
@@ -57,6 +59,42 @@ export function displayScenarioType(value?: string | null) {
   return normalized;
 }
 
+export type HubSearchScenario = {
+  scenarioName: string;
+  scenarioSlug: string;
+  scenarioType: string;
+  runCount: number;
+};
+
+export type HubSearchProfile = {
+  userHandle: string;
+  userDisplayName: string;
+  avatarURL: string;
+  runCount: number;
+  scenarioCount: number;
+  primaryScenarioType: string;
+};
+
+export type HubSearchRun = {
+  publicRunID: string;
+  sessionID: string;
+  scenarioName: string;
+  scenarioType: string;
+  playedAt: string;
+  score: number;
+  accuracy: number;
+  durationMS: number;
+  userHandle: string;
+  userDisplayName: string;
+};
+
+export type HubSearchResponse = {
+  query: string;
+  scenarios: HubSearchScenario[];
+  profiles: HubSearchProfile[];
+  runs: HubSearchRun[];
+};
+
 export async function fetchRun(runId: string) {
   return hubClient.getRun(new GetRunRequest({ runId }));
 }
@@ -71,4 +109,18 @@ export async function fetchScenarioPage(slug: string) {
 
 export async function fetchProfile(handle: string) {
   return hubClient.getProfile(new GetProfileRequest({ handle }));
+}
+
+export async function searchHub(query: string): Promise<HubSearchResponse> {
+  const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error("Could not search the hub.");
+  }
+  const payload = (await response.json()) as Partial<HubSearchResponse> | null;
+  return {
+    query: payload?.query ?? query,
+    scenarios: Array.isArray(payload?.scenarios) ? payload.scenarios : [],
+    profiles: Array.isArray(payload?.profiles) ? payload.profiles : [],
+    runs: Array.isArray(payload?.runs) ? payload.runs : [],
+  };
 }

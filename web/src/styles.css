@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #030611;
-  --color-bg-2: #071122;
-  --color-panel: rgba(7, 13, 27, 0.92);
-  --color-panel-strong: rgba(9, 18, 36, 0.98);
-  --color-line: rgba(109, 128, 171, 0.2);
-  --color-line-strong: rgba(109, 128, 171, 0.4);
-  --color-text: #f5f8ff;
-  --color-muted: #98a4ba;
-  --color-muted-2: #71809a;
-  --color-mint: #32f0aa;
-  --color-cyan: #39d0ff;
+  --color-bg: #020806;
+  --color-bg-2: #081610;
+  --color-panel: rgba(8, 18, 14, 0.92);
+  --color-panel-strong: rgba(10, 24, 18, 0.98);
+  --color-line: rgba(130, 201, 157, 0.16);
+  --color-line-strong: rgba(130, 201, 157, 0.34);
+  --color-text: #f3fff8;
+  --color-muted: #a7c2b3;
+  --color-muted-2: #6f9480;
+  --color-mint: #79c997;
+  --color-cyan: #b8ffe1;
   --color-gold: #ffd956;
-  --color-violet: #b697ff;
-  --color-danger: #ff7d7d;
-  --shadow-panel: 0 18px 64px rgba(0, 0, 0, 0.28);
+  --color-violet: #c2a9ff;
+  --color-danger: #ff8787;
+  --shadow-panel: 0 22px 72px rgba(0, 0, 0, 0.34);
   --font-display: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -34,9 +34,10 @@
     margin: 0;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top left, rgba(57, 208, 255, 0.14), transparent 24%),
-      radial-gradient(circle at top right, rgba(50, 240, 170, 0.12), transparent 18%),
-      linear-gradient(180deg, #030611 0%, #040916 36%, #02040c 100%);
+      radial-gradient(circle at top left, rgba(121, 201, 151, 0.22), transparent 22%),
+      radial-gradient(circle at top right, rgba(184, 255, 225, 0.12), transparent 16%),
+      radial-gradient(circle at 50% 0%, rgba(121, 201, 151, 0.08), transparent 30%),
+      linear-gradient(180deg, #020806 0%, #04100b 36%, #010302 100%);
     color: var(--color-text);
     font-family: var(--font-display);
   }
