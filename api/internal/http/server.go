@@ -11,6 +11,7 @@ import (
 
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/service"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
@@ -19,7 +20,7 @@ import (
 )
 
 type ingestBatchRequest struct {
-	Sessions []*hubv1.IngestSessionRequest `json:"sessions"`
+	Sessions []json.RawMessage `json:"sessions"`
 }
 
 type ingestBatchFailure struct {
@@ -68,8 +69,15 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 			UploadedSessionIDs: []string{},
 			Failures:           []ingestBatchFailure{},
 		}
-		for _, session := range req.Sessions {
-			if session == nil {
+		for _, rawSession := range req.Sessions {
+			if len(rawSession) == 0 {
+				continue
+			}
+			session := &hubv1.IngestSessionRequest{}
+			if err := protojson.Unmarshal(rawSession, session); err != nil {
+				result.Failures = append(result.Failures, ingestBatchFailure{
+					Message: "invalid JSON payload: " + err.Error(),
+				})
 				continue
 			}
 			resp, err := hub.IngestAuthorized(r.Context(), r.Header.Get("Authorization"), session)
