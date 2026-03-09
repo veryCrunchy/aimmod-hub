@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package aimmod.hub.v1;
+
+option go_package = "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1;hubv1";
+
+message HealthRequest {}
+
+message HealthResponse {
+  string service = 1;
+  string version = 2;
+  string status = 3;
+  string now_iso = 4;
+}
+
+message SessionSummaryValue {
+  oneof kind {
+    string string_value = 1;
+    double number_value = 2;
+    bool bool_value = 3;
+  }
+}
+
+message TimelineSecond {
+  uint32 t_sec = 1;
+  double score = 2;
+  double accuracy = 3;
+  double damage_eff = 4;
+  double spm = 5;
+  uint32 shots = 6;
+  uint32 hits = 7;
+  uint32 kills = 8;
+  bool paused = 9;
+}
+
+message ContextWindow {
+  uint64 start_ms = 1;
+  uint64 end_ms = 2;
+  string window_type = 3;
+  string label = 4;
+  map<string, SessionSummaryValue> feature_summary = 5;
+  repeated string coaching_tags = 6;
+}
+
+message IngestSessionRequest {
+  string app_version = 1;
+  uint32 schema_version = 2;
+  string user_external_id = 3;
+  string session_id = 4;
+  string scenario_name = 5;
+  string scenario_type = 6;
+  double score = 7;
+  double accuracy = 8;
+  uint64 duration_ms = 9;
+  string played_at_iso = 10;
+  map<string, SessionSummaryValue> summary = 11;
+  map<string, SessionSummaryValue> feature_set = 12;
+  repeated TimelineSecond timeline_seconds = 13;
+  repeated ContextWindow context_windows = 14;
+}
+
+message IngestSessionResponse {
+  bool accepted = 1;
+  string session_id = 2;
+  string message = 3;
+}
+
+message LinkDiscordAccountRequest {
+  string user_external_id = 1;
+  string discord_user_id = 2;
+  string username = 3;
+  string global_name = 4;
+  string avatar_url = 5;
+}
+
+message LinkDiscordAccountResponse {
+  bool linked = 1;
+  string user_external_id = 2;
+  string discord_user_id = 3;
+  string message = 4;
+}
+
+message RunPreview {
+  string session_id = 1;
+  string scenario_name = 2;
+  string scenario_type = 3;
+  string played_at_iso = 4;
+  double score = 5;
+  double accuracy = 6;
+  uint64 duration_ms = 7;
+  string user_handle = 8;
+  string user_display_name = 9;
+  string run_id = 10;
+}
+
+message TopScenario {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  uint32 run_count = 4;
+}
+
+message CommunityProfilePreview {
+  string user_handle = 1;
+  string user_display_name = 2;
+  string avatar_url = 3;
+  uint32 run_count = 4;
+  uint32 scenario_count = 5;
+  string primary_scenario_type = 6;
+}
+
+message GetOverviewRequest {}
+
+message GetOverviewResponse {
+  uint32 total_runs = 1;
+  uint32 total_scenarios = 2;
+  uint32 total_players = 3;
+  repeated RunPreview recent_runs = 4;
+  repeated TopScenario top_scenarios = 5;
+  repeated CommunityProfilePreview active_profiles = 6;
+}
+
+message GetRunRequest {
+  string session_id = 1;
+  string run_id = 2;
+}
+
+message GetRunResponse {
+  string session_id = 1;
+  string scenario_name = 2;
+  string scenario_type = 3;
+  string played_at_iso = 4;
+  double score = 5;
+  double accuracy = 6;
+  uint64 duration_ms = 7;
+  string user_handle = 8;
+  string user_display_name = 9;
+  map<string, SessionSummaryValue> summary = 10;
+  map<string, SessionSummaryValue> feature_set = 11;
+  repeated TimelineSecond timeline_seconds = 12;
+  repeated ContextWindow context_windows = 13;
+  string run_id = 14;
+}
+
+message GetScenarioPageRequest {
+  string slug = 1;
+}
+
+message GetScenarioPageResponse {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  uint32 run_count = 4;
+  double best_score = 5;
+  double average_score = 6;
+  double average_accuracy = 7;
+  uint64 average_duration_ms = 8;
+  repeated RunPreview recent_runs = 9;
+}
+
+message GetProfileRequest {
+  string handle = 1;
+}
+
+message GetProfileResponse {
+  string user_external_id = 1;
+  string user_handle = 2;
+  string user_display_name = 3;
+  string avatar_url = 4;
+  uint32 run_count = 5;
+  uint32 scenario_count = 6;
+  string primary_scenario_type = 7;
+  double average_score = 8;
+  double average_accuracy = 9;
+  repeated TopScenario top_scenarios = 10;
+  repeated RunPreview recent_runs = 11;
+}
+
+service HubService {
+  rpc GetHealth(HealthRequest) returns (HealthResponse);
+  rpc IngestSession(IngestSessionRequest) returns (IngestSessionResponse);
+  rpc LinkDiscordAccount(LinkDiscordAccountRequest) returns (LinkDiscordAccountResponse);
+  rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse);
+  rpc GetRun(GetRunRequest) returns (GetRunResponse);
+  rpc GetScenarioPage(GetScenarioPageRequest) returns (GetScenarioPageResponse);
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+}

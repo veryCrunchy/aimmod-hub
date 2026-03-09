@@ -1,0 +1,21 @@
+{
+  "name": "aimmod-hub",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "dev": "pnpm dev:db:up && concurrently -k -n api,web -c blue,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:db:up": "bash -lc 'docker compose up -d postgres && until docker compose exec -T postgres pg_isready -U postgres -d aimmod_hub >/dev/null 2>&1; do sleep 1; done'",
+    "dev:db:down": "docker compose down",
+    "dev:api": "go run ./api/cmd/aimmod-hub",
+    "dev:web": "pnpm --dir web dev",
+    "build:api": "go build ./...",
+    "build:web": "pnpm --dir web build",
+    "typecheck:api": "go build ./...",
+    "typecheck:web": "pnpm --dir web typecheck",
+    "proto": "buf generate",
+    "proto:lint": "buf lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
