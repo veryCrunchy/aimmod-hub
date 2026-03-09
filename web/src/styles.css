@@ -32,6 +32,7 @@
 
   body {
     margin: 0;
+    overflow-x: hidden;
     background:
       radial-gradient(circle at top left, rgba(57, 208, 255, 0.14), transparent 24%),
       radial-gradient(circle at top right, rgba(50, 240, 170, 0.12), transparent 18%),
@@ -43,5 +44,33 @@
   a {
     color: inherit;
     text-decoration: none;
+  }
+}
+
+@layer utilities {
+  .hub-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(109, 128, 171, 0.55) transparent;
+  }
+
+  .hub-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .hub-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .hub-scroll::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(109, 128, 171, 0.38);
+    background-clip: padding-box;
+  }
+
+  .hub-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(109, 128, 171, 0.58);
+    background-clip: padding-box;
   }
 }

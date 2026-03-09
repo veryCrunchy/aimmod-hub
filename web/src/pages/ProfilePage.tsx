@@ -5,6 +5,7 @@ import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
 
@@ -95,7 +96,8 @@ export function ProfilePage() {
             body="The scenarios this player returns to most often."
           />
           {profile.topScenarios.length > 0 ? (
-            <div className="grid gap-3">
+            <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
+              <div className="grid gap-3">
               {profile.topScenarios.map((scenario) => (
                 <Link
                   key={scenario.scenarioSlug}
@@ -107,7 +109,8 @@ export function ProfilePage() {
                   <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
                 </Link>
               ))}
-            </div>
+              </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No scenario history" body="This profile does not have any uploaded scenario history yet." />
           )}
@@ -120,8 +123,8 @@ export function ProfilePage() {
             body="The most recent runs on this profile."
           />
           {profile.recentRuns.length > 0 ? (
-            <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-              <table className="w-full text-left text-sm">
+            <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Scenario</th>
@@ -151,7 +154,7 @@ export function ProfilePage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No recent runs" body="This profile does not have any uploaded runs yet." />
           )}

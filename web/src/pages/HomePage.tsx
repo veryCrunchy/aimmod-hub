@@ -6,6 +6,7 @@ import { StatCard } from "../components/StatCard";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchOverview, formatDurationMs } from "../lib/api";
 
@@ -84,7 +85,8 @@ export function HomePage() {
             body="These scenarios already have enough history to be useful comparison pages."
           />
           {overview?.topScenarios.length ? (
-            <div className="grid gap-3">
+            <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
+              <div className="grid gap-3">
               {overview.topScenarios.slice(0, 6).map((scenario) => (
                 <Link
                   key={scenario.scenarioSlug}
@@ -100,7 +102,8 @@ export function HomePage() {
                   </div>
                 </Link>
               ))}
-            </div>
+              </div>
+            </ScrollArea>
           ) : (
             <EmptyState
               title="No scenario history yet"
@@ -116,7 +119,8 @@ export function HomePage() {
             body="These players have the most practice history right now, which makes them the best starting point for study and comparison."
           />
           {overview?.activeProfiles.length ? (
-            <div className="grid gap-3">
+            <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
+              <div className="grid gap-3">
               {overview.activeProfiles.slice(0, 6).map((profile) => (
                 <Link
                   key={profile.userHandle}
@@ -135,7 +139,8 @@ export function HomePage() {
                   </p>
                 </Link>
               ))}
-            </div>
+              </div>
+            </ScrollArea>
           ) : (
             <EmptyState
               title="No player history yet"
@@ -152,8 +157,8 @@ export function HomePage() {
           body="The latest runs players have completed."
         />
         {overview?.recentRuns.length ? (
-          <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-            <table className="w-full text-left text-sm">
+          <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+            <table className="min-w-full text-left text-sm">
               <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th className="px-4 py-3">Scenario</th>
@@ -185,7 +190,7 @@ export function HomePage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         ) : (
           <EmptyState
             title="No runs yet"

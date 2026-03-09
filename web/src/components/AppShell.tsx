@@ -17,7 +17,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const auth = useAuth();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-clip">
       <header className="sticky top-0 z-10 grid grid-cols-[auto_1fr_auto] items-center gap-6 border-b border-white/8 bg-[rgba(3,6,17,0.82)] px-6 py-[22px] backdrop-blur-xl max-[1100px]:grid-cols-1 max-[1100px]:justify-items-start">
         <Link to="/" className="grid gap-1">
           <span className="text-[11px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
@@ -73,7 +73,7 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
       </header>
 
-      <main className="mx-auto w-[min(1380px,calc(100vw-40px))] px-0 py-[34px] pb-20 max-[720px]:w-[min(1380px,calc(100vw-24px))] max-[720px]:pt-5">
+      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-40px))] px-0 py-[34px] pb-20 max-[720px]:w-[min(1380px,calc(100vw-24px))] max-[720px]:pt-5">
         {children}
       </main>
     </div>

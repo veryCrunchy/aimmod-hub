@@ -5,6 +5,7 @@ import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchRun, formatDurationMs, summaryValueToNumber, summaryValueToString } from "../lib/api";
 
@@ -81,7 +82,8 @@ export function RunPage() {
             body="Key moments pulled out of the run so you can review the parts that mattered most."
           />
           {run.contextWindows.length > 0 ? (
-            <div className="grid gap-3">
+            <ScrollArea className="max-h-[min(70vh,860px)] pr-2">
+              <div className="grid gap-3">
               {run.contextWindows.map((window, index) => (
                 <div key={`${window.startMs}-${index}`} className="rounded-[18px] border border-line bg-white/2 p-[18px]">
                   <div className="flex items-start justify-between gap-3">
@@ -109,7 +111,8 @@ export function RunPage() {
                   ) : null}
                 </div>
               ))}
-            </div>
+              </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No saved moments" body="This run did not include any saved context windows yet." />
           )}
@@ -122,8 +125,8 @@ export function RunPage() {
             body="A second-by-second view of how the run changed over time."
           />
           {run.timelineSeconds.length > 0 ? (
-            <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-              <table className="w-full text-left text-sm">
+            <ScrollArea className="max-h-[min(70vh,860px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Sec</th>
@@ -147,7 +150,7 @@ export function RunPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No saved timeline" body="This run did not include per-second timeline data yet." />
           )}

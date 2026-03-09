@@ -5,6 +5,7 @@ import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchOverview, formatDurationMs } from "../lib/api";
 
@@ -54,8 +55,8 @@ export function CommunityPage() {
             body="These scenarios already have enough history to start showing useful score bands and run patterns."
           />
           {overview?.topScenarios.length ? (
-            <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-              <table className="w-full text-left text-sm">
+            <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Scenario</th>
@@ -79,7 +80,7 @@ export function CommunityPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No scenario pages yet" body={error || "Scenario watchlists will appear here once there is enough history to compare."} />
           )}
@@ -92,7 +93,8 @@ export function CommunityPage() {
             body="These are the best profiles to inspect first when you want examples and consistent practice history."
           />
           {overview?.activeProfiles.length ? (
-            <div className="grid gap-3">
+            <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
+              <div className="grid gap-3">
               {overview.activeProfiles.map((profile) => (
                 <Link
                   key={profile.userHandle}
@@ -111,7 +113,8 @@ export function CommunityPage() {
                   </p>
                 </Link>
               ))}
-            </div>
+              </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No active profiles yet" body={error || "Active profiles will appear here once there is enough practice history to show."} />
           )}
@@ -125,8 +128,8 @@ export function CommunityPage() {
           body="The latest runs players have completed."
         />
         {overview?.recentRuns.length ? (
-          <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-            <table className="w-full text-left text-sm">
+          <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+            <table className="min-w-full text-left text-sm">
               <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th className="px-4 py-3">Player</th>
@@ -158,7 +161,7 @@ export function CommunityPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         ) : (
           <EmptyState title="No recent runs yet" body={error || "Recent runs will appear here once there is practice history to show."} />
         )}

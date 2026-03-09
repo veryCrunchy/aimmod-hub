@@ -3,6 +3,7 @@ import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAuth } from "../lib/AuthContext";
 import { discordStartUrl } from "../lib/auth";
@@ -90,7 +91,8 @@ export function AccountPage() {
         </div>
         {error ? <p className="mb-4 text-sm text-danger">{error}</p> : null}
         {auth.tokens && auth.tokens.length > 0 ? (
-          <div className="grid gap-3">
+          <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
+            <div className="grid gap-3">
             {auth.tokens.map((token) => (
               <div key={token.id} className="rounded-[18px] border border-line bg-white/2 p-[18px]">
                 <div className="flex items-start justify-between gap-3">
@@ -108,7 +110,8 @@ export function AccountPage() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </ScrollArea>
         ) : (
           <EmptyState
             title="No linked desktop apps"

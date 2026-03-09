@@ -5,6 +5,7 @@ import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
+import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchScenarioPage, formatDurationMs } from "../lib/api";
 
@@ -75,8 +76,8 @@ export function ScenarioPage() {
             body="The newest runs for this scenario."
           />
           {page.recentRuns.length > 0 ? (
-            <div className="overflow-hidden rounded-[18px] border border-line bg-white/2">
-              <table className="w-full text-left text-sm">
+            <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Player</th>
@@ -106,7 +107,7 @@ export function ScenarioPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollArea>
           ) : (
             <EmptyState title="No runs yet" body="This scenario has not received any uploaded runs yet." />
           )}
