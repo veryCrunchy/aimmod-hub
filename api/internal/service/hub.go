@@ -38,22 +38,23 @@ func (s *HubServer) GetHealth(
 	}), nil
 }
 
-func (s *HubServer) IngestSession(
+func (s *HubServer) IngestAuthorized(
 	ctx context.Context,
-	req *connect.Request[hubv1.IngestSessionRequest],
-) (*connect.Response[hubv1.IngestSessionResponse], error) {
-	if authHeader := strings.TrimSpace(req.Header().Get("Authorization")); authHeader != "" {
+	authHeader string,
+	req *hubv1.IngestSessionRequest,
+) (*hubv1.IngestSessionResponse, error) {
+	if authHeader = strings.TrimSpace(authHeader); authHeader != "" {
 		authUser, err := s.store.GetUserByUploadToken(ctx, authHeader)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeUnauthenticated, err)
 		}
-		if req.Msg.GetUserExternalId() != "" && req.Msg.GetUserExternalId() != authUser.UserExternalID {
+		if req.GetUserExternalId() != "" && req.GetUserExternalId() != authUser.UserExternalID {
 			return nil, connect.NewError(connect.CodePermissionDenied, errors.New("upload token does not match user_external_id"))
 		}
-		req.Msg.UserExternalId = authUser.UserExternalID
+		req.UserExternalId = authUser.UserExternalID
 	}
 
-	run, err := buildIngestedRun(req.Msg)
+	run, err := buildIngestedRun(req)
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +63,22 @@ func (s *HubServer) IngestSession(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&hubv1.IngestSessionResponse{
+	return &hubv1.IngestSessionResponse{
 		Accepted:  true,
 		SessionId: run.SessionID,
 		Message:   "Ingest accepted and stored.",
-	}), nil
+	}, nil
+}
+
+func (s *HubServer) IngestSession(
+	ctx context.Context,
+	req *connect.Request[hubv1.IngestSessionRequest],
+) (*connect.Response[hubv1.IngestSessionResponse], error) {
+	resp, err := s.IngestAuthorized(ctx, req.Header().Get("Authorization"), req.Msg)
+	if err != nil {
+		return nil, err
+	}
+	return connect.NewResponse(resp), nil
 }
 
 func (s *HubServer) LinkDiscordAccount(

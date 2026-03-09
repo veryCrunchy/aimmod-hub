@@ -2,9 +2,11 @@ package httpserver
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/net/http2"
@@ -12,8 +14,25 @@ import (
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/service"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
+	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 	hubv1connect "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1/hubv1connect"
 )
+
+type ingestBatchRequest struct {
+	Sessions []*hubv1.IngestSessionRequest `json:"sessions"`
+}
+
+type ingestBatchFailure struct {
+	SessionID string `json:"sessionId"`
+	Message   string `json:"message"`
+}
+
+type ingestBatchResponse struct {
+	UploadedSessionIDs []string             `json:"uploadedSessionIds"`
+	Failures           []ingestBatchFailure `json:"failures"`
+	UploadedCount      int                  `json:"uploadedCount"`
+	FailedCount        int                  `json:"failedCount"`
+}
 
 type Config struct {
 	Addr                string
@@ -33,6 +52,55 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	path, handler := hubv1connect.NewHubServiceHandler(hub)
 	mux.Handle(path, withCORS(cfg.AllowedWebOrigin, handler))
 	auth.register(mux)
+	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		var req ingestBatchRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		result := ingestBatchResponse{
+			UploadedSessionIDs: []string{},
+			Failures:           []ingestBatchFailure{},
+		}
+		for _, session := range req.Sessions {
+			if session == nil {
+				continue
+			}
+			resp, err := hub.IngestAuthorized(r.Context(), r.Header.Get("Authorization"), session)
+			if err != nil {
+				result.Failures = append(result.Failures, ingestBatchFailure{
+					SessionID: session.GetSessionId(),
+					Message:   err.Error(),
+				})
+				continue
+			}
+			result.UploadedSessionIDs = append(result.UploadedSessionIDs, resp.GetSessionId())
+		}
+		result.UploadedCount = len(result.UploadedSessionIDs)
+		result.FailedCount = len(result.Failures)
+
+		w.Header().Set("content-type", "application/json")
+		if result.UploadedCount == 0 && result.FailedCount > 0 {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		_ = json.NewEncoder(w).Encode(result)
+	})))
+	mux.Handle("/search", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query := strings.TrimSpace(r.URL.Query().Get("q"))
+		results, err := hub.Store().Search(r.Context(), query)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("content-type", "application/json")
+		_ = json.NewEncoder(w).Encode(results)
+	})))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))

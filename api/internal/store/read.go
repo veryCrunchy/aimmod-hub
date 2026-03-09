@@ -65,6 +65,42 @@ type OverviewRecord struct {
 	ActiveProfiles []*hubv1.CommunityProfilePreview
 }
 
+type SearchScenarioRecord struct {
+	ScenarioName string `json:"scenarioName"`
+	ScenarioSlug string `json:"scenarioSlug"`
+	ScenarioType string `json:"scenarioType"`
+	RunCount     uint32 `json:"runCount"`
+}
+
+type SearchProfileRecord struct {
+	UserHandle          string `json:"userHandle"`
+	UserDisplayName     string `json:"userDisplayName"`
+	AvatarURL           string `json:"avatarURL"`
+	RunCount            uint32 `json:"runCount"`
+	ScenarioCount       uint32 `json:"scenarioCount"`
+	PrimaryScenarioType string `json:"primaryScenarioType"`
+}
+
+type SearchRunRecord struct {
+	PublicRunID     string    `json:"publicRunID"`
+	SessionID       string    `json:"sessionID"`
+	ScenarioName    string    `json:"scenarioName"`
+	ScenarioType    string    `json:"scenarioType"`
+	PlayedAt        time.Time `json:"playedAt"`
+	Score           float64   `json:"score"`
+	Accuracy        float64   `json:"accuracy"`
+	DurationMS      uint64    `json:"durationMS"`
+	UserHandle      string    `json:"userHandle"`
+	UserDisplayName string    `json:"userDisplayName"`
+}
+
+type SearchRecord struct {
+	Query     string                `json:"query"`
+	Scenarios []SearchScenarioRecord `json:"scenarios"`
+	Profiles  []SearchProfileRecord  `json:"profiles"`
+	Runs      []SearchRunRecord      `json:"runs"`
+}
+
 func slugifyScenarioName(value string) string {
 	value = strings.ToLower(strings.TrimSpace(value))
 	var b strings.Builder
@@ -624,6 +660,150 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 		}
 		return record.TopScenarios[i].RunCount > record.TopScenarios[j].RunCount
 	})
+
+	return record, nil
+}
+
+func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) {
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return SearchRecord{Query: query}, nil
+	}
+
+	record := SearchRecord{Query: query}
+	pattern := "%" + query + "%"
+
+	scenarioRows, err := s.pool.Query(ctx, `
+		SELECT
+			sr.scenario_name,
+			COALESCE((
+				SELECT NULLIF(sr2.scenario_type, '')
+				FROM scenario_runs sr2
+				WHERE sr2.scenario_name = sr.scenario_name
+				  AND NULLIF(sr2.scenario_type, '') IS NOT NULL
+				GROUP BY sr2.scenario_type
+				ORDER BY COUNT(*) DESC, sr2.scenario_type ASC
+				LIMIT 1
+			), ''),
+			COUNT(*)::bigint
+		FROM scenario_runs sr
+		WHERE sr.scenario_name ILIKE $1
+		GROUP BY sr.scenario_name
+		ORDER BY COUNT(*) DESC, sr.scenario_name ASC
+		LIMIT 12
+	`, pattern)
+	if err != nil {
+		return SearchRecord{}, fmt.Errorf("search scenarios: %w", err)
+	}
+	defer scenarioRows.Close()
+	for scenarioRows.Next() {
+		var item SearchScenarioRecord
+		if err := scenarioRows.Scan(&item.ScenarioName, &item.ScenarioType, &item.RunCount); err != nil {
+			return SearchRecord{}, fmt.Errorf("scan search scenario: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		record.Scenarios = append(record.Scenarios, item)
+	}
+	if err := scenarioRows.Err(); err != nil {
+		return SearchRecord{}, fmt.Errorf("iterate search scenarios: %w", err)
+	}
+
+	profileRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(la.username, hu.external_id) AS user_handle,
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)) AS user_display_name,
+			COALESCE(la.avatar_url, '') AS avatar_url,
+			COUNT(sr.*)::bigint AS run_count,
+			COUNT(DISTINCT sr.scenario_name)::bigint AS scenario_count,
+			COALESCE((
+				SELECT NULLIF(sr2.scenario_type, '')
+				FROM scenario_runs sr2
+				WHERE sr2.user_id = hu.id
+				  AND NULLIF(sr2.scenario_type, '') IS NOT NULL
+				GROUP BY sr2.scenario_type
+				ORDER BY COUNT(*) DESC, sr2.scenario_type ASC
+				LIMIT 1
+			), '') AS primary_scenario_type
+		FROM hub_users hu
+		JOIN scenario_runs sr ON sr.user_id = hu.id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE COALESCE(la.username, hu.external_id) ILIKE $1
+		   OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
+		   OR hu.external_id ILIKE $1
+		GROUP BY hu.id, user_handle, user_display_name, avatar_url
+		ORDER BY run_count DESC, user_display_name ASC
+		LIMIT 12
+	`, pattern)
+	if err != nil {
+		return SearchRecord{}, fmt.Errorf("search profiles: %w", err)
+	}
+	defer profileRows.Close()
+	for profileRows.Next() {
+		var item SearchProfileRecord
+		if err := profileRows.Scan(
+			&item.UserHandle,
+			&item.UserDisplayName,
+			&item.AvatarURL,
+			&item.RunCount,
+			&item.ScenarioCount,
+			&item.PrimaryScenarioType,
+		); err != nil {
+			return SearchRecord{}, fmt.Errorf("scan search profile: %w", err)
+		}
+		record.Profiles = append(record.Profiles, item)
+	}
+	if err := profileRows.Err(); err != nil {
+		return SearchRecord{}, fmt.Errorf("iterate search profiles: %w", err)
+	}
+
+	runRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			sr.scenario_name,
+			sr.scenario_type,
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE sr.scenario_name ILIKE $1
+		   OR COALESCE(la.username, hu.external_id) ILIKE $1
+		   OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
+		   OR sr.public_run_id ILIKE $1
+		   OR sr.session_id ILIKE $1
+		ORDER BY sr.played_at DESC, sr.created_at DESC
+		LIMIT 20
+	`, pattern)
+	if err != nil {
+		return SearchRecord{}, fmt.Errorf("search runs: %w", err)
+	}
+	defer runRows.Close()
+	for runRows.Next() {
+		var item SearchRunRecord
+		if err := runRows.Scan(
+			&item.PublicRunID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.PlayedAt,
+			&item.Score,
+			&item.Accuracy,
+			&item.DurationMS,
+			&item.UserHandle,
+			&item.UserDisplayName,
+		); err != nil {
+			return SearchRecord{}, fmt.Errorf("scan search run: %w", err)
+		}
+		record.Runs = append(record.Runs, item)
+	}
+	if err := runRows.Err(); err != nil {
+		return SearchRecord{}, fmt.Errorf("iterate search runs: %w", err)
+	}
 
 	return record, nil
 }
