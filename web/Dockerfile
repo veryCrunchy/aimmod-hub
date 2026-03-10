@@ -3,16 +3,17 @@ WORKDIR /app
 
 RUN corepack enable
 
-COPY package.json ./
-RUN pnpm install --no-frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY web/package.json web/package.json
+RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY web ./web
 RUN pnpm build:web
 
 FROM nginx:1.27-alpine
 WORKDIR /usr/share/nginx/html
 
-COPY --from=build /app/dist ./
+COPY --from=build /app/web/dist ./
 COPY web/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY web/docker/entrypoint.sh /docker-entrypoint.d/40-aimmod-runtime-config.sh
 
