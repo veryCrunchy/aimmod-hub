@@ -7,7 +7,7 @@ COPY package.json ./
 RUN pnpm install --no-frozen-lockfile
 
 COPY . .
-RUN pnpm build
+RUN pnpm build:web
 
 FROM nginx:1.27-alpine
 WORKDIR /usr/share/nginx/html
