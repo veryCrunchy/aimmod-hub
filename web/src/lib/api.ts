@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+import { API_BASE_URL } from "./config";
 import {
   GetOverviewRequest,
   GetProfileRequest,
@@ -10,10 +11,8 @@ import {
 import { HubService } from "../gen/aimmod/hub/v1/hub_connect";
 
 const transport = createConnectTransport({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+  baseUrl: API_BASE_URL
 });
-
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export const hubClient = createClient(HubService, transport);
 

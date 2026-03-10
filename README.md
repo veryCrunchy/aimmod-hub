@@ -100,6 +100,11 @@ See [`.env.example`](./.env.example).
 Frontend uses:
 - `VITE_API_BASE_URL`
 
+Notes:
+- `VITE_*` values are compiled into the Vite bundle at build time.
+- For runtime-only env injection, set `window.__AIMMOD_HUB__.apiBaseUrl` via `web/public/runtime-config.js` (served as `/runtime-config.js`).
+- If neither runtime config nor `VITE_API_BASE_URL` is provided, production defaults to same-origin and local dev defaults to `http://localhost:8080`.
+
 API uses:
 - `DATABASE_URL`
 - `AIMMOD_HUB_ADDR`

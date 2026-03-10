@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config";
+
 export type AuthUser = {
   userId: number;
   userExternalId: string;
@@ -21,7 +23,7 @@ export type SessionPayload = {
   tokens?: UploadTokenRecord[];
 };
 
-const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const apiBase = API_BASE_URL;
 
 export async function fetchSession(): Promise<SessionPayload> {
   const response = await fetch(`${apiBase}/auth/session`, {
