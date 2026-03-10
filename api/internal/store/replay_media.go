@@ -147,6 +147,18 @@ func (s *Store) DeleteReplayMediaAssetForUser(ctx context.Context, userID int64,
 	return storageKey, nil
 }
 
+func (s *Store) DeleteReplayMediaAssetByRunID(ctx context.Context, runID string) error {
+	if _, err := s.pool.Exec(ctx, `
+		DELETE FROM replay_media_assets rma
+		USING scenario_runs sr
+		WHERE rma.session_id = sr.session_id
+		  AND ($1 = sr.public_run_id OR $1 = sr.session_id OR $1 = sr.source_session_id)
+	`, runID); err != nil {
+		return fmt.Errorf("delete replay media asset by run id: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) UpsertMousePath(
 	ctx context.Context,
 	sessionID string,

@@ -523,6 +523,15 @@ func (h *authHandler) handleReplayMediaMeta(w http.ResponseWriter, r *http.Reque
 		writeJSON(w, http.StatusOK, map[string]any{"available": false})
 		return
 	}
+	body, _, err := h.media.Get(r.Context(), meta.StorageKey)
+	if err != nil {
+		if deleteErr := h.store.DeleteReplayMediaAssetByRunID(r.Context(), runID); deleteErr != nil {
+			log.Printf("delete stale replay media asset meta for %q: %v", runID, deleteErr)
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"available": false})
+		return
+	}
+	_ = body.Close()
 	writeJSON(w, http.StatusOK, map[string]any{
 		"available":   true,
 		"runId":       meta.PublicRunID,
@@ -621,6 +630,9 @@ func (h *authHandler) handleReplayMediaStream(w http.ResponseWriter, r *http.Req
 	}
 	body, contentType, err := h.media.Get(r.Context(), meta.StorageKey)
 	if err != nil {
+		if deleteErr := h.store.DeleteReplayMediaAssetByRunID(r.Context(), runID); deleteErr != nil {
+			log.Printf("delete stale replay media asset meta for %q: %v", runID, deleteErr)
+		}
 		http.NotFound(w, r)
 		return
 	}
