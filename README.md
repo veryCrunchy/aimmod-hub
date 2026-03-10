@@ -101,8 +101,8 @@ docker run -p 8080:8080 \
   -e DATABASE_URL=postgres://... \
   -e DISCORD_CLIENT_ID=... \
   -e DISCORD_CLIENT_SECRET=... \
-  -e DISCORD_REDIRECT_URI=https://hub.aimmod.app/auth/discord/callback \
-  -e AIMMOD_HUB_WEB_ORIGIN=https://hub.aimmod.app \
+  -e DISCORD_REDIRECT_URI=https://aimmod.app/auth/discord/callback \
+  -e AIMMOD_HUB_WEB_ORIGIN=https://aimmod.app \
   -e SESSION_COOKIE_SECURE=true \
   aimmod-hub
 ```
@@ -110,7 +110,7 @@ docker run -p 8080:8080 \
 The `AIMMOD_HUB_API_BASE_URL` env var controls which API URL the frontend uses at runtime (written into `runtime-config.js` on container start). When the frontend and API are on the same origin this can be left unset — it defaults to `https://api.aimmod.app` which you can override:
 
 ```bash
--e AIMMOD_HUB_API_BASE_URL=https://hub.aimmod.app
+-e AIMMOD_HUB_API_BASE_URL=https://aimmod.app
 ```
 
 ### Split deployment (API + Nginx, no SSR meta)
@@ -126,17 +126,20 @@ docker run -p 8080:8080 \
 
 The API runs as a separate container pointed at the same database.
 
-## Railpack deployment (API)
+## Railpack deployment
 
-This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
+`railpack.json` at the repo root configures the full single-server build on Railway or any Railpack-compatible platform.
 
-- API entrypoint is exposed at `cmd/aimmod-hub`
-- no `railpack.json` override is required
-- Railpack Go defaults build and run this layout automatically
+Railpack auto-detects Go as the primary runtime and builds `cmd/aimmod-hub`. The config adds two extra steps:
 
-At runtime, the API prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
+- **install-web** — runs `pnpm install` for the frontend
+- **build-web** — runs `pnpm build:web` and includes `web/dist` in the deploy output
 
-To enable SSR meta injection on Railpack, build the frontend as a pre-build step and set `AIMMOD_HUB_STATIC_DIR` to wherever `web/dist` lands.
+`AIMMOD_HUB_STATIC_DIR=/app/web/dist` is set as a deploy variable so the Go server serves the built frontend with SSR meta injection automatically.
+
+Set `AIMMOD_HUB_API_BASE_URL` to your public URL in your Railway service variables so the frontend runtime config points at the right API endpoint. All other required env vars (`DATABASE_URL`, `DISCORD_*`, etc.) are set via the platform's environment configuration.
+
+At runtime the server prefers `AIMMOD_HUB_ADDR`, then `PORT`, then `:8080`.
 
 ## Environment
 

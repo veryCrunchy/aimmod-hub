@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "install-web": {
+      "commands": [
+        "corepack enable",
+        "pnpm install --no-frozen-lockfile"
+      ]
+    },
+    "build-web": {
+      "inputs": [{ "step": "install-web" }],
+      "commands": ["pnpm build:web"],
+      "deployOutputs": ["web/dist/**"]
+    }
+  },
+  "deploy": {
+    "variables": {
+      "AIMMOD_HUB_STATIC_DIR": "/app/web/dist"
+    }
+  }
+}
