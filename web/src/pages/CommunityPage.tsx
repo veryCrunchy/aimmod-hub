@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
@@ -103,6 +103,7 @@ export function CommunityPage() {
             eyebrow="Scenario watchlist"
             title="Best pages to open next"
             body="These scenarios already have enough history to start showing useful score bands and run patterns."
+            aside={<NavLink to="/leaderboard" className="text-cyan transition-colors hover:underline">View leaderboard →</NavLink>}
           />
           {overview?.topScenarios.length ? (
             <>
@@ -191,6 +192,7 @@ export function CommunityPage() {
           eyebrow="Recent completed runs"
           title="What players have actually just finished"
           body="The latest runs players have completed."
+          aside={<NavLink to="/replays" className="text-cyan transition-colors hover:underline">Browse replays →</NavLink>}
         />
         {overview?.recentRuns.length ? (
           <>

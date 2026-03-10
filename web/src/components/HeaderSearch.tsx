@@ -4,6 +4,13 @@ import { cn } from "../lib/cn";
 import { searchHub, type HubSearchResponse } from "../lib/api";
 import { ScenarioTypeBadge } from "./ScenarioTypeBadge";
 
+const quickNavItems = [
+  { to: "/community", label: "Browse scenarios & players", sub: "All uploaded data, sorted by activity" },
+  { to: "/leaderboard", label: "Global leaderboard", sub: "All-time records and top 100 scores" },
+  { to: "/replays", label: "Replay library", sub: "Watch replays and mouse paths" },
+  { to: "/app", label: "Download AimMod", sub: "Get the desktop app to start uploading" },
+];
+
 type DropdownItem = {
   kind: "scenario" | "player" | "run";
   title: string;
@@ -55,6 +62,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
   const [value, setValue] = useState("");
   const [results, setResults] = useState<HubSearchResponse | null>(null);
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -83,6 +91,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
     function handler(e: MouseEvent) {
       if (!containerRef.current?.contains(e.target as Node)) {
         setOpen(false);
+        setFocused(false);
       }
     }
     document.addEventListener("mousedown", handler);
@@ -95,10 +104,12 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
   }, [activeIndex]);
 
   const items = results ? buildItems(results) : [];
+  const showQuickNav = focused && !value.trim() && !open;
 
   function go(to: string) {
     navigate(to);
     setOpen(false);
+    setFocused(false);
     setValue("");
     setResults(null);
   }
@@ -116,6 +127,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
       setActiveIndex((i) => (i - 1 + items.length) % items.length);
     } else if (e.key === "Escape") {
       setOpen(false);
+      setFocused(false);
       setActiveIndex(0);
     } else if (e.key === "Enter") {
       if (open && items[activeIndex]) {
@@ -150,6 +162,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
             setActiveIndex(0);
           }}
           onFocus={() => {
+            setFocused(true);
             if (items.length) setOpen(true);
           }}
           onKeyDown={handleKeyDown}
@@ -163,6 +176,34 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
           Go
         </button>
       </form>
+
+      {showQuickNav && (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-[14px] border border-line bg-[rgba(6,16,12,0.98)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+          <div className="border-b border-line/50 px-4 py-2.5">
+            <span className="text-[10px] uppercase tracking-[0.1em] text-muted">Quick navigation</span>
+          </div>
+          {quickNavItems.map((item) => (
+            <button
+              key={item.to}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                go(item.to);
+              }}
+              className="flex w-full items-center justify-between gap-3 border-b border-line/40 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[rgba(121,201,151,0.08)]"
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] text-text">{item.label}</div>
+                <div className="mt-0.5 text-[11px] text-muted">{item.sub}</div>
+              </div>
+              <span className="shrink-0 text-[11px] text-muted-2">→</span>
+            </button>
+          ))}
+          <div className="border-t border-line/50 px-4 py-2 text-[11px] text-muted-2">
+            Type to search players, scenarios, and replays
+          </div>
+        </div>
+      )}
 
       {open && items.length > 0 && (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-[min(420px,60vh)] overflow-y-auto overscroll-contain rounded-[14px] border border-line bg-[rgba(6,16,12,0.98)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl">

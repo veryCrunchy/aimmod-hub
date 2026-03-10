@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
@@ -12,7 +12,7 @@ import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useCountUp } from "../hooks/useCountUp";
-import { fetchOverview, formatDurationMs, formatRelativeTime } from "../lib/api";
+import { fetchOverview, formatDurationMs, formatRelativeTime, slugifyScenarioName } from "../lib/api";
 
 const PAGE_SIZE = 15;
 
@@ -135,6 +135,7 @@ export function HomePage() {
             eyebrow="Top scenarios"
             title="Where the current volume is"
             body="These scenarios already have enough history to be useful comparison pages."
+            aside={<NavLink to="/community" className="text-cyan transition-colors hover:underline">Browse all →</NavLink>}
           />
           {overview?.topScenarios.length ? (
             <ScrollArea className="max-h-[min(54vh,720px)] pr-2">
@@ -172,6 +173,7 @@ export function HomePage() {
             eyebrow="Active players"
             title="Profiles with real history"
             body="These players have the most practice history right now, which makes them the best starting point for study and comparison."
+            aside={<NavLink to="/community" className="text-cyan transition-colors hover:underline">Browse all →</NavLink>}
           />
           {overview?.activeProfiles.length ? (
             <ScrollArea className="max-h-[min(54vh,720px)] pr-2">
@@ -216,6 +218,7 @@ export function HomePage() {
           eyebrow="Recent completed runs"
           title="What players have actually just finished"
           body="The latest runs players have completed."
+          aside={<NavLink to="/leaderboard" className="text-cyan transition-colors hover:underline">View leaderboard →</NavLink>}
         />
         {overview?.recentRuns.length ? (
           <>
@@ -238,7 +241,7 @@ export function HomePage() {
                       <td className="px-3 py-2.5 text-text max-w-[200px] truncate md:px-4 md:py-3">
                         <Link
                           className="hover:text-cyan transition-colors"
-                          to={`/scenarios/${run.scenarioName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
+                          to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}
                         >
                           {run.scenarioName}
                         </Link>

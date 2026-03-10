@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetRunResponse } from "../gen/aimmod/hub/v1/hub_pb";
@@ -12,6 +12,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { MousePathPreview } from "../components/MousePathPreview";
+import { ReplayMouseOverlay } from "../components/ReplayMouseOverlay";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { deleteReplayMedia, fetchMousePath, fetchReplayMediaMeta, fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
@@ -80,14 +81,17 @@ export function RunPage() {
   const [run, setRun] = useState<GetRunResponse | null>(null);
   const [replayMediaUrl, setReplayMediaUrl] = useState<string | null>(null);
   const [mousePath, setMousePath] = useState<import("../lib/api").MousePathPoint[]>([]);
+  const [hitTimestampsMs, setHitTimestampsMs] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [deletingReplay, setDeletingReplay] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setRun(null);
     setReplayMediaUrl(null);
     setMousePath([]);
+    setHitTimestampsMs([]);
     setError(null);
     void fetchRun(runId)
       .then((next) => {
@@ -104,6 +108,7 @@ export function RunPage() {
             .then((payload) => {
               if (!cancelled && payload.available) {
                 setMousePath(payload.points);
+                setHitTimestampsMs(payload.hitTimestampsMs);
               }
             })
             .catch(() => {});
@@ -221,9 +226,14 @@ export function RunPage() {
             <div className="flex items-center gap-3">
               <ScenarioTypeBadge type={run.scenarioType} />
               {run.userHandle && (
-                <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle}`}>
-                  Open profile
-                </Link>
+                <>
+                  <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle}`}>
+                    Open profile
+                  </Link>
+                  <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${run.userHandle}/scenarios/${slugifyScenarioName(run.scenarioName)}`}>
+                    History on this scenario
+                  </Link>
+                </>
               )}
             </div>
           }
@@ -276,7 +286,11 @@ export function RunPage() {
           <SectionHeader
             eyebrow="Replay video"
             title="Saved replay clip"
-            body="If this run was uploaded with replay media, you can watch it directly here."
+            body={
+              mousePath.length > 0
+                ? "The replay video and mouse path are synced together here, with a 2 second trail to keep the view readable."
+                : "If this run was uploaded with replay media, you can watch it directly here."
+            }
             aside={
               canDeleteReplayMedia ? (
                 <button
@@ -295,13 +309,26 @@ export function RunPage() {
               ) : null
             }
           />
-          <div className="overflow-hidden rounded-2xl border border-white/8 bg-black/40">
-            <video controls preload="metadata" className="block w-full" src={replayMediaUrl} />
+          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-black/40">
+            {mousePath.length > 0 ? (
+              <div className="relative mx-auto aspect-[900/520] w-full bg-[rgba(2,8,10,0.96)]">
+                <video
+                  ref={videoRef}
+                  controls
+                  preload="metadata"
+                  className="absolute left-[17.5%] top-[18.37%] h-[63.27%] w-[65%] object-fill"
+                  src={replayMediaUrl}
+                />
+                <ReplayMouseOverlay points={mousePath} hitTimestampsMs={hitTimestampsMs} videoRef={videoRef} />
+              </div>
+            ) : (
+              <video ref={videoRef} controls preload="metadata" className="block w-full" src={replayMediaUrl} />
+            )}
           </div>
         </PageSection>
       )}
 
-      {mousePath.length > 0 && (
+      {mousePath.length > 0 && !replayMediaUrl && (
         <PageSection>
           <SectionHeader
             eyebrow="Mouse path"

@@ -123,13 +123,14 @@ export function PlayerScenarioPage() {
   const latestRun = history.runs.reduce((a, b) =>
     new Date(a.playedAtIso) > new Date(b.playedAtIso) ? a : b
   );
+  const bestRun = history.runs.reduce((a, b) => (a.score > b.score ? a : b));
 
   return (
     <PageStack>
       <PageSection>
         <Breadcrumb crumbs={[
           { label: `@${handle}`, to: `/profiles/${handle}` },
-          { label: history.scenarioName },
+          { label: history.scenarioName, to: `/scenarios/${slug}` },
         ]} />
         <SectionHeader
           eyebrow="Player history"
@@ -194,26 +195,19 @@ export function PlayerScenarioPage() {
         <PageSection>
           <SectionHeader eyebrow="Personal best" title="Top run" />
           <Link
-            to={`/runs/${latestRun.runId || latestRun.sessionId}`}
+            to={`/runs/${bestRun.runId || bestRun.sessionId}`}
             className="block rounded-[18px] border border-gold/20 bg-[rgba(255,215,0,0.03)] p-[18px] transition-colors hover:border-gold/40"
           >
-            {(() => {
-              const pb = history.runs.reduce((a, b) => (a.score > b.score ? a : b));
-              return (
-                <>
-                  <p className="text-[10px] uppercase tracking-[0.1em] text-gold/70">Best score</p>
-                  <p className="mt-2 text-3xl font-medium text-gold">{Math.round(pb.score).toLocaleString()}</p>
-                  <div className="mt-2 flex items-center gap-3 text-sm text-muted">
-                    <span>{pb.accuracy.toFixed(1)}% acc</span>
-                    <span>·</span>
-                    <span>{formatDurationMs(pb.durationMs)}</span>
-                    <span>·</span>
-                    <span>{formatRelativeTime(pb.playedAtIso)}</span>
-                  </div>
-                  <p className="mt-3 text-[11px] text-cyan underline underline-offset-3">Open run →</p>
-                </>
-              );
-            })()}
+            <p className="text-[10px] uppercase tracking-[0.1em] text-gold/70">Best score</p>
+            <p className="mt-2 text-3xl font-medium text-gold">{Math.round(bestRun.score).toLocaleString()}</p>
+            <div className="mt-2 flex items-center gap-3 text-sm text-muted">
+              <span>{bestRun.accuracy.toFixed(1)}% acc</span>
+              <span>·</span>
+              <span>{formatDurationMs(bestRun.durationMs)}</span>
+              <span>·</span>
+              <span>{formatRelativeTime(bestRun.playedAtIso)}</span>
+            </div>
+            <p className="mt-3 text-[11px] text-cyan underline underline-offset-3">Open run →</p>
           </Link>
         </PageSection>
 

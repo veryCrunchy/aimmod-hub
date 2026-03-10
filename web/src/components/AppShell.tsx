@@ -17,13 +17,13 @@ export function AppShell({ children }: PropsWithChildren) {
   const searchRef = useRef<HTMLInputElement>(null);
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
-    { to: "/", label: "Home" },
-    { to: "/app", label: "App" },
-    { to: "/community", label: "Community" },
-    { to: "/replays", label: "Replays" },
-    { to: "/leaderboard", label: "Leaderboard" },
-    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
-    { to: "/account", label: "Account" },
+    { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
+    { to: "/app", label: "App", title: "Download the AimMod desktop app" },
+    { to: "/community", label: "Community", title: "Browse all scenarios and players" },
+    { to: "/replays", label: "Replays", title: "Watch replay videos and mouse paths" },
+    { to: "/leaderboard", label: "Leaderboard", title: "All-time records and top 100 scores" },
+    ...(isAdmin ? [{ to: "/admin", label: "Admin", title: "Admin panel" }] : []),
+    { to: "/account", label: "Account", title: "Your profile, linked devices, and settings" },
   ];
 
   useEffect(() => {
@@ -61,6 +61,7 @@ export function AppShell({ children }: PropsWithChildren) {
                   <NavLink
                     key={item.to}
                     to={item.to}
+                    title={item.title}
                     className={({ isActive }) =>
                       cn(
                         "rounded-full border border-transparent px-3 py-2 text-[13px] text-muted transition-colors",
@@ -98,6 +99,7 @@ export function AppShell({ children }: PropsWithChildren) {
             <NavLink
               key={item.to}
               to={item.to}
+              title={item.title}
               className={({ isActive }) =>
                 cn(
                   "rounded-full border border-transparent px-3 py-1.5 text-[12px] text-muted transition-colors",

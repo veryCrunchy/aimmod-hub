@@ -139,6 +139,7 @@ export function LeaderboardPage() {
                   <th className="px-4 py-3">Acc</th>
                   <th className="px-4 py-3">When</th>
                   <th className="px-4 py-3">Run</th>
+                  <th className="px-4 py-3">History</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,6 +183,14 @@ export function LeaderboardPage() {
                           to={`/runs/${entry.runId || entry.sessionId}`}
                         >
                           Open
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          className="text-violet underline underline-offset-3 text-[12px]"
+                          to={`/profiles/${entry.userHandle}/scenarios/${slugifyScenarioName(entry.scenarioName)}`}
+                        >
+                          History
                         </Link>
                       </td>
                     </tr>

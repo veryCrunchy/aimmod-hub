@@ -128,7 +128,7 @@ function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
   );
 }
 
-function ScenarioPlayerLeaders({ page }: { page: GetScenarioPageResponse }) {
+function ScenarioPlayerLeaders({ page, slug }: { page: GetScenarioPageResponse; slug: string }) {
   const byPlayer = new Map<string, {
     handle: string;
     displayName: string;
@@ -179,6 +179,7 @@ function ScenarioPlayerLeaders({ page }: { page: GetScenarioPageResponse }) {
             <th className="px-4 py-3">Best</th>
             <th className="px-4 py-3">Avg</th>
             <th className="px-4 py-3">Acc</th>
+            <th className="px-4 py-3">History</th>
           </tr>
         </thead>
         <tbody>
@@ -193,6 +194,11 @@ function ScenarioPlayerLeaders({ page }: { page: GetScenarioPageResponse }) {
               <td className="px-4 py-3 text-gold">{Math.round(player.bestScore).toLocaleString()}</td>
               <td className="px-4 py-3 text-text">{Math.round(player.averageScore).toLocaleString()}</td>
               <td className="px-4 py-3 text-text">{player.averageAccuracy.toFixed(1)}%</td>
+              <td className="px-4 py-3">
+                <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${player.handle}/scenarios/${slug}`}>
+                  History
+                </Link>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -563,7 +569,7 @@ export function ScenarioPage() {
             title="Who currently owns this scenario"
             body="A compact player view built from the best and most recent uploaded runs."
           />
-          <ScenarioPlayerLeaders page={page} />
+          <ScenarioPlayerLeaders page={page} slug={slug} />
         </PageSection>
 
         <PageSection>
