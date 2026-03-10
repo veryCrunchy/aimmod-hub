@@ -31,6 +31,7 @@ function formatCount(value: number) {
 
 export function AdminPage() {
   const auth = useAuth();
+  const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const [overview, setOverview] = useState<AdminOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionState, setActionState] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export function AdminPage() {
   const normalizedFilter = filter.trim().toLowerCase();
 
   const load = useCallback(() => {
-    if (!auth.isAdmin) {
+    if (!isAdmin) {
       return;
     }
     void fetchAdminOverview(days)
@@ -58,7 +59,7 @@ export function AdminPage() {
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Could not load admin overview.");
       });
-  }, [auth.isAdmin, days, selectedHandle]);
+  }, [isAdmin, days, selectedHandle]);
 
   useEffect(() => {
     load();
@@ -67,7 +68,7 @@ export function AdminPage() {
   useAutoRefresh(load, 30_000);
 
   useEffect(() => {
-    if (!auth.isAdmin || !selectedHandle) {
+    if (!isAdmin || !selectedHandle) {
       setSelectedUser(null);
       setSelectedUserError(null);
       return;
@@ -89,7 +90,7 @@ export function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [auth.isAdmin, selectedHandle, days]);
+  }, [isAdmin, selectedHandle, days]);
 
   async function handleReclassify() {
     setRunningAction(true);
@@ -180,7 +181,7 @@ export function AdminPage() {
     );
   }
 
-  if (!auth.isAdmin) {
+  if (!isAdmin) {
     return (
       <PageSection>
         <EmptyState

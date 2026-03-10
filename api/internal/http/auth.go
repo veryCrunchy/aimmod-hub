@@ -224,6 +224,7 @@ func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	isAdmin, adminReason := h.adminStatus(user)
+	user.IsAdmin = isAdmin
 	writeJSON(w, http.StatusOK, sessionResponse{
 		Authenticated: true,
 		IsAdmin:       isAdmin,

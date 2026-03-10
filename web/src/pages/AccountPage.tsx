@@ -11,6 +11,7 @@ import { discordStartUrl } from "../lib/auth";
 
 export function AccountPage() {
   const auth = useAuth();
+  const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +80,7 @@ export function AccountPage() {
             <div className="mt-2 text-2xl text-mint">{auth.tokens?.length ?? 0}</div>
             <p className="mt-3 text-sm leading-7 text-muted">Each linked desktop app gets its own access record. Remove one here if you want to disconnect a machine and stop future uploads from it.</p>
           </div>
-          {auth.isAdmin ? (
+          {isAdmin ? (
             <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
               <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Admin access</div>
               <div className="mt-2 text-2xl text-text">Enabled</div>

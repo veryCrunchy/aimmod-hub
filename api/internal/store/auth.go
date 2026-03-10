@@ -19,6 +19,7 @@ type AuthUser struct {
 	Username       string `json:"username"`
 	DisplayName    string `json:"displayName"`
 	AvatarURL      string `json:"avatarUrl"`
+	IsAdmin        bool   `json:"isAdmin,omitempty"`
 }
 
 type UploadTokenRecord struct {

@@ -16,11 +16,12 @@ export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
+  const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/community", label: "Community" },
     { to: "/leaderboard", label: "Leaderboard" },
-    ...(auth.isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
+    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
     { to: "/account", label: "Account" },
   ];
 
