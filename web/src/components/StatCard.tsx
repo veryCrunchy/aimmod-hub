@@ -17,10 +17,10 @@ export function StatCard({ label, value, detail, accent = "mint" }: StatCardProp
   }[accent];
 
   return (
-    <Card className="p-4 md:p-5">
+    <Card className="min-w-0 p-[14px] md:p-[18px]">
       <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">{label}</div>
-      <div className={cn("mt-2 text-[clamp(22px,2.6vw,30px)] leading-none", accentClass)}>{value}</div>
-      {detail ? <p className="mt-2.5 text-[13px] leading-6 text-muted md:text-sm">{detail}</p> : null}
+      <div className={cn("mt-2 break-words text-[clamp(20px,2.2vw,28px)] leading-none", accentClass)}>{value}</div>
+      {detail ? <p className="mt-2 text-[12px] leading-5 text-muted md:text-[13px] md:leading-6">{detail}</p> : null}
     </Card>
   );
 }

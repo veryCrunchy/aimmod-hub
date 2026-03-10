@@ -44,13 +44,13 @@ function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
   return (
     <div className="grid gap-3">
       {/* stat tiles */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+      <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
+        <div className="min-w-0 rounded-[14px] border border-line bg-white/2 p-3.5">
           <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Active players</p>
           <p className="mt-1.5 text-2xl font-medium text-text">{uniquePlayers}</p>
           <p className="mt-1 text-[11px] text-muted">across last {page.recentRuns.length} runs</p>
         </div>
-        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+        <div className="min-w-0 rounded-[14px] border border-line bg-white/2 p-3.5">
           <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Last 7 days</p>
           <p className="mt-1.5 text-2xl font-medium text-text">{recentActivity}</p>
           <p className="mt-1 text-[11px] text-muted">{recentActivity === 1 ? "run" : "runs"} recorded</p>
@@ -59,7 +59,7 @@ function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
 
       {/* consistency */}
       {consistency && (
-        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+        <div className="min-w-0 rounded-[14px] border border-line bg-white/2 p-3.5">
           <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Score consistency</p>
           <div className="mt-2 flex items-center gap-3">
             <div className="flex-1">
@@ -79,7 +79,7 @@ function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
 
       {/* score ceiling gap */}
       {ceilingPct !== null && page.bestScore > 0 && (
-        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+        <div className="min-w-0 rounded-[14px] border border-line bg-white/2 p-3.5">
           <p className="mb-3 text-[10px] uppercase tracking-[0.1em] text-muted-2">Score ceiling gap</p>
           <div className="flex items-end justify-between gap-2">
             <div>
@@ -227,7 +227,7 @@ export function ScenarioPage() {
           body="A shared view of how players are performing on this scenario."
           aside={<ScenarioTypeBadge type={page.scenarioType} />}
         />
-        <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+        <Grid className="grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
           <StatCard label="Runs" value={page.runCount.toLocaleString()} detail="Saved runs for this scenario" />
           <StatCard
             label="Best score"
@@ -268,7 +268,7 @@ export function ScenarioPage() {
         </PageSection>
       )}
 
-      <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">
+      <Grid className="grid-cols-2 max-[1180px]:grid-cols-1">
         <PageSection>
           {/* Tab bar */}
           <div className="mb-[18px] flex items-center gap-1 border-b border-line pb-px">

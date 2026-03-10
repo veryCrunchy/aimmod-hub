@@ -56,31 +56,50 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen overflow-x-clip">
       <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.96),rgba(4,12,9,0.92))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
-        <div className="mx-auto grid w-[min(1380px,100%)] grid-cols-[auto_1fr_auto] items-center gap-3 xl:grid-cols-[auto_auto_minmax(220px,360px)_auto] xl:gap-4">
-        <Link to="/" className="grid gap-0.5">
-          <span className="text-[10px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
-          <span className="text-[12px] text-text max-[640px]:hidden">shared practice intelligence</span>
-        </Link>
+        <div className="mx-auto flex w-[min(1380px,100%)] min-w-0 flex-col gap-2.5 xl:grid xl:grid-cols-[auto_auto_minmax(220px,320px)_auto] xl:items-center xl:gap-4">
+          <div className="flex min-w-0 items-center justify-between gap-3 xl:contents">
+            <Link to="/" className="grid min-w-0 gap-0.5">
+              <span className="text-[10px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
+              <span className="truncate text-[12px] text-text max-[640px]:hidden">shared practice intelligence</span>
+            </Link>
 
-          <nav className="hidden flex-wrap items-center gap-1.5 xl:flex" aria-label="Primary">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    "rounded-full border border-transparent px-3 py-2 text-[13px] text-muted transition-colors",
-                    "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
-                    isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+            <div className="flex flex-wrap items-center justify-end gap-2 xl:contents">
+              <nav className="hidden min-w-0 flex-wrap items-center gap-1.5 xl:flex" aria-label="Primary">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "rounded-full border border-transparent px-3 py-2 text-[13px] text-muted transition-colors",
+                        "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
+                        isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
+                      )
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </nav>
 
-          <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2">
+              {auth.loading ? null : auth.authenticated && auth.user ? (
+                <div className="inline-flex min-w-0 items-center gap-2">
+                  <Link to="/account" className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-[240px] md:px-[14px] md:text-[13px]">
+                    {auth.user.displayName || auth.user.username}
+                  </Link>
+                  <Button onClick={() => void auth.signOut()} className="shrink-0">
+                    Sign out
+                  </Button>
+                </div>
+              ) : (
+                <Button href={discordStartUrl("/account")} variant="primary" className="shrink-0">
+                  Sign in with Discord
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2 xl:min-w-[220px]">
             <input
               ref={searchRef}
               key={location.pathname === "/search" ? location.search : "global-search"}
@@ -89,26 +108,12 @@ export function AppShell({ children }: PropsWithChildren) {
               placeholder="Search  ·  / or Ctrl+K"
               className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70 md:text-sm"
             />
-            <Button type="submit" className="shrink-0">
+            <Button type="submit" className="shrink-0 px-3">
               Go
             </Button>
           </form>
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
-          {auth.loading ? null : auth.authenticated && auth.user ? (
-            <div className="inline-flex items-center gap-2">
-              <Link to="/account" className="rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:px-[14px] md:text-[13px]">
-                {auth.user.displayName || auth.user.username}
-              </Link>
-              <Button onClick={() => void auth.signOut()}>Sign out</Button>
-            </div>
-          ) : (
-            <Button href={discordStartUrl("/account")} variant="primary">
-              Sign in with Discord
-            </Button>
-          )}
-        </div>
-        <div className="mx-auto mt-3 flex w-[min(1380px,100%)] flex-wrap items-center gap-1.5 xl:hidden">
+          <div className="flex flex-wrap items-center gap-1.5 xl:hidden">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -124,11 +129,11 @@ export function AppShell({ children }: PropsWithChildren) {
               {item.label}
             </NavLink>
           ))}
-        </div>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-24px))] px-0 py-4 pb-14 md:w-[min(1380px,calc(100vw-32px))] md:py-5 md:pb-16">
+      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-20px))] px-0 py-3 pb-12 md:w-[min(1380px,calc(100vw-32px))] md:py-5 md:pb-16">
         {children}
       </main>
 

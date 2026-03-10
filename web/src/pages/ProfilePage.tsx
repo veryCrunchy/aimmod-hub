@@ -93,7 +93,7 @@ export function ProfilePage() {
   if (!profile) {
     return (
       <PageStack>
-        <PageSection className="grid grid-cols-[1.6fr_minmax(280px,0.9fr)] gap-[18px] max-[1100px]:grid-cols-1">
+        <PageSection className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)] gap-4 max-[980px]:grid-cols-1">
           <div>
             <Skeleton className="mb-3 h-3 w-16" />
             <Skeleton className="mb-3 h-10 w-48" />
@@ -101,7 +101,7 @@ export function ProfilePage() {
           </div>
           <Skeleton className="h-28 rounded-[18px]" />
         </PageSection>
-        <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+        <Grid className="grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px]" />)}
         </Grid>
       </PageStack>
@@ -142,7 +142,7 @@ export function ProfilePage() {
 
   return (
     <PageStack>
-      <PageSection className="grid grid-cols-[1.6fr_minmax(280px,0.9fr)] gap-[18px] max-[1100px]:grid-cols-1">
+      <PageSection className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)] gap-4 max-[980px]:grid-cols-1">
         <div>
           <Breadcrumb crumbs={[{ label: "Community", to: "/community" }, { label: `@${profile.userHandle}` }]} />
           <h1>@{profile.userHandle}</h1>
@@ -151,9 +151,9 @@ export function ProfilePage() {
             {profile.scenarioCount.toLocaleString()} scenarios.
           </p>
         </div>
-        <div className="grid content-start gap-2 rounded-[18px] border border-cyan/18 bg-[linear-gradient(180deg,rgba(57,208,255,0.08),rgba(182,151,255,0.06))] p-[18px]">
+        <div className="grid min-w-0 content-start gap-2 rounded-[18px] border border-cyan/18 bg-[linear-gradient(180deg,rgba(57,208,255,0.08),rgba(182,151,255,0.06))] p-[16px]">
           <span className="text-[12px] uppercase tracking-[0.08em] text-cyan">Main focus</span>
-          <strong className="text-[28px]">{primaryFocus}</strong>
+          <strong className="break-words text-[24px] leading-tight md:text-[28px]">{primaryFocus}</strong>
           <em className="text-sm not-italic leading-7 text-muted">
             {primaryFocus === "Mixed practice"
               ? "This player spreads their time across multiple scenario styles."
@@ -162,7 +162,7 @@ export function ProfilePage() {
         </div>
       </PageSection>
 
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+      <Grid className="grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
         <StatCard label="Runs" value={profile.runCount.toLocaleString()} detail="Saved practice history" />
         <StatCard
           label="Scenario spread"
@@ -197,7 +197,7 @@ export function ProfilePage() {
             body="The highest score this player has recorded on each scenario."
           />
           <ScrollArea className="max-h-[min(60vh,760px)] overflow-auto rounded-[18px] border border-line bg-white/2">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-[640px] w-full text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th className="px-4 py-3">Scenario</th>

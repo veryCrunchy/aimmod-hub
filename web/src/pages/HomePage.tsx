@@ -81,17 +81,17 @@ export function HomePage() {
 
   return (
     <PageStack>
-      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.42)] md:p-6">
+      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
         <div className="absolute inset-y-0 right-[8%] w-[28%] rounded-full bg-[radial-gradient(circle,rgba(121,201,151,0.14),transparent_68%)] blur-3xl" />
         <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
-        <h1 className="my-3 text-[clamp(30px,6vw,72px)] leading-[0.94] tracking-[-0.05em]">
+        <h1 className="my-2.5 max-w-[14ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
           Shared practice data that is finally useful.
         </h1>
-        <p className="max-w-[760px] text-[15px] leading-7 text-[#cbe4d7] md:text-[17px]">
+        <p className="max-w-[700px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
           AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and
           learn from.
         </p>
-        <div className="relative mt-4 flex flex-wrap gap-2.5">
+        <div className="relative mt-3 flex flex-wrap gap-2">
           <Button to="/community" variant="primary">
             Explore community data
           </Button>
@@ -104,7 +104,7 @@ export function HomePage() {
         </div>
       </PageSection>
 
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+      <Grid className="grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
         <AnimatedStatCard
           label="Runs"
           target={overview ? Number(overview.totalRuns) : 0}
@@ -215,7 +215,7 @@ export function HomePage() {
         {overview?.recentRuns.length ? (
           <>
             <ScrollArea className="max-h-[min(56vh,740px)] overflow-auto rounded-[16px] border border-line bg-white/2">
-              <table className="min-w-full text-left text-sm">
+              <table className="min-w-[760px] w-full text-left text-sm">
                 <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Scenario</th>
