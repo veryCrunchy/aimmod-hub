@@ -16,6 +16,7 @@ This repo is intentionally independent from the desktop app repo so:
 ## Repo layout
 
 - `api/` Go API server
+- `cmd/` Go entrypoints (`aimmod-hub`)
 - `proto/` protobuf contracts
 - `gen/` generated Go code
 - `web/` Vite frontend
@@ -40,7 +41,7 @@ AimMod Hub should own:
 ## Current scaffold
 
 This scaffold includes:
-- a Go API server in `api/cmd/aimmod-hub`
+- a Go API server in `cmd/aimmod-hub` (with shared runtime under `api/`)
 - a Connect RPC service definition in `proto/aimmod/hub/v1/hub.proto`
 - Vite frontend wired to Connect RPC
 - Discord-backed website auth
@@ -59,7 +60,7 @@ pnpm proto:generate
 
 ```bash
 pnpm dev:db:up
-go run ./api/cmd/aimmod-hub
+go run ./cmd/aimmod-hub
 ```
 
 ### Run the frontend
@@ -86,9 +87,9 @@ This starts:
 
 This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
 
-- `railpack.json` forces Go provider detection
-- build command is overridden to `go build -o out ./api/cmd/aimmod-hub`
-- runtime start command is `./out` (Railpack Go default output binary)
+- API entrypoint is exposed at `cmd/aimmod-hub`
+- no `railpack.json` override is required
+- Railpack Go defaults build and run this layout automatically
 
 At runtime, the API now prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
 
