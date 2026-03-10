@@ -13,8 +13,8 @@ FROM nginx:1.27-alpine
 WORKDIR /usr/share/nginx/html
 
 COPY --from=build /app/dist ./
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker/entrypoint.sh /docker-entrypoint.d/40-aimmod-runtime-config.sh
+COPY web/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY web/docker/entrypoint.sh /docker-entrypoint.d/40-aimmod-runtime-config.sh
 
 RUN chmod +x /docker-entrypoint.d/40-aimmod-runtime-config.sh
 
