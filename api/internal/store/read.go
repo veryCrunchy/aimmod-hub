@@ -124,6 +124,98 @@ type SearchRecord struct {
 	Runs      []SearchRunRecord      `json:"runs"`
 }
 
+type AdminVersionBreakdown struct {
+	Label    string `json:"label"`
+	RunCount uint64 `json:"runCount"`
+}
+
+type AdminScenarioIssue struct {
+	ScenarioName string `json:"scenarioName"`
+	ScenarioSlug string `json:"scenarioSlug"`
+	RunCount     uint64 `json:"runCount"`
+}
+
+type AdminRecentIngest struct {
+	PublicRunID     string    `json:"publicRunId"`
+	SessionID       string    `json:"sessionId"`
+	SourceSessionID string    `json:"sourceSessionId"`
+	ScenarioName    string    `json:"scenarioName"`
+	ScenarioSlug    string    `json:"scenarioSlug"`
+	ScenarioType    string    `json:"scenarioType"`
+	UserHandle      string    `json:"userHandle"`
+	UserDisplayName string    `json:"userDisplayName"`
+	PlayedAt        time.Time `json:"playedAt"`
+	IngestedAt      time.Time `json:"ingestedAt"`
+	Score           float64   `json:"score"`
+}
+
+type AdminUserSyncHealth struct {
+	UserHandle          string    `json:"userHandle"`
+	UserDisplayName     string    `json:"userDisplayName"`
+	RunCount            uint64    `json:"runCount"`
+	UnknownTypeRuns     uint64    `json:"unknownTypeRuns"`
+	MissingTimelineRuns uint64    `json:"missingTimelineRuns"`
+	MissingContextRuns  uint64    `json:"missingContextRuns"`
+	ZeroScoreRuns       uint64    `json:"zeroScoreRuns"`
+	LastPlayedAt        time.Time `json:"lastPlayedAt"`
+	LastIngestedAt      time.Time `json:"lastIngestedAt"`
+}
+
+type AdminIngestFailure struct {
+	ID             uint64    `json:"id"`
+	UserExternalID string    `json:"userExternalId"`
+	SessionID      string    `json:"sessionId"`
+	ScenarioName   string    `json:"scenarioName"`
+	ErrorMessage   string    `json:"errorMessage"`
+	CreatedAt      time.Time `json:"createdAt"`
+}
+
+type AdminUserRecentRun struct {
+	PublicRunID  string    `json:"publicRunId"`
+	ScenarioName string    `json:"scenarioName"`
+	ScenarioSlug string    `json:"scenarioSlug"`
+	ScenarioType string    `json:"scenarioType"`
+	PlayedAt     time.Time `json:"playedAt"`
+	Score        float64   `json:"score"`
+	Accuracy     float64   `json:"accuracy"`
+	DurationMS   uint64    `json:"durationMs"`
+}
+
+type AdminUserDetailRecord struct {
+	UserHandle          string               `json:"userHandle"`
+	UserDisplayName     string               `json:"userDisplayName"`
+	RunCount            uint64               `json:"runCount"`
+	ScenarioCount       uint64               `json:"scenarioCount"`
+	UnknownTypeRuns     uint64               `json:"unknownTypeRuns"`
+	MissingTimelineRuns uint64               `json:"missingTimelineRuns"`
+	MissingContextRuns  uint64               `json:"missingContextRuns"`
+	ZeroScoreRuns       uint64               `json:"zeroScoreRuns"`
+	LastPlayedAt        time.Time            `json:"lastPlayedAt"`
+	LastIngestedAt      time.Time            `json:"lastIngestedAt"`
+	TopUnknownScenarios []AdminScenarioIssue `json:"topUnknownScenarios"`
+	RecentFailures      []AdminIngestFailure `json:"recentFailures"`
+	RecentRuns          []AdminUserRecentRun `json:"recentRuns"`
+}
+
+type AdminOverviewRecord struct {
+	TotalRuns                uint64                  `json:"totalRuns"`
+	TotalPlayers             uint64                  `json:"totalPlayers"`
+	TotalScenarios           uint64                  `json:"totalScenarios"`
+	UnknownTypeRuns          uint64                  `json:"unknownTypeRuns"`
+	MissingSummaryRuns       uint64                  `json:"missingSummaryRuns"`
+	MissingFeatureRuns       uint64                  `json:"missingFeatureRuns"`
+	MissingTimelineRuns      uint64                  `json:"missingTimelineRuns"`
+	MissingContextRuns       uint64                  `json:"missingContextRuns"`
+	ZeroScoreRuns            uint64                  `json:"zeroScoreRuns"`
+	MissingSourceSessionRuns uint64                  `json:"missingSourceSessionRuns"`
+	AppVersions              []AdminVersionBreakdown `json:"appVersions"`
+	SchemaVersions           []AdminVersionBreakdown `json:"schemaVersions"`
+	TopUnknownScenarios      []AdminScenarioIssue    `json:"topUnknownScenarios"`
+	RecentIngests            []AdminRecentIngest     `json:"recentIngests"`
+	UserSyncHealth           []AdminUserSyncHealth   `json:"userSyncHealth"`
+	RecentFailures           []AdminIngestFailure    `json:"recentFailures"`
+}
+
 func slugifyScenarioName(value string) string {
 	value = strings.ToLower(strings.TrimSpace(value))
 	var b strings.Builder
@@ -186,6 +278,412 @@ func runPreviewFromRecord(record RunRecord) *hubv1.RunPreview {
 		UserDisplayName: record.UserDisplayName,
 		RunId:           record.PublicRunID,
 	}
+}
+
+func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, error) {
+	var record AdminOverviewRecord
+
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			COUNT(*)::bigint,
+			COUNT(DISTINCT user_id)::bigint,
+			COUNT(DISTINCT scenario_name)::bigint,
+			COUNT(*) FILTER (WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') = 'Unknown')::bigint,
+			COUNT(*) FILTER (WHERE rs.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE rf.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE rt.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE rc.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE score <= 0)::bigint,
+			COUNT(*) FILTER (WHERE COALESCE(NULLIF(source_session_id, ''), '') = '')::bigint
+		FROM scenario_runs sr
+		LEFT JOIN run_summaries rs ON rs.session_id = sr.session_id
+		LEFT JOIN run_feature_sets rf ON rf.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_timeline_seconds
+		) rt ON rt.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_context_windows
+		) rc ON rc.session_id = sr.session_id
+	`).Scan(
+		&record.TotalRuns,
+		&record.TotalPlayers,
+		&record.TotalScenarios,
+		&record.UnknownTypeRuns,
+		&record.MissingSummaryRuns,
+		&record.MissingFeatureRuns,
+		&record.MissingTimelineRuns,
+		&record.MissingContextRuns,
+		&record.ZeroScoreRuns,
+		&record.MissingSourceSessionRuns,
+	); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin overview aggregates: %w", err)
+	}
+
+	appVersions, err := s.pool.Query(ctx, `
+		SELECT app_version, COUNT(*)::bigint
+		FROM scenario_runs
+		GROUP BY app_version
+		ORDER BY COUNT(*) DESC, app_version DESC
+		LIMIT 12
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin app versions: %w", err)
+	}
+	defer appVersions.Close()
+	for appVersions.Next() {
+		var item AdminVersionBreakdown
+		if err := appVersions.Scan(&item.Label, &item.RunCount); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin app version: %w", err)
+		}
+		record.AppVersions = append(record.AppVersions, item)
+	}
+	if err := appVersions.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin app versions: %w", err)
+	}
+
+	schemaVersions, err := s.pool.Query(ctx, `
+		SELECT schema_version::text, COUNT(*)::bigint
+		FROM scenario_runs
+		GROUP BY schema_version
+		ORDER BY COUNT(*) DESC, schema_version DESC
+		LIMIT 12
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin schema versions: %w", err)
+	}
+	defer schemaVersions.Close()
+	for schemaVersions.Next() {
+		var item AdminVersionBreakdown
+		if err := schemaVersions.Scan(&item.Label, &item.RunCount); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin schema version: %w", err)
+		}
+		record.SchemaVersions = append(record.SchemaVersions, item)
+	}
+	if err := schemaVersions.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin schema versions: %w", err)
+	}
+
+	unknownScenarios, err := s.pool.Query(ctx, `
+		SELECT
+			scenario_name,
+			COUNT(*)::bigint
+		FROM scenario_runs
+		WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') = 'Unknown'
+		GROUP BY scenario_name
+		ORDER BY COUNT(*) DESC, scenario_name ASC
+		LIMIT 20
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin unknown scenarios: %w", err)
+	}
+	defer unknownScenarios.Close()
+	for unknownScenarios.Next() {
+		var item AdminScenarioIssue
+		if err := unknownScenarios.Scan(&item.ScenarioName, &item.RunCount); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin unknown scenario: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		record.TopUnknownScenarios = append(record.TopUnknownScenarios, item)
+	}
+	if err := unknownScenarios.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin unknown scenarios: %w", err)
+	}
+
+	recentIngests, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			COALESCE(sr.source_session_id, ''),
+			sr.scenario_name,
+			COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown'),
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			sr.played_at,
+			sr.created_at,
+			sr.score
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		ORDER BY sr.created_at DESC, sr.played_at DESC
+		LIMIT 40
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin recent ingests: %w", err)
+	}
+	defer recentIngests.Close()
+	for recentIngests.Next() {
+		var item AdminRecentIngest
+		if err := recentIngests.Scan(
+			&item.PublicRunID,
+			&item.SessionID,
+			&item.SourceSessionID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.UserHandle,
+			&item.UserDisplayName,
+			&item.PlayedAt,
+			&item.IngestedAt,
+			&item.Score,
+		); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin recent ingest: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		record.RecentIngests = append(record.RecentIngests, item)
+	}
+	if err := recentIngests.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin recent ingests: %w", err)
+	}
+
+	userHealthRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			COUNT(sr.*)::bigint,
+			COUNT(*) FILTER (WHERE COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown')::bigint,
+			COUNT(*) FILTER (WHERE rt.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE rc.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE sr.score <= 0)::bigint,
+			MAX(sr.played_at),
+			MAX(sr.created_at)
+		FROM hub_users hu
+		JOIN scenario_runs sr ON sr.user_id = hu.id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_timeline_seconds
+		) rt ON rt.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_context_windows
+		) rc ON rc.session_id = sr.session_id
+		GROUP BY hu.id, COALESCE(la.username, hu.external_id), COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		ORDER BY COUNT(*) FILTER (WHERE COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown') DESC,
+		         COUNT(*) FILTER (WHERE rt.session_id IS NULL) DESC,
+		         MAX(sr.created_at) DESC
+		LIMIT 20
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin user sync health: %w", err)
+	}
+	defer userHealthRows.Close()
+	for userHealthRows.Next() {
+		var item AdminUserSyncHealth
+		if err := userHealthRows.Scan(
+			&item.UserHandle,
+			&item.UserDisplayName,
+			&item.RunCount,
+			&item.UnknownTypeRuns,
+			&item.MissingTimelineRuns,
+			&item.MissingContextRuns,
+			&item.ZeroScoreRuns,
+			&item.LastPlayedAt,
+			&item.LastIngestedAt,
+		); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin user sync health: %w", err)
+		}
+		record.UserSyncHealth = append(record.UserSyncHealth, item)
+	}
+	if err := userHealthRows.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin user sync health: %w", err)
+	}
+
+	failureRows, err := s.pool.Query(ctx, `
+		SELECT
+			id,
+			user_external_id,
+			session_id,
+			scenario_name,
+			error_message,
+			created_at
+		FROM ingest_failures
+		ORDER BY created_at DESC
+		LIMIT 50
+	`)
+	if err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("load admin ingest failures: %w", err)
+	}
+	defer failureRows.Close()
+	for failureRows.Next() {
+		var item AdminIngestFailure
+		if err := failureRows.Scan(
+			&item.ID,
+			&item.UserExternalID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ErrorMessage,
+			&item.CreatedAt,
+		); err != nil {
+			return AdminOverviewRecord{}, fmt.Errorf("scan admin ingest failure: %w", err)
+		}
+		record.RecentFailures = append(record.RecentFailures, item)
+	}
+	if err := failureRows.Err(); err != nil {
+		return AdminOverviewRecord{}, fmt.Errorf("iterate admin ingest failures: %w", err)
+	}
+
+	return record, nil
+}
+
+func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUserDetailRecord, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return AdminUserDetailRecord{}, fmt.Errorf("user handle is required")
+	}
+
+	var detail AdminUserDetailRecord
+	var userID int64
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			hu.id,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM hub_users hu
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+		   OR LOWER(hu.external_id) = $1
+		LIMIT 1
+	`, handle).Scan(&userID, &detail.UserHandle, &detail.UserDisplayName); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user detail: %w", err)
+	}
+
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			COUNT(*)::bigint,
+			COUNT(DISTINCT sr.scenario_name)::bigint,
+			COUNT(*) FILTER (WHERE COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown')::bigint,
+			COUNT(*) FILTER (WHERE rt.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE rc.session_id IS NULL)::bigint,
+			COUNT(*) FILTER (WHERE sr.score <= 0)::bigint,
+			MAX(sr.played_at),
+			MAX(sr.created_at)
+		FROM scenario_runs sr
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_timeline_seconds
+		) rt ON rt.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT DISTINCT session_id
+			FROM run_context_windows
+		) rc ON rc.session_id = sr.session_id
+		WHERE sr.user_id = $1
+	`).Scan(
+		&detail.RunCount,
+		&detail.ScenarioCount,
+		&detail.UnknownTypeRuns,
+		&detail.MissingTimelineRuns,
+		&detail.MissingContextRuns,
+		&detail.ZeroScoreRuns,
+		&detail.LastPlayedAt,
+		&detail.LastIngestedAt,
+	); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user detail aggregates: %w", err)
+	}
+
+	unknownRows, err := s.pool.Query(ctx, `
+		SELECT
+			sr.scenario_name,
+			COUNT(*)::bigint
+		FROM scenario_runs sr
+		WHERE sr.user_id = $1
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+		GROUP BY sr.scenario_name
+		ORDER BY COUNT(*) DESC, sr.scenario_name ASC
+		LIMIT 12
+	`, userID)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user unknown scenarios: %w", err)
+	}
+	defer unknownRows.Close()
+	for unknownRows.Next() {
+		var item AdminScenarioIssue
+		if err := unknownRows.Scan(&item.ScenarioName, &item.RunCount); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user unknown scenario: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		detail.TopUnknownScenarios = append(detail.TopUnknownScenarios, item)
+	}
+	if err := unknownRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user unknown scenarios: %w", err)
+	}
+
+	failureRows, err := s.pool.Query(ctx, `
+		SELECT
+			id,
+			user_external_id,
+			session_id,
+			scenario_name,
+			error_message,
+			created_at
+		FROM ingest_failures
+		WHERE LOWER(user_external_id) = (
+			SELECT LOWER(external_id) FROM hub_users WHERE id = $1
+		)
+		ORDER BY created_at DESC
+		LIMIT 20
+	`, userID)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user failures: %w", err)
+	}
+	defer failureRows.Close()
+	for failureRows.Next() {
+		var item AdminIngestFailure
+		if err := failureRows.Scan(
+			&item.ID,
+			&item.UserExternalID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ErrorMessage,
+			&item.CreatedAt,
+		); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user failure: %w", err)
+		}
+		detail.RecentFailures = append(detail.RecentFailures, item)
+	}
+	if err := failureRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user failures: %w", err)
+	}
+
+	runRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(public_run_id, session_id),
+			scenario_name,
+			COALESCE(NULLIF(scenario_type, ''), 'Unknown'),
+			played_at,
+			score,
+			accuracy,
+			duration_ms
+		FROM scenario_runs
+		WHERE user_id = $1
+		ORDER BY played_at DESC, created_at DESC
+		LIMIT 20
+	`, userID)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user recent runs: %w", err)
+	}
+	defer runRows.Close()
+	for runRows.Next() {
+		var item AdminUserRecentRun
+		if err := runRows.Scan(
+			&item.PublicRunID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.PlayedAt,
+			&item.Score,
+			&item.Accuracy,
+			&item.DurationMS,
+		); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user recent run: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		detail.RecentRuns = append(detail.RecentRuns, item)
+	}
+	if err := runRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user recent runs: %w", err)
+	}
+
+	return detail, nil
 }
 
 func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
@@ -1690,9 +2188,23 @@ func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.Ai
 }
 
 func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, error) {
+	if _, err := s.pool.Exec(ctx, `
+	    UPDATE scenario_runs sr
+	    SET scenario_type = NULLIF(rs.summary_json->>'scenarioType', ''),
+	        updated_at = NOW()
+	    FROM run_summaries rs
+	    WHERE sr.session_id = rs.session_id
+	      AND sr.scenario_type IN ('Unknown', '')
+	      AND NULLIF(rs.summary_json->>'scenarioType', '') IS NOT NULL
+	      AND rs.summary_json->>'scenarioType' <> 'Unknown'
+	`); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
 	return s.pool.Exec(ctx, `
 	    UPDATE scenario_runs sr
-	    SET scenario_type = 'Tracking'
+	    SET scenario_type = 'Tracking',
+	        updated_at = NOW()
 	    FROM run_summaries rs
 	    WHERE sr.session_id = rs.session_id
 	      AND sr.scenario_type IN ('MultiHitClicking', 'Unknown', '')

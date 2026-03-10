@@ -20,7 +20,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const next = await fetchSession();
       setSession(next);
     } catch {
-      setSession({ authenticated: false });
+      setSession({ authenticated: false, isAdmin: false });
     } finally {
       setLoading(false);
     }

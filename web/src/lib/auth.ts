@@ -19,6 +19,7 @@ export type UploadTokenRecord = {
 
 export type SessionPayload = {
   authenticated: boolean;
+  isAdmin?: boolean;
   user?: AuthUser;
   tokens?: UploadTokenRecord[];
 };

@@ -56,6 +56,22 @@ func summaryNumber(summary map[string]*hubv1.SessionSummaryValue, key string) (f
 	return number.NumberValue, true
 }
 
+func summaryString(summary map[string]*hubv1.SessionSummaryValue, key string) (string, bool) {
+	value, ok := summary[key]
+	if !ok || value == nil || value.Kind == nil {
+		return "", false
+	}
+	text, ok := value.Kind.(*hubv1.SessionSummaryValue_StringValue)
+	if !ok {
+		return "", false
+	}
+	trimmed := strings.TrimSpace(text.StringValue)
+	if trimmed == "" {
+		return "", false
+	}
+	return trimmed, true
+}
+
 func deriveAccuracyPercent(shots uint32, hits uint32) (float64, bool) {
 	if shots == 0 {
 		return 0, false
@@ -94,6 +110,17 @@ func normalizeAccuracyPercent(raw float64, shots uint32, hits uint32, fallbackPe
 		return raw * 100.0
 	}
 	return raw
+}
+
+func normalizeScenarioType(raw string, summary map[string]*hubv1.SessionSummaryValue) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed != "" && !strings.EqualFold(trimmed, "unknown") {
+		return trimmed
+	}
+	if summaryType, ok := summaryString(summary, "scenarioType"); ok && !strings.EqualFold(summaryType, "unknown") {
+		return summaryType
+	}
+	return trimmed
 }
 
 func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error) {
@@ -184,7 +211,7 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 		UserExternalID: req.GetUserExternalId(),
 		SessionID:      req.GetSessionId(),
 		ScenarioName:   req.GetScenarioName(),
-		ScenarioType:   req.GetScenarioType(),
+		ScenarioType:   normalizeScenarioType(req.GetScenarioType(), req.GetSummary()),
 		Score:          req.GetScore(),
 		Accuracy:       normalizedRunAccuracy,
 		DurationMS:     req.GetDurationMs(),

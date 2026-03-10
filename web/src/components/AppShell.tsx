@@ -6,13 +6,6 @@ import { useAuth } from "../lib/AuthContext";
 import { discordStartUrl } from "../lib/auth";
 import { Button } from "./ui/Button";
 
-const navItems = [
-  { to: "/", label: "Home" },
-  { to: "/community", label: "Community" },
-  { to: "/leaderboard", label: "Leaderboard" },
-  { to: "/account", label: "Account" },
-];
-
 const supportLinks = [
   { href: "https://ko-fi.com/verycrunchy", label: "Ko-fi" },
   { href: "https://github.com/sponsors/veryCrunchy", label: "GitHub Sponsors" }
@@ -23,6 +16,13 @@ export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
+  const navItems = [
+    { to: "/", label: "Home" },
+    { to: "/community", label: "Community" },
+    { to: "/leaderboard", label: "Leaderboard" },
+    ...(auth.isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
+    { to: "/account", label: "Account" },
+  ];
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

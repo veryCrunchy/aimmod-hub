@@ -45,7 +45,8 @@ This scaffold includes:
 - a Connect RPC service definition in `proto/aimmod/hub/v1/hub.proto`
 - Vite frontend wired to Connect RPC
 - Discord-backed website auth
-- upload token creation for the desktop app
+- desktop device linking for the AimMod app
+- admin-only dashboard support
 - versioned ingest endpoint shape for authenticated app uploads
 
 ## Development
@@ -79,7 +80,6 @@ pnpm dev
 
 This starts:
 - local Postgres via Docker Compose
-- protobuf codegen
 - the Go API
 - the Vite frontend
 
@@ -113,14 +113,15 @@ API uses:
 - `DISCORD_CLIENT_ID`
 - `DISCORD_CLIENT_SECRET`
 - `DISCORD_REDIRECT_URI`
+- `ADMIN_DISCORD_USER_ID`
 - `SESSION_COOKIE_SECURE`
 
 ## Auth flow
 
 - users sign in on the website with Discord
-- the website creates a session cookie for account pages and token management
-- users create a personal upload token on `/account`
-- the desktop app stores that upload token and uses it for authenticated run ingest
+- the website creates a session cookie for account pages, device linking, and admin access
+- the desktop app opens a device-link flow against the hub
+- once approved in the browser, the desktop app receives its upload token and syncs runs automatically
 
 This keeps browser OAuth on the website and avoids forcing a full Discord auth flow inside the desktop app.
 

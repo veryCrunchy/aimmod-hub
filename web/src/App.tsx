@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AuthProvider } from "./lib/AuthContext";
 import { AccountPage } from "./pages/AccountPage";
+import { AdminPage } from "./pages/AdminPage";
 import { CommunityPage } from "./pages/CommunityPage";
 import { DeviceLinkPage } from "./pages/DeviceLinkPage";
 import { HomePage } from "./pages/HomePage";
@@ -21,6 +22,7 @@ export function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="/link-device" element={<DeviceLinkPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />

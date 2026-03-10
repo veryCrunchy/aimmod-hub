@@ -114,6 +114,99 @@ export type HubSearchResponse = {
   runs: HubSearchRun[];
 };
 
+export type AdminVersionBreakdown = {
+  label: string;
+  runCount: number;
+};
+
+export type AdminScenarioIssue = {
+  scenarioName: string;
+  scenarioSlug: string;
+  runCount: number;
+};
+
+export type AdminRecentIngest = {
+  publicRunId: string;
+  sessionId: string;
+  sourceSessionId: string;
+  scenarioName: string;
+  scenarioSlug: string;
+  scenarioType: string;
+  userHandle: string;
+  userDisplayName: string;
+  playedAt: string;
+  ingestedAt: string;
+  score: number;
+};
+
+export type AdminOverviewResponse = {
+  totalRuns: number;
+  totalPlayers: number;
+  totalScenarios: number;
+  unknownTypeRuns: number;
+  missingSummaryRuns: number;
+  missingFeatureRuns: number;
+  missingTimelineRuns: number;
+  missingContextRuns: number;
+  zeroScoreRuns: number;
+  missingSourceSessionRuns: number;
+  appVersions: AdminVersionBreakdown[];
+  schemaVersions: AdminVersionBreakdown[];
+  topUnknownScenarios: AdminScenarioIssue[];
+  recentIngests: AdminRecentIngest[];
+  userSyncHealth: {
+    userHandle: string;
+    userDisplayName: string;
+    runCount: number;
+    unknownTypeRuns: number;
+    missingTimelineRuns: number;
+    missingContextRuns: number;
+    zeroScoreRuns: number;
+    lastPlayedAt: string;
+    lastIngestedAt: string;
+  }[];
+  recentFailures: {
+    id: number;
+    userExternalId: string;
+    sessionId: string;
+    scenarioName: string;
+    errorMessage: string;
+    createdAt: string;
+  }[];
+};
+
+export type AdminUserDetailResponse = {
+  userHandle: string;
+  userDisplayName: string;
+  runCount: number;
+  scenarioCount: number;
+  unknownTypeRuns: number;
+  missingTimelineRuns: number;
+  missingContextRuns: number;
+  zeroScoreRuns: number;
+  lastPlayedAt: string;
+  lastIngestedAt: string;
+  topUnknownScenarios: AdminScenarioIssue[];
+  recentFailures: {
+    id: number;
+    userExternalId: string;
+    sessionId: string;
+    scenarioName: string;
+    errorMessage: string;
+    createdAt: string;
+  }[];
+  recentRuns: {
+    publicRunId: string;
+    scenarioName: string;
+    scenarioSlug: string;
+    scenarioType: string;
+    playedAt: string;
+    score: number;
+    accuracy: number;
+    durationMs: number;
+  }[];
+};
+
 export async function fetchRun(runId: string) {
   return hubClient.getRun(new GetRunRequest({ runId }));
 }
@@ -160,4 +253,46 @@ export async function searchHub(query: string): Promise<HubSearchResponse> {
     profiles: Array.isArray(payload?.profiles) ? payload.profiles : [],
     runs: Array.isArray(payload?.runs) ? payload.runs : [],
   };
+}
+
+export async function fetchAdminOverview(): Promise<AdminOverviewResponse> {
+  const response = await fetch(`${API_BASE_URL}/admin/overview`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not load admin overview.");
+  }
+  return response.json() as Promise<AdminOverviewResponse>;
+}
+
+export async function runAdminReclassify(): Promise<{ ok: boolean; updated: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/actions/reclassify`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not run scenario reclassify.");
+  }
+  return response.json() as Promise<{ ok: boolean; updated: number }>;
+}
+
+export async function clearAdminFailures(): Promise<{ ok: boolean; cleared: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/actions/clear-failures`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not clear ingest failures.");
+  }
+  return response.json() as Promise<{ ok: boolean; cleared: number }>;
+}
+
+export async function fetchAdminUserDetail(handle: string): Promise<AdminUserDetailResponse> {
+  const response = await fetch(`${API_BASE_URL}/admin/user?handle=${encodeURIComponent(handle)}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not load user admin detail.");
+  }
+  return response.json() as Promise<AdminUserDetailResponse>;
 }

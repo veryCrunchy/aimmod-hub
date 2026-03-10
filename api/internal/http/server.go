@@ -44,6 +44,7 @@ type Config struct {
 	DiscordClientID     string
 	DiscordClientSecret string
 	DiscordRedirectURI  string
+	AdminDiscordUserID  string
 	SessionCookieSecure bool
 }
 
@@ -109,25 +110,6 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		w.Header().Set("content-type", "application/json")
 		_ = json.NewEncoder(w).Encode(results)
 	})))
-	mux.Handle("/admin/reclassify", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		// Simple auth: require X-Admin-Key header matching env var ADMIN_KEY if set
-		adminKey := os.Getenv("ADMIN_KEY")
-		if adminKey != "" && r.Header.Get("X-Admin-Key") != adminKey {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		tag, err := hub.Store().ReclassifyTracking(r.Context())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("content-type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"updated": tag.RowsAffected()})
-	}))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))
@@ -185,6 +167,7 @@ func DefaultConfig() Config {
 		DiscordClientID:     os.Getenv("DISCORD_CLIENT_ID"),
 		DiscordClientSecret: os.Getenv("DISCORD_CLIENT_SECRET"),
 		DiscordRedirectURI:  os.Getenv("DISCORD_REDIRECT_URI"),
+		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("ADMIN_DISCORD_USER_ID")),
 		SessionCookieSecure: envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
 	}
 }

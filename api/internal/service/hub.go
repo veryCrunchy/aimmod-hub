@@ -56,10 +56,12 @@ func (s *HubServer) IngestAuthorized(
 
 	run, err := buildIngestedRun(req)
 	if err != nil {
+		s.recordIngestFailure(ctx, req, err)
 		return nil, err
 	}
 
 	if err := s.store.SaveIngestedRun(ctx, run); err != nil {
+		s.recordIngestFailure(ctx, req, err)
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -100,6 +102,18 @@ func (s *HubServer) LinkDiscordAccount(
 		DiscordUserId:  link.DiscordUserID,
 		Message:        "Discord account linked.",
 	}), nil
+}
+
+func (s *HubServer) recordIngestFailure(ctx context.Context, req *hubv1.IngestSessionRequest, err error) {
+	if req == nil || err == nil {
+		return
+	}
+	_ = s.store.RecordIngestFailure(ctx, store.IngestFailureRecord{
+		UserExternalID: req.GetUserExternalId(),
+		SessionID:      req.GetSessionId(),
+		ScenarioName:   req.GetScenarioName(),
+		ErrorMessage:   err.Error(),
+	})
 }
 
 func (s *HubServer) GetOverview(

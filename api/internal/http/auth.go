@@ -40,6 +40,7 @@ type discordUser struct {
 
 type sessionResponse struct {
 	Authenticated bool                      `json:"authenticated"`
+	IsAdmin       bool                      `json:"isAdmin"`
 	User          *store.AuthUser           `json:"user,omitempty"`
 	Tokens        []store.UploadTokenRecord `json:"tokens,omitempty"`
 }
@@ -105,6 +106,10 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/auth/device/start", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDeviceStart)))
 	mux.Handle("/auth/device/poll", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDevicePoll)))
 	mux.Handle("/auth/device/approve", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDeviceApprove)))
+	mux.Handle("/admin/overview", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminOverview)))
+	mux.Handle("/admin/user", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserDetail)))
+	mux.Handle("/admin/actions/reclassify", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminReclassify)))
+	mux.Handle("/admin/actions/clear-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearFailures)))
 }
 
 func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +203,7 @@ func (h *authHandler) handleDiscordCallback(w http.ResponseWriter, r *http.Reque
 func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 	user, ok := h.requireSessionUser(w, r)
 	if !ok {
-		writeJSON(w, http.StatusOK, sessionResponse{Authenticated: false})
+		writeJSON(w, http.StatusOK, sessionResponse{Authenticated: false, IsAdmin: false})
 		return
 	}
 
@@ -209,8 +214,97 @@ func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, sessionResponse{
 		Authenticated: true,
+		IsAdmin:       h.isAdminUser(user),
 		User:          &user,
 		Tokens:        tokens,
+	})
+}
+
+func (h *authHandler) handleAdminOverview(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	overview, err := h.store.GetAdminOverview(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, overview)
+}
+
+func (h *authHandler) handleAdminReclassify(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	tag, err := h.store.ReclassifyTracking(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"updated": tag.RowsAffected(),
+	})
+}
+
+func (h *authHandler) handleAdminUserDetail(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	if handle == "" {
+		http.Error(w, "handle is required", http.StatusBadRequest)
+		return
+	}
+
+	detail, err := h.store.GetAdminUserDetail(r.Context(), handle)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, detail)
+}
+
+func (h *authHandler) handleAdminClearFailures(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	count, err := h.store.ClearIngestFailures(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"cleared": count,
 	})
 }
 
@@ -455,6 +549,27 @@ func (h *authHandler) requireSessionUser(w http.ResponseWriter, r *http.Request)
 		return store.AuthUser{}, false
 	}
 	return user, true
+}
+
+func (h *authHandler) requireAdminUser(w http.ResponseWriter, r *http.Request) (store.AuthUser, bool) {
+	user, ok := h.requireSessionUser(w, r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return store.AuthUser{}, false
+	}
+	if !h.isAdminUser(user) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return store.AuthUser{}, false
+	}
+	return user, true
+}
+
+func (h *authHandler) isAdminUser(user store.AuthUser) bool {
+	adminDiscordID := strings.TrimSpace(h.cfg.AdminDiscordUserID)
+	if adminDiscordID == "" {
+		return false
+	}
+	return strings.TrimSpace(user.DiscordUserID) == adminDiscordID
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {

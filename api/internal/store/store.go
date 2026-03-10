@@ -138,6 +138,18 @@ CREATE TABLE IF NOT EXISTS device_link_requests (
   approved_at TIMESTAMPTZ NULL,
   last_polled_at TIMESTAMPTZ NULL
 );
+
+CREATE TABLE IF NOT EXISTS ingest_failures (
+  id BIGSERIAL PRIMARY KEY,
+  user_external_id TEXT NOT NULL DEFAULT '',
+  session_id TEXT NOT NULL DEFAULT '',
+  scenario_name TEXT NOT NULL DEFAULT '',
+  error_message TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ingest_failures_created_at
+  ON ingest_failures(created_at DESC);
 `
 
 type Store struct {
@@ -188,6 +200,13 @@ type DiscordLink struct {
 	Username       string
 	GlobalName     string
 	AvatarURL      string
+}
+
+type IngestFailureRecord struct {
+	UserExternalID string
+	SessionID      string
+	ScenarioName   string
+	ErrorMessage   string
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {
@@ -243,6 +262,12 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 			ON scenario_runs(played_at DESC);
 	`); err != nil {
 		return fmt.Errorf("ensure scenario run identifiers: %w", err)
+	}
+	if _, err := s.pool.Exec(ctx, `
+		DELETE FROM ingest_failures
+		WHERE created_at < NOW() - INTERVAL '30 days'
+	`); err != nil {
+		return fmt.Errorf("trim ingest failures: %w", err)
 	}
 	return nil
 }
@@ -459,4 +484,28 @@ func SummaryMapToJSON(summary map[string]*hubv1.SessionSummaryValue) ([]byte, er
 		return nil, fmt.Errorf("marshal summary: %w", err)
 	}
 	return payload, nil
+}
+
+func (s *Store) RecordIngestFailure(ctx context.Context, failure IngestFailureRecord) error {
+	_, err := s.pool.Exec(ctx, `
+		INSERT INTO ingest_failures (
+			user_external_id,
+			session_id,
+			scenario_name,
+			error_message
+		)
+		VALUES ($1, $2, $3, $4)
+	`, strings.TrimSpace(failure.UserExternalID), strings.TrimSpace(failure.SessionID), strings.TrimSpace(failure.ScenarioName), strings.TrimSpace(failure.ErrorMessage))
+	if err != nil {
+		return fmt.Errorf("record ingest failure: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) ClearIngestFailures(ctx context.Context) (int64, error) {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM ingest_failures`)
+	if err != nil {
+		return 0, fmt.Errorf("clear ingest failures: %w", err)
+	}
+	return tag.RowsAffected(), nil
 }
