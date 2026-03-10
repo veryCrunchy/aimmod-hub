@@ -112,34 +112,6 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		}
 		_ = json.NewEncoder(w).Encode(result)
 	})))
-	mux.Handle("/search", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		query := strings.TrimSpace(r.URL.Query().Get("q"))
-		results, err := hub.Store().Search(r.Context(), query)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("content-type", "application/json")
-		_ = json.NewEncoder(w).Encode(results)
-	})))
-	mux.Handle("/replays", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		query := strings.TrimSpace(r.URL.Query().Get("q"))
-		scenarioName := strings.TrimSpace(r.URL.Query().Get("scenarioName"))
-		handle := strings.TrimSpace(r.URL.Query().Get("handle"))
-		limit := 50
-		if rawLimit := strings.TrimSpace(r.URL.Query().Get("limit")); rawLimit != "" {
-			if parsed, err := strconv.Atoi(rawLimit); err == nil {
-				limit = parsed
-			}
-		}
-		results, err := hub.Store().ListReplays(r.Context(), query, scenarioName, handle, limit)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("content-type", "application/json")
-		_ = json.NewEncoder(w).Encode(results)
-	})))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))

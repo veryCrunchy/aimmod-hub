@@ -6,6 +6,8 @@ import {
   GetProfileRequest,
   GetRunRequest,
   GetScenarioPageRequest,
+  ListReplaysRequest,
+  SearchRequest,
   SessionSummaryValue,
 } from "../gen/aimmod/hub/v1/hub_pb";
 import { HubService } from "../gen/aimmod/hub/v1/hub_connect";
@@ -290,17 +292,13 @@ export function formatRelativeTime(dateStr: string | undefined | null): string {
 }
 
 export async function searchHub(query: string): Promise<HubSearchResponse> {
-  const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
-  if (!response.ok) {
-    throw new Error("Could not search the hub.");
-  }
-  const payload = (await response.json()) as Partial<HubSearchResponse> | null;
+  const payload = await hubClient.search(new SearchRequest({ query: query.trim() }));
   return {
-    query: payload?.query ?? query,
-    scenarios: Array.isArray(payload?.scenarios) ? payload.scenarios : [],
-    profiles: Array.isArray(payload?.profiles) ? payload.profiles : [],
-    runs: Array.isArray(payload?.runs) ? payload.runs : [],
-    replays: Array.isArray(payload?.replays) ? payload.replays : [],
+    query: payload.query ?? query,
+    scenarios: Array.isArray(payload.scenarios) ? payload.scenarios : [],
+    profiles: Array.isArray(payload.profiles) ? payload.profiles : [],
+    runs: Array.isArray(payload.runs) ? payload.runs : [],
+    replays: Array.isArray(payload.replays) ? payload.replays : [],
   };
 }
 
@@ -310,21 +308,19 @@ export async function fetchReplayHub(params?: {
   handle?: string;
   limit?: number;
 }): Promise<ReplayListResponse> {
-  const search = new URLSearchParams();
-  if (params?.query?.trim()) search.set("q", params.query.trim());
-  if (params?.scenarioName?.trim()) search.set("scenarioName", params.scenarioName.trim());
-  if (params?.handle?.trim()) search.set("handle", params.handle.trim());
-  if (params?.limit) search.set("limit", String(params.limit));
-  const response = await fetch(`${API_BASE_URL}/replays?${search.toString()}`);
-  if (!response.ok) {
-    throw new Error("Could not load replays.");
-  }
-  const payload = (await response.json()) as Partial<ReplayListResponse> | null;
+  const payload = await hubClient.listReplays(
+    new ListReplaysRequest({
+      query: params?.query?.trim() ?? "",
+      scenarioName: params?.scenarioName?.trim() ?? "",
+      handle: params?.handle?.trim() ?? "",
+      limit: params?.limit ?? 0,
+    }),
+  );
   return {
-    query: payload?.query ?? params?.query ?? "",
-    scenarioName: payload?.scenarioName ?? params?.scenarioName ?? "",
-    userHandle: payload?.userHandle ?? params?.handle ?? "",
-    items: Array.isArray(payload?.items) ? payload.items : [],
+    query: payload.query ?? params?.query ?? "",
+    scenarioName: payload.scenarioName ?? params?.scenarioName ?? "",
+    userHandle: payload.userHandle ?? params?.handle ?? "",
+    items: Array.isArray(payload.items) ? payload.items : [],
   };
 }
 

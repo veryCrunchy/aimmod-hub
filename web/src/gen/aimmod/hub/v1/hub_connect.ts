@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse } from "./hub_pb.js";
+import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -73,6 +73,24 @@ export const HubService = {
       name: "GetProfile",
       I: GetProfileRequest,
       O: GetProfileResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.Search
+     */
+    search: {
+      name: "Search",
+      I: SearchRequest,
+      O: SearchResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.ListReplays
+     */
+    listReplays: {
+      name: "ListReplays",
+      I: ListReplaysRequest,
+      O: ListReplaysResponse,
       kind: MethodKind.Unary,
     },
     /**

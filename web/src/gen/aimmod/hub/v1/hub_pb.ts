@@ -1380,6 +1380,451 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
 }
 
 /**
+ * @generated from message aimmod.hub.v1.SearchRequest
+ */
+export class SearchRequest extends Message<SearchRequest> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  constructor(data?: PartialMessage<SearchRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.SearchRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchRequest {
+    return new SearchRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchRequest {
+    return new SearchRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchRequest {
+    return new SearchRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchRequest | PlainMessage<SearchRequest> | undefined, b: SearchRequest | PlainMessage<SearchRequest> | undefined): boolean {
+    return proto3.util.equals(SearchRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.SearchScenarioResult
+ */
+export class SearchScenarioResult extends Message<SearchScenarioResult> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_type = 3;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: uint32 run_count = 4;
+   */
+  runCount = 0;
+
+  constructor(data?: PartialMessage<SearchScenarioResult>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.SearchScenarioResult";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchScenarioResult {
+    return new SearchScenarioResult().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchScenarioResult {
+    return new SearchScenarioResult().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchScenarioResult {
+    return new SearchScenarioResult().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchScenarioResult | PlainMessage<SearchScenarioResult> | undefined, b: SearchScenarioResult | PlainMessage<SearchScenarioResult> | undefined): boolean {
+    return proto3.util.equals(SearchScenarioResult, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.SearchProfileResult
+ */
+export class SearchProfileResult extends Message<SearchProfileResult> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string user_display_name = 2;
+   */
+  userDisplayName = "";
+
+  /**
+   * @generated from field: string avatar_url = 3;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: uint32 run_count = 4;
+   */
+  runCount = 0;
+
+  /**
+   * @generated from field: uint32 scenario_count = 5;
+   */
+  scenarioCount = 0;
+
+  /**
+   * @generated from field: string primary_scenario_type = 6;
+   */
+  primaryScenarioType = "";
+
+  constructor(data?: PartialMessage<SearchProfileResult>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.SearchProfileResult";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 5, name: "scenario_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "primary_scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchProfileResult {
+    return new SearchProfileResult().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchProfileResult {
+    return new SearchProfileResult().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchProfileResult {
+    return new SearchProfileResult().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchProfileResult | PlainMessage<SearchProfileResult> | undefined, b: SearchProfileResult | PlainMessage<SearchProfileResult> | undefined): boolean {
+    return proto3.util.equals(SearchProfileResult, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ReplayPreview
+ */
+export class ReplayPreview extends Message<ReplayPreview> {
+  /**
+   * @generated from field: string public_run_id = 1;
+   */
+  publicRunId = "";
+
+  /**
+   * @generated from field: string session_id = 2;
+   */
+  sessionId = "";
+
+  /**
+   * @generated from field: string scenario_slug = 3;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_name = 4;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_type = 5;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: string played_at_iso = 6;
+   */
+  playedAtIso = "";
+
+  /**
+   * @generated from field: double score = 7;
+   */
+  score = 0;
+
+  /**
+   * @generated from field: double accuracy = 8;
+   */
+  accuracy = 0;
+
+  /**
+   * @generated from field: uint64 duration_ms = 9;
+   */
+  durationMs = protoInt64.zero;
+
+  /**
+   * @generated from field: string user_handle = 10;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string user_display_name = 11;
+   */
+  userDisplayName = "";
+
+  /**
+   * @generated from field: bool has_video = 12;
+   */
+  hasVideo = false;
+
+  /**
+   * @generated from field: bool has_mouse_path = 13;
+   */
+  hasMousePath = false;
+
+  /**
+   * @generated from field: string replay_quality = 14;
+   */
+  replayQuality = "";
+
+  constructor(data?: PartialMessage<ReplayPreview>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ReplayPreview";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "public_run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "session_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 9, name: "duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 10, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "user_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "has_video", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 13, name: "has_mouse_path", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 14, name: "replay_quality", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ReplayPreview {
+    return new ReplayPreview().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ReplayPreview {
+    return new ReplayPreview().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ReplayPreview {
+    return new ReplayPreview().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ReplayPreview | PlainMessage<ReplayPreview> | undefined, b: ReplayPreview | PlainMessage<ReplayPreview> | undefined): boolean {
+    return proto3.util.equals(ReplayPreview, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.SearchResponse
+ */
+export class SearchResponse extends Message<SearchResponse> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.SearchScenarioResult scenarios = 2;
+   */
+  scenarios: SearchScenarioResult[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.SearchProfileResult profiles = 3;
+   */
+  profiles: SearchProfileResult[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ReplayPreview runs = 4;
+   */
+  runs: ReplayPreview[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ReplayPreview replays = 5;
+   */
+  replays: ReplayPreview[] = [];
+
+  constructor(data?: PartialMessage<SearchResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.SearchResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenarios", kind: "message", T: SearchScenarioResult, repeated: true },
+    { no: 3, name: "profiles", kind: "message", T: SearchProfileResult, repeated: true },
+    { no: 4, name: "runs", kind: "message", T: ReplayPreview, repeated: true },
+    { no: 5, name: "replays", kind: "message", T: ReplayPreview, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchResponse {
+    return new SearchResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SearchResponse {
+    return new SearchResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SearchResponse {
+    return new SearchResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SearchResponse | PlainMessage<SearchResponse> | undefined, b: SearchResponse | PlainMessage<SearchResponse> | undefined): boolean {
+    return proto3.util.equals(SearchResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ListReplaysRequest
+ */
+export class ListReplaysRequest extends Message<ListReplaysRequest> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  /**
+   * @generated from field: string scenario_name = 2;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string handle = 3;
+   */
+  handle = "";
+
+  /**
+   * @generated from field: uint32 limit = 4;
+   */
+  limit = 0;
+
+  constructor(data?: PartialMessage<ListReplaysRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ListReplaysRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "limit", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListReplaysRequest {
+    return new ListReplaysRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListReplaysRequest {
+    return new ListReplaysRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListReplaysRequest {
+    return new ListReplaysRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListReplaysRequest | PlainMessage<ListReplaysRequest> | undefined, b: ListReplaysRequest | PlainMessage<ListReplaysRequest> | undefined): boolean {
+    return proto3.util.equals(ListReplaysRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ListReplaysResponse
+ */
+export class ListReplaysResponse extends Message<ListReplaysResponse> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  /**
+   * @generated from field: string scenario_name = 2;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string user_handle = 3;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ReplayPreview items = 4;
+   */
+  items: ReplayPreview[] = [];
+
+  constructor(data?: PartialMessage<ListReplaysResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ListReplaysResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "items", kind: "message", T: ReplayPreview, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListReplaysResponse {
+    return new ListReplaysResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListReplaysResponse {
+    return new ListReplaysResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListReplaysResponse {
+    return new ListReplaysResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListReplaysResponse | PlainMessage<ListReplaysResponse> | undefined, b: ListReplaysResponse | PlainMessage<ListReplaysResponse> | undefined): boolean {
+    return proto3.util.equals(ListReplaysResponse, a, b);
+  }
+}
+
+/**
  * @generated from message aimmod.hub.v1.GetLeaderboardRequest
  */
 export class GetLeaderboardRequest extends Message<GetLeaderboardRequest> {

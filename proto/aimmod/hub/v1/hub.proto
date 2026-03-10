@@ -186,6 +186,65 @@ message GetProfileResponse {
   repeated RunPreview personal_bests = 12;
 }
 
+message SearchRequest {
+  string query = 1;
+}
+
+message SearchScenarioResult {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  uint32 run_count = 4;
+}
+
+message SearchProfileResult {
+  string user_handle = 1;
+  string user_display_name = 2;
+  string avatar_url = 3;
+  uint32 run_count = 4;
+  uint32 scenario_count = 5;
+  string primary_scenario_type = 6;
+}
+
+message ReplayPreview {
+  string public_run_id = 1;
+  string session_id = 2;
+  string scenario_slug = 3;
+  string scenario_name = 4;
+  string scenario_type = 5;
+  string played_at_iso = 6;
+  double score = 7;
+  double accuracy = 8;
+  uint64 duration_ms = 9;
+  string user_handle = 10;
+  string user_display_name = 11;
+  bool has_video = 12;
+  bool has_mouse_path = 13;
+  string replay_quality = 14;
+}
+
+message SearchResponse {
+  string query = 1;
+  repeated SearchScenarioResult scenarios = 2;
+  repeated SearchProfileResult profiles = 3;
+  repeated ReplayPreview runs = 4;
+  repeated ReplayPreview replays = 5;
+}
+
+message ListReplaysRequest {
+  string query = 1;
+  string scenario_name = 2;
+  string handle = 3;
+  uint32 limit = 4;
+}
+
+message ListReplaysResponse {
+  string query = 1;
+  string scenario_name = 2;
+  string user_handle = 3;
+  repeated ReplayPreview items = 4;
+}
+
 message GetLeaderboardRequest {
   string scenario_type = 1;
 }
@@ -280,6 +339,8 @@ service HubService {
   rpc GetRun(GetRunRequest) returns (GetRunResponse);
   rpc GetScenarioPage(GetScenarioPageRequest) returns (GetScenarioPageResponse);
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc Search(SearchRequest) returns (SearchResponse);
+  rpc ListReplays(ListReplaysRequest) returns (ListReplaysResponse);
   rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
   rpc GetPlayerScenarioHistory(GetPlayerScenarioHistoryRequest) returns (GetPlayerScenarioHistoryResponse);
   rpc GetAimProfile(GetAimProfileRequest) returns (GetAimProfileResponse);

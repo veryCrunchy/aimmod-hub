@@ -230,6 +230,107 @@ func (s *HubServer) GetProfile(
 	}), nil
 }
 
+func searchScenarioResult(record store.SearchScenarioRecord) *hubv1.SearchScenarioResult {
+	return &hubv1.SearchScenarioResult{
+		ScenarioName: record.ScenarioName,
+		ScenarioSlug: record.ScenarioSlug,
+		ScenarioType: record.ScenarioType,
+		RunCount:     record.RunCount,
+	}
+}
+
+func searchProfileResult(record store.SearchProfileRecord) *hubv1.SearchProfileResult {
+	return &hubv1.SearchProfileResult{
+		UserHandle:          record.UserHandle,
+		UserDisplayName:     record.UserDisplayName,
+		AvatarUrl:           record.AvatarURL,
+		RunCount:            record.RunCount,
+		ScenarioCount:       record.ScenarioCount,
+		PrimaryScenarioType: record.PrimaryScenarioType,
+	}
+}
+
+func replayPreview(record store.SearchRunRecord) *hubv1.ReplayPreview {
+	return &hubv1.ReplayPreview{
+		PublicRunId:     record.PublicRunID,
+		SessionId:       record.SessionID,
+		ScenarioSlug:    record.ScenarioSlug,
+		ScenarioName:    record.ScenarioName,
+		ScenarioType:    record.ScenarioType,
+		PlayedAtIso:     record.PlayedAt.UTC().Format(time.RFC3339),
+		Score:           record.Score,
+		Accuracy:        record.Accuracy,
+		DurationMs:      record.DurationMS,
+		UserHandle:      record.UserHandle,
+		UserDisplayName: record.UserDisplayName,
+		HasVideo:        record.HasVideo,
+		HasMousePath:    record.HasMousePath,
+		ReplayQuality:   record.ReplayQuality,
+	}
+}
+
+func (s *HubServer) Search(
+	ctx context.Context,
+	req *connect.Request[hubv1.SearchRequest],
+) (*connect.Response[hubv1.SearchResponse], error) {
+	results, err := s.store.Search(ctx, strings.TrimSpace(req.Msg.GetQuery()))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	resp := &hubv1.SearchResponse{
+		Query:    results.Query,
+		Scenarios: make([]*hubv1.SearchScenarioResult, 0, len(results.Scenarios)),
+		Profiles:  make([]*hubv1.SearchProfileResult, 0, len(results.Profiles)),
+		Runs:      make([]*hubv1.ReplayPreview, 0, len(results.Runs)),
+		Replays:   make([]*hubv1.ReplayPreview, 0, len(results.Replays)),
+	}
+	for _, record := range results.Scenarios {
+		resp.Scenarios = append(resp.Scenarios, searchScenarioResult(record))
+	}
+	for _, record := range results.Profiles {
+		resp.Profiles = append(resp.Profiles, searchProfileResult(record))
+	}
+	for _, record := range results.Runs {
+		resp.Runs = append(resp.Runs, replayPreview(record))
+	}
+	for _, record := range results.Replays {
+		resp.Replays = append(resp.Replays, replayPreview(record))
+	}
+	return connect.NewResponse(resp), nil
+}
+
+func (s *HubServer) ListReplays(
+	ctx context.Context,
+	req *connect.Request[hubv1.ListReplaysRequest],
+) (*connect.Response[hubv1.ListReplaysResponse], error) {
+	limit := int(req.Msg.GetLimit())
+	if limit <= 0 {
+		limit = 50
+	}
+	results, err := s.store.ListReplays(
+		ctx,
+		strings.TrimSpace(req.Msg.GetQuery()),
+		strings.TrimSpace(req.Msg.GetScenarioName()),
+		strings.TrimSpace(req.Msg.GetHandle()),
+		limit,
+	)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	resp := &hubv1.ListReplaysResponse{
+		Query:        results.Query,
+		ScenarioName: results.ScenarioName,
+		UserHandle:   results.UserHandle,
+		Items:        make([]*hubv1.ReplayPreview, 0, len(results.Items)),
+	}
+	for _, record := range results.Items {
+		resp.Items = append(resp.Items, replayPreview(record))
+	}
+	return connect.NewResponse(resp), nil
+}
+
 func (h *HubServer) GetLeaderboard(
 	ctx context.Context,
 	req *connect.Request[hubv1.GetLeaderboardRequest],

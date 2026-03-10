@@ -50,6 +50,10 @@ const (
 	HubServiceGetScenarioPageProcedure = "/aimmod.hub.v1.HubService/GetScenarioPage"
 	// HubServiceGetProfileProcedure is the fully-qualified name of the HubService's GetProfile RPC.
 	HubServiceGetProfileProcedure = "/aimmod.hub.v1.HubService/GetProfile"
+	// HubServiceSearchProcedure is the fully-qualified name of the HubService's Search RPC.
+	HubServiceSearchProcedure = "/aimmod.hub.v1.HubService/Search"
+	// HubServiceListReplaysProcedure is the fully-qualified name of the HubService's ListReplays RPC.
+	HubServiceListReplaysProcedure = "/aimmod.hub.v1.HubService/ListReplays"
 	// HubServiceGetLeaderboardProcedure is the fully-qualified name of the HubService's GetLeaderboard
 	// RPC.
 	HubServiceGetLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetLeaderboard"
@@ -73,6 +77,8 @@ type HubServiceClient interface {
 	GetRun(context.Context, *connect.Request[v1.GetRunRequest]) (*connect.Response[v1.GetRunResponse], error)
 	GetScenarioPage(context.Context, *connect.Request[v1.GetScenarioPageRequest]) (*connect.Response[v1.GetScenarioPageResponse], error)
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
+	Search(context.Context, *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error)
+	ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
@@ -132,6 +138,18 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetProfile")),
 			connect.WithClientOptions(opts...),
 		),
+		search: connect.NewClient[v1.SearchRequest, v1.SearchResponse](
+			httpClient,
+			baseURL+HubServiceSearchProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("Search")),
+			connect.WithClientOptions(opts...),
+		),
+		listReplays: connect.NewClient[v1.ListReplaysRequest, v1.ListReplaysResponse](
+			httpClient,
+			baseURL+HubServiceListReplaysProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("ListReplays")),
+			connect.WithClientOptions(opts...),
+		),
 		getLeaderboard: connect.NewClient[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse](
 			httpClient,
 			baseURL+HubServiceGetLeaderboardProcedure,
@@ -168,6 +186,8 @@ type hubServiceClient struct {
 	getRun                   *connect.Client[v1.GetRunRequest, v1.GetRunResponse]
 	getScenarioPage          *connect.Client[v1.GetScenarioPageRequest, v1.GetScenarioPageResponse]
 	getProfile               *connect.Client[v1.GetProfileRequest, v1.GetProfileResponse]
+	search                   *connect.Client[v1.SearchRequest, v1.SearchResponse]
+	listReplays              *connect.Client[v1.ListReplaysRequest, v1.ListReplaysResponse]
 	getLeaderboard           *connect.Client[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse]
 	getPlayerScenarioHistory *connect.Client[v1.GetPlayerScenarioHistoryRequest, v1.GetPlayerScenarioHistoryResponse]
 	getAimProfile            *connect.Client[v1.GetAimProfileRequest, v1.GetAimProfileResponse]
@@ -209,6 +229,16 @@ func (c *hubServiceClient) GetProfile(ctx context.Context, req *connect.Request[
 	return c.getProfile.CallUnary(ctx, req)
 }
 
+// Search calls aimmod.hub.v1.HubService.Search.
+func (c *hubServiceClient) Search(ctx context.Context, req *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error) {
+	return c.search.CallUnary(ctx, req)
+}
+
+// ListReplays calls aimmod.hub.v1.HubService.ListReplays.
+func (c *hubServiceClient) ListReplays(ctx context.Context, req *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error) {
+	return c.listReplays.CallUnary(ctx, req)
+}
+
 // GetLeaderboard calls aimmod.hub.v1.HubService.GetLeaderboard.
 func (c *hubServiceClient) GetLeaderboard(ctx context.Context, req *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
 	return c.getLeaderboard.CallUnary(ctx, req)
@@ -238,6 +268,8 @@ type HubServiceHandler interface {
 	GetRun(context.Context, *connect.Request[v1.GetRunRequest]) (*connect.Response[v1.GetRunResponse], error)
 	GetScenarioPage(context.Context, *connect.Request[v1.GetScenarioPageRequest]) (*connect.Response[v1.GetScenarioPageResponse], error)
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
+	Search(context.Context, *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error)
+	ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
@@ -293,6 +325,18 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("GetProfile")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceSearchHandler := connect.NewUnaryHandler(
+		HubServiceSearchProcedure,
+		svc.Search,
+		connect.WithSchema(hubServiceMethods.ByName("Search")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceListReplaysHandler := connect.NewUnaryHandler(
+		HubServiceListReplaysProcedure,
+		svc.ListReplays,
+		connect.WithSchema(hubServiceMethods.ByName("ListReplays")),
+		connect.WithHandlerOptions(opts...),
+	)
 	hubServiceGetLeaderboardHandler := connect.NewUnaryHandler(
 		HubServiceGetLeaderboardProcedure,
 		svc.GetLeaderboard,
@@ -333,6 +377,10 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceGetScenarioPageHandler.ServeHTTP(w, r)
 		case HubServiceGetProfileProcedure:
 			hubServiceGetProfileHandler.ServeHTTP(w, r)
+		case HubServiceSearchProcedure:
+			hubServiceSearchHandler.ServeHTTP(w, r)
+		case HubServiceListReplaysProcedure:
+			hubServiceListReplaysHandler.ServeHTTP(w, r)
 		case HubServiceGetLeaderboardProcedure:
 			hubServiceGetLeaderboardHandler.ServeHTTP(w, r)
 		case HubServiceGetPlayerScenarioHistoryProcedure:
@@ -376,6 +424,14 @@ func (UnimplementedHubServiceHandler) GetScenarioPage(context.Context, *connect.
 
 func (UnimplementedHubServiceHandler) GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetProfile is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) Search(context.Context, *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.Search is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.ListReplays is not implemented"))
 }
 
 func (UnimplementedHubServiceHandler) GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
