@@ -10,7 +10,7 @@
     "build-web": {
       "inputs": [{ "step": "install-web" }],
       "commands": ["pnpm build:web"],
-      "deployOutputs": ["web/dist/**"]
+      "deployOutputs": [{ "include": ["web/dist/**"] }]
     }
   },
   "deploy": {
