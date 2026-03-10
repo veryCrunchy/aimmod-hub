@@ -153,7 +153,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
             if (items.length) setOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search  ·  / or Ctrl+K"
+          placeholder="Search players, scenarios, replays  ·  / or Ctrl+K"
           className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70 md:text-sm"
         />
         <button
