@@ -11,13 +11,13 @@ type SectionHeaderProps = {
 
 export function SectionHeader({ eyebrow, title, body, aside, className }: SectionHeaderProps) {
   return (
-    <div className={cn("mb-[18px] flex items-start justify-between gap-5", className)}>
-      <div>
-        <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">{eyebrow}</div>
-        <h2 className="my-[10px] text-[clamp(24px,3vw,40px)] leading-[1.05]">{title}</h2>
-        {body ? <p className="text-sm leading-7 text-muted">{body}</p> : null}
+    <div className={cn("mb-4 flex flex-col gap-3 md:mb-[18px] md:flex-row md:items-start md:justify-between md:gap-5", className)}>
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">{eyebrow}</div>
+        <h2 className="my-1.5 text-[clamp(20px,2.6vw,34px)] leading-[1.02] tracking-[-0.03em]">{title}</h2>
+        {body ? <p className="max-w-[72ch] text-[13px] leading-6 text-muted md:text-sm">{body}</p> : null}
       </div>
-      {aside ? <div className="pt-1.5 text-[13px] text-muted">{aside}</div> : null}
+      {aside ? <div className="pt-0 text-[12px] text-muted md:pt-1.5 md:text-[13px]">{aside}</div> : null}
     </div>
   );
 }

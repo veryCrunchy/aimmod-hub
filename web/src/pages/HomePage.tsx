@@ -81,17 +81,17 @@ export function HomePage() {
 
   return (
     <PageStack>
-      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] p-[30px] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
+      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.42)] md:p-6">
         <div className="absolute inset-y-0 right-[8%] w-[28%] rounded-full bg-[radial-gradient(circle,rgba(121,201,151,0.14),transparent_68%)] blur-3xl" />
-        <div className="relative text-[12px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
-        <h1 className="my-4 text-[clamp(42px,6vw,88px)] leading-[0.96] tracking-[-0.04em]">
+        <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
+        <h1 className="my-3 text-[clamp(30px,6vw,72px)] leading-[0.94] tracking-[-0.05em]">
           Shared practice data that is finally useful.
         </h1>
-        <p className="max-w-[760px] text-lg leading-8 text-[#cbe4d7]">
+        <p className="max-w-[760px] text-[15px] leading-7 text-[#cbe4d7] md:text-[17px]">
           AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and
           learn from.
         </p>
-        <div className="relative mt-[22px] flex flex-wrap gap-3">
+        <div className="relative mt-4 flex flex-wrap gap-2.5">
           <Button to="/community" variant="primary">
             Explore community data
           </Button>
@@ -104,7 +104,7 @@ export function HomePage() {
         </div>
       </PageSection>
 
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+      <Grid className="grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
         <AnimatedStatCard
           label="Runs"
           target={overview ? Number(overview.totalRuns) : 0}
@@ -132,13 +132,13 @@ export function HomePage() {
             body="These scenarios already have enough history to be useful comparison pages."
           />
           {overview?.topScenarios.length ? (
-            <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
+            <ScrollArea className="max-h-[min(54vh,720px)] pr-2">
               <div className="grid gap-3">
                 {overview.topScenarios.slice(0, 6).map((scenario) => (
                   <Link
                     key={scenario.scenarioSlug}
                     to={`/scenarios/${scenario.scenarioSlug}`}
-                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/30 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -169,13 +169,13 @@ export function HomePage() {
             body="These players have the most practice history right now, which makes them the best starting point for study and comparison."
           />
           {overview?.activeProfiles.length ? (
-            <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
+            <ScrollArea className="max-h-[min(54vh,720px)] pr-2">
               <div className="grid gap-3">
                 {overview.activeProfiles.slice(0, 6).map((profile) => (
                   <Link
                     key={profile.userHandle}
                     to={`/profiles/${profile.userHandle}`}
-                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/30 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -214,7 +214,7 @@ export function HomePage() {
         />
         {overview?.recentRuns.length ? (
           <>
-            <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+            <ScrollArea className="max-h-[min(56vh,740px)] overflow-auto rounded-[16px] border border-line bg-white/2">
               <table className="min-w-full text-left text-sm">
                 <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
@@ -230,7 +230,7 @@ export function HomePage() {
                 <tbody>
                   {visibleRuns.map((run) => (
                     <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
-                      <td className="px-4 py-3 text-text max-w-[200px] truncate">
+                      <td className="px-3 py-2.5 text-text max-w-[200px] truncate md:px-4 md:py-3">
                         <Link
                           className="hover:text-cyan transition-colors"
                           to={`/scenarios/${run.scenarioName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
@@ -238,7 +238,7 @@ export function HomePage() {
                           {run.scenarioName}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-text">
+                      <td className="px-3 py-2.5 text-text md:px-4 md:py-3">
                         <Link
                           className="text-cyan underline underline-offset-3"
                           to={`/profiles/${run.userHandle || run.userDisplayName}`}
@@ -246,11 +246,11 @@ export function HomePage() {
                           {run.userDisplayName || run.userHandle}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-text">{Math.round(run.score).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
-                      <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
-                      <td className="px-4 py-3 text-muted">{formatRelativeTime(run.playedAtIso)}</td>
-                      <td className="px-4 py-3 text-text">
+                      <td className="px-3 py-2.5 text-text md:px-4 md:py-3">{Math.round(run.score).toLocaleString()}</td>
+                      <td className="px-3 py-2.5 text-text md:px-4 md:py-3">{run.accuracy.toFixed(1)}%</td>
+                      <td className="px-3 py-2.5 text-text md:px-4 md:py-3">{formatDurationMs(run.durationMs)}</td>
+                      <td className="px-3 py-2.5 text-muted md:px-4 md:py-3">{formatRelativeTime(run.playedAtIso)}</td>
+                      <td className="px-3 py-2.5 text-text md:px-4 md:py-3">
                         <Link
                           className="text-cyan underline underline-offset-3"
                           to={`/runs/${run.runId || run.sessionId}`}

@@ -184,8 +184,10 @@ export function ProfilePage() {
         />
       </Grid>
 
-      <AimProfileSection handle={profile.userHandle} />
-      <AimFingerprintSection handle={profile.userHandle} />
+      <Grid className="grid-cols-2 items-start max-[1180px]:grid-cols-1">
+        <AimProfileSection handle={profile.userHandle} />
+        <AimFingerprintSection handle={profile.userHandle} />
+      </Grid>
 
       {profile.personalBests.length > 0 && (
         <PageSection>

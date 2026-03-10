@@ -74,10 +74,10 @@ export function AimFingerprintSection({ handle }: Props) {
 
   if (loading) {
     return (
-      <PageSection>
+      <PageSection className="h-full">
         <Skeleton className="mb-3 h-3 w-28" />
-        <Skeleton className="mb-5 h-6 w-44" />
-        <Skeleton className="h-[300px]" />
+        <Skeleton className="mb-4 h-6 w-40" />
+        <Skeleton className="h-[220px]" />
       </PageSection>
     );
   }
@@ -96,22 +96,22 @@ export function AimFingerprintSection({ handle }: Props) {
   const styleColor = fp.styleColor || "#00f5a0";
 
   return (
-    <PageSection>
+    <PageSection className="h-full">
       <SectionHeader
         eyebrow="Aim fingerprint"
         title="Movement profile"
-        body={`Built from ${fp.sessionCount} recent sessions with smoothness data — precision, speed, control, consistency, decisiveness, and ${isTracking ? "flow" : "rhythm"}.`}
+        body={`Built from ${fp.sessionCount} recent sessions with smoothness data.`}
       />
 
-      <div className="grid gap-4 grid-cols-[1fr_auto] max-[900px]:grid-cols-1">
+      <div className="grid gap-4 grid-cols-[minmax(0,1fr)_240px] items-start max-[900px]:grid-cols-1">
         {/* radar */}
         <div className="flex flex-col gap-4">
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={210}>
             <RadarChart data={radarData} cx="50%" cy="50%">
               <PolarGrid stroke="rgba(255,255,255,0.08)" />
               <PolarAngleAxis
                 dataKey="metric"
-                tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 12 }}
+                tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11 }}
               />
               <PolarRadiusAxis
                 angle={90}
@@ -130,11 +130,11 @@ export function AimFingerprintSection({ handle }: Props) {
           </ResponsiveContainer>
 
           {/* stable / swingy badges */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {stableAxes.map((a) => (
               <span
                 key={`stable-${a.key}`}
-                className="rounded-full border border-mint/20 bg-mint/8 px-3 py-1 text-[11px] text-mint/80"
+                className="rounded-full border border-mint/20 bg-mint/8 px-2.5 py-1 text-[10px] text-mint/80"
               >
                 Stable: {a.label}
               </span>
@@ -142,7 +142,7 @@ export function AimFingerprintSection({ handle }: Props) {
             {swingAxes.map((a) => (
               <span
                 key={`swingy-${a.key}`}
-                className="rounded-full border border-gold/20 bg-gold/8 px-3 py-1 text-[11px] text-gold/80"
+                className="rounded-full border border-gold/20 bg-gold/8 px-2.5 py-1 text-[10px] text-gold/80"
               >
                 Swingy: {a.label}
               </span>
@@ -151,23 +151,23 @@ export function AimFingerprintSection({ handle }: Props) {
         </div>
 
         {/* sidebar: style card + axis values */}
-        <div className="flex flex-col gap-3 min-w-[220px] max-w-[280px] max-[900px]:max-w-full">
+        <div className="flex flex-col gap-2.5 min-w-[220px] max-w-[240px] max-[900px]:max-w-full">
           {/* aim style */}
           <div
-            className="rounded-[14px] border p-4"
+            className="rounded-[14px] border p-3"
             style={{
               borderColor: `${styleColor}30`,
               backgroundColor: `${styleColor}08`,
             }}
           >
             <p className="text-[10px] uppercase tracking-[0.1em] opacity-50">Aim style</p>
-            <p className="mt-1.5 text-lg font-semibold" style={{ color: styleColor }}>
+            <p className="mt-1 text-base font-semibold" style={{ color: styleColor }}>
               {fp.styleName}
             </p>
             <p className="mt-0.5 text-[11px] text-muted">{fp.styleTagline}</p>
-            <p className="mt-3 text-[11px] text-muted-2 leading-relaxed">{fp.styleDescription}</p>
+            <p className="mt-2 text-[11px] text-muted-2 leading-relaxed">{fp.styleDescription}</p>
             {fp.styleFocus && (
-              <div className="mt-3 rounded-[8px] border border-white/6 bg-white/3 px-3 py-2">
+              <div className="mt-2 rounded-[8px] border border-white/6 bg-white/3 px-2.5 py-2">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-muted-2">Focus areas</p>
                 <p className="mt-1 text-[11px] text-muted">{fp.styleFocus}</p>
               </div>
@@ -175,13 +175,13 @@ export function AimFingerprintSection({ handle }: Props) {
           </div>
 
           {/* axis bars */}
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             {fp.axes.map((axis) => {
               const def = AXIS_DEFS[axis.key];
               return (
                 <div
                   key={axis.key}
-                  className="group rounded-[12px] border border-line bg-white/2 px-3 py-2.5"
+                  className="group rounded-[12px] border border-line bg-white/2 px-3 py-2"
                   title={def ? `${def.what} ${def.how(isTracking)}` : ""}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -205,21 +205,6 @@ export function AimFingerprintSection({ handle }: Props) {
             })}
           </div>
         </div>
-      </div>
-
-      {/* axis definitions */}
-      <div className="mt-4 grid gap-2 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-        {fp.axes.map((axis) => {
-          const def = AXIS_DEFS[axis.key];
-          if (!def) return null;
-          return (
-            <div key={axis.key} className="rounded-[12px] border border-line bg-white/2 px-3 py-2.5">
-              <p className="text-[11px] font-medium text-text">{axis.label}</p>
-              <p className="mt-0.5 text-[10px] text-muted-2 leading-relaxed">{def.what}</p>
-              <p className="mt-1 text-[10px] text-muted-2/70 leading-relaxed">{def.how(isTracking)}</p>
-            </div>
-          );
-        })}
       </div>
     </PageSection>
   );

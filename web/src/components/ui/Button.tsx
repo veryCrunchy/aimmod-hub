@@ -3,7 +3,7 @@ import { Link, type LinkProps } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
 const buttonStyles = {
-  base: "inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors",
+  base: "inline-flex min-h-9 items-center justify-center rounded-full border px-3.5 text-[13px] transition-colors md:min-h-10 md:px-4 md:text-sm",
   primary: "border-mint/70 bg-mint text-[color:var(--color-bg)] hover:border-cyan hover:bg-cyan",
   secondary: "border-line bg-[rgba(255,255,255,0.03)] text-text hover:border-line-strong hover:bg-[rgba(121,201,151,0.08)]"
 } as const;

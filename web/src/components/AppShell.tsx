@@ -55,21 +55,21 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="min-h-screen overflow-x-clip">
-      <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.94),rgba(4,12,9,0.9))] px-6 py-[18px] backdrop-blur-xl">
-        <div className="mx-auto grid w-[min(1380px,100%)] grid-cols-[auto_auto_minmax(280px,420px)_auto] items-center gap-5 max-[1260px]:grid-cols-[auto_1fr] max-[1260px]:gap-4 max-[860px]:grid-cols-1">
-        <Link to="/" className="grid gap-1">
-          <span className="text-[11px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
-          <span className="text-[13px] text-text">shared practice intelligence</span>
+      <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.96),rgba(4,12,9,0.92))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
+        <div className="mx-auto grid w-[min(1380px,100%)] grid-cols-[auto_1fr_auto] items-center gap-3 xl:grid-cols-[auto_auto_minmax(220px,360px)_auto] xl:gap-4">
+        <Link to="/" className="grid gap-0.5">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
+          <span className="text-[12px] text-text max-[640px]:hidden">shared practice intelligence</span>
         </Link>
 
-          <nav className="flex flex-wrap items-center gap-2.5 max-[1260px]:order-3" aria-label="Primary">
+          <nav className="hidden flex-wrap items-center gap-1.5 xl:flex" aria-label="Primary">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    "rounded-full border border-transparent px-[14px] py-2.5 text-sm text-muted transition-colors",
+                    "rounded-full border border-transparent px-3 py-2 text-[13px] text-muted transition-colors",
                     "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
                     isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
                   )
@@ -80,24 +80,24 @@ export function AppShell({ children }: PropsWithChildren) {
             ))}
           </nav>
 
-          <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2 max-[1260px]:order-2">
+          <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2">
             <input
               ref={searchRef}
               key={location.pathname === "/search" ? location.search : "global-search"}
               name="q"
               defaultValue={location.pathname === "/search" ? new URLSearchParams(location.search).get("q") ?? "" : ""}
               placeholder="Search  ·  / or Ctrl+K"
-              className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70"
+              className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70 md:text-sm"
             />
-            <Button type="submit" className="min-h-9 shrink-0 px-3 py-2">
+            <Button type="submit" className="shrink-0">
               Go
             </Button>
           </form>
 
-          <div className="flex flex-wrap items-center justify-end gap-3 max-[1260px]:order-4 max-[1260px]:justify-start">
+          <div className="flex flex-wrap items-center justify-end gap-2">
           {auth.loading ? null : auth.authenticated && auth.user ? (
             <div className="inline-flex items-center gap-2">
-              <Link to="/account" className="rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-[14px] py-2.5 text-[13px] text-text">
+              <Link to="/account" className="rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:px-[14px] md:text-[13px]">
                 {auth.user.displayName || auth.user.username}
               </Link>
               <Button onClick={() => void auth.signOut()}>Sign out</Button>
@@ -108,15 +108,32 @@ export function AppShell({ children }: PropsWithChildren) {
             </Button>
           )}
         </div>
+        <div className="mx-auto mt-3 flex w-[min(1380px,100%)] flex-wrap items-center gap-1.5 xl:hidden">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  "rounded-full border border-transparent px-3 py-1.5 text-[12px] text-muted transition-colors",
+                  "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
+                  isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
+                )
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
         </div>
       </header>
 
-      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-40px))] px-0 py-[34px] pb-20 max-[720px]:w-[min(1380px,calc(100vw-24px))] max-[720px]:pt-5">
+      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-24px))] px-0 py-4 pb-14 md:w-[min(1380px,calc(100vw-32px))] md:py-5 md:pb-16">
         {children}
       </main>
 
       <footer className="border-t border-line bg-[rgba(2,8,6,0.7)]">
-        <div className="mx-auto flex w-[min(1380px,calc(100vw-40px))] flex-wrap items-center justify-between gap-4 py-5 text-sm text-muted max-[720px]:w-[min(1380px,calc(100vw-24px))]">
+        <div className="mx-auto flex w-[min(1380px,calc(100vw-24px))] flex-wrap items-center justify-between gap-3 py-4 text-[13px] text-muted md:w-[min(1380px,calc(100vw-32px))] md:text-sm">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-text">Support veryCrunchy</span>
             <span className="text-muted">if AimMod helps your practice.</span>
@@ -129,7 +146,6 @@ export function AppShell({ children }: PropsWithChildren) {
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="min-h-10"
               >
                 {link.label}
               </Button>

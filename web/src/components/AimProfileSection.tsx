@@ -46,10 +46,10 @@ export function AimProfileSection({ handle }: Props) {
 
   if (loading) {
     return (
-      <PageSection>
+      <PageSection className="h-full">
         <Skeleton className="mb-3 h-3 w-24" />
-        <Skeleton className="mb-5 h-6 w-40" />
-        <Skeleton className="h-[280px]" />
+        <Skeleton className="mb-4 h-6 w-36" />
+        <Skeleton className="h-[210px]" />
       </PageSection>
     );
   }
@@ -59,22 +59,22 @@ export function AimProfileSection({ handle }: Props) {
   const overallPct = percentileLabel(profile.overallAccuracyPercentile);
 
   return (
-    <PageSection>
+    <PageSection className="h-full">
       <SectionHeader
         eyebrow="Aim profile"
         title="Performance by scenario type"
-        body="Accuracy percentile vs the community on each scenario family this player has practiced."
+        body="Accuracy percentile vs the community across the scenario families this player has practiced."
       />
 
-      <Grid className="grid-cols-[1fr_auto] items-center gap-6 max-[900px]:grid-cols-1">
+      <Grid className="grid-cols-[minmax(0,1fr)_220px] items-start gap-4 max-[900px]:grid-cols-1">
         {/* radar — only shown with 2+ types */}
         {profile.typeBands.length >= 2 && <AimProfileRadar bands={profile.typeBands} />}
 
         {/* summary sidebar */}
-        <div className="grid gap-3 min-w-[200px] max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
-          <div className="rounded-[14px] border border-line bg-white/2 p-4">
+        <div className="grid gap-2.5 min-w-[200px] max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
+          <div className="rounded-[14px] border border-line bg-white/2 p-3">
             <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Overall</p>
-            <p className={`mt-1.5 text-2xl font-medium ${overallPct.color}`}>
+            <p className={`mt-1 text-xl font-medium ${overallPct.color}`}>
               {Math.round(profile.overallAccuracyPercentile)}th
             </p>
             <p className={`mt-0.5 text-[11px] ${overallPct.color}`}>{overallPct.label}</p>
@@ -82,9 +82,9 @@ export function AimProfileSection({ handle }: Props) {
           </div>
 
           {profile.strongestType && (
-            <div className={`rounded-[14px] border p-4 ${typeColor(profile.strongestType)}`}>
+            <div className={`rounded-[14px] border p-3 ${typeColor(profile.strongestType)}`}>
               <p className="text-[10px] uppercase tracking-[0.1em] opacity-60">Strongest</p>
-              <p className="mt-1.5 text-sm font-medium">
+              <p className="mt-1 text-sm font-medium">
                 {displayScenarioType(profile.strongestType) ?? profile.strongestType}
               </p>
               <p className="mt-1 text-[11px] opacity-60">Highest accuracy %ile</p>
@@ -92,9 +92,9 @@ export function AimProfileSection({ handle }: Props) {
           )}
 
           {profile.mostPracticedType && profile.mostPracticedType !== profile.strongestType && (
-            <div className={`rounded-[14px] border p-4 ${typeColor(profile.mostPracticedType)}`}>
+            <div className={`rounded-[14px] border p-3 ${typeColor(profile.mostPracticedType)}`}>
               <p className="text-[10px] uppercase tracking-[0.1em] opacity-60">Most practiced</p>
-              <p className="mt-1.5 text-sm font-medium">
+              <p className="mt-1 text-sm font-medium">
                 {displayScenarioType(profile.mostPracticedType) ?? profile.mostPracticedType}
               </p>
               <p className="mt-1 text-[11px] opacity-60">Highest run volume</p>
@@ -104,13 +104,13 @@ export function AimProfileSection({ handle }: Props) {
       </Grid>
 
       {/* per-type breakdown */}
-      <div className="mt-5 grid gap-2">
+      <div className="mt-4 grid gap-2">
         {profile.typeBands.map((band) => {
           const pct = percentileLabel(band.accuracyPercentile);
           const barWidth = Math.min(100, Math.max(2, band.accuracyPercentile));
           const communityBar = 50;
           return (
-            <div key={band.scenarioType} className="rounded-[12px] border border-line bg-white/2 px-4 py-3">
+            <div key={band.scenarioType} className="rounded-[12px] border border-line bg-white/2 px-3 py-2.5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="shrink-0 text-sm font-medium text-text">
@@ -126,7 +126,7 @@ export function AimProfileSection({ handle }: Props) {
                 </div>
               </div>
               {/* progress bar: player (cyan) vs community 50th (gold dashed) */}
-              <div className="relative mt-2 h-1.5 w-full rounded-full bg-white/8 overflow-hidden">
+              <div className="relative mt-1.5 h-1.5 w-full rounded-full bg-white/8 overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 h-full rounded-full bg-cyan/50 transition-all"
                   style={{ width: `${barWidth}%` }}
@@ -138,7 +138,7 @@ export function AimProfileSection({ handle }: Props) {
                 />
               </div>
               {band.avgSmoothness > 0 && (
-                <p className="mt-1.5 text-[10px] text-muted-2">
+                <p className="mt-1 text-[10px] text-muted-2">
                   Smoothness {Math.round(band.avgSmoothness)}/100
                 </p>
               )}
