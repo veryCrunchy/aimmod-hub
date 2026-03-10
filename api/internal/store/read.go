@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
+
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 )
 
@@ -28,6 +30,7 @@ type RunRecord struct {
 	FeatureSet      map[string]*hubv1.SessionSummaryValue
 	Timeline        []*hubv1.TimelineSecond
 	ContextWindows  []*hubv1.ContextWindow
+	ScenarioRuns    []*hubv1.RunPreview
 }
 
 type ScenarioPageRecord struct {
@@ -41,6 +44,7 @@ type ScenarioPageRecord struct {
 	AverageDurationMS uint64
 	RecentRuns        []*hubv1.RunPreview
 	TopRuns           []*hubv1.RunPreview
+	ScoreDistribution []*hubv1.ScoreBin
 }
 
 type ProfileRecord struct {
@@ -55,6 +59,7 @@ type ProfileRecord struct {
 	AverageAccuracy     float64
 	TopScenarios        []*hubv1.TopScenario
 	RecentRuns          []*hubv1.RunPreview
+	PersonalBests       []*hubv1.RunPreview
 }
 
 type OverviewRecord struct {
@@ -416,6 +421,52 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 		return RunRecord{}, fmt.Errorf("iterate run context windows: %w", err)
 	}
 
+	relatedRows, err := s.pool.Query(ctx, `
+	    SELECT
+	        COALESCE(sr.public_run_id, sr.session_id),
+	        sr.session_id,
+	        sr.scenario_name,
+	        sr.scenario_type,
+	        sr.played_at,
+	        sr.score,
+	        sr.accuracy,
+	        sr.duration_ms,
+	        COALESCE(la.username, hu.external_id),
+	        COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+	    FROM scenario_runs sr
+	    JOIN hub_users hu ON hu.id = sr.user_id
+	    LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	    WHERE sr.scenario_name = $1
+	      AND sr.session_id != $2
+	    ORDER BY sr.score DESC, sr.played_at DESC
+	    LIMIT 10
+	`, record.ScenarioName, record.SessionID)
+	if err != nil {
+		return RunRecord{}, fmt.Errorf("load scenario runs: %w", err)
+	}
+	defer relatedRows.Close()
+	for relatedRows.Next() {
+		var rel RunRecord
+		if err := relatedRows.Scan(
+			&rel.PublicRunID,
+			&rel.SessionID,
+			&rel.ScenarioName,
+			&rel.ScenarioType,
+			&rel.PlayedAt,
+			&rel.Score,
+			&rel.Accuracy,
+			&rel.DurationMS,
+			&rel.UserHandle,
+			&rel.UserDisplayName,
+		); err != nil {
+			return RunRecord{}, fmt.Errorf("scan scenario run: %w", err)
+		}
+		record.ScenarioRuns = append(record.ScenarioRuns, runPreviewFromRecord(rel))
+	}
+	if err := relatedRows.Err(); err != nil {
+		return RunRecord{}, fmt.Errorf("iterate scenario runs: %w", err)
+	}
+
 	return record, nil
 }
 
@@ -569,7 +620,67 @@ func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageR
 		return ScenarioPageRecord{}, fmt.Errorf("iterate scenario top runs: %w", err)
 	}
 
+	// Compute score distribution histogram
+	scoreRows, err := s.pool.Query(ctx, `
+	    SELECT score FROM scenario_runs WHERE scenario_name = $1 AND score > 0
+	`, scenarioName)
+	if err != nil {
+		return ScenarioPageRecord{}, fmt.Errorf("load score distribution: %w", err)
+	}
+	defer scoreRows.Close()
+	var allScores []float64
+	for scoreRows.Next() {
+		var score float64
+		if err := scoreRows.Scan(&score); err != nil {
+			return ScenarioPageRecord{}, fmt.Errorf("scan score: %w", err)
+		}
+		allScores = append(allScores, score)
+	}
+	if err := scoreRows.Err(); err != nil {
+		return ScenarioPageRecord{}, fmt.Errorf("iterate scores: %w", err)
+	}
+	if len(allScores) >= 3 {
+		record.ScoreDistribution = computeScoreHistogram(allScores, 10)
+	}
+
 	return record, nil
+}
+
+func computeScoreHistogram(scores []float64, bins int) []*hubv1.ScoreBin {
+	if len(scores) == 0 || bins <= 0 {
+		return nil
+	}
+	minScore, maxScore := scores[0], scores[0]
+	for _, s := range scores[1:] {
+		if s < minScore {
+			minScore = s
+		}
+		if s > maxScore {
+			maxScore = s
+		}
+	}
+	if maxScore <= minScore {
+		return nil
+	}
+	binSize := (maxScore - minScore) / float64(bins)
+	result := make([]*hubv1.ScoreBin, bins)
+	for i := range result {
+		result[i] = &hubv1.ScoreBin{
+			Lo: minScore + float64(i)*binSize,
+			Hi: minScore + float64(i+1)*binSize,
+		}
+	}
+	for _, s := range scores {
+		idx := int((s - minScore) / binSize)
+		if idx >= bins {
+			idx = bins - 1
+		}
+		if idx < 0 {
+			idx = 0
+		}
+		result[idx].Count++
+	}
+	return result
 }
 
 func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, error) {
@@ -698,6 +809,47 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 	}
 	if err := recentRows.Err(); err != nil {
 		return ProfileRecord{}, fmt.Errorf("iterate recent profile runs: %w", err)
+	}
+
+	bestsRows, err := s.pool.Query(ctx, `
+	    SELECT DISTINCT ON (sr.scenario_name)
+	        COALESCE(sr.public_run_id, sr.session_id),
+	        sr.session_id,
+	        sr.scenario_name,
+	        sr.scenario_type,
+	        sr.played_at,
+	        sr.score,
+	        sr.accuracy,
+	        sr.duration_ms
+	    FROM scenario_runs sr
+	    WHERE sr.user_id = $1
+	    ORDER BY sr.scenario_name, sr.score DESC, sr.played_at DESC
+	    LIMIT 50
+	`, userID)
+	if err != nil {
+		return ProfileRecord{}, fmt.Errorf("load personal bests: %w", err)
+	}
+	defer bestsRows.Close()
+	for bestsRows.Next() {
+		var run RunRecord
+		run.UserHandle = record.UserHandle
+		run.UserDisplayName = record.UserDisplayName
+		if err := bestsRows.Scan(
+			&run.PublicRunID,
+			&run.SessionID,
+			&run.ScenarioName,
+			&run.ScenarioType,
+			&run.PlayedAt,
+			&run.Score,
+			&run.Accuracy,
+			&run.DurationMS,
+		); err != nil {
+			return ProfileRecord{}, fmt.Errorf("scan personal best: %w", err)
+		}
+		record.PersonalBests = append(record.PersonalBests, runPreviewFromRecord(run))
+	}
+	if err := bestsRows.Err(); err != nil {
+		return ProfileRecord{}, fmt.Errorf("iterate personal bests: %w", err)
 	}
 
 	sort.SliceStable(record.TopScenarios, func(i, j int) bool {
@@ -852,4 +1004,26 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 	}
 
 	return record, nil
+}
+
+func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, error) {
+	return s.pool.Exec(ctx, `
+	    UPDATE scenario_runs sr
+	    SET scenario_type = 'Tracking'
+	    FROM run_summaries rs
+	    WHERE sr.session_id = rs.session_id
+	      AND sr.scenario_type IN ('MultiHitClicking', 'Unknown', '')
+	      AND (
+	        (rs.summary_json->>'csvAvgTtk')::float >= 5.0
+	        OR (
+	          (rs.summary_json->>'killsPerSecond')::float > 0
+	          AND (sr.duration_ms::float / 1000.0) > 0
+	          AND (rs.summary_json->>'damageDone')::float
+	            / NULLIF(
+	                (rs.summary_json->>'killsPerSecond')::float * (sr.duration_ms::float / 1000.0),
+	                0
+	              ) < 0.5
+	        )
+	      )
+	`)
 }

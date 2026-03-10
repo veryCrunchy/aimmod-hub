@@ -1,40 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { formatDurationMs, formatRelativeTime, searchHub, type HubSearchResponse } from "../lib/api";
+import { fetchOverview, formatDurationMs, formatRelativeTime, searchHub, type HubSearchResponse } from "../lib/api";
 
 export function SearchPage() {
   const [params] = useSearchParams();
   const query = params.get("q")?.trim() ?? "";
   const [results, setResults] = useState<HubSearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
+
+  useEffect(() => {
+    if (!query) {
+      void fetchOverview().then(setOverview).catch(() => {});
+    }
+  }, [query]);
 
   useEffect(() => {
     let cancelled = false;
     setResults(null);
     setError(null);
-    if (!query) {
-      return;
-    }
+    if (!query) return;
     void searchHub(query)
-      .then((next) => {
-        if (!cancelled) {
-          setResults(next);
-        }
-      })
+      .then((next) => { if (!cancelled) setResults(next); })
       .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Could not search the hub.");
-        }
+        if (!cancelled) setError(err instanceof Error ? err.message : "Could not search the hub.");
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [query]);
 
   if (!query) {
@@ -44,9 +42,63 @@ export function SearchPage() {
           <SectionHeader
             eyebrow="Search"
             title="Find players, scenarios, and runs"
-            body="Search the hub from the header to jump straight into a player profile, scenario page, or specific run."
+            body="Type in the search bar above to jump to a player profile, scenario page, or specific run."
           />
         </PageSection>
+
+        {overview && (
+          <Grid className="grid-cols-2 max-[900px]:grid-cols-1">
+            <PageSection>
+              <SectionHeader eyebrow="Top scenarios" title="Most active scenarios" />
+              <ScrollArea className="max-h-[min(60vh,720px)] pr-2">
+                <div className="grid gap-3">
+                  {overview.topScenarios.slice(0, 8).map((scenario) => (
+                    <Link
+                      key={scenario.scenarioSlug}
+                      to={`/scenarios/${scenario.scenarioSlug}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <strong className="block text-text">{scenario.scenarioName}</strong>
+                          <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
+                        </div>
+                        <span className="shrink-0 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </ScrollArea>
+            </PageSection>
+
+            <PageSection>
+              <SectionHeader eyebrow="Active players" title="Most active profiles" />
+              <ScrollArea className="max-h-[min(60vh,720px)] pr-2">
+                <div className="grid gap-3">
+                  {overview.activeProfiles.slice(0, 8).map((profile) => (
+                    <Link
+                      key={profile.userHandle}
+                      to={`/profiles/${profile.userHandle}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <strong className="block truncate text-text">{profile.userDisplayName || profile.userHandle}</strong>
+                          <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
+                        </div>
+                        <span className="shrink-0 text-sm text-cyan">{profile.runCount.toLocaleString()} runs</span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-sm text-muted">{profile.scenarioCount.toLocaleString()} scenarios</span>
+                        <ScenarioTypeBadge type={profile.primaryScenarioType} />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </ScrollArea>
+            </PageSection>
+          </Grid>
+        )}
       </PageStack>
     );
   }

@@ -153,6 +153,7 @@ func (s *HubServer) GetRun(
 		TimelineSeconds: run.Timeline,
 		ContextWindows:  run.ContextWindows,
 		RunId:           run.PublicRunID,
+		ScenarioRuns:    run.ScenarioRuns,
 	}), nil
 }
 
@@ -181,6 +182,7 @@ func (s *HubServer) GetScenarioPage(
 		AverageDurationMs: page.AverageDurationMS,
 		RecentRuns:        page.RecentRuns,
 		TopRuns:           page.TopRuns,
+		ScoreDistribution: page.ScoreDistribution,
 	}), nil
 }
 
@@ -210,6 +212,7 @@ func (s *HubServer) GetProfile(
 		AverageAccuracy:     profile.AverageAccuracy,
 		TopScenarios:        profile.TopScenarios,
 		RecentRuns:          profile.RecentRuns,
+		PersonalBests:       profile.PersonalBests,
 	}), nil
 }
 

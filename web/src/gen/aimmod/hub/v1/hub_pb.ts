@@ -302,6 +302,55 @@ export class ContextWindow extends Message<ContextWindow> {
 }
 
 /**
+ * @generated from message aimmod.hub.v1.ScoreBin
+ */
+export class ScoreBin extends Message<ScoreBin> {
+  /**
+   * @generated from field: double lo = 1;
+   */
+  lo = 0;
+
+  /**
+   * @generated from field: double hi = 2;
+   */
+  hi = 0;
+
+  /**
+   * @generated from field: uint32 count = 3;
+   */
+  count = 0;
+
+  constructor(data?: PartialMessage<ScoreBin>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ScoreBin";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "lo", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 2, name: "hi", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 3, name: "count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScoreBin {
+    return new ScoreBin().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScoreBin {
+    return new ScoreBin().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScoreBin {
+    return new ScoreBin().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ScoreBin | PlainMessage<ScoreBin> | undefined, b: ScoreBin | PlainMessage<ScoreBin> | undefined): boolean {
+    return proto3.util.equals(ScoreBin, a, b);
+  }
+}
+
+/**
  * @generated from message aimmod.hub.v1.IngestSessionRequest
  */
 export class IngestSessionRequest extends Message<IngestSessionRequest> {
@@ -1009,6 +1058,11 @@ export class GetRunResponse extends Message<GetRunResponse> {
    */
   runId = "";
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview scenario_runs = 15;
+   */
+  scenarioRuns: RunPreview[] = [];
+
   constructor(data?: PartialMessage<GetRunResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1031,6 +1085,7 @@ export class GetRunResponse extends Message<GetRunResponse> {
     { no: 12, name: "timeline_seconds", kind: "message", T: TimelineSecond, repeated: true },
     { no: 13, name: "context_windows", kind: "message", T: ContextWindow, repeated: true },
     { no: 14, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 15, name: "scenario_runs", kind: "message", T: RunPreview, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRunResponse {
@@ -1141,6 +1196,11 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
    */
   topRuns: RunPreview[] = [];
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ScoreBin score_distribution = 11;
+   */
+  scoreDistribution: ScoreBin[] = [];
+
   constructor(data?: PartialMessage<GetScenarioPageResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1159,6 +1219,7 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
     { no: 8, name: "average_duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 9, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
     { no: 10, name: "top_runs", kind: "message", T: RunPreview, repeated: true },
+    { no: 11, name: "score_distribution", kind: "message", T: ScoreBin, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioPageResponse {
@@ -1274,6 +1335,11 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
    */
   recentRuns: RunPreview[] = [];
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview personal_bests = 12;
+   */
+  personalBests: RunPreview[] = [];
+
   constructor(data?: PartialMessage<GetProfileResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1293,6 +1359,7 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
     { no: 9, name: "average_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 10, name: "top_scenarios", kind: "message", T: TopScenario, repeated: true },
     { no: 11, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
+    { no: 12, name: "personal_bests", kind: "message", T: RunPreview, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetProfileResponse {

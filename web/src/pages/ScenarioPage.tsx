@@ -5,6 +5,7 @@ import { ScoreDistributionChart } from "../components/charts/ScoreDistributionCh
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
+import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
@@ -90,7 +91,7 @@ export function ScenarioPage() {
     );
   }
 
-  const hasDistribution = page.recentRuns.length >= 3;
+  const hasDistribution = page.scoreDistribution.length > 0 || page.recentRuns.length >= 3;
   const scoreRange =
     page.bestScore > 0
       ? `${Math.round(page.averageScore).toLocaleString()} avg · ${Math.round(page.bestScore).toLocaleString()} best`
@@ -112,6 +113,7 @@ export function ScenarioPage() {
   return (
     <PageStack>
       <PageSection>
+        <Breadcrumb crumbs={[{ label: "Community", to: "/community" }, { label: page.scenarioName }]} />
         <SectionHeader
           eyebrow="Scenario"
           title={page.scenarioName}
@@ -152,7 +154,10 @@ export function ScenarioPage() {
                 : "Score spread across all recorded runs. Highlighted bar shows where the average falls."
             }
           />
-          <ScoreDistributionChart runs={page.recentRuns} />
+          {page.scoreDistribution.length > 0
+            ? <ScoreDistributionChart bins={page.scoreDistribution} />
+            : <ScoreDistributionChart runs={page.recentRuns} />
+          }
         </PageSection>
       )}
 

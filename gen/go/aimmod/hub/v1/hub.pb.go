@@ -415,6 +415,66 @@ func (x *ContextWindow) GetCoachingTags() []string {
 	return nil
 }
 
+type ScoreBin struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Lo            float64                `protobuf:"fixed64,1,opt,name=lo,proto3" json:"lo,omitempty"`
+	Hi            float64                `protobuf:"fixed64,2,opt,name=hi,proto3" json:"hi,omitempty"`
+	Count         uint32                 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScoreBin) Reset() {
+	*x = ScoreBin{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScoreBin) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScoreBin) ProtoMessage() {}
+
+func (x *ScoreBin) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScoreBin.ProtoReflect.Descriptor instead.
+func (*ScoreBin) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ScoreBin) GetLo() float64 {
+	if x != nil {
+		return x.Lo
+	}
+	return 0
+}
+
+func (x *ScoreBin) GetHi() float64 {
+	if x != nil {
+		return x.Hi
+	}
+	return 0
+}
+
+func (x *ScoreBin) GetCount() uint32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 type IngestSessionRequest struct {
 	state           protoimpl.MessageState          `protogen:"open.v1"`
 	AppVersion      string                          `protobuf:"bytes,1,opt,name=app_version,json=appVersion,proto3" json:"app_version,omitempty"`
@@ -437,7 +497,7 @@ type IngestSessionRequest struct {
 
 func (x *IngestSessionRequest) Reset() {
 	*x = IngestSessionRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[5]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -449,7 +509,7 @@ func (x *IngestSessionRequest) String() string {
 func (*IngestSessionRequest) ProtoMessage() {}
 
 func (x *IngestSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[5]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +522,7 @@ func (x *IngestSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngestSessionRequest.ProtoReflect.Descriptor instead.
 func (*IngestSessionRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{5}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *IngestSessionRequest) GetAppVersion() string {
@@ -574,7 +634,7 @@ type IngestSessionResponse struct {
 
 func (x *IngestSessionResponse) Reset() {
 	*x = IngestSessionResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[6]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -586,7 +646,7 @@ func (x *IngestSessionResponse) String() string {
 func (*IngestSessionResponse) ProtoMessage() {}
 
 func (x *IngestSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[6]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -599,7 +659,7 @@ func (x *IngestSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngestSessionResponse.ProtoReflect.Descriptor instead.
 func (*IngestSessionResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{6}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *IngestSessionResponse) GetAccepted() bool {
@@ -636,7 +696,7 @@ type LinkDiscordAccountRequest struct {
 
 func (x *LinkDiscordAccountRequest) Reset() {
 	*x = LinkDiscordAccountRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[7]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -648,7 +708,7 @@ func (x *LinkDiscordAccountRequest) String() string {
 func (*LinkDiscordAccountRequest) ProtoMessage() {}
 
 func (x *LinkDiscordAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[7]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -661,7 +721,7 @@ func (x *LinkDiscordAccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LinkDiscordAccountRequest.ProtoReflect.Descriptor instead.
 func (*LinkDiscordAccountRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{7}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *LinkDiscordAccountRequest) GetUserExternalId() string {
@@ -711,7 +771,7 @@ type LinkDiscordAccountResponse struct {
 
 func (x *LinkDiscordAccountResponse) Reset() {
 	*x = LinkDiscordAccountResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[8]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -723,7 +783,7 @@ func (x *LinkDiscordAccountResponse) String() string {
 func (*LinkDiscordAccountResponse) ProtoMessage() {}
 
 func (x *LinkDiscordAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[8]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -736,7 +796,7 @@ func (x *LinkDiscordAccountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LinkDiscordAccountResponse.ProtoReflect.Descriptor instead.
 func (*LinkDiscordAccountResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{8}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *LinkDiscordAccountResponse) GetLinked() bool {
@@ -785,7 +845,7 @@ type RunPreview struct {
 
 func (x *RunPreview) Reset() {
 	*x = RunPreview{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[9]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +857,7 @@ func (x *RunPreview) String() string {
 func (*RunPreview) ProtoMessage() {}
 
 func (x *RunPreview) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[9]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +870,7 @@ func (x *RunPreview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunPreview.ProtoReflect.Descriptor instead.
 func (*RunPreview) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{9}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RunPreview) GetSessionId() string {
@@ -895,7 +955,7 @@ type TopScenario struct {
 
 func (x *TopScenario) Reset() {
 	*x = TopScenario{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[10]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -907,7 +967,7 @@ func (x *TopScenario) String() string {
 func (*TopScenario) ProtoMessage() {}
 
 func (x *TopScenario) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[10]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -920,7 +980,7 @@ func (x *TopScenario) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopScenario.ProtoReflect.Descriptor instead.
 func (*TopScenario) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{10}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TopScenario) GetScenarioName() string {
@@ -965,7 +1025,7 @@ type CommunityProfilePreview struct {
 
 func (x *CommunityProfilePreview) Reset() {
 	*x = CommunityProfilePreview{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[11]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -977,7 +1037,7 @@ func (x *CommunityProfilePreview) String() string {
 func (*CommunityProfilePreview) ProtoMessage() {}
 
 func (x *CommunityProfilePreview) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[11]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -990,7 +1050,7 @@ func (x *CommunityProfilePreview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommunityProfilePreview.ProtoReflect.Descriptor instead.
 func (*CommunityProfilePreview) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{11}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CommunityProfilePreview) GetUserHandle() string {
@@ -1043,7 +1103,7 @@ type GetOverviewRequest struct {
 
 func (x *GetOverviewRequest) Reset() {
 	*x = GetOverviewRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[12]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1055,7 +1115,7 @@ func (x *GetOverviewRequest) String() string {
 func (*GetOverviewRequest) ProtoMessage() {}
 
 func (x *GetOverviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[12]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1068,7 +1128,7 @@ func (x *GetOverviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOverviewRequest.ProtoReflect.Descriptor instead.
 func (*GetOverviewRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{12}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{13}
 }
 
 type GetOverviewResponse struct {
@@ -1085,7 +1145,7 @@ type GetOverviewResponse struct {
 
 func (x *GetOverviewResponse) Reset() {
 	*x = GetOverviewResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[13]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1097,7 +1157,7 @@ func (x *GetOverviewResponse) String() string {
 func (*GetOverviewResponse) ProtoMessage() {}
 
 func (x *GetOverviewResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[13]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1110,7 +1170,7 @@ func (x *GetOverviewResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOverviewResponse.ProtoReflect.Descriptor instead.
 func (*GetOverviewResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{13}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetOverviewResponse) GetTotalRuns() uint32 {
@@ -1165,7 +1225,7 @@ type GetRunRequest struct {
 
 func (x *GetRunRequest) Reset() {
 	*x = GetRunRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[14]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1177,7 +1237,7 @@ func (x *GetRunRequest) String() string {
 func (*GetRunRequest) ProtoMessage() {}
 
 func (x *GetRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[14]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1190,7 +1250,7 @@ func (x *GetRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunRequest.ProtoReflect.Descriptor instead.
 func (*GetRunRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{14}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetRunRequest) GetSessionId() string {
@@ -1223,13 +1283,14 @@ type GetRunResponse struct {
 	TimelineSeconds []*TimelineSecond               `protobuf:"bytes,12,rep,name=timeline_seconds,json=timelineSeconds,proto3" json:"timeline_seconds,omitempty"`
 	ContextWindows  []*ContextWindow                `protobuf:"bytes,13,rep,name=context_windows,json=contextWindows,proto3" json:"context_windows,omitempty"`
 	RunId           string                          `protobuf:"bytes,14,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	ScenarioRuns    []*RunPreview                   `protobuf:"bytes,15,rep,name=scenario_runs,json=scenarioRuns,proto3" json:"scenario_runs,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetRunResponse) Reset() {
 	*x = GetRunResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[15]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1241,7 +1302,7 @@ func (x *GetRunResponse) String() string {
 func (*GetRunResponse) ProtoMessage() {}
 
 func (x *GetRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[15]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1254,7 +1315,7 @@ func (x *GetRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunResponse.ProtoReflect.Descriptor instead.
 func (*GetRunResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{15}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetRunResponse) GetSessionId() string {
@@ -1355,6 +1416,13 @@ func (x *GetRunResponse) GetRunId() string {
 	return ""
 }
 
+func (x *GetRunResponse) GetScenarioRuns() []*RunPreview {
+	if x != nil {
+		return x.ScenarioRuns
+	}
+	return nil
+}
+
 type GetScenarioPageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
@@ -1364,7 +1432,7 @@ type GetScenarioPageRequest struct {
 
 func (x *GetScenarioPageRequest) Reset() {
 	*x = GetScenarioPageRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[16]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1376,7 +1444,7 @@ func (x *GetScenarioPageRequest) String() string {
 func (*GetScenarioPageRequest) ProtoMessage() {}
 
 func (x *GetScenarioPageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[16]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1389,7 +1457,7 @@ func (x *GetScenarioPageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetScenarioPageRequest.ProtoReflect.Descriptor instead.
 func (*GetScenarioPageRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{16}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetScenarioPageRequest) GetSlug() string {
@@ -1411,13 +1479,14 @@ type GetScenarioPageResponse struct {
 	AverageDurationMs uint64                 `protobuf:"varint,8,opt,name=average_duration_ms,json=averageDurationMs,proto3" json:"average_duration_ms,omitempty"`
 	RecentRuns        []*RunPreview          `protobuf:"bytes,9,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
 	TopRuns           []*RunPreview          `protobuf:"bytes,10,rep,name=top_runs,json=topRuns,proto3" json:"top_runs,omitempty"`
+	ScoreDistribution []*ScoreBin            `protobuf:"bytes,11,rep,name=score_distribution,json=scoreDistribution,proto3" json:"score_distribution,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetScenarioPageResponse) Reset() {
 	*x = GetScenarioPageResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[17]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1429,7 +1498,7 @@ func (x *GetScenarioPageResponse) String() string {
 func (*GetScenarioPageResponse) ProtoMessage() {}
 
 func (x *GetScenarioPageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[17]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1442,7 +1511,7 @@ func (x *GetScenarioPageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetScenarioPageResponse.ProtoReflect.Descriptor instead.
 func (*GetScenarioPageResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{17}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetScenarioPageResponse) GetScenarioName() string {
@@ -1515,6 +1584,13 @@ func (x *GetScenarioPageResponse) GetTopRuns() []*RunPreview {
 	return nil
 }
 
+func (x *GetScenarioPageResponse) GetScoreDistribution() []*ScoreBin {
+	if x != nil {
+		return x.ScoreDistribution
+	}
+	return nil
+}
+
 type GetProfileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
@@ -1524,7 +1600,7 @@ type GetProfileRequest struct {
 
 func (x *GetProfileRequest) Reset() {
 	*x = GetProfileRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[18]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1536,7 +1612,7 @@ func (x *GetProfileRequest) String() string {
 func (*GetProfileRequest) ProtoMessage() {}
 
 func (x *GetProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[18]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1549,7 +1625,7 @@ func (x *GetProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetProfileRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{18}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetProfileRequest) GetHandle() string {
@@ -1572,13 +1648,14 @@ type GetProfileResponse struct {
 	AverageAccuracy     float64                `protobuf:"fixed64,9,opt,name=average_accuracy,json=averageAccuracy,proto3" json:"average_accuracy,omitempty"`
 	TopScenarios        []*TopScenario         `protobuf:"bytes,10,rep,name=top_scenarios,json=topScenarios,proto3" json:"top_scenarios,omitempty"`
 	RecentRuns          []*RunPreview          `protobuf:"bytes,11,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
+	PersonalBests       []*RunPreview          `protobuf:"bytes,12,rep,name=personal_bests,json=personalBests,proto3" json:"personal_bests,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *GetProfileResponse) Reset() {
 	*x = GetProfileResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[19]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1590,7 +1667,7 @@ func (x *GetProfileResponse) String() string {
 func (*GetProfileResponse) ProtoMessage() {}
 
 func (x *GetProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[19]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1603,7 +1680,7 @@ func (x *GetProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetProfileResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{19}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetProfileResponse) GetUserExternalId() string {
@@ -1683,6 +1760,13 @@ func (x *GetProfileResponse) GetRecentRuns() []*RunPreview {
 	return nil
 }
 
+func (x *GetProfileResponse) GetPersonalBests() []*RunPreview {
+	if x != nil {
+		return x.PersonalBests
+	}
+	return nil
+}
+
 var File_aimmod_hub_v1_hub_proto protoreflect.FileDescriptor
 
 const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
@@ -1721,7 +1805,11 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rcoaching_tags\x18\x06 \x03(\tR\fcoachingTags\x1ae\n" +
 	"\x13FeatureSummaryEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
-	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\"\xde\x06\n" +
+	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\"@\n" +
+	"\bScoreBin\x12\x0e\n" +
+	"\x02lo\x18\x01 \x01(\x01R\x02lo\x12\x0e\n" +
+	"\x02hi\x18\x02 \x01(\x01R\x02hi\x12\x14\n" +
+	"\x05count\x18\x03 \x01(\rR\x05count\"\xde\x06\n" +
 	"\x14IngestSessionRequest\x12\x1f\n" +
 	"\vapp_version\x18\x01 \x01(\tR\n" +
 	"appVersion\x12%\n" +
@@ -1809,7 +1897,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rGetRunRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x15\n" +
-	"\x06run_id\x18\x02 \x01(\tR\x05runId\"\xbe\x06\n" +
+	"\x06run_id\x18\x02 \x01(\tR\x05runId\"\xfe\x06\n" +
 	"\x0eGetRunResponse\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12#\n" +
@@ -1829,7 +1917,8 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"featureSet\x12H\n" +
 	"\x10timeline_seconds\x18\f \x03(\v2\x1d.aimmod.hub.v1.TimelineSecondR\x0ftimelineSeconds\x12E\n" +
 	"\x0fcontext_windows\x18\r \x03(\v2\x1c.aimmod.hub.v1.ContextWindowR\x0econtextWindows\x12\x15\n" +
-	"\x06run_id\x18\x0e \x01(\tR\x05runId\x1a^\n" +
+	"\x06run_id\x18\x0e \x01(\tR\x05runId\x12>\n" +
+	"\rscenario_runs\x18\x0f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\fscenarioRuns\x1a^\n" +
 	"\fSummaryEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\x1aa\n" +
@@ -1837,7 +1926,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\",\n" +
 	"\x16GetScenarioPageRequest\x12\x12\n" +
-	"\x04slug\x18\x01 \x01(\tR\x04slug\"\xb6\x03\n" +
+	"\x04slug\x18\x01 \x01(\tR\x04slug\"\xfe\x03\n" +
 	"\x17GetScenarioPageResponse\x12#\n" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
@@ -1851,9 +1940,10 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\vrecent_runs\x18\t \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\n" +
 	"recentRuns\x124\n" +
 	"\btop_runs\x18\n" +
-	" \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\atopRuns\"+\n" +
+	" \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\atopRuns\x12F\n" +
+	"\x12score_distribution\x18\v \x03(\v2\x17.aimmod.hub.v1.ScoreBinR\x11scoreDistribution\"+\n" +
 	"\x11GetProfileRequest\x12\x16\n" +
-	"\x06handle\x18\x01 \x01(\tR\x06handle\"\xef\x03\n" +
+	"\x06handle\x18\x01 \x01(\tR\x06handle\"\xb1\x04\n" +
 	"\x12GetProfileResponse\x12(\n" +
 	"\x10user_external_id\x18\x01 \x01(\tR\x0euserExternalId\x12\x1f\n" +
 	"\vuser_handle\x18\x02 \x01(\tR\n" +
@@ -1869,7 +1959,8 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rtop_scenarios\x18\n" +
 	" \x03(\v2\x1a.aimmod.hub.v1.TopScenarioR\ftopScenarios\x12:\n" +
 	"\vrecent_runs\x18\v \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\n" +
-	"recentRuns2\xef\x04\n" +
+	"recentRuns\x12@\n" +
+	"\x0epersonal_bests\x18\f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\rpersonalBests2\xef\x04\n" +
 	"\n" +
 	"HubService\x12H\n" +
 	"\tGetHealth\x12\x1c.aimmod.hub.v1.HealthRequest\x1a\x1d.aimmod.hub.v1.HealthResponse\x12Z\n" +
@@ -1893,75 +1984,79 @@ func file_aimmod_hub_v1_hub_proto_rawDescGZIP() []byte {
 	return file_aimmod_hub_v1_hub_proto_rawDescData
 }
 
-var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*HealthRequest)(nil),              // 0: aimmod.hub.v1.HealthRequest
 	(*HealthResponse)(nil),             // 1: aimmod.hub.v1.HealthResponse
 	(*SessionSummaryValue)(nil),        // 2: aimmod.hub.v1.SessionSummaryValue
 	(*TimelineSecond)(nil),             // 3: aimmod.hub.v1.TimelineSecond
 	(*ContextWindow)(nil),              // 4: aimmod.hub.v1.ContextWindow
-	(*IngestSessionRequest)(nil),       // 5: aimmod.hub.v1.IngestSessionRequest
-	(*IngestSessionResponse)(nil),      // 6: aimmod.hub.v1.IngestSessionResponse
-	(*LinkDiscordAccountRequest)(nil),  // 7: aimmod.hub.v1.LinkDiscordAccountRequest
-	(*LinkDiscordAccountResponse)(nil), // 8: aimmod.hub.v1.LinkDiscordAccountResponse
-	(*RunPreview)(nil),                 // 9: aimmod.hub.v1.RunPreview
-	(*TopScenario)(nil),                // 10: aimmod.hub.v1.TopScenario
-	(*CommunityProfilePreview)(nil),    // 11: aimmod.hub.v1.CommunityProfilePreview
-	(*GetOverviewRequest)(nil),         // 12: aimmod.hub.v1.GetOverviewRequest
-	(*GetOverviewResponse)(nil),        // 13: aimmod.hub.v1.GetOverviewResponse
-	(*GetRunRequest)(nil),              // 14: aimmod.hub.v1.GetRunRequest
-	(*GetRunResponse)(nil),             // 15: aimmod.hub.v1.GetRunResponse
-	(*GetScenarioPageRequest)(nil),     // 16: aimmod.hub.v1.GetScenarioPageRequest
-	(*GetScenarioPageResponse)(nil),    // 17: aimmod.hub.v1.GetScenarioPageResponse
-	(*GetProfileRequest)(nil),          // 18: aimmod.hub.v1.GetProfileRequest
-	(*GetProfileResponse)(nil),         // 19: aimmod.hub.v1.GetProfileResponse
-	nil,                                // 20: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	nil,                                // 21: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	nil,                                // 22: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
-	nil,                                // 23: aimmod.hub.v1.GetRunResponse.SummaryEntry
-	nil,                                // 24: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	(*ScoreBin)(nil),                   // 5: aimmod.hub.v1.ScoreBin
+	(*IngestSessionRequest)(nil),       // 6: aimmod.hub.v1.IngestSessionRequest
+	(*IngestSessionResponse)(nil),      // 7: aimmod.hub.v1.IngestSessionResponse
+	(*LinkDiscordAccountRequest)(nil),  // 8: aimmod.hub.v1.LinkDiscordAccountRequest
+	(*LinkDiscordAccountResponse)(nil), // 9: aimmod.hub.v1.LinkDiscordAccountResponse
+	(*RunPreview)(nil),                 // 10: aimmod.hub.v1.RunPreview
+	(*TopScenario)(nil),                // 11: aimmod.hub.v1.TopScenario
+	(*CommunityProfilePreview)(nil),    // 12: aimmod.hub.v1.CommunityProfilePreview
+	(*GetOverviewRequest)(nil),         // 13: aimmod.hub.v1.GetOverviewRequest
+	(*GetOverviewResponse)(nil),        // 14: aimmod.hub.v1.GetOverviewResponse
+	(*GetRunRequest)(nil),              // 15: aimmod.hub.v1.GetRunRequest
+	(*GetRunResponse)(nil),             // 16: aimmod.hub.v1.GetRunResponse
+	(*GetScenarioPageRequest)(nil),     // 17: aimmod.hub.v1.GetScenarioPageRequest
+	(*GetScenarioPageResponse)(nil),    // 18: aimmod.hub.v1.GetScenarioPageResponse
+	(*GetProfileRequest)(nil),          // 19: aimmod.hub.v1.GetProfileRequest
+	(*GetProfileResponse)(nil),         // 20: aimmod.hub.v1.GetProfileResponse
+	nil,                                // 21: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	nil,                                // 22: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	nil,                                // 23: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	nil,                                // 24: aimmod.hub.v1.GetRunResponse.SummaryEntry
+	nil,                                // 25: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 }
 var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
-	20, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	21, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	22, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	21, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	22, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	23, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
 	3,  // 3: aimmod.hub.v1.IngestSessionRequest.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 4: aimmod.hub.v1.IngestSessionRequest.context_windows:type_name -> aimmod.hub.v1.ContextWindow
-	9,  // 5: aimmod.hub.v1.GetOverviewResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 6: aimmod.hub.v1.GetOverviewResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
-	11, // 7: aimmod.hub.v1.GetOverviewResponse.active_profiles:type_name -> aimmod.hub.v1.CommunityProfilePreview
-	23, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
-	24, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	10, // 5: aimmod.hub.v1.GetOverviewResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	11, // 6: aimmod.hub.v1.GetOverviewResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
+	12, // 7: aimmod.hub.v1.GetOverviewResponse.active_profiles:type_name -> aimmod.hub.v1.CommunityProfilePreview
+	24, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
+	25, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 	3,  // 10: aimmod.hub.v1.GetRunResponse.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 11: aimmod.hub.v1.GetRunResponse.context_windows:type_name -> aimmod.hub.v1.ContextWindow
-	9,  // 12: aimmod.hub.v1.GetScenarioPageResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	9,  // 13: aimmod.hub.v1.GetScenarioPageResponse.top_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 14: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
-	9,  // 15: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	2,  // 16: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 17: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 18: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 19: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 20: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	0,  // 21: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
-	5,  // 22: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
-	7,  // 23: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
-	12, // 24: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
-	14, // 25: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
-	16, // 26: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
-	18, // 27: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
-	1,  // 28: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
-	6,  // 29: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
-	8,  // 30: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
-	13, // 31: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
-	15, // 32: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
-	17, // 33: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
-	19, // 34: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
-	28, // [28:35] is the sub-list for method output_type
-	21, // [21:28] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	10, // 12: aimmod.hub.v1.GetRunResponse.scenario_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 13: aimmod.hub.v1.GetScenarioPageResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 14: aimmod.hub.v1.GetScenarioPageResponse.top_runs:type_name -> aimmod.hub.v1.RunPreview
+	5,  // 15: aimmod.hub.v1.GetScenarioPageResponse.score_distribution:type_name -> aimmod.hub.v1.ScoreBin
+	11, // 16: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
+	10, // 17: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 18: aimmod.hub.v1.GetProfileResponse.personal_bests:type_name -> aimmod.hub.v1.RunPreview
+	2,  // 19: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 20: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 21: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 22: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 23: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	0,  // 24: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
+	6,  // 25: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
+	8,  // 26: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
+	13, // 27: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
+	15, // 28: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
+	17, // 29: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
+	19, // 30: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
+	1,  // 31: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
+	7,  // 32: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
+	9,  // 33: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
+	14, // 34: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
+	16, // 35: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
+	18, // 36: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
+	20, // 37: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
+	31, // [31:38] is the sub-list for method output_type
+	24, // [24:31] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_hub_v1_hub_proto_init() }
@@ -1980,7 +2075,7 @@ func file_aimmod_hub_v1_hub_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aimmod_hub_v1_hub_proto_rawDesc), len(file_aimmod_hub_v1_hub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

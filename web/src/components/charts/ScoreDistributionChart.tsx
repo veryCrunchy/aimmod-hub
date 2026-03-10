@@ -1,5 +1,5 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { RunPreview } from "../../gen/aimmod/hub/v1/hub_pb";
+import type { RunPreview, ScoreBin } from "../../gen/aimmod/hub/v1/hub_pb";
 
 const C = {
   muted: "#a7c2b3",
@@ -11,14 +11,6 @@ const C = {
   mid: "#00b4ff50",   // middle — blue, faint
   peak: "#00f5a0",    // top 10% — green, solid
 };
-
-type Props = {
-  runs: RunPreview[];
-};
-
-function percentile(sorted: number[], p: number): number {
-  return sorted[Math.floor(sorted.length * p)] ?? sorted[sorted.length - 1];
-}
 
 type Bin = { label: string; count: number; lo: number; hi: number };
 
@@ -49,30 +41,54 @@ function CustomTooltip({ active, payload }: TooltipProps) {
   );
 }
 
-export function ScoreDistributionChart({ runs }: Props) {
-  if (runs.length < 4) return null;
+function percentile(sorted: number[], p: number): number {
+  return sorted[Math.floor(sorted.length * p)] ?? sorted[sorted.length - 1];
+}
 
-  const sorted = [...runs].map((r) => r.score).sort((a, b) => a - b);
-  const min = sorted[0];
-  const max = sorted[sorted.length - 1];
-  const range = max - min;
-  if (range === 0) return null;
+type Props =
+  | { bins: ScoreBin[]; runs?: never }
+  | { runs: RunPreview[]; bins?: never };
 
-  const BINS = 10;
-  const binSize = range / BINS;
+export function ScoreDistributionChart({ bins: precomputed, runs }: Props) {
+  let bins: Bin[];
+  let p10: number, p90: number, p50: number;
 
-  const bins: Bin[] = Array.from({ length: BINS }, (_, i) => {
-    const lo = min + i * binSize;
-    const hi = lo + binSize;
-    const count = sorted.filter((s) =>
-      i === BINS - 1 ? s >= lo && s <= hi : s >= lo && s < hi,
-    ).length;
-    return { label: Math.round(lo).toLocaleString(), count, lo, hi };
-  });
-
-  const p10 = percentile(sorted, 0.1);
-  const p50 = percentile(sorted, 0.5);
-  const p90 = percentile(sorted, 0.9);
+  if (precomputed && precomputed.length > 0) {
+    bins = precomputed.map((b) => ({
+      label: Math.round(Number(b.lo)).toLocaleString(),
+      count: Number(b.count),
+      lo: Number(b.lo),
+      hi: Number(b.hi),
+    }));
+    const sorted = bins
+      .flatMap((b) => Array.from({ length: b.count }, () => (b.lo + b.hi) / 2))
+      .sort((a, z) => a - z);
+    if (sorted.length === 0) return null;
+    p10 = percentile(sorted, 0.1);
+    p50 = percentile(sorted, 0.5);
+    p90 = percentile(sorted, 0.9);
+  } else if (runs && runs.length >= 4) {
+    const sorted = [...runs].map((r) => r.score).sort((a, b) => a - b);
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    const range = max - min;
+    if (range === 0) return null;
+    const BINS = 10;
+    const binSize = range / BINS;
+    bins = Array.from({ length: BINS }, (_, i) => {
+      const lo = min + i * binSize;
+      const hi = lo + binSize;
+      const count = sorted.filter((s) =>
+        i === BINS - 1 ? s >= lo && s <= hi : s >= lo && s < hi,
+      ).length;
+      return { label: Math.round(lo).toLocaleString(), count, lo, hi };
+    });
+    p10 = percentile(sorted, 0.1);
+    p50 = percentile(sorted, 0.5);
+    p90 = percentile(sorted, 0.9);
+  } else {
+    return null;
+  }
 
   const legend = [
     { color: "#a78bfa", label: `Floor (p10): ${Math.round(p10).toLocaleString()}` },

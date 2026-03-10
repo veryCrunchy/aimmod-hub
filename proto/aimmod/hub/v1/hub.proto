@@ -42,6 +42,12 @@ message ContextWindow {
   repeated string coaching_tags = 6;
 }
 
+message ScoreBin {
+  double lo = 1;
+  double hi = 2;
+  uint32 count = 3;
+}
+
 message IngestSessionRequest {
   string app_version = 1;
   uint32 schema_version = 2;
@@ -140,6 +146,7 @@ message GetRunResponse {
   repeated TimelineSecond timeline_seconds = 12;
   repeated ContextWindow context_windows = 13;
   string run_id = 14;
+  repeated RunPreview scenario_runs = 15;
 }
 
 message GetScenarioPageRequest {
@@ -157,6 +164,7 @@ message GetScenarioPageResponse {
   uint64 average_duration_ms = 8;
   repeated RunPreview recent_runs = 9;
   repeated RunPreview top_runs = 10;
+  repeated ScoreBin score_distribution = 11;
 }
 
 message GetProfileRequest {
@@ -175,6 +183,7 @@ message GetProfileResponse {
   double average_accuracy = 9;
   repeated TopScenario top_scenarios = 10;
   repeated RunPreview recent_runs = 11;
+  repeated RunPreview personal_bests = 12;
 }
 
 service HubService {

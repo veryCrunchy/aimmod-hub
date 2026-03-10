@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { GetRunResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { Skeleton } from "../components/ui/Skeleton";
 import { TimelineChart } from "../components/charts/TimelineChart";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
+import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
@@ -99,13 +101,11 @@ export function RunPage() {
     return (
       <PageStack>
         <PageSection>
-          <div className="mb-3 h-3 w-12 animate-pulse rounded bg-white/5" />
-          <div className="mb-3 h-10 w-72 animate-pulse rounded-lg bg-white/5" />
-          <div className="mb-4 h-4 w-64 animate-pulse rounded bg-white/5" />
+          <Skeleton className="mb-3 h-3 w-12" />
+          <Skeleton className="mb-3 h-10 w-72" />
+          <Skeleton className="mb-4 h-4 w-64" />
           <Grid className="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-[100px] animate-pulse rounded-[18px] bg-white/5" />
-            ))}
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px]" />)}
           </Grid>
         </PageSection>
       </PageStack>
@@ -162,6 +162,10 @@ export function RunPage() {
     <PageStack>
       {/* ── header + stat cards ── */}
       <PageSection>
+        <Breadcrumb crumbs={[
+          { label: run.scenarioName, to: `/scenarios/${slugifyScenarioName(run.scenarioName)}` },
+          { label: "Run" },
+        ]} />
         <SectionHeader
           eyebrow="Run"
           title={<Link className="hover:text-cyan transition-colors" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>{run.scenarioName}</Link>}
@@ -445,6 +449,57 @@ export function RunPage() {
           )}
         </div>
       </Grid>
+
+      {run.scenarioRuns.length > 0 && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Same scenario"
+            title="Top runs on this scenario"
+            body="The highest-scoring runs other players have recorded on this scenario."
+          />
+          <ScrollArea className="overflow-auto rounded-[18px] border border-line bg-white/2">
+            <table className="min-w-full text-left text-sm">
+              <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                <tr>
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-4 py-3">Player</th>
+                  <th className="px-4 py-3">Score</th>
+                  <th className="px-4 py-3">Acc</th>
+                  <th className="px-4 py-3">Run</th>
+                </tr>
+              </thead>
+              <tbody>
+                {run.scenarioRuns.map((r, idx) => {
+                  const rank = idx + 1;
+                  const rankColor = rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
+                  const isCurrentRun = (r.runId || r.sessionId) === runId;
+                  return (
+                    <tr key={r.runId || r.sessionId} className={`border-b border-white/6 last:border-b-0 transition-colors ${isCurrentRun ? "bg-white/[0.03]" : "hover:bg-white/[0.015]"}`}>
+                      <td className={`px-4 py-3 font-medium tabular-nums ${rankColor}`}>{rank}</td>
+                      <td className="px-4 py-3 text-text">
+                        <Link className="text-cyan underline underline-offset-3" to={`/profiles/${r.userHandle || r.userDisplayName}`}>
+                          {r.userDisplayName || r.userHandle}
+                        </Link>
+                      </td>
+                      <td className={`px-4 py-3 font-medium ${rank === 1 ? "text-gold" : "text-text"}`}>
+                        {Math.round(r.score).toLocaleString()}
+                        {isCurrentRun && <span className="ml-2 text-[10px] text-muted-2 uppercase tracking-wider">this run</span>}
+                      </td>
+                      <td className="px-4 py-3 text-text">{r.accuracy.toFixed(1)}%</td>
+                      <td className="px-4 py-3">
+                        {isCurrentRun
+                          ? <span className="text-muted-2 text-[11px]">current</span>
+                          : <Link className="text-cyan underline underline-offset-3" to={`/runs/${r.runId || r.sessionId}`}>Open</Link>
+                        }
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </ScrollArea>
+        </PageSection>
+      )}
     </PageStack>
   );
 }
