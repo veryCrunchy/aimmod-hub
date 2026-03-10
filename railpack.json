@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.railpack.com",
   "provider": "golang",
+  "steps": {
+    "build": {
+      "commands": [
+        "go build -ldflags=\"-w -s\" -o out ./api/cmd/aimmod-hub"
+      ]
+    }
+  },
   "deploy": {
     "startCommand": "./out"
   }
