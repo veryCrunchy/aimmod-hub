@@ -82,6 +82,16 @@ This starts:
 - the Go API
 - the Vite frontend
 
+## Railpack deployment (API)
+
+This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
+
+- `nixpacks.toml` forces Go provider detection
+- build command: `go build -o bin/aimmod-hub ./api/cmd/aimmod-hub`
+- start command: `./bin/aimmod-hub`
+
+At runtime, the API now prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
+
 ## Environment
 
 See [`.env.example`](./.env.example).

@@ -142,8 +142,23 @@ func OpenStore(ctx context.Context, cfg Config) (*store.Store, error) {
 }
 
 func DefaultConfig() Config {
+	addr := os.Getenv("AIMMOD_HUB_ADDR")
+	if addr == "" {
+		port := strings.TrimSpace(os.Getenv("PORT"))
+		if port != "" {
+			if strings.HasPrefix(port, ":") {
+				addr = port
+			} else {
+				addr = ":" + port
+			}
+		}
+	}
+	if addr == "" {
+		addr = ":8080"
+	}
+
 	return Config{
-		Addr:                envOrDefault("AIMMOD_HUB_ADDR", ":8080"),
+		Addr:                addr,
 		Version:             envOrDefault("AIMMOD_HUB_VERSION", "dev"),
 		AllowedWebOrigin:    envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
 		WebAppOrigin:        envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),

@@ -1,0 +1,10 @@
+providers = ["go"]
+
+[variables]
+CGO_ENABLED = "0"
+
+[phases.build]
+cmds = ["go build -o bin/aimmod-hub ./api/cmd/aimmod-hub"]
+
+[start]
+cmd = "./bin/aimmod-hub"
