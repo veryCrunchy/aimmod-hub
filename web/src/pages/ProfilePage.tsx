@@ -41,6 +41,18 @@ export function ProfilePage() {
     };
   }, [handle]);
 
+  const topScenarios = profile?.topScenarios ?? [];
+
+  const scenarioTypes = useMemo(() => {
+    const types = new Set<string>();
+    for (const scenario of topScenarios) {
+      if (scenario.scenarioType?.trim() && scenario.scenarioType !== "Unknown") {
+        types.add(scenario.scenarioType);
+      }
+    }
+    return [...types];
+  }, [topScenarios]);
+
   function handleRunSort(field: string) {
     const f = field as RunSortField;
     if (f === runSortField) {
@@ -94,15 +106,6 @@ export function ProfilePage() {
     profile.topScenarios.some((s) => s.scenarioType?.trim() && s.scenarioType !== "Unknown");
 
   const hasTrend = profile.recentRuns.length >= 2;
-
-  // unique scenario types for filter bar
-  const scenarioTypes = useMemo(() => {
-    const types = new Set<string>();
-    for (const s of profile.topScenarios) {
-      if (s.scenarioType?.trim() && s.scenarioType !== "Unknown") types.add(s.scenarioType);
-    }
-    return [...types];
-  }, [profile.topScenarios]);
 
   const filteredScenarios = scenarioTypeFilter
     ? profile.topScenarios.filter((s) => s.scenarioType === scenarioTypeFilter)

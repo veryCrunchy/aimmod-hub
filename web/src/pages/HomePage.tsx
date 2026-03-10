@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { StatCard } from "../components/StatCard";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useCountUp } from "../hooks/useCountUp";
 import { fetchOverview, formatDurationMs, formatRelativeTime } from "../lib/api";
-import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
+
+const PAGE_SIZE = 15;
 
 function AnimatedStatCard({
   label,
@@ -39,6 +42,7 @@ function AnimatedStatCard({
 export function HomePage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [runsVisible, setRunsVisible] = useState(PAGE_SIZE);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,8 +63,21 @@ export function HomePage() {
     };
   }, []);
 
+  const doRefresh = useCallback(() => {
+    void fetchOverview()
+      .then((next) => {
+        setOverview(next);
+        setError(null);
+      })
+      .catch(() => {});
+  }, []);
+  useAutoRefresh(doRefresh, 30_000);
+
   const featuredScenario = overview?.topScenarios[0];
   const featuredProfile = overview?.activeProfiles[0];
+
+  const visibleRuns = overview?.recentRuns.slice(0, runsVisible) ?? [];
+  const hasMoreRuns = (overview?.recentRuns.length ?? 0) > runsVisible;
 
   return (
     <PageStack>
@@ -196,55 +213,65 @@ export function HomePage() {
           body="The latest runs players have completed."
         />
         {overview?.recentRuns.length ? (
-          <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
-            <table className="min-w-full text-left text-sm">
-              <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
-                <tr>
-                  <th className="px-4 py-3">Scenario</th>
-                  <th className="px-4 py-3">Player</th>
-                  <th className="px-4 py-3">Score</th>
-                  <th className="px-4 py-3">Acc</th>
-                  <th className="px-4 py-3">Duration</th>
-                  <th className="px-4 py-3">When</th>
-                  <th className="px-4 py-3">Run</th>
-                </tr>
-              </thead>
-              <tbody>
-                {overview.recentRuns.slice(0, 12).map((run) => (
-                  <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
-                    <td className="px-4 py-3 text-text max-w-[200px] truncate">
-                      <Link
-                        className="hover:text-cyan transition-colors"
-                        to={`/scenarios/${run.scenarioName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
-                      >
-                        {run.scenarioName}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-text">
-                      <Link
-                        className="text-cyan underline underline-offset-3"
-                        to={`/profiles/${run.userHandle || run.userDisplayName}`}
-                      >
-                        {run.userDisplayName || run.userHandle}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-text">{Math.round(run.score).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
-                    <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
-                    <td className="px-4 py-3 text-muted">{formatRelativeTime(run.playedAtIso)}</td>
-                    <td className="px-4 py-3 text-text">
-                      <Link
-                        className="text-cyan underline underline-offset-3"
-                        to={`/runs/${run.runId || run.sessionId}`}
-                      >
-                        Open
-                      </Link>
-                    </td>
+          <>
+            <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <table className="min-w-full text-left text-sm">
+                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                  <tr>
+                    <th className="px-4 py-3">Scenario</th>
+                    <th className="px-4 py-3">Player</th>
+                    <th className="px-4 py-3">Score</th>
+                    <th className="px-4 py-3">Acc</th>
+                    <th className="px-4 py-3">Duration</th>
+                    <th className="px-4 py-3">When</th>
+                    <th className="px-4 py-3">Run</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </ScrollArea>
+                </thead>
+                <tbody>
+                  {visibleRuns.map((run) => (
+                    <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
+                      <td className="px-4 py-3 text-text max-w-[200px] truncate">
+                        <Link
+                          className="hover:text-cyan transition-colors"
+                          to={`/scenarios/${run.scenarioName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
+                        >
+                          {run.scenarioName}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-text">
+                        <Link
+                          className="text-cyan underline underline-offset-3"
+                          to={`/profiles/${run.userHandle || run.userDisplayName}`}
+                        >
+                          {run.userDisplayName || run.userHandle}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-text">{Math.round(run.score).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
+                      <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
+                      <td className="px-4 py-3 text-muted">{formatRelativeTime(run.playedAtIso)}</td>
+                      <td className="px-4 py-3 text-text">
+                        <Link
+                          className="text-cyan underline underline-offset-3"
+                          to={`/runs/${run.runId || run.sessionId}`}
+                        >
+                          Open
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollArea>
+            {hasMoreRuns && (
+              <button
+                onClick={() => setRunsVisible((n) => n + PAGE_SIZE)}
+                className="mt-3 w-full rounded-[14px] border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+              >
+                Load {Math.min(PAGE_SIZE, (overview?.recentRuns.length ?? 0) - runsVisible)} more runs
+              </button>
+            )}
+          </>
         ) : (
           <EmptyState
             title="No runs yet"

@@ -180,6 +180,7 @@ func (s *HubServer) GetScenarioPage(
 		AverageAccuracy:   page.AverageAccuracy,
 		AverageDurationMs: page.AverageDurationMS,
 		RecentRuns:        page.RecentRuns,
+		TopRuns:           page.TopRuns,
 	}), nil
 }
 

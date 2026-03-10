@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { GetScenarioPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScoreDistributionChart } from "../components/charts/ScoreDistributionChart";
@@ -11,9 +11,12 @@ import { ScrollArea } from "../components/ui/ScrollArea";
 import { Skeleton } from "../components/ui/Skeleton";
 import { SortableTh } from "../components/ui/SortableTh";
 import { Grid, PageStack } from "../components/ui/Stack";
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { fetchScenarioPage, formatDurationMs, formatRelativeTime } from "../lib/api";
 
 type SortField = "score" | "accuracy" | "date";
+type Tab = "recent" | "leaderboard";
+const PAGE_SIZE = 15;
 
 export function ScenarioPage() {
   const { slug = "" } = useParams();
@@ -21,11 +24,17 @@ export function ScenarioPage() {
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [tab, setTab] = useState<Tab>("recent");
+  const [recentVisible, setRecentVisible] = useState(PAGE_SIZE);
+  const [topVisible, setTopVisible] = useState(PAGE_SIZE);
 
   useEffect(() => {
     let cancelled = false;
     setPage(null);
     setError(null);
+    setRecentVisible(PAGE_SIZE);
+    setTopVisible(PAGE_SIZE);
+    setTab("recent");
     void fetchScenarioPage(slug)
       .then((next) => {
         if (!cancelled) setPage(next);
@@ -37,6 +46,13 @@ export function ScenarioPage() {
       cancelled = true;
     };
   }, [slug]);
+
+  const doRefresh = useCallback(() => {
+    void fetchScenarioPage(slug)
+      .then((next) => setPage(next))
+      .catch(() => {});
+  }, [slug]);
+  useAutoRefresh(doRefresh, 60_000);
 
   function handleSort(field: string) {
     const f = field as SortField;
@@ -88,6 +104,11 @@ export function ScenarioPage() {
     return sortDir === "asc" ? diff : -diff;
   });
 
+  const visibleRecent = sortedRuns.slice(0, recentVisible);
+  const hasMoreRecent = sortedRuns.length > recentVisible;
+  const visibleTop = page.topRuns.slice(0, topVisible);
+  const hasMoreTop = page.topRuns.length > topVisible;
+
   return (
     <PageStack>
       <PageSection>
@@ -137,64 +158,138 @@ export function ScenarioPage() {
 
       <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">
         <PageSection>
-          <SectionHeader
-            eyebrow="Recent runs"
-            title="Latest runs"
-            body="The newest runs for this scenario."
-          />
-          {page.recentRuns.length > 0 ? (
-            <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
-              <table className="min-w-full text-left text-sm">
-                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
-                  <tr>
-                    <th className="px-4 py-3">Player</th>
-                    <SortableTh label="Score" field="score" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-                    <SortableTh label="Acc" field="accuracy" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-                    <SortableTh label="When" field="date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-                    <th className="px-4 py-3">Run</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRuns.map((run) => {
-                    const isBest = Math.round(run.score) === Math.round(page.bestScore);
-                    return (
-                      <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
-                        <td className="px-4 py-3 text-text">
-                          <Link
-                            className="text-cyan underline underline-offset-3"
-                            to={`/profiles/${run.userHandle || run.userDisplayName}`}
-                          >
-                            {run.userDisplayName || run.userHandle}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={isBest ? "text-mint font-medium" : "text-text"}>
-                            {Math.round(run.score).toLocaleString()}
-                          </span>
-                          {isBest && (
-                            <span className="ml-2 text-[10px] text-mint/70 uppercase tracking-wider">best</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
-                        <td className="px-4 py-3 text-muted" title={new Date(run.playedAtIso).toLocaleString()}>
-                          {formatRelativeTime(run.playedAtIso)}
-                        </td>
-                        <td className="px-4 py-3 text-text">
-                          <Link
-                            className="text-cyan underline underline-offset-3"
-                            to={`/runs/${run.runId || run.sessionId}`}
-                          >
-                            Open
-                          </Link>
-                        </td>
+          {/* Tab bar */}
+          <div className="mb-[18px] flex items-center gap-1 border-b border-line pb-px">
+            {(["recent", "leaderboard"] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={[
+                  "rounded-t-[10px] px-4 py-2 text-[11px] uppercase tracking-[0.08em] transition-colors",
+                  tab === t
+                    ? "border-b-2 border-mint -mb-px text-mint"
+                    : "text-muted hover:text-text",
+                ].join(" ")}
+              >
+                {t === "recent" ? "Recent runs" : `Leaderboard${page.topRuns.length > 0 ? ` · ${page.topRuns.length}` : ""}`}
+              </button>
+            ))}
+          </div>
+
+          {tab === "recent" ? (
+            page.recentRuns.length > 0 ? (
+              <>
+                <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                      <tr>
+                        <th className="px-4 py-3">Player</th>
+                        <SortableTh label="Score" field="score" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                        <SortableTh label="Acc" field="accuracy" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                        <SortableTh label="When" field="date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                        <th className="px-4 py-3">Run</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </ScrollArea>
+                    </thead>
+                    <tbody>
+                      {visibleRecent.map((run) => {
+                        const isBest = Math.round(run.score) === Math.round(page.bestScore);
+                        return (
+                          <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
+                            <td className="px-4 py-3 text-text">
+                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                                {run.userDisplayName || run.userHandle}
+                              </Link>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={isBest ? "text-mint font-medium" : "text-text"}>
+                                {Math.round(run.score).toLocaleString()}
+                              </span>
+                              {isBest && <span className="ml-2 text-[10px] text-mint/70 uppercase tracking-wider">best</span>}
+                            </td>
+                            <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
+                            <td className="px-4 py-3 text-muted" title={new Date(run.playedAtIso).toLocaleString()}>
+                              {formatRelativeTime(run.playedAtIso)}
+                            </td>
+                            <td className="px-4 py-3 text-text">
+                              <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
+                                Open
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+                {hasMoreRecent && (
+                  <button
+                    onClick={() => setRecentVisible((n) => n + PAGE_SIZE)}
+                    className="mt-3 w-full rounded-[14px] border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+                  >
+                    Load {Math.min(PAGE_SIZE, sortedRuns.length - recentVisible)} more runs
+                  </button>
+                )}
+              </>
+            ) : (
+              <EmptyState title="No runs yet" body="This scenario has not received any uploaded runs yet." />
+            )
           ) : (
-            <EmptyState title="No runs yet" body="This scenario has not received any uploaded runs yet." />
+            page.topRuns.length > 0 ? (
+              <>
+                <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                      <tr>
+                        <th className="px-4 py-3">#</th>
+                        <th className="px-4 py-3">Player</th>
+                        <th className="px-4 py-3">Score</th>
+                        <th className="px-4 py-3">Acc</th>
+                        <th className="px-4 py-3">When</th>
+                        <th className="px-4 py-3">Run</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleTop.map((run, idx) => {
+                        const rank = idx + 1;
+                        const rankColor = rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
+                        return (
+                          <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
+                            <td className={`px-4 py-3 font-medium tabular-nums ${rankColor}`}>{rank}</td>
+                            <td className="px-4 py-3 text-text">
+                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                                {run.userDisplayName || run.userHandle}
+                              </Link>
+                            </td>
+                            <td className={`px-4 py-3 font-medium ${rank === 1 ? "text-gold" : "text-text"}`}>
+                              {Math.round(run.score).toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
+                            <td className="px-4 py-3 text-muted" title={new Date(run.playedAtIso).toLocaleString()}>
+                              {formatRelativeTime(run.playedAtIso)}
+                            </td>
+                            <td className="px-4 py-3 text-text">
+                              <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
+                                Open
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+                {hasMoreTop && (
+                  <button
+                    onClick={() => setTopVisible((n) => n + PAGE_SIZE)}
+                    className="mt-3 w-full rounded-[14px] border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+                  >
+                    Load {Math.min(PAGE_SIZE, page.topRuns.length - topVisible)} more
+                  </button>
+                )}
+              </>
+            ) : (
+              <EmptyState title="No leaderboard yet" body="Scores will appear here once runs are uploaded." />
+            )
           )}
         </PageSection>
 

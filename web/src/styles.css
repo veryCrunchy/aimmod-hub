@@ -38,6 +38,7 @@
       radial-gradient(circle at top right, rgba(184, 255, 225, 0.12), transparent 16%),
       radial-gradient(circle at 50% 0%, rgba(121, 201, 151, 0.08), transparent 30%),
       linear-gradient(180deg, #020806 0%, #04100b 36%, #010302 100%);
+    background-attachment: fixed;
     color: var(--color-text);
     font-family: var(--font-display);
   }

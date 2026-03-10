@@ -156,6 +156,7 @@ message GetScenarioPageResponse {
   double average_accuracy = 7;
   uint64 average_duration_ms = 8;
   repeated RunPreview recent_runs = 9;
+  repeated RunPreview top_runs = 10;
 }
 
 message GetProfileRequest {

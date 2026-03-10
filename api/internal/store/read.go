@@ -40,6 +40,7 @@ type ScenarioPageRecord struct {
 	AverageAccuracy   float64
 	AverageDurationMS uint64
 	RecentRuns        []*hubv1.RunPreview
+	TopRuns           []*hubv1.RunPreview
 }
 
 type ProfileRecord struct {
@@ -193,7 +194,7 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
 		ORDER BY sr.played_at DESC, sr.created_at DESC
-		LIMIT 16
+		LIMIT 50
 	`)
 	if err != nil {
 		return OverviewRecord{}, fmt.Errorf("load overview recent runs: %w", err)
@@ -229,7 +230,7 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 		FROM scenario_runs
 		GROUP BY 1, 2
 		ORDER BY run_count DESC, scenario_name ASC
-		LIMIT 8
+		LIMIT 30
 	`)
 	if err != nil {
 		return OverviewRecord{}, fmt.Errorf("load overview top scenarios: %w", err)
@@ -267,7 +268,7 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
 		GROUP BY hu.id, user_handle, user_display_name, avatar_url
 		ORDER BY run_count DESC, user_display_name ASC
-		LIMIT 8
+		LIMIT 30
 	`)
 	if err != nil {
 		return OverviewRecord{}, fmt.Errorf("load overview active profiles: %w", err)
@@ -495,7 +496,7 @@ func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageR
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
 		WHERE sr.scenario_name = $1
 		ORDER BY sr.played_at DESC, sr.created_at DESC
-		LIMIT 12
+		LIMIT 50
 	`, scenarioName)
 	if err != nil {
 		return ScenarioPageRecord{}, fmt.Errorf("load scenario recent runs: %w", err)
@@ -521,6 +522,51 @@ func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageR
 	}
 	if err := recentRows.Err(); err != nil {
 		return ScenarioPageRecord{}, fmt.Errorf("iterate scenario recent runs: %w", err)
+	}
+
+	topRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			sr.scenario_name,
+			sr.scenario_type,
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE sr.scenario_name = $1
+		ORDER BY sr.score DESC, sr.played_at DESC
+		LIMIT 50
+	`, scenarioName)
+	if err != nil {
+		return ScenarioPageRecord{}, fmt.Errorf("load scenario top runs: %w", err)
+	}
+	defer topRows.Close()
+	for topRows.Next() {
+		var run RunRecord
+		if err := topRows.Scan(
+			&run.PublicRunID,
+			&run.SessionID,
+			&run.ScenarioName,
+			&run.ScenarioType,
+			&run.PlayedAt,
+			&run.Score,
+			&run.Accuracy,
+			&run.DurationMS,
+			&run.UserHandle,
+			&run.UserDisplayName,
+		); err != nil {
+			return ScenarioPageRecord{}, fmt.Errorf("scan scenario top run: %w", err)
+		}
+		record.TopRuns = append(record.TopRuns, runPreviewFromRecord(run))
+	}
+	if err := topRows.Err(); err != nil {
+		return ScenarioPageRecord{}, fmt.Errorf("iterate scenario top runs: %w", err)
 	}
 
 	return record, nil
@@ -601,7 +647,7 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 		WHERE user_id = $1
 		GROUP BY 1, 2
 		ORDER BY run_count DESC, scenario_name ASC
-		LIMIT 6
+		LIMIT 30
 	`, userID)
 	if err != nil {
 		return ProfileRecord{}, fmt.Errorf("load top scenarios: %w", err)
@@ -626,7 +672,7 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 		FROM scenario_runs
 		WHERE user_id = $1
 		ORDER BY played_at DESC, created_at DESC
-		LIMIT 12
+		LIMIT 50
 	`, userID)
 	if err != nil {
 		return ProfileRecord{}, fmt.Errorf("load recent profile runs: %w", err)

@@ -1136,6 +1136,11 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
    */
   recentRuns: RunPreview[] = [];
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview top_runs = 10;
+   */
+  topRuns: RunPreview[] = [];
+
   constructor(data?: PartialMessage<GetScenarioPageResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1153,6 +1158,7 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
     { no: 7, name: "average_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 8, name: "average_duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 9, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
+    { no: 10, name: "top_runs", kind: "message", T: RunPreview, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioPageResponse {

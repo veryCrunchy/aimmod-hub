@@ -1410,6 +1410,7 @@ type GetScenarioPageResponse struct {
 	AverageAccuracy   float64                `protobuf:"fixed64,7,opt,name=average_accuracy,json=averageAccuracy,proto3" json:"average_accuracy,omitempty"`
 	AverageDurationMs uint64                 `protobuf:"varint,8,opt,name=average_duration_ms,json=averageDurationMs,proto3" json:"average_duration_ms,omitempty"`
 	RecentRuns        []*RunPreview          `protobuf:"bytes,9,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
+	TopRuns           []*RunPreview          `protobuf:"bytes,10,rep,name=top_runs,json=topRuns,proto3" json:"top_runs,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -1503,6 +1504,13 @@ func (x *GetScenarioPageResponse) GetAverageDurationMs() uint64 {
 func (x *GetScenarioPageResponse) GetRecentRuns() []*RunPreview {
 	if x != nil {
 		return x.RecentRuns
+	}
+	return nil
+}
+
+func (x *GetScenarioPageResponse) GetTopRuns() []*RunPreview {
+	if x != nil {
+		return x.TopRuns
 	}
 	return nil
 }
@@ -1829,7 +1837,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\",\n" +
 	"\x16GetScenarioPageRequest\x12\x12\n" +
-	"\x04slug\x18\x01 \x01(\tR\x04slug\"\x80\x03\n" +
+	"\x04slug\x18\x01 \x01(\tR\x04slug\"\xb6\x03\n" +
 	"\x17GetScenarioPageResponse\x12#\n" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
@@ -1841,7 +1849,9 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x10average_accuracy\x18\a \x01(\x01R\x0faverageAccuracy\x12.\n" +
 	"\x13average_duration_ms\x18\b \x01(\x04R\x11averageDurationMs\x12:\n" +
 	"\vrecent_runs\x18\t \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\n" +
-	"recentRuns\"+\n" +
+	"recentRuns\x124\n" +
+	"\btop_runs\x18\n" +
+	" \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\atopRuns\"+\n" +
 	"\x11GetProfileRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\"\xef\x03\n" +
 	"\x12GetProfileResponse\x12(\n" +
@@ -1925,32 +1935,33 @@ var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
 	3,  // 10: aimmod.hub.v1.GetRunResponse.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 11: aimmod.hub.v1.GetRunResponse.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	9,  // 12: aimmod.hub.v1.GetScenarioPageResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 13: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
-	9,  // 14: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	2,  // 15: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 16: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 17: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 18: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 19: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	0,  // 20: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
-	5,  // 21: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
-	7,  // 22: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
-	12, // 23: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
-	14, // 24: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
-	16, // 25: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
-	18, // 26: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
-	1,  // 27: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
-	6,  // 28: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
-	8,  // 29: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
-	13, // 30: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
-	15, // 31: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
-	17, // 32: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
-	19, // 33: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
-	27, // [27:34] is the sub-list for method output_type
-	20, // [20:27] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	9,  // 13: aimmod.hub.v1.GetScenarioPageResponse.top_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 14: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
+	9,  // 15: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	2,  // 16: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 17: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 18: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 19: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 20: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	0,  // 21: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
+	5,  // 22: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
+	7,  // 23: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
+	12, // 24: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
+	14, // 25: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
+	16, // 26: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
+	18, // 27: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
+	1,  // 28: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
+	6,  // 29: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
+	8,  // 30: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
+	13, // 31: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
+	15, // 32: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
+	17, // 33: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
+	19, // 34: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
+	28, // [28:35] is the sub-list for method output_type
+	21, // [21:28] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_hub_v1_hub_proto_init() }
