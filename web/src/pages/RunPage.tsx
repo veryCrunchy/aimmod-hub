@@ -29,6 +29,41 @@ function fmt(v: number | null, decimals = 0): string {
   return decimals > 0 ? v.toFixed(decimals) : Math.round(v).toLocaleString();
 }
 
+function shouldClusterHitIndicators(hitTimestampsMs: number[], durationMs: number): boolean {
+  if (hitTimestampsMs.length < 12 || durationMs <= 0) return false;
+  const hitsPerSecond = hitTimestampsMs.length / Math.max(durationMs / 1000, 1);
+  return hitsPerSecond > 2;
+}
+
+function normalizePercentLike(value: number | null): number | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  if (value >= 0 && value <= 1) return value * 100;
+  return value;
+}
+
+function clusterHitWindows(
+  hitTimestampsMs: number[],
+  mergeGapMs = 220,
+): Array<{ startMs: number; endMs: number }> {
+  if (hitTimestampsMs.length === 0) return [];
+  const sorted = [...hitTimestampsMs].sort((a, b) => a - b);
+  const windows: Array<{ startMs: number; endMs: number }> = [];
+  let startMs = sorted[0];
+  let endMs = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    const timestampMs = sorted[i];
+    if (timestampMs - endMs <= mergeGapMs) {
+      endMs = timestampMs;
+      continue;
+    }
+    windows.push({ startMs, endMs });
+    startMs = timestampMs;
+    endMs = timestampMs;
+  }
+  windows.push({ startMs, endMs });
+  return windows;
+}
+
 // ── small metric row ─────────────────────────────────────────────────────────
 
 function MetricRow({ label, value, dim }: { label: string; value: string; dim?: string }) {
@@ -185,7 +220,7 @@ export function RunPage() {
   const shotsHit         = num(s, "shotsHit");
   const damageDone       = num(s, "damageDone");
   const damagePossible   = num(s, "damagePossible");
-  const damageEff        = num(s, "damageEfficiency");
+  const damageEff        = normalizePercentLike(num(s, "damageEfficiency"));
   const avgFireToHit     = num(s, "avgFireToHitMs");
   const p90FireToHit     = num(s, "p90FireToHitMs");
   const avgShotsToHit    = num(s, "avgShotsToHit");
@@ -213,6 +248,9 @@ export function RunPage() {
     auth.authenticated &&
     !!auth.user &&
     auth.user.username.toLowerCase() === run.userHandle.toLowerCase();
+  const replayDurationMs = mousePath[mousePath.length - 1]?.timestampMs ?? 0;
+  const denseHitStream = shouldClusterHitIndicators(hitTimestampsMs, replayDurationMs);
+  const hitTimingWindows = denseHitStream ? clusterHitWindows(hitTimestampsMs) : [];
 
   // stat card display values
   const spmDisplay     = spm ? `${Math.round(spm).toLocaleString()} /min` : "—";
@@ -347,24 +385,38 @@ export function RunPage() {
             <div className="mt-3 rounded-xl border border-white/8 bg-black/20 px-3 py-2">
               <div className="mb-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.08em] text-muted-2">
                 <span>Hit timing</span>
-                <span>{hitTimestampsMs.length} hits</span>
+                <span>{denseHitStream ? `${hitTimingWindows.length} contact windows` : `${hitTimestampsMs.length} hits`}</span>
               </div>
               <div className="relative h-3 overflow-hidden rounded-full bg-white/6">
-                {hitTimestampsMs.map((timestampMs, index) => {
-                  const totalDurationMs = mousePath[mousePath.length - 1]?.timestampMs ?? 1;
-                  return (
-                    <div
-                      key={`hit-${timestampMs}-${index}`}
-                      className="absolute top-0 bottom-0 w-[2px] bg-mint"
-                      style={{ left: `${(timestampMs / totalDurationMs) * 100}%` }}
-                      title={`Hit at ${(timestampMs / 1000).toFixed(2)}s`}
-                    />
-                  );
-                })}
+                {denseHitStream
+                  ? hitTimingWindows.map((window, index) => {
+                      const totalDurationMs = replayDurationMs || 1;
+                      const left = (window.startMs / totalDurationMs) * 100;
+                      const width = Math.max(0.8, ((Math.max(window.endMs, window.startMs + 120) - window.startMs) / totalDurationMs) * 100);
+                      return (
+                        <div
+                          key={`hit-window-${window.startMs}-${index}`}
+                          className="absolute top-0 bottom-0 bg-mint/35 border-l border-mint border-r border-mint/30"
+                          style={{ left: `${left}%`, width: `${width}%` }}
+                          title={`Contact window around ${(window.startMs / 1000).toFixed(2)}s`}
+                        />
+                      );
+                    })
+                  : hitTimestampsMs.map((timestampMs, index) => {
+                      const totalDurationMs = replayDurationMs || 1;
+                      return (
+                        <div
+                          key={`hit-${timestampMs}-${index}`}
+                          className="absolute top-0 bottom-0 w-[2px] bg-mint"
+                          style={{ left: `${(timestampMs / totalDurationMs) * 100}%` }}
+                          title={`Hit at ${(timestampMs / 1000).toFixed(2)}s`}
+                        />
+                      );
+                    })}
                 <div
                   className="absolute top-0 bottom-0 w-[2px] bg-cyan shadow-[0_0_0_1px_rgba(184,255,225,0.35)]"
                   style={{
-                    left: `${((playbackMs || 0) / (mousePath[mousePath.length - 1]?.timestampMs || 1)) * 100}%`,
+                    left: `${((playbackMs || 0) / (replayDurationMs || 1)) * 100}%`,
                   }}
                 />
               </div>
@@ -407,7 +459,7 @@ export function RunPage() {
                   const cwAcc      = num(window.featureSummary, "accuracyPct");
                   const cwSpm      = num(window.featureSummary, "avgScorePerMinute");
                   const cwKps      = num(window.featureSummary, "avgKillsPerSecond");
-                  const cwDmgEff   = num(window.featureSummary, "avgDamageEfficiency");
+                  const cwDmgEff   = normalizePercentLike(num(window.featureSummary, "avgDamageEfficiency"));
                   const cwYaw      = num(window.featureSummary, "avgNearestYawErrorDeg");
                   const cwPitch    = num(window.featureSummary, "avgNearestPitchErrorDeg");
                   const cwDist     = num(window.featureSummary, "avgNearestDistance");

@@ -88,6 +88,12 @@ function detectOvershoots(points: MousePathPoint[]): OvershootMarker[] {
   return markers;
 }
 
+function shouldClusterHitIndicators(hitTimestampsMs: number[], durationMs: number): boolean {
+  if (hitTimestampsMs.length < 12 || durationMs <= 0) return false;
+  const hitsPerSecond = hitTimestampsMs.length / Math.max(durationMs / 1000, 1);
+  return hitsPerSecond > 2;
+}
+
 function drawPath(
   canvas: HTMLCanvasElement,
   points: MousePathPoint[],
@@ -100,6 +106,10 @@ function drawPath(
 
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   if (points.length < 2) return;
+  const denseHitStream = shouldClusterHitIndicators(
+    hitTimestampsMs,
+    points[points.length - 1]?.timestampMs ?? 0,
+  );
 
   const count = (() => {
     if (playbackMs <= points[0].timestampMs) return 2;
@@ -233,17 +243,33 @@ function drawPath(
     ctx.stroke();
   }
 
-  const activeHit = hitTimestampsMs.find((ts) => Math.abs(playbackMs - ts) <= 120);
+  const activeHit = hitTimestampsMs.find((ts) => Math.abs(playbackMs - ts) <= 90);
   if (activeHit != null) {
-    const hitIndex = points.findIndex((point) => point.timestampMs >= activeHit);
-    const anchor = points[Math.max(0, hitIndex >= 0 ? hitIndex : count - 1)];
-    const pulse = Math.max(0, 1 - Math.abs(playbackMs - activeHit) / 120);
-    const radius = 12 + pulse * 14;
+    const anchor = points[Math.max(0, Math.min(count - 1, points.length - 1))];
+    const pulse = Math.max(0, 1 - Math.abs(playbackMs - activeHit) / 90);
+    const px = toX(anchor.x);
+    const py = toY(anchor.y);
+    const size = denseHitStream ? 8 : 10;
+    const gap = denseHitStream ? 3 : 4;
+    const alpha = denseHitStream ? 0.4 + pulse * 0.3 : 0.55 + pulse * 0.35;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.arc(toX(anchor.x), toY(anchor.y), radius, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0,245,160,${0.22 + pulse * 0.6})`;
-    ctx.lineWidth = 2.5;
+    ctx.moveTo(px - size, py - size);
+    ctx.lineTo(px - gap, py - gap);
+    ctx.moveTo(px + gap, py + gap);
+    ctx.lineTo(px + size, py + size);
+    ctx.moveTo(px + size, py - size);
+    ctx.lineTo(px + gap, py - gap);
+    ctx.moveTo(px - gap, py + gap);
+    ctx.lineTo(px - size, py + size);
     ctx.stroke();
+    ctx.strokeStyle = `rgba(0,245,160,${alpha * 0.7})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
   }
 
   ctx.beginPath();
@@ -256,6 +282,10 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, videoRef }: Props)
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const overshoots = useMemo(() => detectOvershoots(points), [points]);
+  const denseHitStream = useMemo(
+    () => shouldClusterHitIndicators(hitTimestampsMs, points[points.length - 1]?.timestampMs ?? 0),
+    [hitTimestampsMs, points],
+  );
 
   useEffect(() => {
     const video = videoRef.current;
@@ -323,7 +353,12 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, videoRef }: Props)
         aria-label="Replay mouse path overlay"
       />
       <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-[rgba(4,12,9,0.72)] px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-mint">
-        Mouse path · 2s trail{hitTimestampsMs.length > 0 ? ` · ${hitTimestampsMs.length} hits` : ""}
+        Mouse path · 2s trail
+        {hitTimestampsMs.length > 0
+          ? denseHitStream
+            ? " · contact timing below"
+            : ` · ${hitTimestampsMs.length} hits`
+          : ""}
       </div>
     </div>
   );
