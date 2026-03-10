@@ -495,6 +495,13 @@ export function AdminPage() {
                     >
                       Export this player's failures
                     </Button>
+                    <Button
+                      href={`${API_BASE_URL}/admin/user/export?handle=${encodeURIComponent(selectedUser.userHandle)}&days=${days}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Export this player's metrics
+                    </Button>
                   </div>
                   {selectedUser.recentFailures.length ? (
                     <ScrollArea className="max-h-[260px] pr-2">

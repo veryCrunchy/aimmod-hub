@@ -200,6 +200,34 @@ type AdminUserDetailRecord struct {
 	RecentRuns          []AdminUserRecentRun `json:"recentRuns"`
 }
 
+type AdminUserMetricsExportRun struct {
+	PublicRunID          string          `json:"publicRunId"`
+	SessionID            string          `json:"sessionId"`
+	SourceSessionID      string          `json:"sourceSessionId"`
+	ScenarioName         string          `json:"scenarioName"`
+	ScenarioType         string          `json:"scenarioType"`
+	PlayedAt             time.Time       `json:"playedAt"`
+	Score                float64         `json:"score"`
+	Accuracy             float64         `json:"accuracy"`
+	DurationMS           uint64          `json:"durationMs"`
+	AppVersion           string          `json:"appVersion"`
+	SchemaVersion        uint32          `json:"schemaVersion"`
+	TimelineSecondCount  uint64          `json:"timelineSecondCount"`
+	ContextWindowCount   uint64          `json:"contextWindowCount"`
+	SummaryJSON          json.RawMessage `json:"summaryJson"`
+	FeatureJSON          json.RawMessage `json:"featureJson"`
+}
+
+type AdminUserMetricsExport struct {
+	ExportedAt      time.Time                  `json:"exportedAt"`
+	Days            int                        `json:"days"`
+	UserHandle      string                     `json:"userHandle"`
+	UserDisplayName string                     `json:"userDisplayName"`
+	RunCount        uint64                     `json:"runCount"`
+	RecentFailures  []AdminIngestFailure       `json:"recentFailures"`
+	Runs            []AdminUserMetricsExportRun `json:"runs"`
+}
+
 type AdminOverviewRecord struct {
 	TotalRuns                uint64                  `json:"totalRuns"`
 	TotalPlayers             uint64                  `json:"totalPlayers"`
@@ -696,17 +724,17 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string, days int)
 
 	runRows, err := s.pool.Query(ctx, `
 		SELECT
-			COALESCE(public_run_id, session_id),
-			scenario_name,
-			COALESCE(NULLIF(scenario_type, ''), 'Unknown'),
-			played_at,
-			score,
-			accuracy,
-			duration_ms
-		FROM scenario_runs
-		WHERE user_id = $1
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.scenario_name,
+			COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown'),
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms
+		FROM scenario_runs sr
+		WHERE sr.user_id = $1
 	`+userWhere+`
-		ORDER BY played_at DESC, created_at DESC
+		ORDER BY sr.played_at DESC, sr.created_at DESC
 		LIMIT 20
 	`, append([]any{userID}, userArgs...)...)
 	if err != nil {
@@ -736,6 +764,118 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string, days int)
 	return detail, nil
 }
 
+func (s *Store) GetAdminUserMetricsExport(ctx context.Context, handle string, days int) (AdminUserMetricsExport, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return AdminUserMetricsExport{}, fmt.Errorf("user handle is required")
+	}
+
+	detail, err := s.GetAdminUserDetail(ctx, handle, days)
+	if err != nil {
+		return AdminUserMetricsExport{}, err
+	}
+
+	var userID int64
+	if err := s.pool.QueryRow(ctx, `
+		SELECT hu.id
+		FROM hub_users hu
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+		   OR LOWER(hu.external_id) = $1
+		LIMIT 1
+	`, handle).Scan(&userID); err != nil {
+		return AdminUserMetricsExport{}, fmt.Errorf("load admin export user: %w", err)
+	}
+
+	userWhere, userArgs := adminUserPlayedAfterClause(days, 2)
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			COALESCE(sr.source_session_id, ''),
+			sr.scenario_name,
+			COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown'),
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms,
+			COALESCE(rs.app_version, ''),
+			COALESCE(rs.schema_version, 0),
+			COALESCE(rt.timeline_count, 0),
+			COALESCE(rc.context_count, 0),
+			COALESCE(rs.summary_json, '{}'::jsonb)::text,
+			COALESCE(rf.feature_json, '{}'::jsonb)::text
+		FROM scenario_runs sr
+		LEFT JOIN run_summaries rs ON rs.session_id = sr.session_id
+		LEFT JOIN run_feature_sets rf ON rf.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT session_id, COUNT(*)::bigint AS timeline_count
+			FROM run_timeline_seconds
+			GROUP BY session_id
+		) rt ON rt.session_id = sr.session_id
+		LEFT JOIN (
+			SELECT session_id, COUNT(*)::bigint AS context_count
+			FROM run_context_windows
+			GROUP BY session_id
+		) rc ON rc.session_id = sr.session_id
+		WHERE sr.user_id = $1
+	`+userWhere+`
+		ORDER BY sr.played_at DESC, sr.created_at DESC
+	`, append([]any{userID}, userArgs...)...)
+	if err != nil {
+		return AdminUserMetricsExport{}, fmt.Errorf("load admin user metrics export runs: %w", err)
+	}
+	defer rows.Close()
+
+	export := AdminUserMetricsExport{
+		ExportedAt:      time.Now().UTC(),
+		Days:            days,
+		UserHandle:      detail.UserHandle,
+		UserDisplayName: detail.UserDisplayName,
+		RunCount:        detail.RunCount,
+		RecentFailures:  detail.RecentFailures,
+	}
+
+	for rows.Next() {
+		var item AdminUserMetricsExportRun
+		var schemaVersion uint64
+		var timelineCount uint64
+		var contextCount uint64
+		var summaryText string
+		var featureText string
+		if err := rows.Scan(
+			&item.PublicRunID,
+			&item.SessionID,
+			&item.SourceSessionID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.PlayedAt,
+			&item.Score,
+			&item.Accuracy,
+			&item.DurationMS,
+			&item.AppVersion,
+			&schemaVersion,
+			&timelineCount,
+			&contextCount,
+			&summaryText,
+			&featureText,
+		); err != nil {
+			return AdminUserMetricsExport{}, fmt.Errorf("scan admin user metrics export run: %w", err)
+		}
+		item.SchemaVersion = uint32(schemaVersion)
+		item.TimelineSecondCount = timelineCount
+		item.ContextWindowCount = contextCount
+		item.SummaryJSON = json.RawMessage(summaryText)
+		item.FeatureJSON = json.RawMessage(featureText)
+		export.Runs = append(export.Runs, item)
+	}
+	if err := rows.Err(); err != nil {
+		return AdminUserMetricsExport{}, fmt.Errorf("iterate admin user metrics export runs: %w", err)
+	}
+
+	return export, nil
+}
+
 func (s *Store) RepairScenarioTypes(ctx context.Context) (int64, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -747,8 +887,42 @@ func (s *Store) RepairScenarioTypes(ctx context.Context) (int64, error) {
 
 	steps := []string{
 		`
+		UPDATE run_summaries
+		SET summary_json = jsonb_set(
+		    summary_json,
+		    '{scenarioType}',
+		    to_jsonb(
+		        CASE summary_json->>'scenarioType'
+		            WHEN 'OneShotClicking' THEN 'StaticClicking'
+		            WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		            WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		            ELSE summary_json->>'scenarioType'
+		        END
+		    ),
+		    true
+		)
+		WHERE summary_json ? 'scenarioType'
+		  AND summary_json->>'scenarioType' IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+		`,
+		`
+		UPDATE scenario_runs
+		SET scenario_type = CASE scenario_type
+		    WHEN 'OneShotClicking' THEN 'StaticClicking'
+		    WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		    WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		    ELSE scenario_type
+		END,
+		    updated_at = NOW()
+		WHERE scenario_type IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+		`,
+		`
 		UPDATE scenario_runs sr
-		SET scenario_type = NULLIF(BTRIM(rs.summary_json->>'scenarioType'), ''),
+		SET scenario_type = CASE NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '')
+		    WHEN 'OneShotClicking' THEN 'StaticClicking'
+		    WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		    WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		    ELSE NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '')
+		END,
 		    updated_at = NOW()
 		FROM run_summaries rs
 		WHERE sr.session_id = rs.session_id
@@ -782,11 +956,60 @@ func (s *Store) RepairScenarioTypes(ctx context.Context) (int64, error) {
 		`,
 		`
 		UPDATE scenario_runs sr
-		SET scenario_type = 'Tracking',
+		SET scenario_type = CASE
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%targetswitch%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%switchingspheres%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%switchinghumanoid%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%controlts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%eddiets%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%dotts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%driftts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%flyts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%bouncets%'
+		        THEN 'TargetSwitching'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%pasu%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%popcorn%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%airangelic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%bounce%'
+		        THEN 'DynamicClicking'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%variousstatic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%clickingstatic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%tilefrenzy%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%sixshot%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%1w%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%ww%'
+		        THEN 'StaticClicking'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%tracking%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%whisphere%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%silo%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%smooth%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%controlsphere%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%centering%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%distancetrack%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%movementtracking%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%ground%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%pgt%'
+		        THEN 'Tracking'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		         AND COALESCE((rs.summary_json->>'csvDamageDone')::double precision, 0) > 0
+		        THEN 'TargetSwitching'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		         AND (
+		            COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 0.45
+		            OR (
+		                COALESCE((rs.summary_json->>'killsPerSecond')::double precision, 0) > 0
+		                AND COALESCE((rs.summary_json->>'killsPerSecond')::double precision, 0) <= 2.25
+		            )
+		         )
+		        THEN 'DynamicClicking'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		        THEN 'StaticClicking'
+		    ELSE 'Tracking'
+		END,
 		    updated_at = NOW()
 		FROM run_summaries rs
 		WHERE sr.session_id = rs.session_id
-		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') IN ('Unknown', 'MultiHitClicking')
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
 		  AND (
 		    LOWER(sr.scenario_name) LIKE '%track%'
 		    OR LOWER(sr.scenario_name) LIKE '%sphere%'
@@ -794,6 +1017,7 @@ func (s *Store) RepairScenarioTypes(ctx context.Context) (int64, error) {
 		    OR LOWER(sr.scenario_name) LIKE '%air %'
 		    OR LOWER(sr.scenario_name) LIKE 'air_%'
 		    OR LOWER(sr.scenario_name) LIKE '%control%'
+		    OR COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
 		    OR COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 5.0
 		  )
 		`,
@@ -839,8 +1063,46 @@ func (s *Store) RepairScenarioTypesForUser(ctx context.Context, handle string) (
 	var updated int64
 	steps := []string{
 		resolveUserCTE + `
+		UPDATE run_summaries rs
+		SET summary_json = jsonb_set(
+		    summary_json,
+		    '{scenarioType}',
+		    to_jsonb(
+		        CASE summary_json->>'scenarioType'
+		            WHEN 'OneShotClicking' THEN 'StaticClicking'
+		            WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		            WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		            ELSE summary_json->>'scenarioType'
+		        END
+		    ),
+		    true
+		)
+		FROM scenario_runs sr, target_user tu
+		WHERE rs.session_id = sr.session_id
+		  AND sr.user_id = tu.id
+		  AND rs.summary_json ? 'scenarioType'
+		  AND rs.summary_json->>'scenarioType' IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+		`,
+		resolveUserCTE + `
+		UPDATE scenario_runs
+		SET scenario_type = CASE scenario_type
+		    WHEN 'OneShotClicking' THEN 'StaticClicking'
+		    WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		    WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		    ELSE scenario_type
+		END,
+		    updated_at = NOW()
+		WHERE user_id = (SELECT id FROM target_user)
+		  AND scenario_type IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+		`,
+		resolveUserCTE + `
 		UPDATE scenario_runs sr
-		SET scenario_type = NULLIF(BTRIM(rs.summary_json->>'scenarioType'), ''),
+		SET scenario_type = CASE NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '')
+		    WHEN 'OneShotClicking' THEN 'StaticClicking'
+		    WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+		    WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+		    ELSE NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '')
+		END,
 		    updated_at = NOW()
 		FROM run_summaries rs, target_user tu
 		WHERE sr.session_id = rs.session_id
@@ -876,12 +1138,61 @@ func (s *Store) RepairScenarioTypesForUser(ctx context.Context, handle string) (
 		`,
 		resolveUserCTE + `
 		UPDATE scenario_runs sr
-		SET scenario_type = 'Tracking',
+		SET scenario_type = CASE
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%targetswitch%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%switchingspheres%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%switchinghumanoid%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%controlts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%eddiets%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%dotts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%driftts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%flyts%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%bouncets%'
+		        THEN 'TargetSwitching'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%pasu%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%popcorn%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%airangelic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%bounce%'
+		        THEN 'DynamicClicking'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%variousstatic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%clickingstatic%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%tilefrenzy%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%sixshot%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%1w%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%ww%'
+		        THEN 'StaticClicking'
+		    WHEN regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%tracking%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%whisphere%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%silo%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%smooth%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%controlsphere%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%centering%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%distancetrack%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%movementtracking%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%ground%'
+		         OR regexp_replace(lower(sr.scenario_name), '[^a-z0-9]+', '', 'g') LIKE '%pgt%'
+		        THEN 'Tracking'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		         AND COALESCE((rs.summary_json->>'csvDamageDone')::double precision, 0) > 0
+		        THEN 'TargetSwitching'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		         AND (
+		            COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 0.45
+		            OR (
+		                COALESCE((rs.summary_json->>'killsPerSecond')::double precision, 0) > 0
+		                AND COALESCE((rs.summary_json->>'killsPerSecond')::double precision, 0) <= 2.25
+		            )
+		         )
+		        THEN 'DynamicClicking'
+		    WHEN COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
+		        THEN 'StaticClicking'
+		    ELSE 'Tracking'
+		END,
 		    updated_at = NOW()
 		FROM run_summaries rs, target_user tu
 		WHERE sr.session_id = rs.session_id
 		  AND sr.user_id = tu.id
-		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') IN ('Unknown', 'MultiHitClicking')
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
 		  AND (
 		    LOWER(sr.scenario_name) LIKE '%track%'
 		    OR LOWER(sr.scenario_name) LIKE '%sphere%'
@@ -889,6 +1200,7 @@ func (s *Store) RepairScenarioTypesForUser(ctx context.Context, handle string) (
 		    OR LOWER(sr.scenario_name) LIKE '%air %'
 		    OR LOWER(sr.scenario_name) LIKE 'air_%'
 		    OR LOWER(sr.scenario_name) LIKE '%control%'
+		    OR COALESCE((rs.summary_json->>'csvKills')::double precision, 0) > 0
 		    OR COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 5.0
 		  )
 		`,
@@ -2483,8 +2795,48 @@ func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.Ai
 
 func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, error) {
 	if _, err := s.pool.Exec(ctx, `
+	    UPDATE run_summaries
+	    SET summary_json = jsonb_set(
+	        summary_json,
+	        '{scenarioType}',
+	        to_jsonb(
+	            CASE summary_json->>'scenarioType'
+	                WHEN 'OneShotClicking' THEN 'StaticClicking'
+	                WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	                WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	                ELSE summary_json->>'scenarioType'
+	            END
+	        ),
+	        true
+	    )
+	    WHERE summary_json ? 'scenarioType'
+	      AND summary_json->>'scenarioType' IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+	`); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
+	if _, err := s.pool.Exec(ctx, `
+	    UPDATE scenario_runs
+	    SET scenario_type = CASE scenario_type
+	        WHEN 'OneShotClicking' THEN 'StaticClicking'
+	        WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	        WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	        ELSE scenario_type
+	    END,
+	    updated_at = NOW()
+	    WHERE scenario_type IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+	`); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
+	if _, err := s.pool.Exec(ctx, `
 	    UPDATE scenario_runs sr
-	    SET scenario_type = NULLIF(rs.summary_json->>'scenarioType', ''),
+	    SET scenario_type = CASE NULLIF(rs.summary_json->>'scenarioType', '')
+	        WHEN 'OneShotClicking' THEN 'StaticClicking'
+	        WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	        WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	        ELSE NULLIF(rs.summary_json->>'scenarioType', '')
+	    END,
 	        updated_at = NOW()
 	    FROM run_summaries rs
 	    WHERE sr.session_id = rs.session_id
@@ -2495,15 +2847,59 @@ func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, erro
 		return pgconn.CommandTag{}, err
 	}
 
+	if _, err := s.pool.Exec(ctx, `
+	    WITH dominant AS (
+	        SELECT scenario_name, scenario_type
+	        FROM (
+	            SELECT
+	                scenario_name,
+	                scenario_type,
+	                ROW_NUMBER() OVER (
+	                    PARTITION BY scenario_name
+	                    ORDER BY COUNT(*) DESC, scenario_type ASC
+	                ) AS rank
+	            FROM scenario_runs
+	            WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') <> 'Unknown'
+	            GROUP BY scenario_name, scenario_type
+	        ) ranked
+	        WHERE rank = 1
+	    )
+	    UPDATE scenario_runs sr
+	    SET scenario_type = dominant.scenario_type,
+	        updated_at = NOW()
+	    FROM dominant
+	    WHERE sr.scenario_name = dominant.scenario_name
+	      AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+	`); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
 	return s.pool.Exec(ctx, `
 	    UPDATE scenario_runs sr
-	    SET scenario_type = 'Tracking',
+	    SET scenario_type = CASE
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	             AND COALESCE((rs.summary_json->>'csvDamageDone')::float, 0) > 0
+	            THEN 'TargetSwitching'
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	             AND (
+	                COALESCE((rs.summary_json->>'csvAvgTtk')::float, 0) >= 0.45
+	                OR (
+	                    COALESCE((rs.summary_json->>'killsPerSecond')::float, 0) > 0
+	                    AND COALESCE((rs.summary_json->>'killsPerSecond')::float, 0) <= 2.25
+	                )
+	             )
+	            THEN 'DynamicClicking'
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	            THEN 'StaticClicking'
+	        ELSE 'Tracking'
+	    END,
 	        updated_at = NOW()
 	    FROM run_summaries rs
 	    WHERE sr.session_id = rs.session_id
-	      AND sr.scenario_type IN ('MultiHitClicking', 'Unknown', '')
+	      AND sr.scenario_type IN ('Unknown', '')
 	      AND (
-	        (rs.summary_json->>'csvAvgTtk')::float >= 5.0
+	        COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	        OR (rs.summary_json->>'csvAvgTtk')::float >= 5.0
 	        OR (
 	          (rs.summary_json->>'killsPerSecond')::float > 0
 	          AND (sr.duration_ms::float / 1000.0) > 0
@@ -2524,8 +2920,66 @@ func (s *Store) ReclassifyTrackingForUser(ctx context.Context, handle string) (p
 	}
 
 	if _, err := s.pool.Exec(ctx, `
+	    UPDATE run_summaries rs
+	    SET summary_json = jsonb_set(
+	        summary_json,
+	        '{scenarioType}',
+	        to_jsonb(
+	            CASE summary_json->>'scenarioType'
+	                WHEN 'OneShotClicking' THEN 'StaticClicking'
+	                WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	                WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	                ELSE summary_json->>'scenarioType'
+	            END
+	        ),
+	        true
+	    )
+	    FROM scenario_runs sr
+	    WHERE rs.session_id = sr.session_id
+	      AND sr.user_id = (
+	        SELECT hu.id
+	        FROM hub_users hu
+	        LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	        WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	           OR LOWER(hu.external_id) = $1
+	        LIMIT 1
+	      )
+	      AND rs.summary_json ? 'scenarioType'
+	      AND rs.summary_json->>'scenarioType' IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+	`, handle); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
+	if _, err := s.pool.Exec(ctx, `
+	    UPDATE scenario_runs
+	    SET scenario_type = CASE scenario_type
+	        WHEN 'OneShotClicking' THEN 'StaticClicking'
+	        WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	        WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	        ELSE scenario_type
+	    END,
+	    updated_at = NOW()
+	    WHERE user_id = (
+	        SELECT hu.id
+	        FROM hub_users hu
+	        LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	        WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	           OR LOWER(hu.external_id) = $1
+	        LIMIT 1
+	    )
+	      AND scenario_type IN ('OneShotClicking', 'ReactiveClicking', 'MultiHitClicking')
+	`, handle); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
+	if _, err := s.pool.Exec(ctx, `
 	    UPDATE scenario_runs sr
-	    SET scenario_type = NULLIF(rs.summary_json->>'scenarioType', ''),
+	    SET scenario_type = CASE NULLIF(rs.summary_json->>'scenarioType', '')
+	        WHEN 'OneShotClicking' THEN 'StaticClicking'
+	        WHEN 'ReactiveClicking' THEN 'DynamicClicking'
+	        WHEN 'MultiHitClicking' THEN 'TargetSwitching'
+	        ELSE NULLIF(rs.summary_json->>'scenarioType', '')
+	    END,
 	        updated_at = NOW()
 	    FROM run_summaries rs
 	    WHERE sr.session_id = rs.session_id
@@ -2544,9 +2998,68 @@ func (s *Store) ReclassifyTrackingForUser(ctx context.Context, handle string) (p
 		return pgconn.CommandTag{}, err
 	}
 
+	if _, err := s.pool.Exec(ctx, `
+	    WITH dominant AS (
+	        SELECT scenario_name, scenario_type
+	        FROM (
+	            SELECT
+	                scenario_name,
+	                scenario_type,
+	                ROW_NUMBER() OVER (
+	                    PARTITION BY scenario_name
+	                    ORDER BY COUNT(*) DESC, scenario_type ASC
+	                ) AS rank
+	            FROM scenario_runs
+	            WHERE user_id = (
+	                SELECT hu.id
+	                FROM hub_users hu
+	                LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	                WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	                   OR LOWER(hu.external_id) = $1
+	                LIMIT 1
+	            )
+	              AND COALESCE(NULLIF(scenario_type, ''), 'Unknown') <> 'Unknown'
+	            GROUP BY scenario_name, scenario_type
+	        ) ranked
+	        WHERE rank = 1
+	    )
+	    UPDATE scenario_runs sr
+	    SET scenario_type = dominant.scenario_type,
+	        updated_at = NOW()
+	    FROM dominant
+	    WHERE sr.user_id = (
+	        SELECT hu.id
+	        FROM hub_users hu
+	        LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	        WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	           OR LOWER(hu.external_id) = $1
+	        LIMIT 1
+	    )
+	      AND sr.scenario_name = dominant.scenario_name
+	      AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+	`, handle); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
 	return s.pool.Exec(ctx, `
 	    UPDATE scenario_runs sr
-	    SET scenario_type = 'Tracking',
+	    SET scenario_type = CASE
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	             AND COALESCE((rs.summary_json->>'csvDamageDone')::float, 0) > 0
+	            THEN 'TargetSwitching'
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	             AND (
+	                COALESCE((rs.summary_json->>'csvAvgTtk')::float, 0) >= 0.45
+	                OR (
+	                    COALESCE((rs.summary_json->>'killsPerSecond')::float, 0) > 0
+	                    AND COALESCE((rs.summary_json->>'killsPerSecond')::float, 0) <= 2.25
+	                )
+	             )
+	            THEN 'DynamicClicking'
+	        WHEN COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	            THEN 'StaticClicking'
+	        ELSE 'Tracking'
+	    END,
 	        updated_at = NOW()
 	    FROM run_summaries rs
 	    WHERE sr.session_id = rs.session_id
@@ -2558,9 +3071,10 @@ func (s *Store) ReclassifyTrackingForUser(ctx context.Context, handle string) (p
 	           OR LOWER(hu.external_id) = $1
 	        LIMIT 1
 	      )
-	      AND sr.scenario_type IN ('MultiHitClicking', 'Unknown', '')
+	      AND sr.scenario_type IN ('Unknown', '')
 	      AND (
-	        (rs.summary_json->>'csvAvgTtk')::float >= 5.0
+	        COALESCE((rs.summary_json->>'csvKills')::float, 0) > 0
+	        OR (rs.summary_json->>'csvAvgTtk')::float >= 5.0
 	        OR (
 	          (rs.summary_json->>'killsPerSecond')::float > 0
 	          AND (sr.duration_ms::float / 1000.0) > 0

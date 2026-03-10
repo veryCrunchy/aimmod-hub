@@ -118,6 +118,7 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/admin/actions/repair-user-metrics", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminRepairUserMetrics)))
 	mux.Handle("/admin/actions/clear-user-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearUserFailures)))
 	mux.Handle("/admin/failures/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminFailuresExport)))
+	mux.Handle("/admin/user/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserMetricsExport)))
 }
 
 func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request) {
@@ -491,6 +492,36 @@ func (h *authHandler) handleAdminFailuresExport(w http.ResponseWriter, r *http.R
 		})
 	}
 	writer.Flush()
+}
+
+func (h *authHandler) handleAdminUserMetricsExport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	if handle == "" {
+		http.Error(w, "handle is required", http.StatusBadRequest)
+		return
+	}
+
+	export, err := h.store.GetAdminUserMetricsExport(r.Context(), handle, parseAdminDays(r.URL.Query().Get("days")))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	filename := fmt.Sprintf("aimmod-user-metrics-%s.json", strings.ToLower(strings.ReplaceAll(handle, " ", "-")))
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(export)
 }
 
 func (h *authHandler) handleLogout(w http.ResponseWriter, r *http.Request) {

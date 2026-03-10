@@ -10,6 +10,10 @@ import { hubClient, displayScenarioType } from "../lib/api";
 
 const TYPE_COLORS: Record<string, string> = {
   Tracking: "text-cyan border-cyan/20 bg-cyan/5",
+  TargetSwitching: "text-gold border-gold/20 bg-gold/5",
+  StaticClicking: "text-mint border-mint/20 bg-mint/5",
+  DynamicClicking: "text-violet border-violet/20 bg-violet/5",
+  MovingClicking: "text-violet border-violet/20 bg-violet/5",
   MultiHitClicking: "text-gold border-gold/20 bg-gold/5",
   ReactiveClicking: "text-violet border-violet/20 bg-violet/5",
   OneShotClicking: "text-mint border-mint/20 bg-mint/5",

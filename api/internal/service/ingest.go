@@ -114,11 +114,28 @@ func normalizeAccuracyPercent(raw float64, shots uint32, hits uint32, fallbackPe
 
 func normalizeScenarioType(raw string, summary map[string]*hubv1.SessionSummaryValue) string {
 	trimmed := strings.TrimSpace(raw)
+	switch trimmed {
+	case "OneShotClicking":
+		return "StaticClicking"
+	case "ReactiveClicking":
+		return "DynamicClicking"
+	case "MultiHitClicking":
+		return "TargetSwitching"
+	}
 	if trimmed != "" && !strings.EqualFold(trimmed, "unknown") {
 		return trimmed
 	}
 	if summaryType, ok := summaryString(summary, "scenarioType"); ok && !strings.EqualFold(summaryType, "unknown") {
-		return summaryType
+		switch summaryType {
+		case "OneShotClicking":
+			return "StaticClicking"
+		case "ReactiveClicking":
+			return "DynamicClicking"
+		case "MultiHitClicking":
+			return "TargetSwitching"
+		default:
+			return summaryType
+		}
 	}
 	return trimmed
 }

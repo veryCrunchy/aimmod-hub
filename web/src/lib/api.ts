@@ -52,14 +52,22 @@ export function slugifyScenarioName(value: string) {
 
 const SCENARIO_TYPE_LABELS: Record<string, string> = {
   Tracking: "Tracking",
-  OneShotClicking: "One-shot",
-  MultiHitClicking: "Multi-hit",
-  ReactiveClicking: "Reactive",
+  TargetSwitching: "Target switching",
+  StaticClicking: "Static clicking",
+  DynamicClicking: "Dynamic clicking",
+  MovingClicking: "Dynamic clicking",
+  OneShotClicking: "Static clicking",
+  MultiHitClicking: "Target switching",
+  ReactiveClicking: "Dynamic clicking",
   AccuracyDrill: "Accuracy drill",
 };
 
 export const SCENARIO_TYPE_ACCENTS: Record<string, string> = {
   Tracking: "border-cyan/25 text-cyan",
+  TargetSwitching: "border-gold/25 text-gold",
+  StaticClicking: "border-mint/25 text-mint",
+  DynamicClicking: "border-violet/25 text-violet",
+  MovingClicking: "border-violet/25 text-violet",
   OneShotClicking: "border-mint/25 text-mint",
   MultiHitClicking: "border-gold/25 text-gold",
   ReactiveClicking: "border-violet/25 text-violet",
