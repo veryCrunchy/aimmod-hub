@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { RunTrendChart } from "../components/charts/RunTrendChart";
+import { ScenarioTypeChart } from "../components/charts/ScenarioTypeChart";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -60,6 +62,12 @@ export function ProfilePage() {
       ? profile.primaryScenarioType
       : "Across all scenarios";
 
+  const hasScenarioTypes =
+    profile.topScenarios.length > 0 &&
+    profile.topScenarios.some((s) => s.scenarioType?.trim() && s.scenarioType !== "Unknown");
+
+  const hasTrend = profile.recentRuns.length >= 2;
+
   return (
     <PageStack>
       <PageSection className="grid grid-cols-[1.6fr_minmax(280px,0.9fr)] gap-[18px] max-[1100px]:grid-cols-1">
@@ -67,7 +75,8 @@ export function ProfilePage() {
           <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Profile</div>
           <h1>@{profile.userHandle}</h1>
           <p className="text-sm leading-7 text-muted">
-            {profile.userDisplayName || profile.userHandle} has {profile.runCount.toLocaleString()} runs across {profile.scenarioCount.toLocaleString()} scenarios.
+            {profile.userDisplayName || profile.userHandle} has {profile.runCount.toLocaleString()} runs across{" "}
+            {profile.scenarioCount.toLocaleString()} scenarios.
           </p>
         </div>
         <div className="grid content-start gap-2 rounded-[18px] border border-cyan/18 bg-[linear-gradient(180deg,rgba(57,208,255,0.08),rgba(182,151,255,0.06))] p-[18px]">
@@ -83,10 +92,51 @@ export function ProfilePage() {
 
       <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
         <StatCard label="Runs" value={profile.runCount.toLocaleString()} detail="Saved practice history" />
-        <StatCard label="Scenario spread" value={profile.scenarioCount.toLocaleString()} detail="Different scenarios played" accent="cyan" />
-        <StatCard label="Average score" value={Math.round(profile.averageScore).toLocaleString()} detail="Average result across all runs" accent="gold" />
-        <StatCard label="Average accuracy" value={`${profile.averageAccuracy.toFixed(1)}%`} detail={accuracyDetail} accent="violet" />
+        <StatCard
+          label="Scenario spread"
+          value={profile.scenarioCount.toLocaleString()}
+          detail="Different scenarios played"
+          accent="cyan"
+        />
+        <StatCard
+          label="Average score"
+          value={Math.round(profile.averageScore).toLocaleString()}
+          detail="Average result across all runs"
+          accent="gold"
+        />
+        <StatCard
+          label="Average accuracy"
+          value={`${profile.averageAccuracy.toFixed(1)}%`}
+          detail={accuracyDetail}
+          accent="violet"
+        />
       </Grid>
+
+      {(hasTrend || hasScenarioTypes) && (
+        <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">
+          {hasTrend && (
+            <PageSection>
+              <SectionHeader
+                eyebrow="Accuracy trend"
+                title="Recent accuracy"
+                body="Accuracy % across the most recent runs, oldest to newest."
+              />
+              <RunTrendChart runs={profile.recentRuns} />
+            </PageSection>
+          )}
+
+          {hasScenarioTypes && (
+            <PageSection>
+              <SectionHeader
+                eyebrow="Focus breakdown"
+                title="Scenario type split"
+                body="How this player's run volume is distributed across scenario types."
+              />
+              <ScenarioTypeChart topScenarios={profile.topScenarios} />
+            </PageSection>
+          )}
+        </Grid>
+      )}
 
       <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">
         <PageSection>
@@ -98,26 +148,27 @@ export function ProfilePage() {
           {profile.topScenarios.length > 0 ? (
             <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
               <div className="grid gap-3">
-              {profile.topScenarios.map((scenario) => (
-                (() => {
+                {profile.topScenarios.map((scenario) => {
                   const scenarioType = displayScenarioType(scenario.scenarioType);
                   return (
-                <Link
-                  key={scenario.scenarioSlug}
-                  to={`/scenarios/${scenario.scenarioSlug}`}
-                  className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                >
-                  <strong className="block text-text">{scenario.scenarioName}</strong>
-                  {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
-                  <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
-                </Link>
+                    <Link
+                      key={scenario.scenarioSlug}
+                      to={`/scenarios/${scenario.scenarioSlug}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <strong className="block text-text">{scenario.scenarioName}</strong>
+                      {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
+                      <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
+                    </Link>
                   );
-                })()
-              ))}
+                })}
               </div>
             </ScrollArea>
           ) : (
-            <EmptyState title="No scenario history" body="This profile does not have any uploaded scenario history yet." />
+            <EmptyState
+              title="No scenario history"
+              body="This profile does not have any uploaded scenario history yet."
+            />
           )}
         </PageSection>
 
@@ -143,7 +194,10 @@ export function ProfilePage() {
                   {profile.recentRuns.map((run) => (
                     <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0">
                       <td className="px-4 py-3 text-text">
-                        <Link className="text-cyan underline underline-offset-3" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>
+                        <Link
+                          className="text-cyan underline underline-offset-3"
+                          to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}
+                        >
                           {run.scenarioName}
                         </Link>
                       </td>
@@ -151,7 +205,10 @@ export function ProfilePage() {
                       <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
                       <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
                       <td className="px-4 py-3 text-text">
-                        <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
+                        <Link
+                          className="text-cyan underline underline-offset-3"
+                          to={`/runs/${run.runId || run.sessionId}`}
+                        >
                           Open
                         </Link>
                       </td>

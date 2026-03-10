@@ -8,7 +8,32 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
+import { useCountUp } from "../hooks/useCountUp";
 import { displayScenarioType, fetchOverview, formatDurationMs } from "../lib/api";
+
+function AnimatedStatCard({
+  label,
+  target,
+  detail,
+  accent,
+  suffix = "",
+}: {
+  label: string;
+  target: number;
+  detail: string;
+  accent?: "cyan" | "gold" | "violet";
+  suffix?: string;
+}) {
+  const value = useCountUp(target);
+  return (
+    <StatCard
+      label={label}
+      value={target ? `${value.toLocaleString()}${suffix}` : "—"}
+      detail={detail}
+      accent={accent}
+    />
+  );
+}
 
 export function HomePage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
@@ -45,7 +70,8 @@ export function HomePage() {
           Shared practice data that is finally useful.
         </h1>
         <p className="max-w-[760px] text-lg leading-8 text-[#cbe4d7]">
-          AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and learn from.
+          AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and
+          learn from.
         </p>
         <div className="relative mt-[22px] flex flex-wrap gap-3">
           <Button to="/community" variant="primary">
@@ -54,25 +80,27 @@ export function HomePage() {
           {featuredScenario ? (
             <Button to={`/scenarios/${featuredScenario.scenarioSlug}`}>Open top scenario</Button>
           ) : null}
-          {featuredProfile ? <Button to={`/profiles/${featuredProfile.userHandle}`}>Open active profile</Button> : null}
+          {featuredProfile ? (
+            <Button to={`/profiles/${featuredProfile.userHandle}`}>Open active profile</Button>
+          ) : null}
         </div>
       </PageSection>
 
       <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
-        <StatCard
+        <AnimatedStatCard
           label="Runs"
-          value={overview ? overview.totalRuns.toLocaleString() : "—"}
+          target={overview ? Number(overview.totalRuns) : 0}
           detail={error ? "Overview is unavailable right now" : "Sessions available to study"}
         />
-        <StatCard
+        <AnimatedStatCard
           label="Scenarios"
-          value={overview ? overview.totalScenarios.toLocaleString() : "—"}
+          target={overview ? Number(overview.totalScenarios) : 0}
           detail="Scenarios with practice history"
           accent="cyan"
         />
-        <StatCard
+        <AnimatedStatCard
           label="Players"
-          value={overview ? overview.totalPlayers.toLocaleString() : "—"}
+          target={overview ? Number(overview.totalPlayers) : 0}
           detail="Profiles with saved history"
           accent="gold"
         />
@@ -88,26 +116,27 @@ export function HomePage() {
           {overview?.topScenarios.length ? (
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
-              {overview.topScenarios.slice(0, 6).map((scenario) => (
-                (() => {
+                {overview.topScenarios.slice(0, 6).map((scenario) => {
                   const scenarioType = displayScenarioType(scenario.scenarioType);
                   return (
-                <Link
-                  key={scenario.scenarioSlug}
-                  to={`/scenarios/${scenario.scenarioSlug}`}
-                  className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <strong className="block text-text">{scenario.scenarioName}</strong>
-                      {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
-                    </div>
-                    <span className="text-sm text-mint">{scenario.runCount.toLocaleString()} runs</span>
-                  </div>
-                </Link>
+                    <Link
+                      key={scenario.scenarioSlug}
+                      to={`/scenarios/${scenario.scenarioSlug}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <strong className="block text-text">{scenario.scenarioName}</strong>
+                          {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="block text-sm text-mint">{scenario.runCount.toLocaleString()}</span>
+                          <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
+                        </div>
+                      </div>
+                    </Link>
                   );
-                })()
-              ))}
+                })}
               </div>
             </ScrollArea>
           ) : (
@@ -127,30 +156,33 @@ export function HomePage() {
           {overview?.activeProfiles.length ? (
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
-              {overview.activeProfiles.slice(0, 6).map((profile) => (
-                (() => {
+                {overview.activeProfiles.slice(0, 6).map((profile) => {
                   const primaryType = displayScenarioType(profile.primaryScenarioType);
                   return (
-                <Link
-                  key={profile.userHandle}
-                  to={`/profiles/${profile.userHandle}`}
-                  className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <strong className="block text-text">{profile.userDisplayName || profile.userHandle}</strong>
-                      <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
-                    </div>
-                    <span className="text-sm text-cyan">{profile.runCount.toLocaleString()} runs</span>
-                  </div>
-                  <p className="mt-3 text-sm text-muted">
-                    {profile.scenarioCount.toLocaleString()} scenarios
-                    {primaryType ? ` • ${primaryType}` : ""}
-                  </p>
-                </Link>
+                    <Link
+                      key={profile.userHandle}
+                      to={`/profiles/${profile.userHandle}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <strong className="block text-text truncate">
+                            {profile.userDisplayName || profile.userHandle}
+                          </strong>
+                          <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="block text-sm text-cyan">{profile.runCount.toLocaleString()}</span>
+                          <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm text-muted">
+                        {profile.scenarioCount.toLocaleString()} scenarios
+                        {primaryType ? ` · ${primaryType}` : ""}
+                      </p>
+                    </Link>
                   );
-                })()
-              ))}
+                })}
               </div>
             </ScrollArea>
           ) : (
@@ -183,10 +215,20 @@ export function HomePage() {
               </thead>
               <tbody>
                 {overview.recentRuns.slice(0, 12).map((run) => (
-                  <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0">
-                    <td className="px-4 py-3 text-text">{run.scenarioName}</td>
+                  <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
+                    <td className="px-4 py-3 text-text max-w-[200px] truncate">
+                      <Link
+                        className="hover:text-cyan transition-colors"
+                        to={`/scenarios/${run.scenarioName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
+                      >
+                        {run.scenarioName}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3 text-text">
-                      <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                      <Link
+                        className="text-cyan underline underline-offset-3"
+                        to={`/profiles/${run.userHandle || run.userDisplayName}`}
+                      >
                         {run.userDisplayName || run.userHandle}
                       </Link>
                     </td>
@@ -194,7 +236,10 @@ export function HomePage() {
                     <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
                     <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
                     <td className="px-4 py-3 text-text">
-                      <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
+                      <Link
+                        className="text-cyan underline underline-offset-3"
+                        to={`/runs/${run.runId || run.sessionId}`}
+                      >
                         Open
                       </Link>
                     </td>
