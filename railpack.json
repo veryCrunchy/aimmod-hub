@@ -1,26 +1,7 @@
 {
   "$schema": "https://schema.railpack.com",
   "provider": "golang",
-  "steps": {
-    "build": {
-      "inputs": [
-        {
-          "local": true
-        }
-      ],
-      "commands": [
-        "go build -o bin/aimmod-hub ./api/cmd/aimmod-hub"
-      ],
-      "deployOutputs": [
-        {
-          "include": [
-            "bin/aimmod-hub"
-          ]
-        }
-      ]
-    }
-  },
   "deploy": {
-    "startCommand": "./bin/aimmod-hub"
+    "startCommand": "./out"
   }
 }
