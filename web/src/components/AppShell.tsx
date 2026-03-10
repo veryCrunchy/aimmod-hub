@@ -1,4 +1,5 @@
 import type { FormEvent, PropsWithChildren } from "react";
+import { useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/cn";
 import { useAuth } from "../lib/AuthContext";
@@ -20,6 +21,26 @@ export function AppShell({ children }: PropsWithChildren) {
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,10 +81,11 @@ export function AppShell({ children }: PropsWithChildren) {
 
           <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2 max-[1260px]:order-2">
             <input
+              ref={searchRef}
               key={location.pathname === "/search" ? location.search : "global-search"}
               name="q"
               defaultValue={location.pathname === "/search" ? new URLSearchParams(location.search).get("q") ?? "" : ""}
-              placeholder="Search"
+              placeholder="Search  ·  / or Ctrl+K"
               className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70"
             />
             <Button type="submit" className="min-h-9 shrink-0 px-3 py-2">

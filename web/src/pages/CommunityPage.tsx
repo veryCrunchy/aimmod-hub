@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
@@ -6,13 +6,20 @@ import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
+import { SortableTh } from "../components/ui/SortableTh";
+import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { fetchOverview, formatDurationMs } from "../lib/api";
+import { fetchOverview, formatDurationMs, formatRelativeTime, slugifyScenarioName } from "../lib/api";
+
+type ScenarioSortField = "runCount" | "name";
 
 export function CommunityPage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string | null>(null);
+  const [scenarioSortField, setScenarioSortField] = useState<ScenarioSortField>("runCount");
+  const [scenarioSortDir, setScenarioSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +39,38 @@ export function CommunityPage() {
       cancelled = true;
     };
   }, []);
+
+  function handleScenarioSort(field: string) {
+    const f = field as ScenarioSortField;
+    if (f === scenarioSortField) {
+      setScenarioSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setScenarioSortField(f);
+      setScenarioSortDir(f === "name" ? "asc" : "desc");
+    }
+  }
+
+  const scenarioTypes = useMemo(() => {
+    if (!overview) return [];
+    const types = new Set<string>();
+    for (const s of overview.topScenarios) {
+      if (s.scenarioType?.trim() && s.scenarioType !== "Unknown") types.add(s.scenarioType);
+    }
+    return [...types];
+  }, [overview]);
+
+  const filteredSortedScenarios = useMemo(() => {
+    if (!overview) return [];
+    const filtered = scenarioTypeFilter
+      ? overview.topScenarios.filter((s) => s.scenarioType === scenarioTypeFilter)
+      : overview.topScenarios;
+    return [...filtered].sort((a, b) => {
+      let diff = 0;
+      if (scenarioSortField === "runCount") diff = Number(a.runCount) - Number(b.runCount);
+      else diff = a.scenarioName.localeCompare(b.scenarioName);
+      return scenarioSortDir === "asc" ? diff : -diff;
+    });
+  }, [overview, scenarioTypeFilter, scenarioSortField, scenarioSortDir]);
 
   return (
     <PageStack>
@@ -56,32 +95,46 @@ export function CommunityPage() {
             body="These scenarios already have enough history to start showing useful score bands and run patterns."
           />
           {overview?.topScenarios.length ? (
-            <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
-              <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
-                  <tr>
-                    <th className="px-4 py-3">Scenario</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Runs</th>
-                    <th className="px-4 py-3">Open</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {overview.topScenarios.map((scenario) => (
-                    <tr key={scenario.scenarioSlug} className="border-b border-white/6 last:border-b-0">
-                      <td className="px-4 py-3 text-text">{scenario.scenarioName}</td>
-                      <td className="px-4 py-3"><ScenarioTypeBadge type={scenario.scenarioType} /></td>
-                      <td className="px-4 py-3 text-text">{scenario.runCount.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-text">
-                        <Link className="text-cyan underline underline-offset-3" to={`/scenarios/${scenario.scenarioSlug}`}>
-                          Open
-                        </Link>
-                      </td>
+            <>
+              {scenarioTypes.length > 1 && (
+                <TypeFilterBar types={scenarioTypes} active={scenarioTypeFilter} onChange={setScenarioTypeFilter} />
+              )}
+              <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                    <tr>
+                      <SortableTh label="Scenario" field="name" sortField={scenarioSortField} sortDir={scenarioSortDir} onSort={handleScenarioSort} />
+                      <th className="px-4 py-3">Type</th>
+                      <SortableTh label="Runs" field="runCount" sortField={scenarioSortField} sortDir={scenarioSortDir} onSort={handleScenarioSort} />
+                      <th className="px-4 py-3">Open</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </ScrollArea>
+                  </thead>
+                  <tbody>
+                    {filteredSortedScenarios.map((scenario) => (
+                      <tr key={scenario.scenarioSlug} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
+                        <td className="px-4 py-3 text-text">
+                          <Link className="hover:text-cyan transition-colors" to={`/scenarios/${scenario.scenarioSlug}`}>
+                            {scenario.scenarioName}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3"><ScenarioTypeBadge type={scenario.scenarioType} /></td>
+                        <td className="px-4 py-3 text-text">{scenario.runCount.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-text">
+                          <Link className="text-cyan underline underline-offset-3" to={`/scenarios/${scenario.scenarioSlug}`}>
+                            Open
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredSortedScenarios.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted">No scenarios match this filter.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </ScrollArea>
+            </>
           ) : (
             <EmptyState title="No scenario pages yet" body={error || "Scenario watchlists will appear here once there is enough history to compare."} />
           )}
@@ -132,28 +185,34 @@ export function CommunityPage() {
         {overview?.recentRuns.length ? (
           <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
+              <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th className="px-4 py-3">Player</th>
                   <th className="px-4 py-3">Scenario</th>
                   <th className="px-4 py-3">Score</th>
                   <th className="px-4 py-3">Acc</th>
                   <th className="px-4 py-3">Duration</th>
+                  <th className="px-4 py-3">When</th>
                   <th className="px-4 py-3">Run</th>
                 </tr>
               </thead>
               <tbody>
                 {overview.recentRuns.map((run) => (
-                  <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0">
+                  <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                     <td className="px-4 py-3 text-text">
                       <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
                         {run.userDisplayName || run.userHandle}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-text">{run.scenarioName}</td>
+                    <td className="px-4 py-3 text-text">
+                      <Link className="hover:text-cyan transition-colors" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>
+                        {run.scenarioName}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3 text-text">{Math.round(run.score).toLocaleString()}</td>
                     <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
                     <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
+                    <td className="px-4 py-3 text-muted">{formatRelativeTime(run.playedAtIso)}</td>
                     <td className="px-4 py-3 text-text">
                       <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
                         Open

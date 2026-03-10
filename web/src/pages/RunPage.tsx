@@ -10,7 +10,7 @@ import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { fetchRun, formatDurationMs, summaryValueToNumber } from "../lib/api";
+import { fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -99,7 +99,14 @@ export function RunPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Run" title="Loading run" />
+          <div className="mb-3 h-3 w-12 animate-pulse rounded bg-white/5" />
+          <div className="mb-3 h-10 w-72 animate-pulse rounded-lg bg-white/5" />
+          <div className="mb-4 h-4 w-64 animate-pulse rounded bg-white/5" />
+          <Grid className="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-[100px] animate-pulse rounded-[18px] bg-white/5" />
+            ))}
+          </Grid>
         </PageSection>
       </PageStack>
     );
@@ -157,8 +164,8 @@ export function RunPage() {
       <PageSection>
         <SectionHeader
           eyebrow="Run"
-          title={run.scenarioName}
-          body={`Played ${new Date(run.playedAtIso).toLocaleString()} by ${run.userDisplayName || run.userHandle}.`}
+          title={<Link className="hover:text-cyan transition-colors" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>{run.scenarioName}</Link>}
+          body={`Played ${formatRelativeTime(run.playedAtIso)} by ${run.userDisplayName || run.userHandle}.`}
           aside={
             <div className="flex items-center gap-3">
               <ScenarioTypeBadge type={run.scenarioType} />

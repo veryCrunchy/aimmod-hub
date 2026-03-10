@@ -131,6 +131,24 @@ export async function fetchProfile(handle: string) {
   return hubClient.getProfile(new GetProfileRequest({ handle }));
 }
 
+export function formatRelativeTime(dateStr: string | undefined | null): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  const diffMs = Date.now() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  if (diffSecs < 60) return "just now";
+  const diffMins = Math.floor(diffSecs / 60);
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}mo ago`;
+  return `${Math.floor(diffMonths / 12)}y ago`;
+}
+
 export async function searchHub(query: string): Promise<HubSearchResponse> {
   const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
   if (!response.ok) {

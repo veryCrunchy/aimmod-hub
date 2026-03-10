@@ -9,7 +9,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useCountUp } from "../hooks/useCountUp";
-import { fetchOverview, formatDurationMs } from "../lib/api";
+import { fetchOverview, formatDurationMs, formatRelativeTime } from "../lib/api";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 
 function AnimatedStatCard({
@@ -198,13 +198,14 @@ export function HomePage() {
         {overview?.recentRuns.length ? (
           <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
+              <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th className="px-4 py-3">Scenario</th>
                   <th className="px-4 py-3">Player</th>
                   <th className="px-4 py-3">Score</th>
                   <th className="px-4 py-3">Acc</th>
                   <th className="px-4 py-3">Duration</th>
+                  <th className="px-4 py-3">When</th>
                   <th className="px-4 py-3">Run</th>
                 </tr>
               </thead>
@@ -230,6 +231,7 @@ export function HomePage() {
                     <td className="px-4 py-3 text-text">{Math.round(run.score).toLocaleString()}</td>
                     <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
                     <td className="px-4 py-3 text-text">{formatDurationMs(run.durationMs)}</td>
+                    <td className="px-4 py-3 text-muted">{formatRelativeTime(run.playedAtIso)}</td>
                     <td className="px-4 py-3 text-text">
                       <Link
                         className="text-cyan underline underline-offset-3"

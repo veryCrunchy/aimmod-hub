@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -87,6 +88,12 @@ export function AccountPage() {
           body="Desktop apps linked through the browser show up here. Removing one immediately stops it from uploading new runs."
         />
         <div className="mb-4 flex flex-wrap gap-3">
+          <Link
+            to={`/profiles/${auth.user.username}`}
+            className="rounded-full border border-line bg-transparent px-[14px] py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+          >
+            View my profile
+          </Link>
           <Button onClick={() => void auth.signOut()}>Sign out</Button>
         </div>
         {error ? <p className="mb-4 text-sm text-danger">{error}</p> : null}

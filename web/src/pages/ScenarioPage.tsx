@@ -8,13 +8,19 @@ import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
+import { Skeleton } from "../components/ui/Skeleton";
+import { SortableTh } from "../components/ui/SortableTh";
 import { Grid, PageStack } from "../components/ui/Stack";
-import { fetchScenarioPage, formatDurationMs } from "../lib/api";
+import { fetchScenarioPage, formatDurationMs, formatRelativeTime } from "../lib/api";
+
+type SortField = "score" | "accuracy" | "date";
 
 export function ScenarioPage() {
   const { slug = "" } = useParams();
   const [page, setPage] = useState<GetScenarioPageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +38,16 @@ export function ScenarioPage() {
     };
   }, [slug]);
 
+  function handleSort(field: string) {
+    const f = field as SortField;
+    if (f === sortField) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(f);
+      setSortDir("desc");
+    }
+  }
+
   if (error) {
     return (
       <PageStack>
@@ -47,7 +63,12 @@ export function ScenarioPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Scenario" title="Loading scenario" />
+          <Skeleton className="mb-3 h-3 w-20" />
+          <Skeleton className="mb-3 h-10 w-64" />
+          <Skeleton className="mb-5 h-4 w-80" />
+          <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px]" />)}
+          </Grid>
         </PageSection>
       </PageStack>
     );
@@ -58,6 +79,14 @@ export function ScenarioPage() {
     page.bestScore > 0
       ? `${Math.round(page.averageScore).toLocaleString()} avg · ${Math.round(page.bestScore).toLocaleString()} best`
       : null;
+
+  const sortedRuns = [...page.recentRuns].sort((a, b) => {
+    let diff = 0;
+    if (sortField === "score") diff = a.score - b.score;
+    else if (sortField === "accuracy") diff = a.accuracy - b.accuracy;
+    else diff = new Date(a.playedAtIso).getTime() - new Date(b.playedAtIso).getTime();
+    return sortDir === "asc" ? diff : -diff;
+  });
 
   return (
     <PageStack>
@@ -116,20 +145,20 @@ export function ScenarioPage() {
           {page.recentRuns.length > 0 ? (
             <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
               <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
+                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Player</th>
-                    <th className="px-4 py-3">Score</th>
-                    <th className="px-4 py-3">Acc</th>
-                    <th className="px-4 py-3">When</th>
+                    <SortableTh label="Score" field="score" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                    <SortableTh label="Acc" field="accuracy" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                    <SortableTh label="When" field="date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                     <th className="px-4 py-3">Run</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {page.recentRuns.map((run) => {
+                  {sortedRuns.map((run) => {
                     const isBest = Math.round(run.score) === Math.round(page.bestScore);
                     return (
-                      <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0">
+                      <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                         <td className="px-4 py-3 text-text">
                           <Link
                             className="text-cyan underline underline-offset-3"
@@ -147,7 +176,9 @@ export function ScenarioPage() {
                           )}
                         </td>
                         <td className="px-4 py-3 text-text">{run.accuracy.toFixed(1)}%</td>
-                        <td className="px-4 py-3 text-text">{new Date(run.playedAtIso).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-muted" title={new Date(run.playedAtIso).toLocaleString()}>
+                          {formatRelativeTime(run.playedAtIso)}
+                        </td>
                         <td className="px-4 py-3 text-text">
                           <Link
                             className="text-cyan underline underline-offset-3"

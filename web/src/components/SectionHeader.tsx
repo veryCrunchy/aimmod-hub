@@ -3,8 +3,8 @@ import { cn } from "../lib/cn";
 
 type SectionHeaderProps = {
   eyebrow: string;
-  title: string;
-  body?: string;
+  title: ReactNode;
+  body?: ReactNode;
   aside?: ReactNode;
   className?: string;
 };

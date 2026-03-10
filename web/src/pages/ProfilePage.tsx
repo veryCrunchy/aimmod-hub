@@ -1,21 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { RunTrendChart } from "../components/charts/RunTrendChart";
 import { ScenarioTypeChart } from "../components/charts/ScenarioTypeChart";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
+import { Skeleton } from "../components/ui/Skeleton";
+import { SortableTh } from "../components/ui/SortableTh";
+import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
-import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
+
+type RunSortField = "score" | "accuracy" | "duration";
 
 export function ProfilePage() {
   const { handle = "" } = useParams();
   const [profile, setProfile] = useState<GetProfileResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string | null>(null);
+  const [runSortField, setRunSortField] = useState<RunSortField>("score");
+  const [runSortDir, setRunSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +41,16 @@ export function ProfilePage() {
     };
   }, [handle]);
 
+  function handleRunSort(field: string) {
+    const f = field as RunSortField;
+    if (f === runSortField) {
+      setRunSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setRunSortField(f);
+      setRunSortDir("desc");
+    }
+  }
+
   if (error) {
     return (
       <PageStack>
@@ -47,9 +65,17 @@ export function ProfilePage() {
   if (!profile) {
     return (
       <PageStack>
-        <PageSection>
-          <SectionHeader eyebrow="Profile" title="Loading profile" />
+        <PageSection className="grid grid-cols-[1.6fr_minmax(280px,0.9fr)] gap-[18px] max-[1100px]:grid-cols-1">
+          <div>
+            <Skeleton className="mb-3 h-3 w-16" />
+            <Skeleton className="mb-3 h-10 w-48" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-28 rounded-[18px]" />
         </PageSection>
+        <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px]" />)}
+        </Grid>
       </PageStack>
     );
   }
@@ -68,6 +94,27 @@ export function ProfilePage() {
     profile.topScenarios.some((s) => s.scenarioType?.trim() && s.scenarioType !== "Unknown");
 
   const hasTrend = profile.recentRuns.length >= 2;
+
+  // unique scenario types for filter bar
+  const scenarioTypes = useMemo(() => {
+    const types = new Set<string>();
+    for (const s of profile.topScenarios) {
+      if (s.scenarioType?.trim() && s.scenarioType !== "Unknown") types.add(s.scenarioType);
+    }
+    return [...types];
+  }, [profile.topScenarios]);
+
+  const filteredScenarios = scenarioTypeFilter
+    ? profile.topScenarios.filter((s) => s.scenarioType === scenarioTypeFilter)
+    : profile.topScenarios;
+
+  const sortedRuns = [...profile.recentRuns].sort((a, b) => {
+    let diff = 0;
+    if (runSortField === "score") diff = a.score - b.score;
+    else if (runSortField === "accuracy") diff = a.accuracy - b.accuracy;
+    else diff = Number(a.durationMs) - Number(b.durationMs);
+    return runSortDir === "asc" ? diff : -diff;
+  });
 
   return (
     <PageStack>
@@ -147,21 +194,29 @@ export function ProfilePage() {
             body="The scenarios this player returns to most often."
           />
           {profile.topScenarios.length > 0 ? (
-            <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
-              <div className="grid gap-3">
-                {profile.topScenarios.map((scenario) => (
-                  <Link
-                    key={scenario.scenarioSlug}
-                    to={`/scenarios/${scenario.scenarioSlug}`}
-                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                  >
-                    <strong className="block text-text">{scenario.scenarioName}</strong>
-                    <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
-                    <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
-                  </Link>
-                ))}
-              </div>
-            </ScrollArea>
+            <>
+              {scenarioTypes.length > 1 && (
+                <TypeFilterBar types={scenarioTypes} active={scenarioTypeFilter} onChange={setScenarioTypeFilter} />
+              )}
+              <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
+                <div className="grid gap-3">
+                  {filteredScenarios.map((scenario) => (
+                    <Link
+                      key={scenario.scenarioSlug}
+                      to={`/scenarios/${scenario.scenarioSlug}`}
+                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    >
+                      <strong className="block text-text">{scenario.scenarioName}</strong>
+                      <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
+                      <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
+                    </Link>
+                  ))}
+                  {filteredScenarios.length === 0 && (
+                    <p className="text-sm text-muted">No scenarios match this filter.</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </>
           ) : (
             <EmptyState
               title="No scenario history"
@@ -179,18 +234,18 @@ export function ProfilePage() {
           {profile.recentRuns.length > 0 ? (
             <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
               <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-muted">
+                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                   <tr>
                     <th className="px-4 py-3">Scenario</th>
-                    <th className="px-4 py-3">Score</th>
-                    <th className="px-4 py-3">Acc</th>
-                    <th className="px-4 py-3">Duration</th>
+                    <SortableTh label="Score" field="score" sortField={runSortField} sortDir={runSortDir} onSort={handleRunSort} />
+                    <SortableTh label="Acc" field="accuracy" sortField={runSortField} sortDir={runSortDir} onSort={handleRunSort} />
+                    <SortableTh label="Duration" field="duration" sortField={runSortField} sortDir={runSortDir} onSort={handleRunSort} />
                     <th className="px-4 py-3">Run</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {profile.recentRuns.map((run) => (
-                    <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0">
+                  {sortedRuns.map((run) => (
+                    <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                       <td className="px-4 py-3 text-text">
                         <Link
                           className="text-cyan underline underline-offset-3"

@@ -6,7 +6,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { formatDurationMs, searchHub, type HubSearchResponse } from "../lib/api";
+import { formatDurationMs, formatRelativeTime, searchHub, type HubSearchResponse } from "../lib/api";
 
 export function SearchPage() {
   const [params] = useSearchParams();
@@ -161,9 +161,8 @@ export function SearchPage() {
                       </div>
                       <p className="mt-1 text-sm text-muted">{run.userDisplayName || run.userHandle}</p>
                       <div className="mt-3 grid gap-1 text-sm text-muted">
-                        <span>{Math.round(run.score).toLocaleString()} score</span>
-                        <span>{run.accuracy.toFixed(1)}% accuracy</span>
-                        <span>{formatDurationMs(run.durationMS)}</span>
+                        <span>{Math.round(run.score).toLocaleString()} score · {run.accuracy.toFixed(1)}% accuracy</span>
+                        <span>{formatDurationMs(run.durationMS)}{run.playedAt ? ` · ${formatRelativeTime(run.playedAt)}` : ""}</span>
                       </div>
                     </Link>
                   ))}
