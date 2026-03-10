@@ -4,7 +4,7 @@
   "steps": {
     "build": {
       "commands": [
-        "go build -ldflags=\"-w -s\" -o out ./api/cmd/aimmod-hub"
+        "go build -o out ./api/cmd/aimmod-hub"
       ]
     }
   },

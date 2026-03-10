@@ -87,7 +87,7 @@ This starts:
 This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
 
 - `railpack.json` forces Go provider detection
-- build command is overridden to `go build -ldflags="-w -s" -o out ./api/cmd/aimmod-hub`
+- build command is overridden to `go build -o out ./api/cmd/aimmod-hub`
 - runtime start command is `./out` (Railpack Go default output binary)
 
 At runtime, the API now prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
