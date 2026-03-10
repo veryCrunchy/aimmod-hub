@@ -622,18 +622,18 @@ export function SearchPage() {
     <PageStack>
       <Helmet>
         <title>{query ? `"${query}" · Search · AimMod Hub` : "Search · AimMod Hub"}</title>
-        <meta name="description" content={query ? `Search results for "${query}" on AimMod Hub.` : "Search for players, scenarios, and runs across AimMod Hub."} />
+        <meta name="description" content={query ? `Search results for "${query}" on AimMod Hub.` : "Search for players, scenarios, runs, and replays across AimMod Hub."} />
       </Helmet>
       <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.14),transparent_26%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(4,12,9,0.98))]">
         <SectionHeader
           eyebrow="Search"
-          title={query ? `Results for “${query}”` : "Find players, scenarios, and runs"}
+          title={query ? `Results for “${query}”` : "Find players, scenarios, runs, and replays"}
           body={
             query
               ? hasResults
                 ? `${totalCount} results across scenarios, players, and runs.`
                 : "No matches yet."
-              : "Search the whole hub from one place, then jump straight into the page or run you want."
+              : "Search the whole hub from one place, then jump straight into the page, run, or replay you want."
           }
         />
         <form onSubmit={handleSubmit} className="mt-4 flex flex-wrap items-center gap-2">
@@ -644,7 +644,7 @@ export function SearchPage() {
               setQuickSelectionActive(false);
             }}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search scenarios, players, or run ids"
+            placeholder="Search scenarios, players, run ids, or replay-ready runs"
             className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-mint/70"
           />
           <Button type="submit" variant="primary">Search</Button>
