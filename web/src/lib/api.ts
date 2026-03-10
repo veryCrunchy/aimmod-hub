@@ -129,6 +129,62 @@ export type HubSearchResponse = {
   replays: HubSearchRun[];
 };
 
+function mapSearchProfileResult(
+  profile: {
+    userHandle?: string;
+    userDisplayName?: string;
+    avatarUrl?: string;
+    runCount?: number;
+    scenarioCount?: number;
+    primaryScenarioType?: string;
+  },
+): HubSearchProfile {
+  return {
+    userHandle: profile.userHandle ?? "",
+    userDisplayName: profile.userDisplayName ?? "",
+    avatarURL: profile.avatarUrl ?? "",
+    runCount: profile.runCount ?? 0,
+    scenarioCount: profile.scenarioCount ?? 0,
+    primaryScenarioType: profile.primaryScenarioType ?? "",
+  };
+}
+
+function mapReplayPreview(
+  run: {
+    publicRunId?: string;
+    sessionId?: string;
+    scenarioSlug?: string;
+    scenarioName?: string;
+    scenarioType?: string;
+    playedAtIso?: string;
+    score?: number;
+    accuracy?: number;
+    durationMs?: bigint | number;
+    userHandle?: string;
+    userDisplayName?: string;
+    hasVideo?: boolean;
+    hasMousePath?: boolean;
+    replayQuality?: string;
+  },
+): HubSearchRun {
+  return {
+    publicRunID: run.publicRunId ?? "",
+    sessionID: run.sessionId ?? "",
+    scenarioSlug: run.scenarioSlug ?? "",
+    scenarioName: run.scenarioName ?? "",
+    scenarioType: run.scenarioType ?? "",
+    playedAt: run.playedAtIso ?? "",
+    score: run.score ?? 0,
+    accuracy: run.accuracy ?? 0,
+    durationMS: Number(run.durationMs ?? 0),
+    userHandle: run.userHandle ?? "",
+    userDisplayName: run.userDisplayName ?? "",
+    hasVideo: Boolean(run.hasVideo),
+    hasMousePath: Boolean(run.hasMousePath),
+    replayQuality: run.replayQuality ?? "",
+  };
+}
+
 export type ReplayListResponse = {
   query: string;
   scenarioName: string;
@@ -296,9 +352,9 @@ export async function searchHub(query: string): Promise<HubSearchResponse> {
   return {
     query: payload.query ?? query,
     scenarios: Array.isArray(payload.scenarios) ? payload.scenarios : [],
-    profiles: Array.isArray(payload.profiles) ? payload.profiles : [],
-    runs: Array.isArray(payload.runs) ? payload.runs : [],
-    replays: Array.isArray(payload.replays) ? payload.replays : [],
+    profiles: Array.isArray(payload.profiles) ? payload.profiles.map(mapSearchProfileResult) : [],
+    runs: Array.isArray(payload.runs) ? payload.runs.map(mapReplayPreview) : [],
+    replays: Array.isArray(payload.replays) ? payload.replays.map(mapReplayPreview) : [],
   };
 }
 
@@ -320,7 +376,7 @@ export async function fetchReplayHub(params?: {
     query: payload.query ?? params?.query ?? "",
     scenarioName: payload.scenarioName ?? params?.scenarioName ?? "",
     userHandle: payload.userHandle ?? params?.handle ?? "",
-    items: Array.isArray(payload.items) ? payload.items : [],
+    items: Array.isArray(payload.items) ? payload.items.map(mapReplayPreview) : [],
   };
 }
 
