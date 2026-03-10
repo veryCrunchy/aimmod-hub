@@ -4,17 +4,14 @@
     "node": "22"
   },
   "steps": {
-    "install-web": {
-      "inputs": ["."],
+    "build": {
       "commands": [
+        "...",
         "npm install -g corepack",
         "corepack enable",
-        "pnpm install --no-frozen-lockfile"
-      ]
-    },
-    "build-web": {
-      "inputs": [{ "step": "install-web" }],
-      "commands": ["pnpm build:web"],
+        "pnpm install --no-frozen-lockfile",
+        "pnpm build:web"
+      ],
       "deployOutputs": [{ "include": ["web/dist/**"] }]
     }
   },
