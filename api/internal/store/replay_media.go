@@ -22,6 +22,11 @@ type MousePathPoint struct {
 	IsClick   bool    `json:"isClick"`
 }
 
+type MousePathData struct {
+	Points           []MousePathPoint `json:"points"`
+	HitTimestampsMS  []uint64         `json:"hitTimestampsMs"`
+}
+
 type ReplayMediaUploadTarget struct {
 	StoredSessionID string
 	PublicRunID     string
@@ -122,6 +127,7 @@ func (s *Store) UpsertMousePath(
 	ctx context.Context,
 	sessionID string,
 	points []MousePathPoint,
+	hitTimestampsMS []uint64,
 ) error {
 	pointCount := len(points)
 	var durationMS uint64
@@ -132,38 +138,54 @@ func (s *Store) UpsertMousePath(
 	if err != nil {
 		return fmt.Errorf("marshal mouse path: %w", err)
 	}
+	hitPayload, err := json.Marshal(hitTimestampsMS)
+	if err != nil {
+		return fmt.Errorf("marshal hit timestamps: %w", err)
+	}
 	if _, err := s.pool.Exec(ctx, `
 		INSERT INTO run_mouse_paths (
 			session_id,
 			point_count,
 			duration_ms,
-			path_json
+			path_json,
+			hit_timestamps_json
 		)
-		VALUES ($1, $2, $3, $4::jsonb)
+		VALUES ($1, $2, $3, $4::jsonb, $5::jsonb)
 		ON CONFLICT (session_id) DO UPDATE SET
 			point_count = EXCLUDED.point_count,
 			duration_ms = EXCLUDED.duration_ms,
 			path_json = EXCLUDED.path_json,
+			hit_timestamps_json = EXCLUDED.hit_timestamps_json,
 			updated_at = NOW()
-	`, sessionID, pointCount, int64(durationMS), string(payload)); err != nil {
+	`, sessionID, pointCount, int64(durationMS), string(payload), string(hitPayload)); err != nil {
 		return fmt.Errorf("upsert mouse path: %w", err)
 	}
 	return nil
 }
 
-func (s *Store) GetMousePath(ctx context.Context, runID string) ([]MousePathPoint, error) {
+func (s *Store) GetMousePath(ctx context.Context, runID string) (MousePathData, error) {
 	var payload []byte
+	var hitPayload []byte
 	if err := s.pool.QueryRow(ctx, `
-		SELECT rmp.path_json::text
+		SELECT rmp.path_json::text, rmp.hit_timestamps_json::text
 		FROM run_mouse_paths rmp
 		JOIN scenario_runs sr ON sr.session_id = rmp.session_id
 		WHERE sr.public_run_id = $1 OR sr.session_id = $1 OR sr.source_session_id = $1
-	`, runID).Scan(&payload); err != nil {
-		return nil, fmt.Errorf("load mouse path: %w", err)
+	`, runID).Scan(&payload, &hitPayload); err != nil {
+		return MousePathData{}, fmt.Errorf("load mouse path: %w", err)
 	}
 	var points []MousePathPoint
 	if err := json.Unmarshal(payload, &points); err != nil {
-		return nil, fmt.Errorf("decode mouse path: %w", err)
+		return MousePathData{}, fmt.Errorf("decode mouse path: %w", err)
 	}
-	return points, nil
+	var hitTimestampsMS []uint64
+	if len(hitPayload) > 0 {
+		if err := json.Unmarshal(hitPayload, &hitTimestampsMS); err != nil {
+			return MousePathData{}, fmt.Errorf("decode hit timestamps: %w", err)
+		}
+	}
+	return MousePathData{
+		Points: points,
+		HitTimestampsMS: hitTimestampsMS,
+	}, nil
 }

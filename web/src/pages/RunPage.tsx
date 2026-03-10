@@ -82,9 +82,27 @@ export function RunPage() {
   const [replayMediaUrl, setReplayMediaUrl] = useState<string | null>(null);
   const [mousePath, setMousePath] = useState<import("../lib/api").MousePathPoint[]>([]);
   const [hitTimestampsMs, setHitTimestampsMs] = useState<number[]>([]);
+  const [playbackMs, setPlaybackMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [deletingReplay, setDeletingReplay] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const sync = () => setPlaybackMs(video.currentTime * 1000);
+    video.addEventListener("timeupdate", sync);
+    video.addEventListener("seeked", sync);
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    sync();
+    return () => {
+      video.removeEventListener("timeupdate", sync);
+      video.removeEventListener("seeked", sync);
+      video.removeEventListener("play", sync);
+      video.removeEventListener("pause", sync);
+    };
+  }, [replayMediaUrl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -325,6 +343,33 @@ export function RunPage() {
               <video ref={videoRef} controls preload="metadata" className="block w-full" src={replayMediaUrl} />
             )}
           </div>
+          {hitTimestampsMs.length > 0 && mousePath.length > 1 ? (
+            <div className="mt-3 rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+              <div className="mb-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.08em] text-muted-2">
+                <span>Hit timing</span>
+                <span>{hitTimestampsMs.length} hits</span>
+              </div>
+              <div className="relative h-3 overflow-hidden rounded-full bg-white/6">
+                {hitTimestampsMs.map((timestampMs, index) => {
+                  const totalDurationMs = mousePath[mousePath.length - 1]?.timestampMs ?? 1;
+                  return (
+                    <div
+                      key={`hit-${timestampMs}-${index}`}
+                      className="absolute top-0 bottom-0 w-[2px] bg-mint"
+                      style={{ left: `${(timestampMs / totalDurationMs) * 100}%` }}
+                      title={`Hit at ${(timestampMs / 1000).toFixed(2)}s`}
+                    />
+                  );
+                })}
+                <div
+                  className="absolute top-0 bottom-0 w-[2px] bg-cyan shadow-[0_0_0_1px_rgba(184,255,225,0.35)]"
+                  style={{
+                    left: `${((playbackMs || 0) / (mousePath[mousePath.length - 1]?.timestampMs || 1)) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          ) : null}
         </PageSection>
       )}
 

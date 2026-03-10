@@ -547,7 +547,8 @@ func (h *authHandler) handleMousePathUpload(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var payload struct {
-		Points []store.MousePathPoint `json:"points"`
+		Points          []store.MousePathPoint `json:"points"`
+		HitTimestampsMS []uint64               `json:"hitTimestampsMs"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -557,14 +558,15 @@ func (h *authHandler) handleMousePathUpload(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "empty mouse path", http.StatusBadRequest)
 		return
 	}
-	if err := h.store.UpsertMousePath(r.Context(), target.StoredSessionID, payload.Points); err != nil {
+	if err := h.store.UpsertMousePath(r.Context(), target.StoredSessionID, payload.Points, payload.HitTimestampsMS); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"ok":        true,
-		"runId":     target.PublicRunID,
-		"pointCount": len(payload.Points),
+		"ok":              true,
+		"runId":           target.PublicRunID,
+		"pointCount":      len(payload.Points),
+		"hitMarkerCount":  len(payload.HitTimestampsMS),
 	})
 }
 
@@ -578,14 +580,19 @@ func (h *authHandler) handleMousePathMeta(w http.ResponseWriter, r *http.Request
 		http.Error(w, "runId is required", http.StatusBadRequest)
 		return
 	}
-	points, err := h.store.GetMousePath(r.Context(), runID)
+	mousePath, err := h.store.GetMousePath(r.Context(), runID)
 	if err != nil {
-		writeJSON(w, http.StatusOK, map[string]any{"available": false, "points": []store.MousePathPoint{}})
+		writeJSON(w, http.StatusOK, map[string]any{
+			"available": false,
+			"points": []store.MousePathPoint{},
+			"hitTimestampsMs": []uint64{},
+		})
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"available": true,
-		"points":    points,
+		"points": mousePath.Points,
+		"hitTimestampsMs": mousePath.HitTimestampsMS,
 	})
 }
 

@@ -153,6 +153,7 @@ export type MousePathPoint = {
 export type MousePathMeta = {
   available: boolean;
   points: MousePathPoint[];
+  hitTimestampsMs: number[];
 };
 
 export type AdminVersionBreakdown = {
@@ -362,6 +363,7 @@ export async function fetchMousePath(runId: string): Promise<MousePathMeta> {
   return {
     available: Boolean(payload?.available),
     points: Array.isArray(payload?.points) ? payload.points : [],
+    hitTimestampsMs: Array.isArray(payload?.hitTimestampsMs) ? payload.hitTimestampsMs : [],
   };
 }
 
