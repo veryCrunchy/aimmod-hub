@@ -1,10 +1,11 @@
-import type { FormEvent, PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { cn } from "../lib/cn";
 import { useAuth } from "../lib/AuthContext";
 import { discordStartUrl } from "../lib/auth";
 import { Button } from "./ui/Button";
+import { HeaderSearch } from "./HeaderSearch";
 
 const supportLinks = [
   { href: "https://ko-fi.com/verycrunchy", label: "Ko-fi" },
@@ -13,8 +14,6 @@ const supportLinks = [
 
 export function AppShell({ children }: PropsWithChildren) {
   const auth = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
@@ -44,16 +43,6 @@ export function AppShell({ children }: PropsWithChildren) {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const query = String(form.get("q") ?? "").trim();
-    if (!query) {
-      return;
-    }
-    navigate(`/search?q=${encodeURIComponent(query)}`);
-  }
 
   return (
     <div className="min-h-screen overflow-x-clip">
@@ -101,19 +90,7 @@ export function AppShell({ children }: PropsWithChildren) {
             </div>
           </div>
 
-          <form onSubmit={handleSearch} className="flex min-w-0 items-center gap-2 xl:min-w-[220px]">
-            <input
-              ref={searchRef}
-              key={location.pathname === "/search" ? location.search : "global-search"}
-              name="q"
-              defaultValue={location.pathname === "/search" ? new URLSearchParams(location.search).get("q") ?? "" : ""}
-              placeholder="Search  ·  / or Ctrl+K"
-              className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70 md:text-sm"
-            />
-            <Button type="submit" className="shrink-0 px-3">
-              Go
-            </Button>
-          </form>
+          <HeaderSearch ref={searchRef} />
 
           <div className="flex flex-wrap items-center gap-1.5 xl:hidden">
           {navItems.map((item) => (

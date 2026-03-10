@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
@@ -203,6 +203,12 @@ function SearchQuickJump({
   activeIndex: number;
   onHover: (index: number) => void;
 }) {
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  useEffect(() => {
+    itemRefs.current[activeIndex]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeIndex]);
+
   if (items.length === 0) return null;
 
   return (
@@ -223,6 +229,7 @@ function SearchQuickJump({
         {items.map((item, index) => (
           <Link
             key={item.key}
+            ref={(el) => { itemRefs.current[index] = el; }}
             to={item.to}
             onMouseEnter={() => onHover(index)}
             className={[
@@ -394,6 +401,21 @@ export function SearchPage() {
   useEffect(() => {
     setDraftQuery(query);
   }, [query]);
+
+  // Auto-query as the user types
+  useEffect(() => {
+    const tid = setTimeout(() => {
+      const next = draftQuery.trim();
+      if (next === query) return;
+      if (!next) {
+        navigate("/search", { replace: true });
+      } else {
+        navigate(`/search?q=${encodeURIComponent(next)}`, { replace: true });
+      }
+    }, 400);
+    return () => clearTimeout(tid);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftQuery]);
 
   useEffect(() => {
     if (!query) {
