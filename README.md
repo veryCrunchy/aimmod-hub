@@ -83,6 +83,49 @@ This starts:
 - the Go API
 - the Vite frontend
 
+## Deployment
+
+The root `Dockerfile` builds both the frontend and the API into a single image. The Go server serves the SPA with per-route server-side meta tag injection (`og:*`, `twitter:*`, `<title>`) so social media link previews and crawlers see real content without a separate renderer.
+
+```
+[browser] → Go API → static asset or meta-injected index.html
+           ↕
+        Postgres
+```
+
+Build and run:
+
+```bash
+docker build -t aimmod-hub .
+docker run -p 8080:8080 \
+  -e DATABASE_URL=postgres://... \
+  -e DISCORD_CLIENT_ID=... \
+  -e DISCORD_CLIENT_SECRET=... \
+  -e DISCORD_REDIRECT_URI=https://hub.aimmod.app/auth/discord/callback \
+  -e AIMMOD_HUB_WEB_ORIGIN=https://hub.aimmod.app \
+  -e SESSION_COOKIE_SECURE=true \
+  aimmod-hub
+```
+
+The `AIMMOD_HUB_API_BASE_URL` env var controls which API URL the frontend uses at runtime (written into `runtime-config.js` on container start). When the frontend and API are on the same origin this can be left unset — it defaults to `https://api.aimmod.app` which you can override:
+
+```bash
+-e AIMMOD_HUB_API_BASE_URL=https://hub.aimmod.app
+```
+
+### Split deployment (API + Nginx, no SSR meta)
+
+The legacy `web/Dockerfile` builds a standalone Nginx image serving the SPA. Page titles and OG tags update client-side after the SPA boots — fine for Google, not for social previews.
+
+```bash
+docker build -f web/Dockerfile -t aimmod-hub-web .
+docker run -p 8080:8080 \
+  -e AIMMOD_HUB_API_BASE_URL=https://api.aimmod.app \
+  aimmod-hub-web
+```
+
+The API runs as a separate container pointed at the same database.
+
 ## Railpack deployment (API)
 
 This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
@@ -91,7 +134,9 @@ This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong 
 - no `railpack.json` override is required
 - Railpack Go defaults build and run this layout automatically
 
-At runtime, the API now prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
+At runtime, the API prefers `AIMMOD_HUB_ADDR`, then falls back to `PORT`, then `:8080`.
+
+To enable SSR meta injection on Railpack, build the frontend as a pre-build step and set `AIMMOD_HUB_STATIC_DIR` to wherever `web/dist` lands.
 
 ## Environment
 
@@ -104,14 +149,15 @@ Frontend uses:
 Notes:
 - `VITE_*` values are compiled into the Vite bundle at build time.
 - For runtime-only env injection, set `window.__AIMMOD_HUB__.apiBaseUrl` via `web/public/runtime-config.js` (served as `/runtime-config.js`).
-- The Docker web image now writes `/runtime-config.js` on container startup from `AIMMOD_HUB_API_BASE_URL` and falls back to `VITE_API_BASE_URL`, then `https://api.aimmod.app`.
-- If neither runtime config nor `VITE_API_BASE_URL` is provided, the frontend defaults to `https://api.aimmod.app`.
+- The Docker web image writes `/runtime-config.js` on container startup from `AIMMOD_HUB_API_BASE_URL`, falling back to `VITE_API_BASE_URL`, then `https://api.aimmod.app`.
+- If neither is provided, the frontend defaults to `https://api.aimmod.app`.
 
 API uses:
 - `DATABASE_URL`
 - `AIMMOD_HUB_ADDR`
 - `AIMMOD_HUB_VERSION`
-- `AIMMOD_HUB_WEB_ORIGIN`
+- `AIMMOD_HUB_WEB_ORIGIN` — allowed CORS origin for the web frontend
+- `AIMMOD_HUB_STATIC_DIR` — (optional) path to built `web/dist`; enables Mode B single-server deployment with SSR meta injection
 - `DISCORD_CLIENT_ID`
 - `DISCORD_CLIENT_SECRET`
 - `DISCORD_REDIRECT_URI`

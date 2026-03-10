@@ -40,6 +40,9 @@ type Config struct {
 	Version             string
 	AllowedWebOrigin    string
 	WebAppOrigin        string
+	// StaticDir, when set, makes the API server also serve the built frontend
+	// with server-side meta tag injection. Set AIMMOD_HUB_STATIC_DIR to enable.
+	StaticDir           string
 	DatabaseURL         string
 	DiscordClientID     string
 	DiscordClientSecret string
@@ -114,6 +117,9 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))
 	})
+	if cfg.StaticDir != "" {
+		mux.Handle("/", NewSPAHandler(cfg.StaticDir, hub.Store(), cfg.WebAppOrigin))
+	}
 	return h2c.NewHandler(mux, &http2.Server{})
 }
 
@@ -169,6 +175,7 @@ func DefaultConfig() Config {
 		DiscordRedirectURI:  os.Getenv("DISCORD_REDIRECT_URI"),
 		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("AIMMOD_HUB_ADMIN_DISCORD_USER_ID")),
 		SessionCookieSecure: envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
+		StaticDir:           strings.TrimSpace(os.Getenv("AIMMOD_HUB_STATIC_DIR")),
 	}
 }
 

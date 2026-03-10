@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
@@ -79,6 +80,10 @@ export function CommunityPage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>Community · AimMod Hub</title>
+        <meta name="description" content="Explore the AimMod Hub community — top scenarios, active players, and recent runs." />
+      </Helmet>
       <PageSection>
         <SectionHeader
           eyebrow="Community"

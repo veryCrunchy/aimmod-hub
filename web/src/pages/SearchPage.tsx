@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
@@ -604,6 +605,10 @@ export function SearchPage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>{query ? `"${query}" · Search · AimMod Hub` : "Search · AimMod Hub"}</title>
+        <meta name="description" content={query ? `Search results for "${query}" on AimMod Hub.` : "Search for players, scenarios, and runs across AimMod Hub."} />
+      </Helmet>
       <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.14),transparent_26%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(4,12,9,0.98))]">
         <SectionHeader
           eyebrow="Search"

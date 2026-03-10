@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetScenarioPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScoreDistributionChart } from "../components/charts/ScoreDistributionChart";
@@ -280,9 +281,15 @@ export function ScenarioPage() {
     }
   }
 
+  const metaTitle = page ? `${page.scenarioName} · AimMod Hub` : `${slug} · AimMod Hub`;
+  const metaDesc = page
+    ? `${page.runCount.toLocaleString()} runs · Best score ${Math.round(page.bestScore).toLocaleString()} · Avg accuracy ${page.averageAccuracy.toFixed(1)}%`
+    : "Scenario page on AimMod Hub.";
+
   if (error) {
     return (
       <PageStack>
+        <Helmet><title>{slug} · AimMod Hub</title></Helmet>
         <PageSection>
           <SectionHeader eyebrow="Scenario" title="Could not load this scenario" />
           <EmptyState title="Scenario not found" body={error} />
@@ -327,6 +334,12 @@ export function ScenarioPage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDesc} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDesc} />
+      </Helmet>
       <PageSection>
         <Breadcrumb crumbs={[{ label: "Community", to: "/community" }, { label: page.scenarioName }]} />
         <SectionHeader

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "../components/ui/Button";
 import { PageSection } from "../components/ui/PageSection";
 import { Grid, PageStack } from "../components/ui/Stack";
@@ -89,6 +90,12 @@ export function AimModPage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>Download AimMod · AimMod Hub</title>
+        <meta name="description" content="KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows." />
+        <meta property="og:title" content="Download AimMod · AimMod Hub" />
+        <meta property="og:description" content="KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows." />
+      </Helmet>
       {/* Hero */}
       <PageSection className="relative overflow-hidden border-cyan/20 bg-[radial-gradient(circle_at_top_left,rgba(0,200,255,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(121,201,151,0.1),transparent_22%),linear-gradient(135deg,rgba(6,18,24,0.99),rgba(4,12,9,0.97)_55%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
         <div className="absolute inset-y-0 right-[6%] w-[32%] rounded-full bg-[radial-gradient(circle,rgba(0,200,255,0.1),transparent_65%)] blur-3xl" />

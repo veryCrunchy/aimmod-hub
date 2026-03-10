@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { RunTrendChart } from "../components/charts/RunTrendChart";
@@ -79,9 +80,20 @@ export function ProfilePage() {
     }
   }
 
+  const metaName = profile?.userDisplayName || profile?.userHandle || handle;
+  const metaTitle = profile
+    ? `${metaName} (@${profile.userHandle}) · AimMod Hub`
+    : `${handle} · AimMod Hub`;
+  const metaDesc = profile
+    ? `${profile.runCount.toLocaleString()} runs across ${profile.scenarioCount.toLocaleString()} scenarios on AimMod Hub.`
+    : "Player profile on AimMod Hub.";
+
   if (error) {
     return (
       <PageStack>
+        <Helmet>
+          <title>{handle} · AimMod Hub</title>
+        </Helmet>
         <PageSection>
           <SectionHeader eyebrow="Profile" title="Could not load this profile" />
           <EmptyState title="Profile not found" body={error} />
@@ -142,6 +154,13 @@ export function ProfilePage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDesc} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDesc} />
+        <meta property="og:type" content="profile" />
+      </Helmet>
       <PageSection className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)] gap-4 max-[980px]:grid-cols-1">
         <div>
           <Breadcrumb crumbs={[{ label: "Community", to: "/community" }, { label: `@${profile.userHandle}` }]} />

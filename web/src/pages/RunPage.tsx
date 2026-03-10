@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetRunResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -86,9 +87,18 @@ export function RunPage() {
     return () => { cancelled = true; };
   }, [runId]);
 
+  const runName = run?.userDisplayName || run?.userHandle || "";
+  const metaTitle = run
+    ? `${run.scenarioName} by ${runName} · AimMod Hub`
+    : "Run · AimMod Hub";
+  const metaDesc = run
+    ? `Score: ${Math.round(run.score).toLocaleString()} · Accuracy: ${run.accuracy.toFixed(1)}%`
+    : "Run detail on AimMod Hub.";
+
   if (error) {
     return (
       <PageStack>
+        <Helmet><title>Run · AimMod Hub</title></Helmet>
         <PageSection>
           <SectionHeader eyebrow="Run" title="Could not load this run" />
           <EmptyState title="Run not found" body={error} />
@@ -160,6 +170,12 @@ export function RunPage() {
 
   return (
     <PageStack>
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDesc} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDesc} />
+      </Helmet>
       {/* ── header + stat cards ── */}
       <PageSection>
         <Breadcrumb crumbs={[
