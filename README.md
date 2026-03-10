@@ -86,7 +86,7 @@ This starts:
 
 This repo is a mixed Go + Node monorepo, so auto-detection can choose the wrong runtime.
 
-- `nixpacks.toml` forces Go provider detection
+- `railpack.json` forces Go provider detection
 - build command: `go build -o bin/aimmod-hub ./api/cmd/aimmod-hub`
 - start command: `./bin/aimmod-hub`
 

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "go",
+  "packages": {
+    "go": "1.25.0"
+  },
+  "steps": {
+    "build": {
+      "commands": [
+        "go mod download",
+        "go build -o bin/aimmod-hub ./api/cmd/aimmod-hub"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "./bin/aimmod-hub"
+  }
+}
