@@ -1,15 +1,18 @@
 package httpserver
 
 import (
+	"bytes"
 	"encoding/csv"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/veryCrunchy/aimmod-hub/api/internal/media"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
 
@@ -24,6 +27,7 @@ const (
 type authHandler struct {
 	cfg    Config
 	store  *store.Store
+	media  media.Storage
 	client *http.Client
 }
 
@@ -89,10 +93,54 @@ type deviceApproveRequest struct {
 	UserCode string `json:"userCode"`
 }
 
+func requestBaseURL(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	scheme := strings.TrimSpace(r.Header.Get("X-Forwarded-Proto"))
+	if scheme == "" {
+		if r.TLS != nil {
+			scheme = "https"
+		} else {
+			scheme = "http"
+		}
+	}
+	host := strings.TrimSpace(r.Header.Get("X-Forwarded-Host"))
+	if host == "" {
+		host = strings.TrimSpace(r.Host)
+	}
+	if host == "" {
+		return ""
+	}
+	return scheme + "://" + host
+}
+
+func replayMediaURL(r *http.Request, publicRunID string, quality string) string {
+	baseURL := strings.TrimRight(requestBaseURL(r), "/")
+	if baseURL == "" {
+		return "/media/replays/" + publicRunID + ".mp4?quality=" + url.QueryEscape(quality)
+	}
+	return fmt.Sprintf("%s/media/replays/%s.mp4?quality=%s", baseURL, publicRunID, url.QueryEscape(quality))
+}
+
 func newAuthHandler(cfg Config, store *store.Store) *authHandler {
+	mediaStorage, err := media.New(media.Config{
+		Backend:        cfg.MediaBackend,
+		LocalDir:       cfg.MediaDir,
+		S3Bucket:       cfg.S3Bucket,
+		S3Region:       cfg.S3Region,
+		S3Endpoint:     cfg.S3Endpoint,
+		S3AccessKeyID:  cfg.S3AccessKeyID,
+		S3SecretAccess: cfg.S3SecretAccessKey,
+		S3ForcePath:    cfg.S3ForcePathStyle,
+	})
+	if err != nil {
+		panic(err)
+	}
 	return &authHandler{
 		cfg:   cfg,
 		store: store,
+		media: mediaStorage,
 		client: &http.Client{
 			Timeout: 15 * time.Second,
 		},
@@ -119,6 +167,12 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/admin/actions/clear-user-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearUserFailures)))
 	mux.Handle("/admin/failures/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminFailuresExport)))
 	mux.Handle("/admin/user/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserMetricsExport)))
+	mux.Handle("/media/replays/upload", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaUpload)))
+	mux.Handle("/media/replays/delete", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaDelete)))
+	mux.Handle("/media/replays/meta", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaMeta)))
+	mux.Handle("/media/replays/", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaStream)))
+	mux.Handle("/replays/mouse-path/upload", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleMousePathUpload)))
+	mux.Handle("/replays/mouse-path", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleMousePathMeta)))
 }
 
 func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request) {
@@ -354,6 +408,220 @@ func (h *authHandler) handleAdminClearFailures(w http.ResponseWriter, r *http.Re
 		"ok":      true,
 		"cleared": count,
 	})
+}
+
+func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authUser, err := h.store.GetUserByUploadToken(r.Context(), r.Header.Get("Authorization"))
+	if err != nil {
+		http.Error(w, "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+
+	sessionID := strings.TrimSpace(r.URL.Query().Get("sessionId"))
+	if sessionID == "" {
+		http.Error(w, "sessionId is required", http.StatusBadRequest)
+		return
+	}
+	quality := normalizeMediaQuality(r.URL.Query().Get("quality"))
+	contentType := strings.TrimSpace(r.Header.Get("Content-Type"))
+	if contentType == "" {
+		contentType = "video/mp4"
+	}
+	if contentType != "video/mp4" {
+		http.Error(w, "only video/mp4 is supported right now", http.StatusBadRequest)
+		return
+	}
+
+	target, err := h.store.GetReplayMediaUploadTarget(r.Context(), authUser.UserID, sessionID)
+	if err != nil {
+		http.Error(w, "run not found for this account", http.StatusNotFound)
+		return
+	}
+
+	storageKey := strings.TrimPrefix(fmt.Sprintf("replays/%s/%s.mp4", target.PublicRunID, quality), "/")
+	buffer, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	written := int64(len(buffer))
+	if written <= 0 {
+		http.Error(w, "empty replay media upload", http.StatusBadRequest)
+		return
+	}
+	if err := h.media.Put(r.Context(), storageKey, contentType, bytes.NewReader(buffer), written); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.store.UpsertReplayMediaAsset(r.Context(), target.StoredSessionID, quality, storageKey, contentType, written); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"ok":       true,
+		"runId":    target.PublicRunID,
+		"quality":  quality,
+		"mediaUrl": replayMediaURL(r, target.PublicRunID, quality),
+		"byteSize": written,
+	})
+}
+
+func (h *authHandler) handleReplayMediaDelete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	authUser, ok := h.requireSessionUser(w, r)
+	if !ok {
+		return
+	}
+	runID := strings.TrimSpace(r.URL.Query().Get("runId"))
+	if runID == "" {
+		http.Error(w, "runId is required", http.StatusBadRequest)
+		return
+	}
+	storageKey, err := h.store.DeleteReplayMediaAssetForUser(r.Context(), authUser.UserID, runID)
+	if err != nil {
+		http.Error(w, "replay media not found for this account", http.StatusNotFound)
+		return
+	}
+	if storageKey != "" {
+		if err := h.media.Delete(r.Context(), storageKey); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+func (h *authHandler) handleReplayMediaMeta(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	runID := strings.TrimSpace(r.URL.Query().Get("runId"))
+	if runID == "" {
+		http.Error(w, "runId is required", http.StatusBadRequest)
+		return
+	}
+	meta, err := h.store.GetReplayMediaMeta(r.Context(), runID)
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]any{"available": false})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"available":   true,
+		"runId":       meta.PublicRunID,
+		"quality":     meta.Quality,
+		"contentType": meta.ContentType,
+		"byteSize":    meta.ByteSize,
+		"mediaUrl":    replayMediaURL(r, meta.PublicRunID, meta.Quality),
+	})
+}
+
+func (h *authHandler) handleMousePathUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	authUser, err := h.store.GetUserByUploadToken(r.Context(), r.Header.Get("Authorization"))
+	if err != nil {
+		http.Error(w, "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+	sessionID := strings.TrimSpace(r.URL.Query().Get("sessionId"))
+	if sessionID == "" {
+		http.Error(w, "sessionId is required", http.StatusBadRequest)
+		return
+	}
+	target, err := h.store.GetReplayMediaUploadTarget(r.Context(), authUser.UserID, sessionID)
+	if err != nil {
+		http.Error(w, "run not found for this account", http.StatusNotFound)
+		return
+	}
+	var payload struct {
+		Points []store.MousePathPoint `json:"points"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(payload.Points) == 0 {
+		http.Error(w, "empty mouse path", http.StatusBadRequest)
+		return
+	}
+	if err := h.store.UpsertMousePath(r.Context(), target.StoredSessionID, payload.Points); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"ok":        true,
+		"runId":     target.PublicRunID,
+		"pointCount": len(payload.Points),
+	})
+}
+
+func (h *authHandler) handleMousePathMeta(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	runID := strings.TrimSpace(r.URL.Query().Get("runId"))
+	if runID == "" {
+		http.Error(w, "runId is required", http.StatusBadRequest)
+		return
+	}
+	points, err := h.store.GetMousePath(r.Context(), runID)
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]any{"available": false, "points": []store.MousePathPoint{}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"available": true,
+		"points":    points,
+	})
+}
+
+func (h *authHandler) handleReplayMediaStream(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	runID := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/media/replays/"), ".mp4")
+	runID = strings.TrimSpace(runID)
+	if runID == "" {
+		http.NotFound(w, r)
+		return
+	}
+	meta, err := h.store.GetReplayMediaMeta(r.Context(), runID)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	body, contentType, err := h.media.Get(r.Context(), meta.StorageKey)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer body.Close()
+	w.Header().Set("Content-Type", contentType)
+	_, _ = io.Copy(w, body)
+}
+
+func normalizeMediaQuality(value string) string {
+	switch strings.TrimSpace(value) {
+	case "high", "ultra":
+		return strings.TrimSpace(value)
+	default:
+		return "standard"
+	}
 }
 
 func (h *authHandler) handleAdminReclassifyUser(w http.ResponseWriter, r *http.Request) {

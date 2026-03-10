@@ -160,12 +160,42 @@ API uses:
 - `AIMMOD_HUB_ADDR`
 - `AIMMOD_HUB_VERSION`
 - `AIMMOD_HUB_WEB_ORIGIN` — allowed CORS origin for the web frontend
+- `AIMMOD_HUB_API_BASE_URL` — public base URL used in runtime config and replay media URLs
 - `AIMMOD_HUB_STATIC_DIR` — (optional) path to built `web/dist`; enables Mode B single-server deployment with SSR meta injection
 - `DISCORD_CLIENT_ID`
 - `DISCORD_CLIENT_SECRET`
 - `DISCORD_REDIRECT_URI`
 - `AIMMOD_HUB_ADMIN_DISCORD_USER_ID`
 - `SESSION_COOKIE_SECURE`
+- `AIMMOD_HUB_MEDIA_BACKEND` — `local` or `s3`
+- `AIMMOD_HUB_MEDIA_DIR` — media storage root for the local backend
+- `AIMMOD_HUB_S3_BUCKET`
+- `AIMMOD_HUB_S3_REGION`
+- `AIMMOD_HUB_S3_ENDPOINT`
+- `AIMMOD_HUB_S3_ACCESS_KEY_ID`
+- `AIMMOD_HUB_S3_SECRET_ACCESS_KEY`
+- `AIMMOD_HUB_S3_FORCE_PATH_STYLE`
+
+## Replay media storage
+
+Replay video uploads stay out of Postgres. The hub stores only replay metadata in the database and writes the actual MP4 to a media backend:
+
+- `local` for development and simple single-host installs
+- `s3` for S3-compatible object storage like Cloudflare R2, MinIO, Backblaze B2 S3, or AWS S3
+
+Example S3-compatible configuration:
+
+```bash
+AIMMOD_HUB_MEDIA_BACKEND=s3
+AIMMOD_HUB_S3_BUCKET=aimmod-replays
+AIMMOD_HUB_S3_REGION=auto
+AIMMOD_HUB_S3_ENDPOINT=https://<your-s3-endpoint>
+AIMMOD_HUB_S3_ACCESS_KEY_ID=...
+AIMMOD_HUB_S3_SECRET_ACCESS_KEY=...
+AIMMOD_HUB_S3_FORCE_PATH_STYLE=true
+```
+
+AimMod still uploads normal summary/timeline/feature data separately. Replay video uploads are opt-in from the desktop app and can stay limited to favorites, PBs, or higher-quality future tiers.
 
 ## Auth flow
 

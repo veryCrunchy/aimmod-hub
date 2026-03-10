@@ -107,6 +107,7 @@ type SearchProfileRecord struct {
 type SearchRunRecord struct {
 	PublicRunID     string    `json:"publicRunID"`
 	SessionID       string    `json:"sessionID"`
+	ScenarioSlug    string    `json:"scenarioSlug"`
 	ScenarioName    string    `json:"scenarioName"`
 	ScenarioType    string    `json:"scenarioType"`
 	PlayedAt        time.Time `json:"playedAt"`
@@ -115,13 +116,24 @@ type SearchRunRecord struct {
 	DurationMS      uint64    `json:"durationMS"`
 	UserHandle      string    `json:"userHandle"`
 	UserDisplayName string    `json:"userDisplayName"`
+	HasVideo        bool      `json:"hasVideo"`
+	HasMousePath    bool      `json:"hasMousePath"`
+	ReplayQuality   string    `json:"replayQuality"`
 }
 
 type SearchRecord struct {
-	Query     string                `json:"query"`
+	Query     string                 `json:"query"`
 	Scenarios []SearchScenarioRecord `json:"scenarios"`
 	Profiles  []SearchProfileRecord  `json:"profiles"`
 	Runs      []SearchRunRecord      `json:"runs"`
+	Replays   []SearchRunRecord      `json:"replays"`
+}
+
+type ReplayListRecord struct {
+	Query        string            `json:"query"`
+	ScenarioName string            `json:"scenarioName"`
+	UserHandle   string            `json:"userHandle"`
+	Items        []SearchRunRecord `json:"items"`
 }
 
 type AdminVersionBreakdown struct {
@@ -2086,7 +2098,10 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			sr.accuracy,
 			sr.duration_ms,
 			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
+			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
+			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
 		FROM scenario_runs sr
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
@@ -2115,13 +2130,182 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			&item.DurationMS,
 			&item.UserHandle,
 			&item.UserDisplayName,
+			&item.HasVideo,
+			&item.HasMousePath,
+			&item.ReplayQuality,
 		); err != nil {
 			return SearchRecord{}, fmt.Errorf("scan search run: %w", err)
 		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
 		record.Runs = append(record.Runs, item)
 	}
 	if err := runRows.Err(); err != nil {
 		return SearchRecord{}, fmt.Errorf("iterate search runs: %w", err)
+	}
+
+	replayRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			sr.scenario_name,
+			sr.scenario_type,
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
+			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
+			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE (
+			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id)
+			OR EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id)
+		)
+		  AND (
+			sr.scenario_name ILIKE $1
+			OR COALESCE(la.username, hu.external_id) ILIKE $1
+			OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
+			OR sr.public_run_id ILIKE $1
+			OR sr.session_id ILIKE $1
+		)
+		ORDER BY sr.played_at DESC, sr.created_at DESC
+		LIMIT 20
+	`, pattern)
+	if err != nil {
+		return SearchRecord{}, fmt.Errorf("search replays: %w", err)
+	}
+	defer replayRows.Close()
+	for replayRows.Next() {
+		var item SearchRunRecord
+		if err := replayRows.Scan(
+			&item.PublicRunID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.PlayedAt,
+			&item.Score,
+			&item.Accuracy,
+			&item.DurationMS,
+			&item.UserHandle,
+			&item.UserDisplayName,
+			&item.HasVideo,
+			&item.HasMousePath,
+			&item.ReplayQuality,
+		); err != nil {
+			return SearchRecord{}, fmt.Errorf("scan search replay: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		record.Replays = append(record.Replays, item)
+	}
+	if err := replayRows.Err(); err != nil {
+		return SearchRecord{}, fmt.Errorf("iterate search replays: %w", err)
+	}
+
+	return record, nil
+}
+
+func (s *Store) ListReplays(
+	ctx context.Context,
+	query string,
+	scenarioName string,
+	userHandle string,
+	limit int,
+) (ReplayListRecord, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+
+	record := ReplayListRecord{
+		Query:        strings.TrimSpace(query),
+		ScenarioName: strings.TrimSpace(scenarioName),
+		UserHandle:   strings.TrimSpace(userHandle),
+		Items:        []SearchRunRecord{},
+	}
+
+	args := []any{}
+	clauses := []string{
+		`(
+			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id)
+			OR EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id)
+		)`,
+	}
+
+	if record.Query != "" {
+		args = append(args, "%"+record.Query+"%")
+		idx := len(args)
+		clauses = append(clauses, fmt.Sprintf(`(
+			sr.scenario_name ILIKE $%d
+			OR COALESCE(la.username, hu.external_id) ILIKE $%d
+			OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $%d
+			OR sr.public_run_id ILIKE $%d
+			OR sr.session_id ILIKE $%d
+		)`, idx, idx, idx, idx, idx))
+	}
+
+	if record.ScenarioName != "" {
+		args = append(args, record.ScenarioName)
+		clauses = append(clauses, fmt.Sprintf("sr.scenario_name = $%d", len(args)))
+	}
+
+	if record.UserHandle != "" {
+		args = append(args, strings.ToLower(record.UserHandle))
+		clauses = append(clauses, fmt.Sprintf("LOWER(COALESCE(la.username, hu.external_id)) = $%d", len(args)))
+	}
+
+	args = append(args, limit)
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.public_run_id, sr.session_id),
+			sr.session_id,
+			sr.scenario_name,
+			sr.scenario_type,
+			sr.played_at,
+			sr.score,
+			sr.accuracy,
+			sr.duration_ms,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
+			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
+			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE `+strings.Join(clauses, " AND ")+`
+		ORDER BY sr.played_at DESC, sr.created_at DESC
+		LIMIT $`+fmt.Sprintf("%d", len(args)), args...)
+	if err != nil {
+		return ReplayListRecord{}, fmt.Errorf("list replays: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var item SearchRunRecord
+		if err := rows.Scan(
+			&item.PublicRunID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ScenarioType,
+			&item.PlayedAt,
+			&item.Score,
+			&item.Accuracy,
+			&item.DurationMS,
+			&item.UserHandle,
+			&item.UserDisplayName,
+			&item.HasVideo,
+			&item.HasMousePath,
+			&item.ReplayQuality,
+		); err != nil {
+			return ReplayListRecord{}, fmt.Errorf("scan replay listing: %w", err)
+		}
+		item.ScenarioSlug = slugifyScenarioName(item.ScenarioName)
+		record.Items = append(record.Items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return ReplayListRecord{}, fmt.Errorf("iterate replay listing: %w", err)
 	}
 
 	return record, nil

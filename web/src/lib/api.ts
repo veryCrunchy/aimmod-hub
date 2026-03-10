@@ -105,6 +105,7 @@ export type HubSearchProfile = {
 export type HubSearchRun = {
   publicRunID: string;
   sessionID: string;
+  scenarioSlug: string;
   scenarioName: string;
   scenarioType: string;
   playedAt: string;
@@ -113,6 +114,9 @@ export type HubSearchRun = {
   durationMS: number;
   userHandle: string;
   userDisplayName: string;
+  hasVideo: boolean;
+  hasMousePath: boolean;
+  replayQuality: string;
 };
 
 export type HubSearchResponse = {
@@ -120,6 +124,35 @@ export type HubSearchResponse = {
   scenarios: HubSearchScenario[];
   profiles: HubSearchProfile[];
   runs: HubSearchRun[];
+  replays: HubSearchRun[];
+};
+
+export type ReplayListResponse = {
+  query: string;
+  scenarioName: string;
+  userHandle: string;
+  items: HubSearchRun[];
+};
+
+export type ReplayMediaMeta = {
+  available: boolean;
+  runId?: string;
+  quality?: string;
+  contentType?: string;
+  byteSize?: number;
+  mediaUrl?: string;
+};
+
+export type MousePathPoint = {
+  x: number;
+  y: number;
+  timestampMs: number;
+  isClick: boolean;
+};
+
+export type MousePathMeta = {
+  available: boolean;
+  points: MousePathPoint[];
 };
 
 export type AdminVersionBreakdown = {
@@ -266,6 +299,69 @@ export async function searchHub(query: string): Promise<HubSearchResponse> {
     scenarios: Array.isArray(payload?.scenarios) ? payload.scenarios : [],
     profiles: Array.isArray(payload?.profiles) ? payload.profiles : [],
     runs: Array.isArray(payload?.runs) ? payload.runs : [],
+    replays: Array.isArray(payload?.replays) ? payload.replays : [],
+  };
+}
+
+export async function fetchReplayHub(params?: {
+  query?: string;
+  scenarioName?: string;
+  handle?: string;
+  limit?: number;
+}): Promise<ReplayListResponse> {
+  const search = new URLSearchParams();
+  if (params?.query?.trim()) search.set("q", params.query.trim());
+  if (params?.scenarioName?.trim()) search.set("scenarioName", params.scenarioName.trim());
+  if (params?.handle?.trim()) search.set("handle", params.handle.trim());
+  if (params?.limit) search.set("limit", String(params.limit));
+  const response = await fetch(`${API_BASE_URL}/replays?${search.toString()}`);
+  if (!response.ok) {
+    throw new Error("Could not load replays.");
+  }
+  const payload = (await response.json()) as Partial<ReplayListResponse> | null;
+  return {
+    query: payload?.query ?? params?.query ?? "",
+    scenarioName: payload?.scenarioName ?? params?.scenarioName ?? "",
+    userHandle: payload?.userHandle ?? params?.handle ?? "",
+    items: Array.isArray(payload?.items) ? payload.items : [],
+  };
+}
+
+export async function fetchReplayMediaMeta(runId: string): Promise<ReplayMediaMeta> {
+  const response = await fetch(`${API_BASE_URL}/media/replays/meta?runId=${encodeURIComponent(runId)}`);
+  if (!response.ok) {
+    throw new Error("Could not load replay media.");
+  }
+  const payload = (await response.json()) as Partial<ReplayMediaMeta> | null;
+  return {
+    available: Boolean(payload?.available),
+    runId: payload?.runId,
+    quality: payload?.quality,
+    contentType: payload?.contentType,
+    byteSize: payload?.byteSize,
+    mediaUrl: payload?.mediaUrl,
+  };
+}
+
+export async function deleteReplayMedia(runId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/media/replays/delete?runId=${encodeURIComponent(runId)}`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error((await response.text()) || "Could not delete replay media.");
+  }
+}
+
+export async function fetchMousePath(runId: string): Promise<MousePathMeta> {
+  const response = await fetch(`${API_BASE_URL}/replays/mouse-path?runId=${encodeURIComponent(runId)}`);
+  if (!response.ok) {
+    throw new Error("Could not load mouse path.");
+  }
+  const payload = await response.json();
+  return {
+    available: Boolean(payload?.available),
+    points: Array.isArray(payload?.points) ? payload.points : [],
   };
 }
 

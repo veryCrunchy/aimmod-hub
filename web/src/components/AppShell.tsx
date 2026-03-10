@@ -20,6 +20,7 @@ export function AppShell({ children }: PropsWithChildren) {
     { to: "/", label: "Home" },
     { to: "/app", label: "App" },
     { to: "/community", label: "Community" },
+    { to: "/replays", label: "Replays" },
     { to: "/leaderboard", label: "Leaderboard" },
     ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
     { to: "/account", label: "Account" },

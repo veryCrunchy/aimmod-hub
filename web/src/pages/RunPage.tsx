@@ -11,9 +11,11 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
+import { MousePathPreview } from "../components/MousePathPreview";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
+import { deleteReplayMedia, fetchMousePath, fetchReplayMediaMeta, fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
+import { useAuth } from "../lib/AuthContext";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -73,16 +75,40 @@ function tagColor(tag: string) {
 // ── main component ───────────────────────────────────────────────────────────
 
 export function RunPage() {
+  const auth = useAuth();
   const { runId = "" } = useParams();
   const [run, setRun] = useState<GetRunResponse | null>(null);
+  const [replayMediaUrl, setReplayMediaUrl] = useState<string | null>(null);
+  const [mousePath, setMousePath] = useState<import("../lib/api").MousePathPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [deletingReplay, setDeletingReplay] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setRun(null);
+    setReplayMediaUrl(null);
+    setMousePath([]);
     setError(null);
     void fetchRun(runId)
-      .then((next) => { if (!cancelled) setRun(next); })
+      .then((next) => {
+        if (!cancelled) {
+          setRun(next);
+          void fetchReplayMediaMeta(next.runId || runId)
+            .then((media) => {
+              if (!cancelled && media.available && media.mediaUrl) {
+                setReplayMediaUrl(media.mediaUrl);
+              }
+            })
+            .catch(() => {});
+          void fetchMousePath(next.runId || runId)
+            .then((payload) => {
+              if (!cancelled && payload.available) {
+                setMousePath(payload.points);
+              }
+            })
+            .catch(() => {});
+        }
+      })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Could not load this run."); });
     return () => { cancelled = true; };
   }, [runId]);
@@ -159,6 +185,11 @@ export function RunPage() {
   const hasTiming         = avgFireToHit !== null;
   const hasTtk            = avgTtk !== null;
   const hasSmoothness     = smoothness !== null;
+  const canDeleteReplayMedia =
+    Boolean(replayMediaUrl) &&
+    auth.authenticated &&
+    !!auth.user &&
+    auth.user.username.toLowerCase() === run.userHandle.toLowerCase();
 
   // stat card display values
   const spmDisplay     = spm ? `${Math.round(spm).toLocaleString()} /min` : "—";
@@ -237,6 +268,47 @@ export function RunPage() {
             }
           />
           <TimelineChart timeline={run.timelineSeconds} contextWindows={run.contextWindows} />
+        </PageSection>
+      )}
+
+      {replayMediaUrl && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Replay video"
+            title="Saved replay clip"
+            body="If this run was uploaded with replay media, you can watch it directly here."
+            aside={
+              canDeleteReplayMedia ? (
+                <button
+                  type="button"
+                  className="text-sm text-danger underline underline-offset-3 disabled:opacity-50"
+                  disabled={deletingReplay}
+                  onClick={() => {
+                    setDeletingReplay(true);
+                    void deleteReplayMedia(run.runId || runId)
+                      .then(() => setReplayMediaUrl(null))
+                      .finally(() => setDeletingReplay(false));
+                  }}
+                >
+                  {deletingReplay ? "Removing..." : "Remove replay"}
+                </button>
+              ) : null
+            }
+          />
+          <div className="overflow-hidden rounded-2xl border border-white/8 bg-black/40">
+            <video controls preload="metadata" className="block w-full" src={replayMediaUrl} />
+          </div>
+        </PageSection>
+      )}
+
+      {mousePath.length > 0 && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Mouse path"
+            title="Saved movement path"
+            body="A compact replay of the aim path for this run, with click points highlighted."
+          />
+          <MousePathPreview points={mousePath} />
         </PageSection>
       )}
 

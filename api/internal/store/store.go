@@ -148,6 +148,28 @@ CREATE TABLE IF NOT EXISTS ingest_failures (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS replay_media_assets (
+  session_id TEXT PRIMARY KEY REFERENCES scenario_runs(session_id) ON DELETE CASCADE,
+  quality TEXT NOT NULL DEFAULT 'standard',
+  storage_key TEXT NOT NULL,
+  content_type TEXT NOT NULL DEFAULT 'video/mp4',
+  byte_size BIGINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS run_mouse_paths (
+  session_id TEXT PRIMARY KEY REFERENCES scenario_runs(session_id) ON DELETE CASCADE,
+  point_count INTEGER NOT NULL DEFAULT 0,
+  duration_ms BIGINT NOT NULL DEFAULT 0,
+  path_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_replay_media_assets_storage_key
+  ON replay_media_assets(storage_key);
+
 CREATE INDEX IF NOT EXISTS idx_ingest_failures_created_at
   ON ingest_failures(created_at DESC);
 `

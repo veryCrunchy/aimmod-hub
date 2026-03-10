@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetScenarioPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { ReplayResultCard } from "../components/ReplayResultCard";
 import { ScoreDistributionChart } from "../components/charts/ScoreDistributionChart";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
@@ -14,7 +15,7 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { SortableTh } from "../components/ui/SortableTh";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
-import { fetchScenarioPage, formatDurationMs, formatRelativeTime } from "../lib/api";
+import { fetchReplayHub, fetchScenarioPage, formatDurationMs, formatRelativeTime, type HubSearchRun } from "../lib/api";
 
 type SortField = "score" | "accuracy" | "date";
 type Tab = "recent" | "leaderboard";
@@ -238,6 +239,7 @@ function ScenarioRecentPulse({ page }: { page: GetScenarioPageResponse }) {
 export function ScenarioPage() {
   const { slug = "" } = useParams();
   const [page, setPage] = useState<GetScenarioPageResponse | null>(null);
+  const [replays, setReplays] = useState<HubSearchRun[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -248,13 +250,21 @@ export function ScenarioPage() {
   useEffect(() => {
     let cancelled = false;
     setPage(null);
+    setReplays([]);
     setError(null);
     setRecentVisible(PAGE_SIZE);
     setTopVisible(PAGE_SIZE);
     setTab("recent");
     void fetchScenarioPage(slug)
       .then((next) => {
-        if (!cancelled) setPage(next);
+        if (!cancelled) {
+          setPage(next);
+          void fetchReplayHub({ scenarioName: next.scenarioName, limit: 8 })
+            .then((response) => {
+              if (!cancelled) setReplays(response.items);
+            })
+            .catch(() => {});
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load this scenario.");
@@ -565,6 +575,25 @@ export function ScenarioPage() {
           <ScenarioRecentPulse page={page} />
         </PageSection>
       </Grid>
+
+      <PageSection>
+        <SectionHeader
+          eyebrow="Replay library"
+          title="Replay-ready runs on this scenario"
+          body="Open watchable runs and mouse-path captures without hunting through every result one by one."
+        />
+        {replays.length > 0 ? (
+          <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
+            <div className="grid gap-3">
+              {replays.map((run) => (
+                <ReplayResultCard key={`scenario-replay:${run.publicRunID || run.sessionID}`} run={run} />
+              ))}
+            </div>
+          </ScrollArea>
+        ) : (
+          <EmptyState title="No replay-ready runs yet" body="Replay-enabled runs for this scenario will show up here once they are uploaded." />
+        )}
+      </PageSection>
     </PageStack>
   );
 }

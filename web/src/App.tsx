@@ -11,6 +11,7 @@ const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
 const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then((m) => ({ default: m.PlayerScenarioPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const ReplayHubPage = lazy(() => import("./pages/ReplayHubPage").then((m) => ({ default: m.ReplayHubPage })));
 const RunPage = lazy(() => import("./pages/RunPage").then((m) => ({ default: m.RunPage })));
 const ScenarioPage = lazy(() => import("./pages/ScenarioPage").then((m) => ({ default: m.ScenarioPage })));
 const AimModPage = lazy(() => import("./pages/AimModPage").then((m) => ({ default: m.AimModPage })));
@@ -30,6 +31,7 @@ export function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/app" element={<AimModPage />} />
               <Route path="/community" element={<CommunityPage />} />
+              <Route path="/replays" element={<ReplayHubPage />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/link-device" element={<DeviceLinkPage />} />

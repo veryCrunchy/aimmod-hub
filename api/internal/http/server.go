@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,6 +50,14 @@ type Config struct {
 	DiscordRedirectURI  string
 	AdminDiscordUserID  string
 	SessionCookieSecure bool
+	MediaDir            string
+	MediaBackend        string
+	S3Bucket            string
+	S3Region            string
+	S3Endpoint          string
+	S3AccessKeyID       string
+	S3SecretAccessKey   string
+	S3ForcePathStyle    bool
 }
 
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
@@ -106,6 +115,24 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/search", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query := strings.TrimSpace(r.URL.Query().Get("q"))
 		results, err := hub.Store().Search(r.Context(), query)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("content-type", "application/json")
+		_ = json.NewEncoder(w).Encode(results)
+	})))
+	mux.Handle("/replays", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query := strings.TrimSpace(r.URL.Query().Get("q"))
+		scenarioName := strings.TrimSpace(r.URL.Query().Get("scenarioName"))
+		handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+		limit := 50
+		if rawLimit := strings.TrimSpace(r.URL.Query().Get("limit")); rawLimit != "" {
+			if parsed, err := strconv.Atoi(rawLimit); err == nil {
+				limit = parsed
+			}
+		}
+		results, err := hub.Store().ListReplays(r.Context(), query, scenarioName, handle, limit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -176,6 +203,14 @@ func DefaultConfig() Config {
 		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("AIMMOD_HUB_ADMIN_DISCORD_USER_ID")),
 		SessionCookieSecure: envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
 		StaticDir:           strings.TrimSpace(os.Getenv("AIMMOD_HUB_STATIC_DIR")),
+		MediaDir:            envOrDefault("AIMMOD_HUB_MEDIA_DIR", "./var/media"),
+		MediaBackend:        envOrDefault("AIMMOD_HUB_MEDIA_BACKEND", "local"),
+		S3Bucket:            strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_BUCKET")),
+		S3Region:            envOrDefault("AIMMOD_HUB_S3_REGION", "auto"),
+		S3Endpoint:          strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ENDPOINT")),
+		S3AccessKeyID:       strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ACCESS_KEY_ID")),
+		S3SecretAccessKey:   strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_SECRET_ACCESS_KEY")),
+		S3ForcePathStyle:    parseEnvBool("AIMMOD_HUB_S3_FORCE_PATH_STYLE", false),
 	}
 }
 
@@ -184,6 +219,18 @@ func envOrDefault(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func parseEnvBool(key string, fallback bool) bool {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }
 
 

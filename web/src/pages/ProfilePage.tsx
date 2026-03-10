@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { ReplayResultCard } from "../components/ReplayResultCard";
 import { RunTrendChart } from "../components/charts/RunTrendChart";
 import { ScenarioTypeChart } from "../components/charts/ScenarioTypeChart";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
@@ -18,7 +19,7 @@ import { Grid, PageStack } from "../components/ui/Stack";
 import { AimProfileSection } from "../components/AimProfileSection";
 import { AimFingerprintSection } from "../components/AimFingerprintSection";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
-import { fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
+import { fetchProfile, fetchReplayHub, formatDurationMs, slugifyScenarioName, type HubSearchRun } from "../lib/api";
 
 const PAGE_SIZE = 15;
 type RunSortField = "score" | "accuracy" | "duration";
@@ -26,6 +27,7 @@ type RunSortField = "score" | "accuracy" | "duration";
 export function ProfilePage() {
   const { handle = "" } = useParams();
   const [profile, setProfile] = useState<GetProfileResponse | null>(null);
+  const [replays, setReplays] = useState<HubSearchRun[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string | null>(null);
   const [runSortField, setRunSortField] = useState<RunSortField>("score");
@@ -36,12 +38,20 @@ export function ProfilePage() {
   useEffect(() => {
     let cancelled = false;
     setProfile(null);
+    setReplays([]);
     setError(null);
     setScenariosVisible(PAGE_SIZE);
     setRunsVisible(PAGE_SIZE);
     void fetchProfile(handle)
       .then((next) => {
-        if (!cancelled) setProfile(next);
+        if (!cancelled) {
+          setProfile(next);
+          void fetchReplayHub({ handle: next.userHandle || handle, limit: 8 })
+            .then((response) => {
+              if (!cancelled) setReplays(response.items);
+            })
+            .catch(() => {});
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load this profile.");
@@ -390,6 +400,25 @@ export function ProfilePage() {
           )}
         </PageSection>
       </Grid>
+
+      <PageSection>
+        <SectionHeader
+          eyebrow="Replay library"
+          title="Replay-ready runs from this player"
+          body="The latest runs from this player that already have replay video or mouse-path data available."
+        />
+        {replays.length > 0 ? (
+          <ScrollArea className="max-h-[min(64vh,860px)] pr-2">
+            <div className="grid gap-3">
+              {replays.map((run) => (
+                <ReplayResultCard key={`profile-replay:${run.publicRunID || run.sessionID}`} run={run} />
+              ))}
+            </div>
+          </ScrollArea>
+        ) : (
+          <EmptyState title="No replay-ready runs yet" body="Replay-enabled runs from this player will show up here once they are uploaded." />
+        )}
+      </PageSection>
     </PageStack>
   );
 }

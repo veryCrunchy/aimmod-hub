@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEven
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { ReplayResultCard } from "../components/ReplayResultCard";
 import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { Button } from "../components/ui/Button";
@@ -20,7 +21,7 @@ import {
   type HubSearchScenario,
 } from "../lib/api";
 
-type SearchView = "all" | "scenarios" | "players" | "runs";
+type SearchView = "all" | "scenarios" | "players" | "runs" | "replays";
 
 type SearchScenarioCardData = Pick<
   HubSearchScenario,
@@ -459,7 +460,8 @@ export function SearchPage() {
   const scenarioCount = results?.scenarios.length ?? 0;
   const profileCount = results?.profiles.length ?? 0;
   const runCount = results?.runs.length ?? 0;
-  const totalCount = scenarioCount + profileCount + runCount;
+  const replayCount = results?.replays.length ?? 0;
+  const totalCount = scenarioCount + profileCount + runCount + replayCount;
   const hasResults = totalCount > 0;
 
   const ranked = useMemo(() => {
@@ -471,11 +473,13 @@ export function SearchPage() {
         scenarios: [] as HubSearchScenario[],
         profiles: [] as HubSearchProfile[],
         runs: [] as HubSearchRun[],
+        replays: [] as HubSearchRun[],
       };
     }
     const rankedScenarios = rankScenarios(query, results.scenarios);
     const rankedProfiles = rankProfiles(query, results.profiles);
     const rankedRuns = rankRuns(query, results.runs);
+    const rankedReplays = rankRuns(query, results.replays);
     return {
       scenario: rankedScenarios[0]?.scenario ?? null,
       profile: rankedProfiles[0]?.profile ?? null,
@@ -483,6 +487,7 @@ export function SearchPage() {
       scenarios: rankedScenarios.map((entry) => entry.scenario),
       profiles: rankedProfiles.map((entry) => entry.profile),
       runs: rankedRuns.map((entry) => entry.run),
+      replays: rankedReplays.map((entry) => entry.run),
     };
   }, [results, query]);
 
@@ -513,6 +518,15 @@ export function SearchPage() {
         title: run.scenarioName,
         subtitle: run.userDisplayName || run.userHandle,
         meta: `${Math.round(run.score).toLocaleString()} score`,
+        to: `/runs/${run.publicRunID || run.sessionID}`,
+        badge: run.scenarioType,
+      })),
+      ...ranked.replays.slice(0, 2).map((run) => ({
+        kind: "run" as const,
+        key: `replay:${run.publicRunID || run.sessionID}`,
+        title: `${run.scenarioName} replay`,
+        subtitle: run.userDisplayName || run.userHandle,
+        meta: run.hasVideo ? "video replay" : "mouse path",
         to: `/runs/${run.publicRunID || run.sessionID}`,
         badge: run.scenarioType,
       })),
@@ -602,6 +616,7 @@ export function SearchPage() {
   const showScenarios = view === "all" || view === "scenarios";
   const showProfiles = view === "all" || view === "players";
   const showRuns = view === "all" || view === "runs";
+  const showReplays = view === "all" || view === "replays";
 
   return (
     <PageStack>
@@ -652,6 +667,7 @@ export function SearchPage() {
               { key: "scenarios", label: "Scenarios", count: scenarioCount },
               { key: "players", label: "Players", count: profileCount },
               { key: "runs", label: "Runs", count: runCount },
+              { key: "replays", label: "Replays", count: replayCount },
             ].map((item) => (
               <button
                 key={item.key}
@@ -712,6 +728,21 @@ export function SearchPage() {
           />
 
           <Grid className="grid-cols-3 items-start max-[1280px]:grid-cols-1">
+            {showReplays ? (
+              <PageSection>
+                <SectionHeader eyebrow="Replays" title="Replay-ready runs" body="Runs that already have video replay or mouse path data available." />
+                <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
+                  <div className="grid gap-2.5">
+                    {replayCount > 0
+                      ? ranked.replays.map((run) => (
+                          <ReplayResultCard key={`replay:${run.publicRunID || run.sessionID}`} run={run} />
+                        ))
+                      : <EmptyState title="No replay matches" body="No replay-ready runs matched this search." />}
+                  </div>
+                </ScrollArea>
+              </PageSection>
+            ) : null}
+
             {showScenarios ? (
               <PageSection>
                 <SectionHeader eyebrow="Scenarios" title="Scenario pages" body="Open the scenario itself to see shared history, leaderboards, and activity." />
