@@ -20,3 +20,6 @@ COPY web/docker/entrypoint.sh /docker-entrypoint.d/40-aimmod-runtime-config.sh
 RUN chmod +x /docker-entrypoint.d/40-aimmod-runtime-config.sh
 
 EXPOSE 8080
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
