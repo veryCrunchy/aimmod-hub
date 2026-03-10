@@ -5,6 +5,7 @@
   },
   "steps": {
     "install-web": {
+      "inputs": [{ "local": true }],
       "commands": [
         "npm install -g corepack",
         "corepack enable",
