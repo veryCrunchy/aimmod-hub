@@ -9,7 +9,8 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
-import { displayScenarioType, fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
+import { fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
 
 export function ProfilePage() {
   const { handle = "" } = useParams();
@@ -148,20 +149,17 @@ export function ProfilePage() {
           {profile.topScenarios.length > 0 ? (
             <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
               <div className="grid gap-3">
-                {profile.topScenarios.map((scenario) => {
-                  const scenarioType = displayScenarioType(scenario.scenarioType);
-                  return (
-                    <Link
-                      key={scenario.scenarioSlug}
-                      to={`/scenarios/${scenario.scenarioSlug}`}
-                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                    >
-                      <strong className="block text-text">{scenario.scenarioName}</strong>
-                      {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
-                      <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
-                    </Link>
-                  );
-                })}
+                {profile.topScenarios.map((scenario) => (
+                  <Link
+                    key={scenario.scenarioSlug}
+                    to={`/scenarios/${scenario.scenarioSlug}`}
+                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                  >
+                    <strong className="block text-text">{scenario.scenarioName}</strong>
+                    <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
+                    <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
+                  </Link>
+                ))}
               </div>
             </ScrollArea>
           ) : (

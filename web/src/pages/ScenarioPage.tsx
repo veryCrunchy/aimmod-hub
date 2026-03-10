@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { GetScenarioPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScoreDistributionChart } from "../components/charts/ScoreDistributionChart";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -65,7 +66,7 @@ export function ScenarioPage() {
           eyebrow="Scenario"
           title={page.scenarioName}
           body="A shared view of how players are performing on this scenario."
-          aside={page.scenarioType || "Unknown"}
+          aside={<ScenarioTypeBadge type={page.scenarioType} />}
         />
         <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
           <StatCard label="Runs" value={page.runCount.toLocaleString()} detail="Saved runs for this scenario" />

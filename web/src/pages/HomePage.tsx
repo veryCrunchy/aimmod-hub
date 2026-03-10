@@ -9,7 +9,8 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useCountUp } from "../hooks/useCountUp";
-import { displayScenarioType, fetchOverview, formatDurationMs } from "../lib/api";
+import { fetchOverview, formatDurationMs } from "../lib/api";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 
 function AnimatedStatCard({
   label,
@@ -116,27 +117,24 @@ export function HomePage() {
           {overview?.topScenarios.length ? (
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
-                {overview.topScenarios.slice(0, 6).map((scenario) => {
-                  const scenarioType = displayScenarioType(scenario.scenarioType);
-                  return (
-                    <Link
-                      key={scenario.scenarioSlug}
-                      to={`/scenarios/${scenario.scenarioSlug}`}
-                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <strong className="block text-text">{scenario.scenarioName}</strong>
-                          {scenarioType ? <p className="mt-1 text-sm text-muted">{scenarioType}</p> : null}
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="block text-sm text-mint">{scenario.runCount.toLocaleString()}</span>
-                          <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
-                        </div>
+                {overview.topScenarios.slice(0, 6).map((scenario) => (
+                  <Link
+                    key={scenario.scenarioSlug}
+                    to={`/scenarios/${scenario.scenarioSlug}`}
+                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <strong className="block text-text">{scenario.scenarioName}</strong>
+                        <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
                       </div>
-                    </Link>
-                  );
-                })}
+                      <div className="text-right shrink-0">
+                        <span className="block text-sm text-mint">{scenario.runCount.toLocaleString()}</span>
+                        <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </ScrollArea>
           ) : (
@@ -156,33 +154,30 @@ export function HomePage() {
           {overview?.activeProfiles.length ? (
             <ScrollArea className="max-h-[min(58vh,760px)] pr-2">
               <div className="grid gap-3">
-                {overview.activeProfiles.slice(0, 6).map((profile) => {
-                  const primaryType = displayScenarioType(profile.primaryScenarioType);
-                  return (
-                    <Link
-                      key={profile.userHandle}
-                      to={`/profiles/${profile.userHandle}`}
-                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <strong className="block text-text truncate">
-                            {profile.userDisplayName || profile.userHandle}
-                          </strong>
-                          <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="block text-sm text-cyan">{profile.runCount.toLocaleString()}</span>
-                          <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
-                        </div>
+                {overview.activeProfiles.slice(0, 6).map((profile) => (
+                  <Link
+                    key={profile.userHandle}
+                    to={`/profiles/${profile.userHandle}`}
+                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <strong className="block text-text truncate">
+                          {profile.userDisplayName || profile.userHandle}
+                        </strong>
+                        <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
                       </div>
-                      <p className="mt-3 text-sm text-muted">
-                        {profile.scenarioCount.toLocaleString()} scenarios
-                        {primaryType ? ` · ${primaryType}` : ""}
-                      </p>
-                    </Link>
-                  );
-                })}
+                      <div className="text-right shrink-0">
+                        <span className="block text-sm text-cyan">{profile.runCount.toLocaleString()}</span>
+                        <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-sm text-muted">{profile.scenarioCount.toLocaleString()} scenarios</span>
+                      <ScenarioTypeBadge type={profile.primaryScenarioType} />
+                    </div>
+                  </Link>
+                ))}
               </div>
             </ScrollArea>
           ) : (

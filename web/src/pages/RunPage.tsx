@@ -9,6 +9,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
+import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { fetchRun, formatDurationMs, summaryValueToNumber } from "../lib/api";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
@@ -146,7 +147,7 @@ export function RunPage() {
   const spmDisplay     = spm ? `${Math.round(spm).toLocaleString()} /min` : "—";
   const spmDetail      = peakSpm ? `Peak ${Math.round(peakSpm).toLocaleString()} /min` : "Score per minute";
   const shotsPerHit    = avgShotsToHit ? avgShotsToHit.toFixed(2) : null;
-  const accDetail      = shotsPerHit ? `${shotsPerHit} shots/hit` : run.scenarioType || "";
+  const accDetail      = shotsPerHit ? `${shotsPerHit} shots/hit` : "Accuracy";
   const damageDisplay  = damageEff !== null ? `${damageEff.toFixed(1)}%` : "—";
   const damageDetail   = avgFireToHit !== null ? `Fire→hit ${Math.round(avgFireToHit)}ms avg` : "Damage efficiency";
 
@@ -159,11 +160,14 @@ export function RunPage() {
           title={run.scenarioName}
           body={`Played ${new Date(run.playedAtIso).toLocaleString()} by ${run.userDisplayName || run.userHandle}.`}
           aside={
-            run.userHandle ? (
-              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle}`}>
-                Open profile
-              </Link>
-            ) : undefined
+            <div className="flex items-center gap-3">
+              <ScenarioTypeBadge type={run.scenarioType} />
+              {run.userHandle && (
+                <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle}`}>
+                  Open profile
+                </Link>
+              )}
+            </div>
           }
         />
         <Grid className="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">

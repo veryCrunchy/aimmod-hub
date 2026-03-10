@@ -51,12 +51,32 @@ export function slugifyScenarioName(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export function displayScenarioType(value?: string | null) {
+const SCENARIO_TYPE_LABELS: Record<string, string> = {
+  Tracking: "Tracking",
+  OneShotClicking: "One-shot",
+  MultiHitClicking: "Multi-hit",
+  ReactiveClicking: "Reactive",
+  AccuracyDrill: "Accuracy drill",
+};
+
+export const SCENARIO_TYPE_ACCENTS: Record<string, string> = {
+  Tracking: "border-cyan/25 text-cyan",
+  OneShotClicking: "border-mint/25 text-mint",
+  MultiHitClicking: "border-gold/25 text-gold",
+  ReactiveClicking: "border-violet/25 text-violet",
+  AccuracyDrill: "border-line text-muted",
+};
+
+export function displayScenarioType(value?: string | null): string | null {
   const normalized = value?.trim();
-  if (!normalized || normalized === "Unknown") {
-    return null;
-  }
-  return normalized;
+  if (!normalized || normalized === "Unknown") return null;
+  return SCENARIO_TYPE_LABELS[normalized] ?? normalized;
+}
+
+export function scenarioTypeAccent(value?: string | null): string {
+  const normalized = value?.trim();
+  if (!normalized) return "border-line text-muted";
+  return SCENARIO_TYPE_ACCENTS[normalized] ?? "border-line text-muted";
 }
 
 export type HubSearchScenario = {
