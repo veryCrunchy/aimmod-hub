@@ -1,8 +1,12 @@
 {
   "$schema": "https://schema.railpack.com",
+  "packages": {
+    "node": "22"
+  },
   "steps": {
     "install-web": {
       "commands": [
+        "npm install -g corepack",
         "corepack enable",
         "pnpm install --no-frozen-lockfile"
       ]
