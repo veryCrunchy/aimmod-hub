@@ -17,6 +17,9 @@ import {
   formatDurationMs,
   formatRelativeTime,
   runAdminReclassify,
+  runAdminReclassifyUser,
+  runAdminRepairMetrics,
+  runAdminRepairUserMetrics,
   type AdminOverviewResponse,
   type AdminUserDetailResponse,
 } from "../lib/api";
@@ -33,6 +36,7 @@ export function AdminPage() {
   const [actionState, setActionState] = useState<string | null>(null);
   const [runningAction, setRunningAction] = useState(false);
   const [filter, setFilter] = useState("");
+  const [days, setDays] = useState(30);
   const [selectedHandle, setSelectedHandle] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<AdminUserDetailResponse | null>(null);
   const [selectedUserError, setSelectedUserError] = useState<string | null>(null);
@@ -43,7 +47,7 @@ export function AdminPage() {
     if (!auth.isAdmin) {
       return;
     }
-    void fetchAdminOverview()
+    void fetchAdminOverview(days)
       .then((next) => {
         setOverview(next);
         setError(null);
@@ -54,7 +58,7 @@ export function AdminPage() {
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Could not load admin overview.");
       });
-  }, [auth.isAdmin]);
+  }, [auth.isAdmin, days, selectedHandle]);
 
   useEffect(() => {
     load();
@@ -69,7 +73,7 @@ export function AdminPage() {
       return;
     }
     let cancelled = false;
-    void fetchAdminUserDetail(selectedHandle)
+    void fetchAdminUserDetail(selectedHandle, days)
       .then((detail) => {
         if (!cancelled) {
           setSelectedUser(detail);
@@ -85,7 +89,7 @@ export function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [auth.isAdmin, selectedHandle]);
+  }, [auth.isAdmin, selectedHandle, days]);
 
   async function handleReclassify() {
     setRunningAction(true);
@@ -100,6 +104,19 @@ export function AdminPage() {
     }
   }
 
+  async function handleRepairMetrics() {
+    setRunningAction(true);
+    try {
+      const result = await runAdminRepairMetrics();
+      setActionState(`Run metric repair finished. Updated ${formatCount(result.updated)} runs.`);
+      load();
+    } catch (err) {
+      setActionState(err instanceof Error ? err.message : "Could not run metric repair.");
+    } finally {
+      setRunningAction(false);
+    }
+  }
+
   async function handleClearFailures() {
     setRunningAction(true);
     try {
@@ -107,7 +124,7 @@ export function AdminPage() {
       setActionState(`Cleared ${formatCount(result.cleared)} stored ingest failures.`);
       load();
       if (selectedHandle) {
-        const detail = await fetchAdminUserDetail(selectedHandle);
+        const detail = await fetchAdminUserDetail(selectedHandle, days);
         setSelectedUser(detail);
         setSelectedUserError(null);
       }
@@ -190,8 +207,22 @@ export function AdminPage() {
                 placeholder="Filter admin data"
                 className="min-w-[220px] rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-mint/70"
               />
+              <select
+                value={days}
+                onChange={(event) => setDays(Number(event.target.value))}
+                className="rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none focus:border-mint/70"
+              >
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+                <option value={365}>Last year</option>
+                <option value={0}>All time</option>
+              </select>
               <Button onClick={() => void handleReclassify()} disabled={runningAction}>
                 {runningAction ? "Repairing..." : "Repair scenario types"}
+              </Button>
+              <Button onClick={() => void handleRepairMetrics()} disabled={runningAction}>
+                {runningAction ? "Working..." : "Repair run metrics"}
               </Button>
               <Button onClick={() => void handleClearFailures()} disabled={runningAction}>
                 {runningAction ? "Working..." : "Clear failure log"}
@@ -399,17 +430,10 @@ export function AdminPage() {
                       if (!selectedHandle) return;
                       setRunningAction(true);
                       try {
-                        const response = await fetch(`${API_BASE_URL}/admin/actions/reclassify-user?handle=${encodeURIComponent(selectedHandle)}`, {
-                          method: "POST",
-                          credentials: "include",
-                        });
-                        if (!response.ok) {
-                          throw new Error(await response.text() || "Could not repair this player.");
-                        }
-                        const result = await response.json() as { updated?: number };
-                        setActionState(`Repaired ${formatCount(result.updated ?? 0)} runs for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
+                        const result = await runAdminReclassifyUser(selectedHandle);
+                        setActionState(`Repaired ${formatCount(result.updated ?? 0)} scenario types for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
                         load();
-                        const detail = await fetchAdminUserDetail(selectedHandle);
+                        const detail = await fetchAdminUserDetail(selectedHandle, days);
                         setSelectedUser(detail);
                         setSelectedUserError(null);
                       } catch (err) {
@@ -419,6 +443,24 @@ export function AdminPage() {
                       }
                     })()} disabled={runningAction}>
                       {runningAction ? "Working..." : "Repair this player"}
+                    </Button>
+                    <Button onClick={() => void (async () => {
+                      if (!selectedHandle) return;
+                      setRunningAction(true);
+                      try {
+                        const result = await runAdminRepairUserMetrics(selectedHandle);
+                        setActionState(`Repaired ${formatCount(result.updated ?? 0)} run metrics for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
+                        load();
+                        const detail = await fetchAdminUserDetail(selectedHandle, days);
+                        setSelectedUser(detail);
+                        setSelectedUserError(null);
+                      } catch (err) {
+                        setActionState(err instanceof Error ? err.message : "Could not repair this player's run metrics.");
+                      } finally {
+                        setRunningAction(false);
+                      }
+                    })()} disabled={runningAction}>
+                      {runningAction ? "Working..." : "Repair this player's metrics"}
                     </Button>
                     <Button onClick={() => void (async () => {
                       if (!selectedHandle) return;
@@ -434,7 +476,7 @@ export function AdminPage() {
                         const result = await response.json() as { cleared?: number };
                         setActionState(`Cleared ${formatCount(result.cleared ?? 0)} failures for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
                         load();
-                        const detail = await fetchAdminUserDetail(selectedHandle);
+                        const detail = await fetchAdminUserDetail(selectedHandle, days);
                         setSelectedUser(detail);
                         setSelectedUserError(null);
                       } catch (err) {
@@ -458,7 +500,13 @@ export function AdminPage() {
                       <div className="grid gap-2">
                         {selectedUser.recentFailures.map((failure) => (
                           <div key={failure.id} className="rounded-[14px] border border-line bg-white/2 px-3 py-2">
-                            <div className="text-sm text-text">{failure.scenarioName || "Unknown scenario"}</div>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="text-sm text-text">{failure.scenarioName || "Unknown scenario"}</div>
+                              <div className="flex flex-wrap gap-2 text-xs">
+                                {failure.userHandle ? <Link className="text-cyan underline underline-offset-2" to={`/profiles/${failure.userHandle}`}>Profile</Link> : null}
+                                {failure.publicRunId ? <Link className="text-mint underline underline-offset-2" to={`/runs/${failure.publicRunId}`}>Run</Link> : null}
+                              </div>
+                            </div>
                             <div className="mt-1 text-xs text-[#f1b7b7]">{failure.errorMessage}</div>
                           </div>
                         ))}
@@ -528,7 +576,11 @@ export function AdminPage() {
                       <div className="min-w-0">
                         <div className="text-text">{failure.scenarioName || "Unknown scenario"}</div>
                         <div className="mt-1 text-xs text-muted">
-                          {failure.userExternalId || "unknown user"} · {failure.sessionId || "missing session id"}
+                          {(failure.userDisplayName || failure.userHandle || failure.userExternalId || "unknown user")} · {failure.sessionId || "missing session id"}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                          {failure.userHandle ? <Link className="text-cyan underline underline-offset-2" to={`/profiles/${failure.userHandle}`}>Open profile</Link> : null}
+                          {failure.publicRunId ? <Link className="text-mint underline underline-offset-2" to={`/runs/${failure.publicRunId}`}>Open run</Link> : null}
                         </div>
                       </div>
                       <div className="shrink-0 text-xs text-muted">{formatRelativeTime(failure.createdAt)}</div>

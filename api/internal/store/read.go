@@ -164,7 +164,10 @@ type AdminUserSyncHealth struct {
 type AdminIngestFailure struct {
 	ID             uint64    `json:"id"`
 	UserExternalID string    `json:"userExternalId"`
+	UserHandle     string    `json:"userHandle"`
+	UserDisplayName string   `json:"userDisplayName"`
 	SessionID      string    `json:"sessionId"`
+	PublicRunID    string    `json:"publicRunId"`
 	ScenarioName   string    `json:"scenarioName"`
 	ErrorMessage   string    `json:"errorMessage"`
 	CreatedAt      time.Time `json:"createdAt"`
@@ -214,6 +217,20 @@ type AdminOverviewRecord struct {
 	RecentIngests            []AdminRecentIngest     `json:"recentIngests"`
 	UserSyncHealth           []AdminUserSyncHealth   `json:"userSyncHealth"`
 	RecentFailures           []AdminIngestFailure    `json:"recentFailures"`
+}
+
+func adminPlayedAfterClause(days int) (string, []any) {
+	if days <= 0 {
+		return "", nil
+	}
+	return " WHERE sr.played_at >= NOW() - ($1::int * INTERVAL '1 day') ", []any{days}
+}
+
+func adminUserPlayedAfterClause(days int, argOffset int) (string, []any) {
+	if days <= 0 {
+		return "", nil
+	}
+	return fmt.Sprintf(" AND sr.played_at >= NOW() - ($%d::int * INTERVAL '1 day') ", argOffset), []any{days}
 }
 
 func slugifyScenarioName(value string) string {
@@ -280,8 +297,13 @@ func runPreviewFromRecord(record RunRecord) *hubv1.RunPreview {
 	}
 }
 
-func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, error) {
+func (s *Store) GetAdminOverview(ctx context.Context, days int) (AdminOverviewRecord, error) {
 	var record AdminOverviewRecord
+	playedWhere, playedArgs := adminPlayedAfterClause(days)
+	unknownWhere := " WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') = 'Unknown' "
+	if days > 0 {
+		unknownWhere = " WHERE played_at >= NOW() - ($1::int * INTERVAL '1 day') AND COALESCE(NULLIF(scenario_type, ''), 'Unknown') = 'Unknown' "
+	}
 
 	if err := s.pool.QueryRow(ctx, `
 		SELECT
@@ -306,7 +328,7 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 			SELECT DISTINCT session_id
 			FROM run_context_windows
 		) rc ON rc.session_id = sr.session_id
-	`).Scan(
+	`+playedWhere, playedArgs...).Scan(
 		&record.TotalRuns,
 		&record.TotalPlayers,
 		&record.TotalScenarios,
@@ -323,11 +345,12 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 
 	appVersions, err := s.pool.Query(ctx, `
 		SELECT app_version, COUNT(*)::bigint
-		FROM scenario_runs
+		FROM scenario_runs sr
+	`+playedWhere+`
 		GROUP BY app_version
 		ORDER BY COUNT(*) DESC, app_version DESC
 		LIMIT 12
-	`)
+	`, playedArgs...)
 	if err != nil {
 		return AdminOverviewRecord{}, fmt.Errorf("load admin app versions: %w", err)
 	}
@@ -345,11 +368,12 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 
 	schemaVersions, err := s.pool.Query(ctx, `
 		SELECT schema_version::text, COUNT(*)::bigint
-		FROM scenario_runs
+		FROM scenario_runs sr
+	`+playedWhere+`
 		GROUP BY schema_version
 		ORDER BY COUNT(*) DESC, schema_version DESC
 		LIMIT 12
-	`)
+	`, playedArgs...)
 	if err != nil {
 		return AdminOverviewRecord{}, fmt.Errorf("load admin schema versions: %w", err)
 	}
@@ -369,12 +393,12 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 		SELECT
 			scenario_name,
 			COUNT(*)::bigint
-		FROM scenario_runs
-		WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') = 'Unknown'
+		FROM scenario_runs sr
+	`+unknownWhere+`
 		GROUP BY scenario_name
 		ORDER BY COUNT(*) DESC, scenario_name ASC
 		LIMIT 20
-	`)
+	`, playedArgs...)
 	if err != nil {
 		return AdminOverviewRecord{}, fmt.Errorf("load admin unknown scenarios: %w", err)
 	}
@@ -406,9 +430,10 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 		FROM scenario_runs sr
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	`+playedWhere+`
 		ORDER BY sr.created_at DESC, sr.played_at DESC
 		LIMIT 40
-	`)
+	`, playedArgs...)
 	if err != nil {
 		return AdminOverviewRecord{}, fmt.Errorf("load admin recent ingests: %w", err)
 	}
@@ -458,12 +483,13 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 			SELECT DISTINCT session_id
 			FROM run_context_windows
 		) rc ON rc.session_id = sr.session_id
+	`+playedWhere+`
 		GROUP BY hu.id, COALESCE(la.username, hu.external_id), COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
 		ORDER BY COUNT(*) FILTER (WHERE COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown') DESC,
 		         COUNT(*) FILTER (WHERE rt.session_id IS NULL) DESC,
 		         MAX(sr.created_at) DESC
 		LIMIT 20
-	`)
+	`, playedArgs...)
 	if err != nil {
 		return AdminOverviewRecord{}, fmt.Errorf("load admin user sync health: %w", err)
 	}
@@ -491,13 +517,20 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 
 	failureRows, err := s.pool.Query(ctx, `
 		SELECT
-			id,
-			user_external_id,
-			session_id,
-			scenario_name,
-			error_message,
-			created_at
-		FROM ingest_failures
+			f.id,
+			f.user_external_id,
+			COALESCE(la.username, hu.external_id, ''),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id, '')),
+			f.session_id,
+			COALESCE(sr.public_run_id, ''),
+			f.scenario_name,
+			f.error_message,
+			f.created_at
+		FROM ingest_failures f
+		LEFT JOIN hub_users hu ON LOWER(hu.external_id) = LOWER(f.user_external_id)
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		LEFT JOIN scenario_runs sr ON sr.user_id = hu.id
+			AND (sr.source_session_id = f.session_id OR sr.session_id = f.session_id)
 		ORDER BY created_at DESC
 		LIMIT 50
 	`)
@@ -510,7 +543,10 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 		if err := failureRows.Scan(
 			&item.ID,
 			&item.UserExternalID,
+			&item.UserHandle,
+			&item.UserDisplayName,
 			&item.SessionID,
+			&item.PublicRunID,
 			&item.ScenarioName,
 			&item.ErrorMessage,
 			&item.CreatedAt,
@@ -526,7 +562,7 @@ func (s *Store) GetAdminOverview(ctx context.Context) (AdminOverviewRecord, erro
 	return record, nil
 }
 
-func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUserDetailRecord, error) {
+func (s *Store) GetAdminUserDetail(ctx context.Context, handle string, days int) (AdminUserDetailRecord, error) {
 	handle = strings.TrimSpace(strings.ToLower(handle))
 	if handle == "" {
 		return AdminUserDetailRecord{}, fmt.Errorf("user handle is required")
@@ -548,6 +584,8 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 		return AdminUserDetailRecord{}, fmt.Errorf("load admin user detail: %w", err)
 	}
 
+	userWhere, userArgs := adminUserPlayedAfterClause(days, 2)
+
 	if err := s.pool.QueryRow(ctx, `
 		SELECT
 			COUNT(*)::bigint,
@@ -568,7 +606,7 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 			FROM run_context_windows
 		) rc ON rc.session_id = sr.session_id
 		WHERE sr.user_id = $1
-	`).Scan(
+	`+userWhere, append([]any{userID}, userArgs...)...).Scan(
 		&detail.RunCount,
 		&detail.ScenarioCount,
 		&detail.UnknownTypeRuns,
@@ -588,10 +626,11 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 		FROM scenario_runs sr
 		WHERE sr.user_id = $1
 		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+	`+userWhere+`
 		GROUP BY sr.scenario_name
 		ORDER BY COUNT(*) DESC, sr.scenario_name ASC
 		LIMIT 12
-	`, userID)
+	`, append([]any{userID}, userArgs...)...)
 	if err != nil {
 		return AdminUserDetailRecord{}, fmt.Errorf("load admin user unknown scenarios: %w", err)
 	}
@@ -610,13 +649,20 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 
 	failureRows, err := s.pool.Query(ctx, `
 		SELECT
-			id,
-			user_external_id,
-			session_id,
-			scenario_name,
-			error_message,
-			created_at
-		FROM ingest_failures
+			f.id,
+			f.user_external_id,
+			COALESCE(la.username, hu.external_id, ''),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id, '')),
+			f.session_id,
+			COALESCE(sr.public_run_id, ''),
+			f.scenario_name,
+			f.error_message,
+			f.created_at
+		FROM ingest_failures f
+		JOIN hub_users hu ON LOWER(hu.external_id) = LOWER(f.user_external_id)
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		LEFT JOIN scenario_runs sr ON sr.user_id = hu.id
+			AND (sr.source_session_id = f.session_id OR sr.session_id = f.session_id)
 		WHERE LOWER(user_external_id) = (
 			SELECT LOWER(external_id) FROM hub_users WHERE id = $1
 		)
@@ -632,7 +678,10 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 		if err := failureRows.Scan(
 			&item.ID,
 			&item.UserExternalID,
+			&item.UserHandle,
+			&item.UserDisplayName,
 			&item.SessionID,
+			&item.PublicRunID,
 			&item.ScenarioName,
 			&item.ErrorMessage,
 			&item.CreatedAt,
@@ -656,9 +705,10 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 			duration_ms
 		FROM scenario_runs
 		WHERE user_id = $1
+	`+userWhere+`
 		ORDER BY played_at DESC, created_at DESC
 		LIMIT 20
-	`, userID)
+	`, append([]any{userID}, userArgs...)...)
 	if err != nil {
 		return AdminUserDetailRecord{}, fmt.Errorf("load admin user recent runs: %w", err)
 	}
@@ -684,6 +734,250 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string) (AdminUse
 	}
 
 	return detail, nil
+}
+
+func (s *Store) RepairScenarioTypes(ctx context.Context) (int64, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("begin repair scenario types transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var updated int64
+
+	steps := []string{
+		`
+		UPDATE scenario_runs sr
+		SET scenario_type = NULLIF(BTRIM(rs.summary_json->>'scenarioType'), ''),
+		    updated_at = NOW()
+		FROM run_summaries rs
+		WHERE sr.session_id = rs.session_id
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+		  AND NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '') IS NOT NULL
+		  AND BTRIM(rs.summary_json->>'scenarioType') <> 'Unknown'
+		`,
+		`
+		WITH dominant AS (
+			SELECT scenario_name, scenario_type
+			FROM (
+				SELECT
+					scenario_name,
+					scenario_type,
+					ROW_NUMBER() OVER (
+						PARTITION BY scenario_name
+						ORDER BY COUNT(*) DESC, scenario_type ASC
+					) AS rn
+				FROM scenario_runs
+				WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') <> 'Unknown'
+				GROUP BY scenario_name, scenario_type
+			) ranked
+			WHERE rn = 1
+		)
+		UPDATE scenario_runs sr
+		SET scenario_type = dominant.scenario_type,
+		    updated_at = NOW()
+		FROM dominant
+		WHERE sr.scenario_name = dominant.scenario_name
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+		`,
+		`
+		UPDATE scenario_runs sr
+		SET scenario_type = 'Tracking',
+		    updated_at = NOW()
+		FROM run_summaries rs
+		WHERE sr.session_id = rs.session_id
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') IN ('Unknown', 'MultiHitClicking')
+		  AND (
+		    LOWER(sr.scenario_name) LIKE '%track%'
+		    OR LOWER(sr.scenario_name) LIKE '%sphere%'
+		    OR LOWER(sr.scenario_name) LIKE '%smooth%'
+		    OR LOWER(sr.scenario_name) LIKE '%air %'
+		    OR LOWER(sr.scenario_name) LIKE 'air_%'
+		    OR LOWER(sr.scenario_name) LIKE '%control%'
+		    OR COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 5.0
+		  )
+		`,
+	}
+
+	for _, stmt := range steps {
+		tag, execErr := tx.Exec(ctx, stmt)
+		if execErr != nil {
+			return 0, fmt.Errorf("repair scenario types: %w", execErr)
+		}
+		updated += tag.RowsAffected()
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("commit repair scenario types: %w", err)
+	}
+	return updated, nil
+}
+
+func (s *Store) RepairScenarioTypesForUser(ctx context.Context, handle string) (int64, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return 0, fmt.Errorf("user handle is required")
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("begin repair scenario types for user transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	resolveUserCTE := `
+		WITH target_user AS (
+			SELECT hu.id
+			FROM hub_users hu
+			LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+			WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+			   OR LOWER(hu.external_id) = $1
+			LIMIT 1
+		)
+	`
+
+	var updated int64
+	steps := []string{
+		resolveUserCTE + `
+		UPDATE scenario_runs sr
+		SET scenario_type = NULLIF(BTRIM(rs.summary_json->>'scenarioType'), ''),
+		    updated_at = NOW()
+		FROM run_summaries rs, target_user tu
+		WHERE sr.session_id = rs.session_id
+		  AND sr.user_id = tu.id
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+		  AND NULLIF(BTRIM(rs.summary_json->>'scenarioType'), '') IS NOT NULL
+		  AND BTRIM(rs.summary_json->>'scenarioType') <> 'Unknown'
+		`,
+		resolveUserCTE + `
+		, dominant AS (
+			SELECT scenario_name, scenario_type
+			FROM (
+				SELECT
+					scenario_name,
+					scenario_type,
+					ROW_NUMBER() OVER (
+						PARTITION BY scenario_name
+						ORDER BY COUNT(*) DESC, scenario_type ASC
+					) AS rn
+				FROM scenario_runs
+				WHERE COALESCE(NULLIF(scenario_type, ''), 'Unknown') <> 'Unknown'
+				GROUP BY scenario_name, scenario_type
+			) ranked
+			WHERE rn = 1
+		)
+		UPDATE scenario_runs sr
+		SET scenario_type = dominant.scenario_type,
+		    updated_at = NOW()
+		FROM dominant, target_user tu
+		WHERE sr.user_id = tu.id
+		  AND sr.scenario_name = dominant.scenario_name
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') = 'Unknown'
+		`,
+		resolveUserCTE + `
+		UPDATE scenario_runs sr
+		SET scenario_type = 'Tracking',
+		    updated_at = NOW()
+		FROM run_summaries rs, target_user tu
+		WHERE sr.session_id = rs.session_id
+		  AND sr.user_id = tu.id
+		  AND COALESCE(NULLIF(sr.scenario_type, ''), 'Unknown') IN ('Unknown', 'MultiHitClicking')
+		  AND (
+		    LOWER(sr.scenario_name) LIKE '%track%'
+		    OR LOWER(sr.scenario_name) LIKE '%sphere%'
+		    OR LOWER(sr.scenario_name) LIKE '%smooth%'
+		    OR LOWER(sr.scenario_name) LIKE '%air %'
+		    OR LOWER(sr.scenario_name) LIKE 'air_%'
+		    OR LOWER(sr.scenario_name) LIKE '%control%'
+		    OR COALESCE((rs.summary_json->>'csvAvgTtk')::double precision, 0) >= 5.0
+		  )
+		`,
+	}
+
+	for _, stmt := range steps {
+		tag, execErr := tx.Exec(ctx, stmt, handle)
+		if execErr != nil {
+			return 0, fmt.Errorf("repair scenario types for user: %w", execErr)
+		}
+		updated += tag.RowsAffected()
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("commit repair scenario types for user: %w", err)
+	}
+	return updated, nil
+}
+
+func (s *Store) RepairRunMetrics(ctx context.Context, handle string) (int64, error) {
+	args := []any{}
+	userFilter := ""
+	if trimmed := strings.TrimSpace(strings.ToLower(handle)); trimmed != "" {
+		userFilter = `
+		  AND sr.user_id = (
+			SELECT hu.id
+			FROM hub_users hu
+			LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+			WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+			   OR LOWER(hu.external_id) = $1
+			LIMIT 1
+		  )
+		`
+		args = append(args, trimmed)
+	}
+
+	tag, err := s.pool.Exec(ctx, `
+		WITH timeline_rollup AS (
+			SELECT
+				session_id,
+				MAX(score) AS max_score,
+				MAX(shots) AS max_shots,
+				MAX(hits) AS max_hits
+			FROM run_timeline_seconds
+			GROUP BY session_id
+		)
+		UPDATE scenario_runs sr
+		SET
+			score = CASE
+				WHEN sr.score > 0 THEN sr.score
+				ELSE COALESCE(
+					NULLIF((rs.summary_json->>'scoreTotal')::double precision, 0),
+					NULLIF((rs.summary_json->>'scoreTotalDerived')::double precision, 0),
+					NULLIF(tr.max_score, 0),
+					NULLIF((rs.summary_json->>'csvScore')::double precision, 0),
+					sr.score
+				)
+			END,
+			accuracy = CASE
+				WHEN sr.accuracy > 1.0 THEN sr.accuracy
+				WHEN COALESCE(tr.max_shots, 0) > 0 THEN (tr.max_hits::double precision / tr.max_shots::double precision) * 100.0
+				WHEN COALESCE(NULLIF((rs.summary_json->>'accuracyPct')::double precision, 0), 0) > 1.0 THEN (rs.summary_json->>'accuracyPct')::double precision
+				WHEN COALESCE(NULLIF((rs.summary_json->>'panelAccuracyPct')::double precision, 0), 0) > 1.0 THEN (rs.summary_json->>'panelAccuracyPct')::double precision
+				WHEN COALESCE(NULLIF((rs.summary_json->>'csvAccuracy')::double precision, 0), 0) > 1.0 THEN (rs.summary_json->>'csvAccuracy')::double precision
+				WHEN COALESCE(NULLIF((rs.summary_json->>'csvAccuracy')::double precision, 0), 0) > 0 THEN ((rs.summary_json->>'csvAccuracy')::double precision) * 100.0
+				ELSE sr.accuracy
+			END,
+			duration_ms = CASE
+				WHEN sr.duration_ms > 0 THEN sr.duration_ms
+				ELSE COALESCE(
+					NULLIF(ROUND(COALESCE((rs.summary_json->>'csvDurationSecs')::double precision, 0) * 1000.0)::bigint, 0),
+					sr.duration_ms
+				)
+			END,
+			updated_at = NOW()
+		FROM run_summaries rs
+		LEFT JOIN timeline_rollup tr ON tr.session_id = rs.session_id
+		WHERE sr.session_id = rs.session_id
+		  AND (
+			sr.score <= 0
+			OR sr.accuracy <= 1.0
+			OR sr.duration_ms <= 0
+		  )
+		  `+userFilter+`
+	`, args...)
+	if err != nil {
+		return 0, fmt.Errorf("repair run metrics: %w", err)
+	}
+	return tag.RowsAffected(), nil
 }
 
 func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {

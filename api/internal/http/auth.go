@@ -110,8 +110,10 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/admin/overview", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminOverview)))
 	mux.Handle("/admin/user", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserDetail)))
 	mux.Handle("/admin/actions/reclassify", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminReclassify)))
+	mux.Handle("/admin/actions/repair-metrics", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminRepairMetrics)))
 	mux.Handle("/admin/actions/clear-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearFailures)))
 	mux.Handle("/admin/actions/reclassify-user", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminReclassifyUser)))
+	mux.Handle("/admin/actions/repair-user-metrics", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminRepairUserMetrics)))
 	mux.Handle("/admin/actions/clear-user-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearUserFailures)))
 	mux.Handle("/admin/failures/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminFailuresExport)))
 }
@@ -234,7 +236,7 @@ func (h *authHandler) handleAdminOverview(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	overview, err := h.store.GetAdminOverview(r.Context())
+	overview, err := h.store.GetAdminOverview(r.Context(), parseAdminDays(r.URL.Query().Get("days")))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -253,7 +255,7 @@ func (h *authHandler) handleAdminReclassify(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	tag, err := h.store.ReclassifyTracking(r.Context())
+	updated, err := h.store.RepairScenarioTypes(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -261,7 +263,29 @@ func (h *authHandler) handleAdminReclassify(w http.ResponseWriter, r *http.Reque
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ok":      true,
-		"updated": tag.RowsAffected(),
+		"updated": updated,
+	})
+}
+
+func (h *authHandler) handleAdminRepairMetrics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	updated, err := h.store.RepairRunMetrics(r.Context(), "")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"updated": updated,
 	})
 }
 
@@ -281,7 +305,7 @@ func (h *authHandler) handleAdminUserDetail(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	detail, err := h.store.GetAdminUserDetail(r.Context(), handle)
+	detail, err := h.store.GetAdminUserDetail(r.Context(), handle, parseAdminDays(r.URL.Query().Get("days")))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -328,7 +352,7 @@ func (h *authHandler) handleAdminReclassifyUser(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	tag, err := h.store.ReclassifyTrackingForUser(r.Context(), handle)
+	updated, err := h.store.RepairScenarioTypesForUser(r.Context(), handle)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -336,7 +360,35 @@ func (h *authHandler) handleAdminReclassifyUser(w http.ResponseWriter, r *http.R
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ok":      true,
-		"updated": tag.RowsAffected(),
+		"updated": updated,
+	})
+}
+
+func (h *authHandler) handleAdminRepairUserMetrics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	if handle == "" {
+		http.Error(w, "handle is required", http.StatusBadRequest)
+		return
+	}
+
+	updated, err := h.store.RepairRunMetrics(r.Context(), handle)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"updated": updated,
 	})
 }
 
@@ -684,6 +736,24 @@ func (h *authHandler) isAdminUser(user store.AuthUser) bool {
 		return false
 	}
 	return strings.TrimSpace(user.DiscordUserID) == adminDiscordID
+}
+
+func parseAdminDays(raw string) int {
+	trimmed := strings.TrimSpace(raw)
+	switch trimmed {
+	case "", "0", "all":
+		return 0
+	case "7":
+		return 7
+	case "30":
+		return 30
+	case "90":
+		return 90
+	case "365":
+		return 365
+	default:
+		return 0
+	}
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {

@@ -168,7 +168,10 @@ export type AdminOverviewResponse = {
   recentFailures: {
     id: number;
     userExternalId: string;
+    userHandle: string;
+    userDisplayName: string;
     sessionId: string;
+    publicRunId: string;
     scenarioName: string;
     errorMessage: string;
     createdAt: string;
@@ -190,7 +193,10 @@ export type AdminUserDetailResponse = {
   recentFailures: {
     id: number;
     userExternalId: string;
+    userHandle: string;
+    userDisplayName: string;
     sessionId: string;
+    publicRunId: string;
     scenarioName: string;
     errorMessage: string;
     createdAt: string;
@@ -255,8 +261,8 @@ export async function searchHub(query: string): Promise<HubSearchResponse> {
   };
 }
 
-export async function fetchAdminOverview(): Promise<AdminOverviewResponse> {
-  const response = await fetch(`${API_BASE_URL}/admin/overview`, {
+export async function fetchAdminOverview(days: number): Promise<AdminOverviewResponse> {
+  const response = await fetch(`${API_BASE_URL}/admin/overview?days=${encodeURIComponent(String(days))}`, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -294,6 +300,17 @@ export async function runAdminReclassify(): Promise<{ ok: boolean; updated: numb
   return response.json() as Promise<{ ok: boolean; updated: number }>;
 }
 
+export async function runAdminRepairMetrics(): Promise<{ ok: boolean; updated: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/actions/repair-metrics`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not repair run metrics.");
+  }
+  return response.json() as Promise<{ ok: boolean; updated: number }>;
+}
+
 export async function clearAdminFailures(): Promise<{ ok: boolean; cleared: number }> {
   const response = await fetch(`${API_BASE_URL}/admin/actions/clear-failures`, {
     method: "POST",
@@ -305,8 +322,8 @@ export async function clearAdminFailures(): Promise<{ ok: boolean; cleared: numb
   return response.json() as Promise<{ ok: boolean; cleared: number }>;
 }
 
-export async function fetchAdminUserDetail(handle: string): Promise<AdminUserDetailResponse> {
-  const response = await fetch(`${API_BASE_URL}/admin/user?handle=${encodeURIComponent(handle)}`, {
+export async function fetchAdminUserDetail(handle: string, days: number): Promise<AdminUserDetailResponse> {
+  const response = await fetch(`${API_BASE_URL}/admin/user?handle=${encodeURIComponent(handle)}&days=${encodeURIComponent(String(days))}`, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -328,4 +345,26 @@ export async function fetchAdminUserDetail(handle: string): Promise<AdminUserDet
     recentFailures: Array.isArray(payload?.recentFailures) ? payload.recentFailures : [],
     recentRuns: Array.isArray(payload?.recentRuns) ? payload.recentRuns : [],
   };
+}
+
+export async function runAdminReclassifyUser(handle: string): Promise<{ ok: boolean; updated: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/actions/reclassify-user?handle=${encodeURIComponent(handle)}`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not repair this player's scenario types.");
+  }
+  return response.json() as Promise<{ ok: boolean; updated: number }>;
+}
+
+export async function runAdminRepairUserMetrics(handle: string): Promise<{ ok: boolean; updated: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/actions/repair-user-metrics?handle=${encodeURIComponent(handle)}`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not repair this player's run metrics.");
+  }
+  return response.json() as Promise<{ ok: boolean; updated: number }>;
 }
