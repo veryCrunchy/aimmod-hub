@@ -62,6 +62,23 @@ type ProfileRecord struct {
 	PersonalBests       []*hubv1.RunPreview
 }
 
+type LeaderboardRecord struct {
+	Records   []*hubv1.RunPreview
+	TopScores []*hubv1.RunPreview
+}
+
+type PlayerScenarioHistoryRecord struct {
+	ScenarioName    string
+	ScenarioSlug    string
+	ScenarioType    string
+	Runs            []*hubv1.RunPreview
+	BestScore       float64
+	AverageScore    float64
+	BestAccuracy    float64
+	AverageAccuracy float64
+	RunCount        int32
+}
+
 type OverviewRecord struct {
 	TotalRuns      uint32
 	TotalScenarios uint32
@@ -1004,6 +1021,672 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 	}
 
 	return record, nil
+}
+
+func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (LeaderboardRecord, error) {
+	var result LeaderboardRecord
+	result.Records = []*hubv1.RunPreview{}
+	result.TopScores = []*hubv1.RunPreview{}
+
+	// Records: best score per scenario (DISTINCT ON scenario_name)
+	recordRows, err := s.pool.Query(ctx, `
+		SELECT DISTINCT ON (sr.scenario_name)
+			sr.scenario_name, sr.scenario_type, sr.score, sr.accuracy,
+			sr.duration_ms, sr.played_at,
+			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE ($1 = '' OR sr.scenario_type = $1)
+		ORDER BY sr.scenario_name, sr.score DESC
+	`, scenarioType)
+	if err != nil {
+		return result, err
+	}
+	defer recordRows.Close()
+	for recordRows.Next() {
+		var rp hubv1.RunPreview
+		var durationMs int64
+		var playedAt time.Time
+		if err := recordRows.Scan(
+			&rp.ScenarioName, &rp.ScenarioType, &rp.Score, &rp.Accuracy,
+			&durationMs, &playedAt,
+			&rp.RunId, &rp.SessionId,
+			&rp.UserHandle, &rp.UserDisplayName,
+		); err != nil {
+			continue
+		}
+		rp.DurationMs = uint64(durationMs)
+		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
+		result.Records = append(result.Records, &rp)
+	}
+
+	// Top scores: overall top 100, ordered by score DESC
+	topRows, err := s.pool.Query(ctx, `
+		SELECT
+			sr.scenario_name, sr.scenario_type, sr.score, sr.accuracy,
+			sr.duration_ms, sr.played_at,
+			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE ($1 = '' OR sr.scenario_type = $1)
+		ORDER BY sr.score DESC
+		LIMIT 100
+	`, scenarioType)
+	if err != nil {
+		return result, err
+	}
+	defer topRows.Close()
+	for topRows.Next() {
+		var rp hubv1.RunPreview
+		var durationMs int64
+		var playedAt time.Time
+		if err := topRows.Scan(
+			&rp.ScenarioName, &rp.ScenarioType, &rp.Score, &rp.Accuracy,
+			&durationMs, &playedAt,
+			&rp.RunId, &rp.SessionId,
+			&rp.UserHandle, &rp.UserDisplayName,
+		); err != nil {
+			continue
+		}
+		rp.DurationMs = uint64(durationMs)
+		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
+		result.TopScores = append(result.TopScores, &rp)
+	}
+
+	return result, nil
+}
+
+func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug string) (PlayerScenarioHistoryRecord, error) {
+	var result PlayerScenarioHistoryRecord
+	result.Runs = []*hubv1.RunPreview{}
+
+	// Resolve scenario name from slug
+	nameRows, err := s.pool.Query(ctx, `
+		SELECT DISTINCT scenario_name
+		FROM scenario_runs
+		ORDER BY scenario_name ASC
+	`)
+	if err != nil {
+		return result, err
+	}
+	defer nameRows.Close()
+	scenarioName := ""
+	for nameRows.Next() {
+		var candidate string
+		if err := nameRows.Scan(&candidate); err != nil {
+			continue
+		}
+		if slugifyScenarioName(candidate) == slug {
+			scenarioName = candidate
+			break
+		}
+	}
+	if scenarioName == "" {
+		return result, fmt.Errorf("scenario not found")
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			sr.scenario_name, sr.scenario_type,
+			sr.score, sr.accuracy, sr.duration_ms, sr.played_at,
+			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
+			COALESCE(la.username, hu.external_id),
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE LOWER(COALESCE(la.username, hu.external_id)) = LOWER($1)
+		  AND sr.scenario_name = $2
+		ORDER BY sr.played_at ASC
+		LIMIT 500
+	`, handle, scenarioName)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+
+	var totalScore, totalAccuracy float64
+	for rows.Next() {
+		var rp hubv1.RunPreview
+		var durationMs int64
+		var playedAt time.Time
+		if err := rows.Scan(
+			&rp.ScenarioName, &rp.ScenarioType,
+			&rp.Score, &rp.Accuracy, &durationMs, &playedAt,
+			&rp.RunId, &rp.SessionId,
+			&rp.UserHandle, &rp.UserDisplayName,
+		); err != nil {
+			continue
+		}
+		rp.DurationMs = uint64(durationMs)
+		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
+		result.Runs = append(result.Runs, &rp)
+		if result.ScenarioName == "" {
+			result.ScenarioName = rp.ScenarioName
+			result.ScenarioSlug = slug
+			result.ScenarioType = rp.ScenarioType
+		}
+		if rp.Score > result.BestScore {
+			result.BestScore = rp.Score
+		}
+		if rp.Accuracy > result.BestAccuracy {
+			result.BestAccuracy = rp.Accuracy
+		}
+		totalScore += rp.Score
+		totalAccuracy += rp.Accuracy
+	}
+	result.RunCount = int32(len(result.Runs))
+	if result.RunCount > 0 {
+		result.AverageScore = totalScore / float64(result.RunCount)
+		result.AverageAccuracy = totalAccuracy / float64(result.RunCount)
+	}
+	return result, nil
+}
+
+type AimProfileRecord struct {
+	UserHandle        string
+	UserDisplayName   string
+	TypeBands         []*hubv1.TypeProfileBand
+	OverallAccuracy   float64
+	OverallPercentile float64
+	TotalRunCount     int32
+	StrongestType     string
+	MostPracticedType string
+}
+
+func (s *Store) GetAimProfile(ctx context.Context, handle string) (AimProfileRecord, error) {
+	var result AimProfileRecord
+	result.TypeBands = []*hubv1.TypeProfileBand{}
+
+	// Get user info
+	err := s.pool.QueryRow(ctx, `
+		SELECT la.username, COALESCE(la.display_name, la.username)
+		FROM hub_users hu
+		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE la.username = $1
+	`, handle).Scan(&result.UserHandle, &result.UserDisplayName)
+	if err != nil {
+		return result, err
+	}
+
+	// Per-type stats for the player
+	rows, err := s.pool.Query(ctx, `
+		WITH player_stats AS (
+			SELECT
+				sr.scenario_type,
+				COUNT(*) AS run_count,
+				AVG(sr.accuracy) AS avg_accuracy,
+				AVG(sr.score) AS avg_score,
+				MAX(sr.score) AS best_score
+			FROM scenario_runs sr
+			JOIN hub_users hu ON hu.id = sr.user_id
+			JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+			WHERE la.username = $1
+			  AND sr.scenario_type NOT IN ('', 'Unknown')
+			GROUP BY sr.scenario_type
+		),
+		community_stats AS (
+			SELECT
+				scenario_type,
+				COUNT(*) AS total_runs,
+				AVG(accuracy) AS community_avg_accuracy,
+				AVG(score) AS community_avg_score
+			FROM scenario_runs
+			WHERE scenario_type NOT IN ('', 'Unknown')
+			GROUP BY scenario_type
+		)
+		SELECT
+			p.scenario_type,
+			p.run_count,
+			p.avg_accuracy,
+			p.avg_score,
+			p.best_score,
+			c.community_avg_accuracy,
+			c.community_avg_score,
+			(
+				SELECT COUNT(*) * 100.0 / NULLIF(c.total_runs, 0)
+				FROM scenario_runs r
+				WHERE r.scenario_type = p.scenario_type
+				  AND r.accuracy < p.avg_accuracy
+			) AS accuracy_percentile
+		FROM player_stats p
+		JOIN community_stats c ON c.scenario_type = p.scenario_type
+		ORDER BY p.run_count DESC
+	`, handle)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+
+	var totalRuns int32
+	var totalAccWeighted float64
+	var bestPct float64
+	var bestPctType string
+	var mostRunsType string
+	var mostRuns int32
+
+	for rows.Next() {
+		var band hubv1.TypeProfileBand
+		var pct float64
+		if err := rows.Scan(
+			&band.ScenarioType,
+			&band.RunCount,
+			&band.AvgAccuracy,
+			&band.AvgScore,
+			&band.BestScore,
+			&band.CommunityAvgAccuracy,
+			&band.CommunityAvgScore,
+			&pct,
+		); err != nil {
+			continue
+		}
+		band.AccuracyPercentile = pct
+		result.TypeBands = append(result.TypeBands, &band)
+		totalRuns += band.RunCount
+		totalAccWeighted += band.AvgAccuracy * float64(band.RunCount)
+		if pct > bestPct {
+			bestPct = pct
+			bestPctType = band.ScenarioType
+		}
+		if band.RunCount > mostRuns {
+			mostRuns = band.RunCount
+			mostRunsType = band.ScenarioType
+		}
+	}
+
+	result.TotalRunCount = totalRuns
+	if totalRuns > 0 {
+		result.OverallAccuracy = totalAccWeighted / float64(totalRuns)
+	}
+	result.StrongestType = bestPctType
+	result.MostPracticedType = mostRunsType
+
+	// Overall percentile: what fraction of all runs have lower accuracy than player's overall avg
+	if result.OverallAccuracy > 0 {
+		err = s.pool.QueryRow(ctx, `
+			SELECT COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM scenario_runs WHERE scenario_type NOT IN ('', 'Unknown')), 0)
+			FROM scenario_runs
+			WHERE scenario_type NOT IN ('', 'Unknown')
+			  AND accuracy < $1
+		`, result.OverallAccuracy).Scan(&result.OverallPercentile)
+		if err != nil {
+			result.OverallPercentile = 0
+		}
+	}
+
+	// Fetch avg smoothness per type from feature_json JSONB
+	smoothRows, err := s.pool.Query(ctx, `
+		SELECT
+			sr.scenario_type,
+			AVG((rfs.feature_json->>'smoothnessComposite')::float) AS avg_smoothness
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN run_feature_sets rfs ON rfs.session_id = sr.session_id
+		WHERE la.username = $1
+		  AND sr.scenario_type NOT IN ('', 'Unknown')
+		  AND rfs.feature_json->>'smoothnessComposite' IS NOT NULL
+		  AND (rfs.feature_json->>'smoothnessComposite')::float > 0
+		GROUP BY sr.scenario_type
+	`, handle)
+	if err == nil {
+		defer smoothRows.Close()
+		smoothMap := map[string]float64{}
+		for smoothRows.Next() {
+			var t string
+			var v float64
+			if smoothRows.Scan(&t, &v) == nil {
+				smoothMap[t] = v
+			}
+		}
+		for _, band := range result.TypeBands {
+			if v, ok := smoothMap[band.ScenarioType]; ok {
+				band.AvgSmoothness = v
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// ── Aim Fingerprint ────────────────────────────────────────────────────────────
+
+type fpDist struct{ median, p25, p75 float64 }
+
+func fpPercentile(sorted []float64, p float64) float64 {
+	if len(sorted) == 0 {
+		return 0
+	}
+	idx := int(float64(len(sorted))*p/100+0.9999) - 1
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(sorted) {
+		idx = len(sorted) - 1
+	}
+	return sorted[idx]
+}
+
+func fpDist3(vals []float64) fpDist {
+	if len(vals) == 0 {
+		return fpDist{}
+	}
+	s2 := make([]float64, len(vals))
+	copy(s2, vals)
+	sort.Float64s(s2)
+	return fpDist{
+		median: fpPercentile(s2, 50),
+		p25:    fpPercentile(s2, 25),
+		p75:    fpPercentile(s2, 75),
+	}
+}
+
+func fpClamp(v, lo, hi float64) float64 {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
+func fpScale(v, mn, mx float64) float64 {
+	if mx <= mn {
+		return 0
+	}
+	return fpClamp((v-mn)/(mx-mn)*100, 0, 100)
+}
+
+func fpInverse(v, good, bad float64) float64 { return 100 - fpScale(v, good, bad) }
+
+func fpVolatility(iqr, span float64) float64 {
+	if span <= 0 {
+		return 0
+	}
+	return fpClamp((iqr/span)*100, 0, 100)
+}
+
+func fpWeighted(parts [][2]float64) int32 {
+	total, weighted := 0.0, 0.0
+	for _, p := range parts {
+		total += p[1]
+		weighted += p[0] * p[1]
+	}
+	if total <= 0 {
+		return 0
+	}
+	return int32(fpClamp(weighted/total+0.5, 0, 100))
+}
+
+func fpMax(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func fpRound(v float64) int32 { return int32(fpClamp(v+0.5, 0, 100)) }
+
+func isTrackingType(t string) bool {
+	return t == "PureTracking" || strings.Contains(t, "Tracking")
+}
+
+func classifyAimStyle(precision, speed, control, consistency, decisiveness, rhythm int32, isTracking bool) (name, tagline, color, description, focus string) {
+	if isTracking {
+		switch {
+		case precision > 70 && consistency > 70 && rhythm > 70:
+			return "The Rail", "Locked on and flowing", "#00f5a0",
+				"Your tracking is smooth, consistent, and precise — you stay on target with minimal wobble and even speed.",
+				"Faster target variants, smaller hitbox scenarios, long-session endurance"
+		case speed > 65 && consistency < 50:
+			return "The Sprinter", "Fast but choppy", "#ff6b6b",
+				"You can keep up with fast targets but your speed is uneven — you accelerate and decelerate in bursts instead of flowing continuously.",
+				"Smooth-tracking drills, large target slow-tracking, constant-speed follow scenarios"
+		case control > 70 && precision > 65 && rhythm > 60:
+			return "The Orbiter", "Smooth and controlled", "#00b4ff",
+				"You maintain clean, controlled contact with targets and rarely overshoot. Your movement flows well.",
+				"Speed-ramp drills, reactive tracking, target-leading practice"
+		case speed > 60 && control > 55 && decisiveness > 60:
+			return "The Overtaker", "Aggressive and reactive", "#ffd700",
+				"You chase targets hard and react fast — your instincts are sharp.",
+				"Strafing target scenarios, smooth acceleration drills, reduce overcorrections"
+		case consistency > 65 && speed < 40:
+			return "The Anchor", "Steady but slow", "#a78bfa",
+				"Your tracking is mechanically consistent and clean, but you struggle when targets accelerate or change direction.",
+				"Dynamic tracking scenarios, speed-increasing variants, reaction-based targets"
+		default:
+			return "The Foundation Builder", "Building tracking fundamentals", "#ffd700",
+				"Your tracking mechanics are still developing. Focus on staying on target continuously and matching target speed evenly.",
+				"Beginner tracking scenarios, large slow targets, smooth-follow drills"
+		}
+	}
+	switch {
+	case speed > 65 && control < 40:
+		return "The Aggressor", "Raw speed, needs refinement", "#ff6b6b",
+			"You move fast and commit hard, but overshoot often. Your instincts are strong — channel that aggression into deliberate deceleration.",
+			"Deceleration drills, close-range flick scenarios, overshooting correction"
+	case precision > 70 && control > 65 && speed < 50:
+		return "The Surgeon", "Clean and controlled", "#00f5a0",
+			"Your mouse movement is exceptionally clean. You rarely miss, but you're playing conservatively. Match that precision at higher speed.",
+			"Reactive scenarios, tempo drills, increasing flick distance"
+	case consistency > 70 && rhythm > 70:
+		return "The Metronome", "Mechanically reliable", "#00b4ff",
+			"Extremely consistent mechanics with a reliable click rhythm. This repeatability is your foundation.",
+			"Difficulty escalation, novel scenario types to raise your ceiling"
+	case decisiveness > 70 && precision < 55:
+		return "The Gambler", "Confident but imprecise", "#ffd700",
+			"You commit fast and trust your instincts — great for reaction time. But shots sometimes fire before fully acquiring the target.",
+			"Micro-adjustment training, precision clicking, accuracy-first drills"
+	case precision > 65 && consistency > 65:
+		return "The Technician", "Solid all-around mechanics", "#a78bfa",
+			"A well-rounded, technically sound aimer with strong precision and consistency.",
+			"Reactive flick scenarios, head-tracking, increasing pace"
+	default:
+		return "The Foundation Builder", "Developing core mechanics", "#ffd700",
+			"Your aim style is still taking shape. Focus on fundamentals: reduce jitter, clean up movement paths, and build consistent click timing.",
+			"Tracking basics, precision clicking, click timing trainers"
+	}
+}
+
+func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.AimFingerprint, error) {
+	// Validate user exists
+	var userHandle string
+	err := s.pool.QueryRow(ctx, `
+		SELECT la.username
+		FROM hub_users hu
+		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		WHERE la.username = $1
+	`, handle).Scan(&userHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch smoothness fields for recent sessions (up to 300)
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			(rfs.feature_json->>'smoothnessJitter')::float,
+			(rfs.feature_json->>'smoothnessOvershootRate')::float,
+			(rfs.feature_json->>'smoothnessVelocityStd')::float,
+			(rfs.feature_json->>'smoothnessPathEfficiency')::float,
+			(rfs.feature_json->>'smoothnessAvgSpeed')::float,
+			(rfs.feature_json->>'smoothnessClickTimingCv')::float,
+			(rfs.feature_json->>'smoothnessCorrectionRatio')::float,
+			(rfs.feature_json->>'smoothnessDirectionalBias')::float,
+			sr.scenario_type
+		FROM scenario_runs sr
+		JOIN hub_users hu ON hu.id = sr.user_id
+		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN run_feature_sets rfs ON rfs.session_id = sr.session_id
+		WHERE la.username = $1
+		  AND rfs.feature_json->>'smoothnessJitter' IS NOT NULL
+		ORDER BY sr.played_at DESC
+		LIMIT 300
+	`, handle)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	type row struct {
+		jitter, overshootRate, velocityStd, pathEfficiency float64
+		avgSpeed, clickTimingCv, correctionRatio, directionalBias float64
+		scenarioType string
+	}
+
+	var allRows []row
+	typeCounts := map[string]int{}
+	for rows.Next() {
+		var r row
+		if err := rows.Scan(
+			&r.jitter, &r.overshootRate, &r.velocityStd, &r.pathEfficiency,
+			&r.avgSpeed, &r.clickTimingCv, &r.correctionRatio, &r.directionalBias,
+			&r.scenarioType,
+		); err != nil {
+			continue
+		}
+		allRows = append(allRows, r)
+		if r.scenarioType != "" && r.scenarioType != "Unknown" {
+			typeCounts[r.scenarioType]++
+		}
+	}
+
+	if len(allRows) == 0 {
+		return nil, fmt.Errorf("no smoothness data for %s", handle)
+	}
+
+	// Dominant scenario type
+	dominantType := "Unknown"
+	bestCount := 0
+	for t, c := range typeCounts {
+		if c > bestCount {
+			bestCount = c
+			dominantType = t
+		}
+	}
+	tracking := isTrackingType(dominantType)
+
+	// Build metric slices
+	jitterVals := make([]float64, len(allRows))
+	overshootVals := make([]float64, len(allRows))
+	velStdVals := make([]float64, len(allRows))
+	pathEffVals := make([]float64, len(allRows))
+	avgSpeedVals := make([]float64, len(allRows))
+	clickCVVals := make([]float64, len(allRows))
+	correctionVals := make([]float64, len(allRows))
+	dirBiasVals := make([]float64, len(allRows))
+	for i, r := range allRows {
+		jitterVals[i] = r.jitter
+		overshootVals[i] = r.overshootRate
+		velStdVals[i] = r.velocityStd
+		pathEffVals[i] = r.pathEfficiency
+		avgSpeedVals[i] = r.avgSpeed
+		clickCVVals[i] = r.clickTimingCv
+		correctionVals[i] = r.correctionRatio
+		dirBiasVals[i] = r.directionalBias
+	}
+
+	jitter := fpDist3(jitterVals)
+	overshoot := fpDist3(overshootVals)
+	velStd := fpDist3(velStdVals)
+	pathEff := fpDist3(pathEffVals)
+	avgSpd := fpDist3(avgSpeedVals)
+	clickCV := fpDist3(clickCVVals)
+	correction := fpDist3(correctionVals)
+	dirBias := fpDist3(dirBiasVals)
+
+	// Compute axis scores
+	precision := fpWeighted([][2]float64{
+		{fpScale(pathEff.median, 0.86, 0.985), 0.65},
+		{fpInverse(jitter.p75, 0.14, 0.45), 0.35},
+	})
+	speedMin, speedMax := 450.0, 2300.0
+	if tracking {
+		speedMin, speedMax = 650.0, 2600.0
+	}
+	speed := fpRound(fpScale(avgSpd.median, speedMin, speedMax))
+	control := fpWeighted([][2]float64{
+		{fpInverse(fpMax(overshoot.median, overshoot.p75*0.75), 0.00005, 0.0045), 0.4},
+		{fpInverse(fpMax(correction.median, correction.p75*0.85), 0.10, 0.42), 0.4},
+		{fpScale(pathEff.median, 0.88, 0.98), 0.15},
+		{fpInverse(fpMax(dirBias.median, dirBias.p75*0.8), 0.0, 0.08), 0.05},
+	})
+	consistency := fpWeighted([][2]float64{
+		{fpInverse(fpMax(velStd.median, velStd.p75*0.85), 0.18, 0.9), 0.8},
+		{fpInverse(jitter.median, 0.12, 0.42), 0.2},
+	})
+	decisiveness := fpWeighted([][2]float64{
+		{fpInverse(fpMax(correction.median, correction.p75*0.8), 0.08, 0.38), 0.85},
+		{fpInverse(fpMax(dirBias.median, dirBias.p75), 0.0, 0.08), 0.15},
+	})
+	var rhythm int32
+	if tracking {
+		rhythm = fpWeighted([][2]float64{
+			{fpInverse(fpMax(velStd.median, velStd.p75), 0.18, 0.95), 0.7},
+			{fpInverse(jitter.median, 0.12, 0.42), 0.3},
+		})
+	} else {
+		rhythm = fpWeighted([][2]float64{
+			{fpInverse(fpMax(clickCV.median, clickCV.p75*0.9), 0.03, 0.28), 0.8},
+			{fpInverse(fpMax(correction.median, correction.p75*0.85), 0.08, 0.4), 0.2},
+		})
+	}
+
+	rhythmLabel := "Rhythm"
+	if tracking {
+		rhythmLabel = "Flow"
+	}
+
+	// Volatility per axis
+	precisionVol := int32((fpVolatility(jitter.p75-jitter.p25, 0.18) + fpVolatility(pathEff.p75-pathEff.p25, 0.2)) / 2)
+	speedVol := int32(fpVolatility(avgSpd.p75-avgSpd.p25, 420))
+	controlVol := int32((fpVolatility(overshoot.p75-overshoot.p25, 0.0045) + fpVolatility(correction.p75-correction.p25, 0.22) + fpVolatility(dirBias.p75-dirBias.p25, 0.08)) / 3)
+	consistencyVol := int32(fpVolatility(velStd.p75-velStd.p25, 0.24))
+	decisiveVol := int32((fpVolatility(correction.p75-correction.p25, 0.22) + fpVolatility(dirBias.p75-dirBias.p25, 0.08)) / 2)
+	rhythmIQR := velStd.p75 - velStd.p25
+	rhythmSpan := 0.24
+	if !tracking {
+		rhythmIQR = clickCV.p75 - clickCV.p25
+		rhythmSpan = 0.3
+	}
+	rhythmVol := int32(fpVolatility(rhythmIQR, rhythmSpan))
+
+	axes := []*hubv1.AimFingerprintAxis{
+		{Key: "precision", Label: "Precision", Value: precision, Volatility: precisionVol},
+		{Key: "speed", Label: "Speed", Value: speed, Volatility: speedVol},
+		{Key: "control", Label: "Control", Value: control, Volatility: controlVol},
+		{Key: "consistency", Label: "Consistency", Value: consistency, Volatility: consistencyVol},
+		{Key: "decisiveness", Label: "Decisiveness", Value: decisiveness, Volatility: decisiveVol},
+		{Key: "rhythm", Label: rhythmLabel, Value: rhythm, Volatility: rhythmVol},
+	}
+
+	styleName, styleTagline, styleColor, styleDesc, styleFocus := classifyAimStyle(
+		precision, speed, control, consistency, decisiveness, rhythm, tracking,
+	)
+
+	return &hubv1.AimFingerprint{
+		Precision:           precision,
+		Speed:               speed,
+		Control:             control,
+		Consistency:         consistency,
+		Decisiveness:        decisiveness,
+		Rhythm:              rhythm,
+		RhythmLabel:         rhythmLabel,
+		SessionCount:        int32(len(allRows)),
+		Axes:                axes,
+		StyleName:           styleName,
+		StyleTagline:        styleTagline,
+		StyleColor:          styleColor,
+		StyleDescription:    styleDesc,
+		StyleFocus:          styleFocus,
+		DominantScenarioType: dominantType,
+	}, nil
 }
 
 func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, error) {

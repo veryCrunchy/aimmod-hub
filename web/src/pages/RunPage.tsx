@@ -457,7 +457,7 @@ export function RunPage() {
             title="Top runs on this scenario"
             body="The highest-scoring runs other players have recorded on this scenario."
           />
-          <ScrollArea className="overflow-auto rounded-[18px] border border-line bg-white/2">
+          <ScrollArea className="max-h-[min(60vh,720px)] overflow-auto rounded-[18px] border border-line bg-white/2">
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
@@ -466,6 +466,7 @@ export function RunPage() {
                   <th className="px-4 py-3">Score</th>
                   <th className="px-4 py-3">Acc</th>
                   <th className="px-4 py-3">Run</th>
+                  <th className="px-4 py-3">History</th>
                 </tr>
               </thead>
               <tbody>
@@ -473,11 +474,12 @@ export function RunPage() {
                   const rank = idx + 1;
                   const rankColor = rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
                   const isCurrentRun = (r.runId || r.sessionId) === runId;
+                  const rHandle = r.userHandle || r.userDisplayName;
                   return (
                     <tr key={r.runId || r.sessionId} className={`border-b border-white/6 last:border-b-0 transition-colors ${isCurrentRun ? "bg-white/[0.03]" : "hover:bg-white/[0.015]"}`}>
                       <td className={`px-4 py-3 font-medium tabular-nums ${rankColor}`}>{rank}</td>
                       <td className="px-4 py-3 text-text">
-                        <Link className="text-cyan underline underline-offset-3" to={`/profiles/${r.userHandle || r.userDisplayName}`}>
+                        <Link className="text-cyan underline underline-offset-3" to={`/profiles/${rHandle}`}>
                           {r.userDisplayName || r.userHandle}
                         </Link>
                       </td>
@@ -491,6 +493,14 @@ export function RunPage() {
                           ? <span className="text-muted-2 text-[11px]">current</span>
                           : <Link className="text-cyan underline underline-offset-3" to={`/runs/${r.runId || r.sessionId}`}>Open</Link>
                         }
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          className="text-violet underline underline-offset-3 text-[12px]"
+                          to={`/profiles/${rHandle}/scenarios/${slugifyScenarioName(run.scenarioName)}`}
+                        >
+                          History
+                        </Link>
                       </td>
                     </tr>
                   );

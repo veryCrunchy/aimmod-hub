@@ -14,6 +14,8 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { SortableTh } from "../components/ui/SortableTh";
 import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
+import { AimProfileSection } from "../components/AimProfileSection";
+import { AimFingerprintSection } from "../components/AimFingerprintSection";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { fetchProfile, formatDurationMs, slugifyScenarioName } from "../lib/api";
 
@@ -182,6 +184,9 @@ export function ProfilePage() {
         />
       </Grid>
 
+      <AimProfileSection handle={profile.userHandle} />
+      <AimFingerprintSection handle={profile.userHandle} />
+
       {profile.personalBests.length > 0 && (
         <PageSection>
           <SectionHeader
@@ -189,7 +194,7 @@ export function ProfilePage() {
             title="Best score per scenario"
             body="The highest score this player has recorded on each scenario."
           />
-          <ScrollArea className="overflow-auto rounded-[18px] border border-line bg-white/2">
+          <ScrollArea className="max-h-[min(60vh,760px)] overflow-auto rounded-[18px] border border-line bg-white/2">
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
@@ -203,7 +208,7 @@ export function ProfilePage() {
                 {profile.personalBests.map((pb) => (
                   <tr key={pb.runId || pb.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                     <td className="px-4 py-3 text-text">
-                      <Link className="hover:text-cyan transition-colors" to={`/scenarios/${slugifyScenarioName(pb.scenarioName)}`}>
+                      <Link className="hover:text-cyan transition-colors" to={`/profiles/${profile.userHandle}/scenarios/${slugifyScenarioName(pb.scenarioName)}`}>
                         {pb.scenarioName}
                       </Link>
                     </td>
@@ -261,15 +266,26 @@ export function ProfilePage() {
               <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
                 <div className="grid gap-3">
                   {visibleScenarios.map((scenario) => (
-                    <Link
-                      key={scenario.scenarioSlug}
-                      to={`/scenarios/${scenario.scenarioSlug}`}
-                      className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
-                    >
-                      <strong className="block text-text">{scenario.scenarioName}</strong>
-                      <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
-                      <p className="mt-3 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</p>
-                    </Link>
+                    <div key={scenario.scenarioSlug} className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <Link className="block font-semibold text-text hover:text-cyan transition-colors truncate" to={`/profiles/${profile.userHandle}/scenarios/${scenario.scenarioSlug}`}>
+                            {scenario.scenarioName}
+                          </Link>
+                          <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
+                        </div>
+                        <span className="shrink-0 text-sm text-mint">{scenario.runCount.toLocaleString()} runs</span>
+                      </div>
+                      <div className="mt-3 flex items-center gap-3 text-[11px]">
+                        <Link className="text-cyan underline underline-offset-3" to={`/profiles/${profile.userHandle}/scenarios/${scenario.scenarioSlug}`}>
+                          View history
+                        </Link>
+                        <span className="text-muted-2">·</span>
+                        <Link className="text-muted hover:text-text transition-colors" to={`/scenarios/${scenario.scenarioSlug}`}>
+                          Scenario page
+                        </Link>
+                      </div>
+                    </div>
                   ))}
                   {filteredScenarios.length === 0 && (
                     <p className="text-sm text-muted">No scenarios match this filter.</p>

@@ -5,6 +5,8 @@ import { AccountPage } from "./pages/AccountPage";
 import { CommunityPage } from "./pages/CommunityPage";
 import { DeviceLinkPage } from "./pages/DeviceLinkPage";
 import { HomePage } from "./pages/HomePage";
+import { LeaderboardPage } from "./pages/LeaderboardPage";
+import { PlayerScenarioPage } from "./pages/PlayerScenarioPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RunPage } from "./pages/RunPage";
 import { ScenarioPage } from "./pages/ScenarioPage";
@@ -21,7 +23,9 @@ export function App() {
             <Route path="/account" element={<AccountPage />} />
             <Route path="/link-device" element={<DeviceLinkPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profiles/:handle" element={<ProfilePage />} />
+            <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
             <Route path="/scenarios/:slug" element={<ScenarioPage />} />
             <Route path="/runs/:runId" element={<RunPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

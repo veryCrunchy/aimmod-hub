@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetOverviewRequest, GetOverviewResponse, GetProfileRequest, GetProfileResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse } from "./hub_pb.js";
+import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -73,6 +73,42 @@ export const HubService = {
       name: "GetProfile",
       I: GetProfileRequest,
       O: GetProfileResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetLeaderboard
+     */
+    getLeaderboard: {
+      name: "GetLeaderboard",
+      I: GetLeaderboardRequest,
+      O: GetLeaderboardResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetPlayerScenarioHistory
+     */
+    getPlayerScenarioHistory: {
+      name: "GetPlayerScenarioHistory",
+      I: GetPlayerScenarioHistoryRequest,
+      O: GetPlayerScenarioHistoryResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetAimProfile
+     */
+    getAimProfile: {
+      name: "GetAimProfile",
+      I: GetAimProfileRequest,
+      O: GetAimProfileResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetAimFingerprint
+     */
+    getAimFingerprint: {
+      name: "GetAimFingerprint",
+      I: GetAimFingerprintRequest,
+      O: GetAimFingerprintResponse,
       kind: MethodKind.Unary,
     },
   }

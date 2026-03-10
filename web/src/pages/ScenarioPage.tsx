@@ -19,6 +19,113 @@ type SortField = "score" | "accuracy" | "date";
 type Tab = "recent" | "leaderboard";
 const PAGE_SIZE = 15;
 
+function consistencyLabel(cv: number): { label: string; color: string; detail: string } {
+  if (cv < 0.08) return { label: "Very consistent", color: "text-mint", detail: "Scores cluster tightly — repeatable on this scenario." };
+  if (cv < 0.18) return { label: "Consistent", color: "text-cyan", detail: "Low spread — players tend to hit similar scores." };
+  if (cv < 0.32) return { label: "Variable", color: "text-gold", detail: "Moderate spread — results depend on the session." };
+  return { label: "Highly variable", color: "text-danger", detail: "Wide spread — scores fluctuate a lot across players." };
+}
+
+function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
+  const scores = page.recentRuns.map((r) => r.score);
+  const uniquePlayers = new Set(page.recentRuns.map((r) => r.userHandle || r.userDisplayName)).size;
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentActivity = page.recentRuns.filter((r) => new Date(r.playedAtIso).getTime() >= sevenDaysAgo).length;
+
+  const mean = scores.length > 1 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+  const variance = scores.length > 1 ? scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length : 0;
+  const stddev = Math.sqrt(variance);
+  const cv = mean > 0 ? stddev / mean : 0;
+  const consistency = scores.length >= 4 ? consistencyLabel(cv) : null;
+
+  const ceilingPct = page.bestScore > 0 ? Math.round((page.averageScore / page.bestScore) * 100) : null;
+  const leader = page.topRuns[0];
+
+  return (
+    <div className="grid gap-3">
+      {/* stat tiles */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Active players</p>
+          <p className="mt-1.5 text-2xl font-medium text-text">{uniquePlayers}</p>
+          <p className="mt-1 text-[11px] text-muted">across last {page.recentRuns.length} runs</p>
+        </div>
+        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Last 7 days</p>
+          <p className="mt-1.5 text-2xl font-medium text-text">{recentActivity}</p>
+          <p className="mt-1 text-[11px] text-muted">{recentActivity === 1 ? "run" : "runs"} recorded</p>
+        </div>
+      </div>
+
+      {/* consistency */}
+      {consistency && (
+        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Score consistency</p>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex-1">
+              <div className="mb-1.5 h-1.5 w-full rounded-full bg-white/8 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-mint/60 transition-all"
+                  style={{ width: `${Math.max(4, Math.round((1 - Math.min(cv, 0.5) / 0.5) * 100))}%` }}
+                />
+              </div>
+              <p className={`text-sm font-medium ${consistency.color}`}>{consistency.label}</p>
+            </div>
+            <p className="shrink-0 text-right text-[11px] text-muted-2">σ {Math.round(stddev).toLocaleString()}</p>
+          </div>
+          <p className="mt-2 text-[11px] text-muted">{consistency.detail}</p>
+        </div>
+      )}
+
+      {/* score ceiling gap */}
+      {ceilingPct !== null && page.bestScore > 0 && (
+        <div className="rounded-[14px] border border-line bg-white/2 p-4">
+          <p className="mb-3 text-[10px] uppercase tracking-[0.1em] text-muted-2">Score ceiling gap</p>
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className="text-lg font-medium text-text">{Math.round(page.bestScore).toLocaleString()}</p>
+              <p className="text-[11px] text-muted-2">best</p>
+            </div>
+            <div className="relative mx-3 h-px flex-1 bg-line">
+              <div
+                className="absolute inset-y-0 left-0 h-px bg-mint/40"
+                style={{ width: `${Math.min(100, ceilingPct)}%` }}
+              />
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-medium text-gold">{Math.round(page.averageScore).toLocaleString()}</p>
+              <p className="text-[11px] text-muted-2">avg</p>
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-2">
+            Average is {ceilingPct}% of best — {ceilingPct >= 80 ? "ceiling room is tight" : ceilingPct >= 65 ? "moderate room above average" : "large gap to close"}.
+          </p>
+        </div>
+      )}
+
+      {/* leader card */}
+      {leader && (
+        <Link
+          to={`/runs/${leader.runId || leader.sessionId}`}
+          className="rounded-[14px] border border-gold/20 bg-[rgba(255,215,0,0.03)] p-4 transition-colors hover:border-gold/40 hover:bg-[rgba(255,215,0,0.05)]"
+        >
+          <p className="text-[10px] uppercase tracking-[0.1em] text-gold/70">Top score</p>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-2xl font-medium text-gold">{Math.round(leader.score).toLocaleString()}</p>
+              <p className="mt-0.5 text-sm text-muted">{leader.userDisplayName || leader.userHandle}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-text">{leader.accuracy.toFixed(1)}%</p>
+              <p className="text-[11px] text-muted-2">accuracy</p>
+            </div>
+          </div>
+        </Link>
+      )}
+    </div>
+  );
+}
+
 export function ScenarioPage() {
   const { slug = "" } = useParams();
   const [page, setPage] = useState<GetScenarioPageResponse | null>(null);
@@ -193,15 +300,17 @@ export function ScenarioPage() {
                         <SortableTh label="Acc" field="accuracy" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                         <SortableTh label="When" field="date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                         <th className="px-4 py-3">Run</th>
+                        <th className="px-4 py-3">History</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRecent.map((run) => {
                         const isBest = Math.round(run.score) === Math.round(page.bestScore);
+                        const handle = run.userHandle || run.userDisplayName;
                         return (
                           <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                             <td className="px-4 py-3 text-text">
-                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${handle}`}>
                                 {run.userDisplayName || run.userHandle}
                               </Link>
                             </td>
@@ -218,6 +327,11 @@ export function ScenarioPage() {
                             <td className="px-4 py-3 text-text">
                               <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
                                 Open
+                              </Link>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
+                                History
                               </Link>
                             </td>
                           </tr>
@@ -251,17 +365,19 @@ export function ScenarioPage() {
                         <th className="px-4 py-3">Acc</th>
                         <th className="px-4 py-3">When</th>
                         <th className="px-4 py-3">Run</th>
+                        <th className="px-4 py-3">History</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleTop.map((run, idx) => {
                         const rank = idx + 1;
                         const rankColor = rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
+                        const handle = run.userHandle || run.userDisplayName;
                         return (
                           <tr key={run.runId || run.sessionId} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015] transition-colors">
                             <td className={`px-4 py-3 font-medium tabular-nums ${rankColor}`}>{rank}</td>
                             <td className="px-4 py-3 text-text">
-                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                              <Link className="text-cyan underline underline-offset-3" to={`/profiles/${handle}`}>
                                 {run.userDisplayName || run.userHandle}
                               </Link>
                             </td>
@@ -275,6 +391,11 @@ export function ScenarioPage() {
                             <td className="px-4 py-3 text-text">
                               <Link className="text-cyan underline underline-offset-3" to={`/runs/${run.runId || run.sessionId}`}>
                                 Open
+                              </Link>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
+                                History
                               </Link>
                             </td>
                           </tr>
@@ -299,41 +420,8 @@ export function ScenarioPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeader
-            eyebrow="Quick read"
-            title="What this page helps you see"
-            body="Use this page to get a fast read on volume, score range, consistency, and who is actively playing the scenario."
-          />
-          <ul className="grid gap-2.5 pl-[18px] text-sm leading-7 text-muted">
-            <li>How much history exists for this scenario</li>
-            <li>Whether score ceiling and consistency are diverging</li>
-            <li>Who is actively playing it right now</li>
-            <li>Which runs are worth opening next</li>
-          </ul>
-          {page.bestScore > 0 && page.averageScore > 0 && (
-            <div className="mt-6 rounded-[14px] border border-line bg-white/2 p-4 text-sm text-muted">
-              <p className="mb-3 text-[11px] uppercase tracking-[0.08em] text-muted-2">Score ceiling gap</p>
-              <div className="flex items-end justify-between gap-2">
-                <div>
-                  <p className="text-text text-lg font-medium">{Math.round(page.bestScore).toLocaleString()}</p>
-                  <p className="text-[11px] text-muted-2">best</p>
-                </div>
-                <div className="flex-1 mx-3 h-px bg-line relative">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-mint/40 h-px"
-                    style={{ width: `${Math.min(100, (page.averageScore / page.bestScore) * 100)}%` }}
-                  />
-                </div>
-                <div className="text-right">
-                  <p className="text-gold text-lg font-medium">{Math.round(page.averageScore).toLocaleString()}</p>
-                  <p className="text-[11px] text-muted-2">avg</p>
-                </div>
-              </div>
-              <p className="mt-3 text-[11px] text-muted-2">
-                Average is {Math.round((page.averageScore / page.bestScore) * 100)}% of the best score — the gap shows ceiling room.
-              </p>
-            </div>
-          )}
+          <SectionHeader eyebrow="Scenario intelligence" title="At a glance" />
+          <ScenarioIntelligence page={page} />
         </PageSection>
       </Grid>
     </PageStack>

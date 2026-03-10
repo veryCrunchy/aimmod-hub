@@ -1379,3 +1379,662 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
   }
 }
 
+/**
+ * @generated from message aimmod.hub.v1.GetLeaderboardRequest
+ */
+export class GetLeaderboardRequest extends Message<GetLeaderboardRequest> {
+  /**
+   * @generated from field: string scenario_type = 1;
+   */
+  scenarioType = "";
+
+  constructor(data?: PartialMessage<GetLeaderboardRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLeaderboardRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLeaderboardRequest {
+    return new GetLeaderboardRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLeaderboardRequest {
+    return new GetLeaderboardRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLeaderboardRequest {
+    return new GetLeaderboardRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLeaderboardRequest | PlainMessage<GetLeaderboardRequest> | undefined, b: GetLeaderboardRequest | PlainMessage<GetLeaderboardRequest> | undefined): boolean {
+    return proto3.util.equals(GetLeaderboardRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLeaderboardResponse
+ */
+export class GetLeaderboardResponse extends Message<GetLeaderboardResponse> {
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview records = 1;
+   */
+  records: RunPreview[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview top_scores = 2;
+   */
+  topScores: RunPreview[] = [];
+
+  constructor(data?: PartialMessage<GetLeaderboardResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLeaderboardResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "records", kind: "message", T: RunPreview, repeated: true },
+    { no: 2, name: "top_scores", kind: "message", T: RunPreview, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLeaderboardResponse {
+    return new GetLeaderboardResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLeaderboardResponse {
+    return new GetLeaderboardResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLeaderboardResponse {
+    return new GetLeaderboardResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLeaderboardResponse | PlainMessage<GetLeaderboardResponse> | undefined, b: GetLeaderboardResponse | PlainMessage<GetLeaderboardResponse> | undefined): boolean {
+    return proto3.util.equals(GetLeaderboardResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetPlayerScenarioHistoryRequest
+ */
+export class GetPlayerScenarioHistoryRequest extends Message<GetPlayerScenarioHistoryRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  constructor(data?: PartialMessage<GetPlayerScenarioHistoryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetPlayerScenarioHistoryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPlayerScenarioHistoryRequest {
+    return new GetPlayerScenarioHistoryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPlayerScenarioHistoryRequest {
+    return new GetPlayerScenarioHistoryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPlayerScenarioHistoryRequest {
+    return new GetPlayerScenarioHistoryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPlayerScenarioHistoryRequest | PlainMessage<GetPlayerScenarioHistoryRequest> | undefined, b: GetPlayerScenarioHistoryRequest | PlainMessage<GetPlayerScenarioHistoryRequest> | undefined): boolean {
+    return proto3.util.equals(GetPlayerScenarioHistoryRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetPlayerScenarioHistoryResponse
+ */
+export class GetPlayerScenarioHistoryResponse extends Message<GetPlayerScenarioHistoryResponse> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_type = 3;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.RunPreview runs = 4;
+   */
+  runs: RunPreview[] = [];
+
+  /**
+   * @generated from field: double best_score = 5;
+   */
+  bestScore = 0;
+
+  /**
+   * @generated from field: double average_score = 6;
+   */
+  averageScore = 0;
+
+  /**
+   * @generated from field: double best_accuracy = 7;
+   */
+  bestAccuracy = 0;
+
+  /**
+   * @generated from field: double average_accuracy = 8;
+   */
+  averageAccuracy = 0;
+
+  /**
+   * @generated from field: int32 run_count = 9;
+   */
+  runCount = 0;
+
+  constructor(data?: PartialMessage<GetPlayerScenarioHistoryResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetPlayerScenarioHistoryResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "runs", kind: "message", T: RunPreview, repeated: true },
+    { no: 5, name: "best_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "average_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 7, name: "best_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "average_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 9, name: "run_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPlayerScenarioHistoryResponse {
+    return new GetPlayerScenarioHistoryResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPlayerScenarioHistoryResponse {
+    return new GetPlayerScenarioHistoryResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPlayerScenarioHistoryResponse {
+    return new GetPlayerScenarioHistoryResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPlayerScenarioHistoryResponse | PlainMessage<GetPlayerScenarioHistoryResponse> | undefined, b: GetPlayerScenarioHistoryResponse | PlainMessage<GetPlayerScenarioHistoryResponse> | undefined): boolean {
+    return proto3.util.equals(GetPlayerScenarioHistoryResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.TypeProfileBand
+ */
+export class TypeProfileBand extends Message<TypeProfileBand> {
+  /**
+   * @generated from field: string scenario_type = 1;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: int32 run_count = 2;
+   */
+  runCount = 0;
+
+  /**
+   * @generated from field: double avg_accuracy = 3;
+   */
+  avgAccuracy = 0;
+
+  /**
+   * @generated from field: double avg_score = 4;
+   */
+  avgScore = 0;
+
+  /**
+   * @generated from field: double best_score = 5;
+   */
+  bestScore = 0;
+
+  /**
+   * @generated from field: double community_avg_accuracy = 6;
+   */
+  communityAvgAccuracy = 0;
+
+  /**
+   * @generated from field: double community_avg_score = 7;
+   */
+  communityAvgScore = 0;
+
+  /**
+   * @generated from field: double accuracy_percentile = 8;
+   */
+  accuracyPercentile = 0;
+
+  /**
+   * @generated from field: double avg_smoothness = 9;
+   */
+  avgSmoothness = 0;
+
+  constructor(data?: PartialMessage<TypeProfileBand>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.TypeProfileBand";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "run_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "avg_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 4, name: "avg_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "best_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "community_avg_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 7, name: "community_avg_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "accuracy_percentile", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 9, name: "avg_smoothness", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): TypeProfileBand {
+    return new TypeProfileBand().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): TypeProfileBand {
+    return new TypeProfileBand().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): TypeProfileBand {
+    return new TypeProfileBand().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: TypeProfileBand | PlainMessage<TypeProfileBand> | undefined, b: TypeProfileBand | PlainMessage<TypeProfileBand> | undefined): boolean {
+    return proto3.util.equals(TypeProfileBand, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetAimProfileRequest
+ */
+export class GetAimProfileRequest extends Message<GetAimProfileRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  constructor(data?: PartialMessage<GetAimProfileRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetAimProfileRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAimProfileRequest {
+    return new GetAimProfileRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetAimProfileRequest {
+    return new GetAimProfileRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetAimProfileRequest {
+    return new GetAimProfileRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetAimProfileRequest | PlainMessage<GetAimProfileRequest> | undefined, b: GetAimProfileRequest | PlainMessage<GetAimProfileRequest> | undefined): boolean {
+    return proto3.util.equals(GetAimProfileRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetAimProfileResponse
+ */
+export class GetAimProfileResponse extends Message<GetAimProfileResponse> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string user_display_name = 2;
+   */
+  userDisplayName = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.TypeProfileBand type_bands = 3;
+   */
+  typeBands: TypeProfileBand[] = [];
+
+  /**
+   * @generated from field: double overall_accuracy = 4;
+   */
+  overallAccuracy = 0;
+
+  /**
+   * @generated from field: double overall_accuracy_percentile = 5;
+   */
+  overallAccuracyPercentile = 0;
+
+  /**
+   * @generated from field: int32 total_run_count = 6;
+   */
+  totalRunCount = 0;
+
+  /**
+   * @generated from field: string strongest_type = 7;
+   */
+  strongestType = "";
+
+  /**
+   * @generated from field: string most_practiced_type = 8;
+   */
+  mostPracticedType = "";
+
+  constructor(data?: PartialMessage<GetAimProfileResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetAimProfileResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "type_bands", kind: "message", T: TypeProfileBand, repeated: true },
+    { no: 4, name: "overall_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "overall_accuracy_percentile", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "total_run_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "strongest_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "most_practiced_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAimProfileResponse {
+    return new GetAimProfileResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetAimProfileResponse {
+    return new GetAimProfileResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetAimProfileResponse {
+    return new GetAimProfileResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetAimProfileResponse | PlainMessage<GetAimProfileResponse> | undefined, b: GetAimProfileResponse | PlainMessage<GetAimProfileResponse> | undefined): boolean {
+    return proto3.util.equals(GetAimProfileResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.AimFingerprintAxis
+ */
+export class AimFingerprintAxis extends Message<AimFingerprintAxis> {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key = "";
+
+  /**
+   * @generated from field: string label = 2;
+   */
+  label = "";
+
+  /**
+   * @generated from field: int32 value = 3;
+   */
+  value = 0;
+
+  /**
+   * @generated from field: int32 volatility = 4;
+   */
+  volatility = 0;
+
+  constructor(data?: PartialMessage<AimFingerprintAxis>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.AimFingerprintAxis";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "label", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "value", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "volatility", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AimFingerprintAxis {
+    return new AimFingerprintAxis().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AimFingerprintAxis {
+    return new AimFingerprintAxis().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AimFingerprintAxis {
+    return new AimFingerprintAxis().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AimFingerprintAxis | PlainMessage<AimFingerprintAxis> | undefined, b: AimFingerprintAxis | PlainMessage<AimFingerprintAxis> | undefined): boolean {
+    return proto3.util.equals(AimFingerprintAxis, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.AimFingerprint
+ */
+export class AimFingerprint extends Message<AimFingerprint> {
+  /**
+   * @generated from field: int32 precision = 1;
+   */
+  precision = 0;
+
+  /**
+   * @generated from field: int32 speed = 2;
+   */
+  speed = 0;
+
+  /**
+   * @generated from field: int32 control = 3;
+   */
+  control = 0;
+
+  /**
+   * @generated from field: int32 consistency = 4;
+   */
+  consistency = 0;
+
+  /**
+   * @generated from field: int32 decisiveness = 5;
+   */
+  decisiveness = 0;
+
+  /**
+   * @generated from field: int32 rhythm = 6;
+   */
+  rhythm = 0;
+
+  /**
+   * @generated from field: string rhythm_label = 7;
+   */
+  rhythmLabel = "";
+
+  /**
+   * @generated from field: int32 session_count = 8;
+   */
+  sessionCount = 0;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.AimFingerprintAxis axes = 10;
+   */
+  axes: AimFingerprintAxis[] = [];
+
+  /**
+   * @generated from field: string style_name = 11;
+   */
+  styleName = "";
+
+  /**
+   * @generated from field: string style_tagline = 12;
+   */
+  styleTagline = "";
+
+  /**
+   * @generated from field: string style_color = 13;
+   */
+  styleColor = "";
+
+  /**
+   * @generated from field: string style_description = 14;
+   */
+  styleDescription = "";
+
+  /**
+   * @generated from field: string style_focus = 15;
+   */
+  styleFocus = "";
+
+  /**
+   * @generated from field: string dominant_scenario_type = 16;
+   */
+  dominantScenarioType = "";
+
+  constructor(data?: PartialMessage<AimFingerprint>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.AimFingerprint";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "precision", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "speed", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "control", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "consistency", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "decisiveness", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 6, name: "rhythm", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "rhythm_label", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "session_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 10, name: "axes", kind: "message", T: AimFingerprintAxis, repeated: true },
+    { no: 11, name: "style_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "style_tagline", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "style_color", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 14, name: "style_description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 15, name: "style_focus", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 16, name: "dominant_scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AimFingerprint {
+    return new AimFingerprint().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AimFingerprint {
+    return new AimFingerprint().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AimFingerprint {
+    return new AimFingerprint().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AimFingerprint | PlainMessage<AimFingerprint> | undefined, b: AimFingerprint | PlainMessage<AimFingerprint> | undefined): boolean {
+    return proto3.util.equals(AimFingerprint, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetAimFingerprintRequest
+ */
+export class GetAimFingerprintRequest extends Message<GetAimFingerprintRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  constructor(data?: PartialMessage<GetAimFingerprintRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetAimFingerprintRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAimFingerprintRequest {
+    return new GetAimFingerprintRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetAimFingerprintRequest {
+    return new GetAimFingerprintRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetAimFingerprintRequest {
+    return new GetAimFingerprintRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetAimFingerprintRequest | PlainMessage<GetAimFingerprintRequest> | undefined, b: GetAimFingerprintRequest | PlainMessage<GetAimFingerprintRequest> | undefined): boolean {
+    return proto3.util.equals(GetAimFingerprintRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetAimFingerprintResponse
+ */
+export class GetAimFingerprintResponse extends Message<GetAimFingerprintResponse> {
+  /**
+   * @generated from field: aimmod.hub.v1.AimFingerprint overall = 1;
+   */
+  overall?: AimFingerprint;
+
+  constructor(data?: PartialMessage<GetAimFingerprintResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetAimFingerprintResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "overall", kind: "message", T: AimFingerprint },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAimFingerprintResponse {
+    return new GetAimFingerprintResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetAimFingerprintResponse {
+    return new GetAimFingerprintResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetAimFingerprintResponse {
+    return new GetAimFingerprintResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetAimFingerprintResponse | PlainMessage<GetAimFingerprintResponse> | undefined, b: GetAimFingerprintResponse | PlainMessage<GetAimFingerprintResponse> | undefined): boolean {
+    return proto3.util.equals(GetAimFingerprintResponse, a, b);
+  }
+}
+

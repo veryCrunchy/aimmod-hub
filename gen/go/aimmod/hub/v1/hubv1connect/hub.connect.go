@@ -50,6 +50,18 @@ const (
 	HubServiceGetScenarioPageProcedure = "/aimmod.hub.v1.HubService/GetScenarioPage"
 	// HubServiceGetProfileProcedure is the fully-qualified name of the HubService's GetProfile RPC.
 	HubServiceGetProfileProcedure = "/aimmod.hub.v1.HubService/GetProfile"
+	// HubServiceGetLeaderboardProcedure is the fully-qualified name of the HubService's GetLeaderboard
+	// RPC.
+	HubServiceGetLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetLeaderboard"
+	// HubServiceGetPlayerScenarioHistoryProcedure is the fully-qualified name of the HubService's
+	// GetPlayerScenarioHistory RPC.
+	HubServiceGetPlayerScenarioHistoryProcedure = "/aimmod.hub.v1.HubService/GetPlayerScenarioHistory"
+	// HubServiceGetAimProfileProcedure is the fully-qualified name of the HubService's GetAimProfile
+	// RPC.
+	HubServiceGetAimProfileProcedure = "/aimmod.hub.v1.HubService/GetAimProfile"
+	// HubServiceGetAimFingerprintProcedure is the fully-qualified name of the HubService's
+	// GetAimFingerprint RPC.
+	HubServiceGetAimFingerprintProcedure = "/aimmod.hub.v1.HubService/GetAimFingerprint"
 )
 
 // HubServiceClient is a client for the aimmod.hub.v1.HubService service.
@@ -61,6 +73,10 @@ type HubServiceClient interface {
 	GetRun(context.Context, *connect.Request[v1.GetRunRequest]) (*connect.Response[v1.GetRunResponse], error)
 	GetScenarioPage(context.Context, *connect.Request[v1.GetScenarioPageRequest]) (*connect.Response[v1.GetScenarioPageResponse], error)
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
+	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
+	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
+	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
+	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
 }
 
 // NewHubServiceClient constructs a client for the aimmod.hub.v1.HubService service. By default, it
@@ -116,18 +132,46 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetProfile")),
 			connect.WithClientOptions(opts...),
 		),
+		getLeaderboard: connect.NewClient[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse](
+			httpClient,
+			baseURL+HubServiceGetLeaderboardProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetLeaderboard")),
+			connect.WithClientOptions(opts...),
+		),
+		getPlayerScenarioHistory: connect.NewClient[v1.GetPlayerScenarioHistoryRequest, v1.GetPlayerScenarioHistoryResponse](
+			httpClient,
+			baseURL+HubServiceGetPlayerScenarioHistoryProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioHistory")),
+			connect.WithClientOptions(opts...),
+		),
+		getAimProfile: connect.NewClient[v1.GetAimProfileRequest, v1.GetAimProfileResponse](
+			httpClient,
+			baseURL+HubServiceGetAimProfileProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetAimProfile")),
+			connect.WithClientOptions(opts...),
+		),
+		getAimFingerprint: connect.NewClient[v1.GetAimFingerprintRequest, v1.GetAimFingerprintResponse](
+			httpClient,
+			baseURL+HubServiceGetAimFingerprintProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetAimFingerprint")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // hubServiceClient implements HubServiceClient.
 type hubServiceClient struct {
-	getHealth          *connect.Client[v1.HealthRequest, v1.HealthResponse]
-	ingestSession      *connect.Client[v1.IngestSessionRequest, v1.IngestSessionResponse]
-	linkDiscordAccount *connect.Client[v1.LinkDiscordAccountRequest, v1.LinkDiscordAccountResponse]
-	getOverview        *connect.Client[v1.GetOverviewRequest, v1.GetOverviewResponse]
-	getRun             *connect.Client[v1.GetRunRequest, v1.GetRunResponse]
-	getScenarioPage    *connect.Client[v1.GetScenarioPageRequest, v1.GetScenarioPageResponse]
-	getProfile         *connect.Client[v1.GetProfileRequest, v1.GetProfileResponse]
+	getHealth                *connect.Client[v1.HealthRequest, v1.HealthResponse]
+	ingestSession            *connect.Client[v1.IngestSessionRequest, v1.IngestSessionResponse]
+	linkDiscordAccount       *connect.Client[v1.LinkDiscordAccountRequest, v1.LinkDiscordAccountResponse]
+	getOverview              *connect.Client[v1.GetOverviewRequest, v1.GetOverviewResponse]
+	getRun                   *connect.Client[v1.GetRunRequest, v1.GetRunResponse]
+	getScenarioPage          *connect.Client[v1.GetScenarioPageRequest, v1.GetScenarioPageResponse]
+	getProfile               *connect.Client[v1.GetProfileRequest, v1.GetProfileResponse]
+	getLeaderboard           *connect.Client[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse]
+	getPlayerScenarioHistory *connect.Client[v1.GetPlayerScenarioHistoryRequest, v1.GetPlayerScenarioHistoryResponse]
+	getAimProfile            *connect.Client[v1.GetAimProfileRequest, v1.GetAimProfileResponse]
+	getAimFingerprint        *connect.Client[v1.GetAimFingerprintRequest, v1.GetAimFingerprintResponse]
 }
 
 // GetHealth calls aimmod.hub.v1.HubService.GetHealth.
@@ -165,6 +209,26 @@ func (c *hubServiceClient) GetProfile(ctx context.Context, req *connect.Request[
 	return c.getProfile.CallUnary(ctx, req)
 }
 
+// GetLeaderboard calls aimmod.hub.v1.HubService.GetLeaderboard.
+func (c *hubServiceClient) GetLeaderboard(ctx context.Context, req *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
+	return c.getLeaderboard.CallUnary(ctx, req)
+}
+
+// GetPlayerScenarioHistory calls aimmod.hub.v1.HubService.GetPlayerScenarioHistory.
+func (c *hubServiceClient) GetPlayerScenarioHistory(ctx context.Context, req *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error) {
+	return c.getPlayerScenarioHistory.CallUnary(ctx, req)
+}
+
+// GetAimProfile calls aimmod.hub.v1.HubService.GetAimProfile.
+func (c *hubServiceClient) GetAimProfile(ctx context.Context, req *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error) {
+	return c.getAimProfile.CallUnary(ctx, req)
+}
+
+// GetAimFingerprint calls aimmod.hub.v1.HubService.GetAimFingerprint.
+func (c *hubServiceClient) GetAimFingerprint(ctx context.Context, req *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error) {
+	return c.getAimFingerprint.CallUnary(ctx, req)
+}
+
 // HubServiceHandler is an implementation of the aimmod.hub.v1.HubService service.
 type HubServiceHandler interface {
 	GetHealth(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
@@ -174,6 +238,10 @@ type HubServiceHandler interface {
 	GetRun(context.Context, *connect.Request[v1.GetRunRequest]) (*connect.Response[v1.GetRunResponse], error)
 	GetScenarioPage(context.Context, *connect.Request[v1.GetScenarioPageRequest]) (*connect.Response[v1.GetScenarioPageResponse], error)
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
+	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
+	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
+	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
+	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
 }
 
 // NewHubServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -225,6 +293,30 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("GetProfile")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceGetLeaderboardHandler := connect.NewUnaryHandler(
+		HubServiceGetLeaderboardProcedure,
+		svc.GetLeaderboard,
+		connect.WithSchema(hubServiceMethods.ByName("GetLeaderboard")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetPlayerScenarioHistoryHandler := connect.NewUnaryHandler(
+		HubServiceGetPlayerScenarioHistoryProcedure,
+		svc.GetPlayerScenarioHistory,
+		connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioHistory")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetAimProfileHandler := connect.NewUnaryHandler(
+		HubServiceGetAimProfileProcedure,
+		svc.GetAimProfile,
+		connect.WithSchema(hubServiceMethods.ByName("GetAimProfile")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetAimFingerprintHandler := connect.NewUnaryHandler(
+		HubServiceGetAimFingerprintProcedure,
+		svc.GetAimFingerprint,
+		connect.WithSchema(hubServiceMethods.ByName("GetAimFingerprint")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/aimmod.hub.v1.HubService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case HubServiceGetHealthProcedure:
@@ -241,6 +333,14 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceGetScenarioPageHandler.ServeHTTP(w, r)
 		case HubServiceGetProfileProcedure:
 			hubServiceGetProfileHandler.ServeHTTP(w, r)
+		case HubServiceGetLeaderboardProcedure:
+			hubServiceGetLeaderboardHandler.ServeHTTP(w, r)
+		case HubServiceGetPlayerScenarioHistoryProcedure:
+			hubServiceGetPlayerScenarioHistoryHandler.ServeHTTP(w, r)
+		case HubServiceGetAimProfileProcedure:
+			hubServiceGetAimProfileHandler.ServeHTTP(w, r)
+		case HubServiceGetAimFingerprintProcedure:
+			hubServiceGetAimFingerprintHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -276,4 +376,20 @@ func (UnimplementedHubServiceHandler) GetScenarioPage(context.Context, *connect.
 
 func (UnimplementedHubServiceHandler) GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetProfile is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetLeaderboard is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetPlayerScenarioHistory is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetAimProfile is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetAimFingerprint is not implemented"))
 }

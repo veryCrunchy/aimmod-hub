@@ -186,6 +186,92 @@ message GetProfileResponse {
   repeated RunPreview personal_bests = 12;
 }
 
+message GetLeaderboardRequest {
+  string scenario_type = 1;
+}
+
+message GetLeaderboardResponse {
+  repeated RunPreview records = 1;
+  repeated RunPreview top_scores = 2;
+}
+
+message GetPlayerScenarioHistoryRequest {
+  string handle = 1;
+  string scenario_slug = 2;
+}
+
+message GetPlayerScenarioHistoryResponse {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  repeated RunPreview runs = 4;
+  double best_score = 5;
+  double average_score = 6;
+  double best_accuracy = 7;
+  double average_accuracy = 8;
+  int32 run_count = 9;
+}
+
+message TypeProfileBand {
+  string scenario_type = 1;
+  int32 run_count = 2;
+  double avg_accuracy = 3;
+  double avg_score = 4;
+  double best_score = 5;
+  double community_avg_accuracy = 6;
+  double community_avg_score = 7;
+  double accuracy_percentile = 8;
+  double avg_smoothness = 9;
+}
+
+message GetAimProfileRequest {
+  string handle = 1;
+}
+
+message GetAimProfileResponse {
+  string user_handle = 1;
+  string user_display_name = 2;
+  repeated TypeProfileBand type_bands = 3;
+  double overall_accuracy = 4;
+  double overall_accuracy_percentile = 5;
+  int32 total_run_count = 6;
+  string strongest_type = 7;
+  string most_practiced_type = 8;
+}
+
+message AimFingerprintAxis {
+  string key = 1;
+  string label = 2;
+  int32 value = 3;
+  int32 volatility = 4;
+}
+
+message AimFingerprint {
+  int32 precision = 1;
+  int32 speed = 2;
+  int32 control = 3;
+  int32 consistency = 4;
+  int32 decisiveness = 5;
+  int32 rhythm = 6;
+  string rhythm_label = 7;
+  int32 session_count = 8;
+  repeated AimFingerprintAxis axes = 10;
+  string style_name = 11;
+  string style_tagline = 12;
+  string style_color = 13;
+  string style_description = 14;
+  string style_focus = 15;
+  string dominant_scenario_type = 16;
+}
+
+message GetAimFingerprintRequest {
+  string handle = 1;
+}
+
+message GetAimFingerprintResponse {
+  AimFingerprint overall = 1;
+}
+
 service HubService {
   rpc GetHealth(HealthRequest) returns (HealthResponse);
   rpc IngestSession(IngestSessionRequest) returns (IngestSessionResponse);
@@ -194,4 +280,8 @@ service HubService {
   rpc GetRun(GetRunRequest) returns (GetRunResponse);
   rpc GetScenarioPage(GetScenarioPageRequest) returns (GetScenarioPageResponse);
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+  rpc GetPlayerScenarioHistory(GetPlayerScenarioHistoryRequest) returns (GetPlayerScenarioHistoryResponse);
+  rpc GetAimProfile(GetAimProfileRequest) returns (GetAimProfileResponse);
+  rpc GetAimFingerprint(GetAimFingerprintRequest) returns (GetAimFingerprintResponse);
 }

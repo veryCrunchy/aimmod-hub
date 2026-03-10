@@ -216,4 +216,70 @@ func (s *HubServer) GetProfile(
 	}), nil
 }
 
+func (h *HubServer) GetLeaderboard(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetLeaderboardRequest],
+) (*connect.Response[hubv1.GetLeaderboardResponse], error) {
+	board, err := h.store.GetLeaderboard(ctx, req.Msg.GetScenarioType())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&hubv1.GetLeaderboardResponse{
+		Records:   board.Records,
+		TopScores: board.TopScores,
+	}), nil
+}
+
+func (h *HubServer) GetPlayerScenarioHistory(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetPlayerScenarioHistoryRequest],
+) (*connect.Response[hubv1.GetPlayerScenarioHistoryResponse], error) {
+	history, err := h.store.GetPlayerScenarioHistory(ctx, req.Msg.GetHandle(), req.Msg.GetScenarioSlug())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&hubv1.GetPlayerScenarioHistoryResponse{
+		ScenarioName:    history.ScenarioName,
+		ScenarioSlug:    history.ScenarioSlug,
+		ScenarioType:    history.ScenarioType,
+		Runs:            history.Runs,
+		BestScore:       history.BestScore,
+		AverageScore:    history.AverageScore,
+		BestAccuracy:    history.BestAccuracy,
+		AverageAccuracy: history.AverageAccuracy,
+		RunCount:        history.RunCount,
+	}), nil
+}
+
+func (h *HubServer) GetAimProfile(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetAimProfileRequest],
+) (*connect.Response[hubv1.GetAimProfileResponse], error) {
+	profile, err := h.store.GetAimProfile(ctx, req.Msg.GetHandle())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	return connect.NewResponse(&hubv1.GetAimProfileResponse{
+		UserHandle:                profile.UserHandle,
+		UserDisplayName:           profile.UserDisplayName,
+		TypeBands:                 profile.TypeBands,
+		OverallAccuracy:           profile.OverallAccuracy,
+		OverallAccuracyPercentile: profile.OverallPercentile,
+		TotalRunCount:             profile.TotalRunCount,
+		StrongestType:             profile.StrongestType,
+		MostPracticedType:         profile.MostPracticedType,
+	}), nil
+}
+
+func (h *HubServer) GetAimFingerprint(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetAimFingerprintRequest],
+) (*connect.Response[hubv1.GetAimFingerprintResponse], error) {
+	fp, err := h.store.GetAimFingerprint(ctx, req.Msg.GetHandle())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	return connect.NewResponse(&hubv1.GetAimFingerprintResponse{Overall: fp}), nil
+}
+
 var _ hubv1connect.HubServiceHandler = (*HubServer)(nil)

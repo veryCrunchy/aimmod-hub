@@ -9,7 +9,8 @@ import { Button } from "./ui/Button";
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/community", label: "Community" },
-  { to: "/account", label: "Account" }
+  { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/account", label: "Account" },
 ];
 
 const supportLinks = [
