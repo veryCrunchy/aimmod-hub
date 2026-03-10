@@ -509,3 +509,26 @@ func (s *Store) ClearIngestFailures(ctx context.Context) (int64, error) {
 	}
 	return tag.RowsAffected(), nil
 }
+
+func (s *Store) ClearIngestFailuresForUser(ctx context.Context, handle string) (int64, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return 0, fmt.Errorf("user handle is required")
+	}
+
+	tag, err := s.pool.Exec(ctx, `
+		DELETE FROM ingest_failures
+		WHERE LOWER(user_external_id) = (
+			SELECT LOWER(hu.external_id)
+			FROM hub_users hu
+			LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+			WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+			   OR LOWER(hu.external_id) = $1
+			LIMIT 1
+		)
+	`, handle)
+	if err != nil {
+		return 0, fmt.Errorf("clear ingest failures for user: %w", err)
+	}
+	return tag.RowsAffected(), nil
+}

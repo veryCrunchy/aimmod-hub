@@ -20,6 +20,7 @@ import {
   type AdminOverviewResponse,
   type AdminUserDetailResponse,
 } from "../lib/api";
+import { API_BASE_URL } from "../lib/config";
 
 function formatCount(value: number) {
   return value.toLocaleString();
@@ -194,6 +195,9 @@ export function AdminPage() {
               </Button>
               <Button onClick={() => void handleClearFailures()} disabled={runningAction}>
                 {runningAction ? "Working..." : "Clear failure log"}
+              </Button>
+              <Button href={`${API_BASE_URL}/admin/failures/export?format=csv`} target="_blank" rel="noreferrer">
+                Export failures
               </Button>
             </div>
           }
@@ -390,6 +394,65 @@ export function AdminPage() {
 
                 <div className="rounded-[18px] border border-line bg-white/2 p-4">
                   <div className="mb-3 text-[12px] uppercase tracking-[0.1em] text-cyan">Recent failures</div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Button onClick={() => void (async () => {
+                      if (!selectedHandle) return;
+                      setRunningAction(true);
+                      try {
+                        const response = await fetch(`${API_BASE_URL}/admin/actions/reclassify-user?handle=${encodeURIComponent(selectedHandle)}`, {
+                          method: "POST",
+                          credentials: "include",
+                        });
+                        if (!response.ok) {
+                          throw new Error(await response.text() || "Could not repair this player.");
+                        }
+                        const result = await response.json() as { updated?: number };
+                        setActionState(`Repaired ${formatCount(result.updated ?? 0)} runs for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
+                        load();
+                        const detail = await fetchAdminUserDetail(selectedHandle);
+                        setSelectedUser(detail);
+                        setSelectedUserError(null);
+                      } catch (err) {
+                        setActionState(err instanceof Error ? err.message : "Could not repair this player.");
+                      } finally {
+                        setRunningAction(false);
+                      }
+                    })()} disabled={runningAction}>
+                      {runningAction ? "Working..." : "Repair this player"}
+                    </Button>
+                    <Button onClick={() => void (async () => {
+                      if (!selectedHandle) return;
+                      setRunningAction(true);
+                      try {
+                        const response = await fetch(`${API_BASE_URL}/admin/actions/clear-user-failures?handle=${encodeURIComponent(selectedHandle)}`, {
+                          method: "POST",
+                          credentials: "include",
+                        });
+                        if (!response.ok) {
+                          throw new Error(await response.text() || "Could not clear this player's failures.");
+                        }
+                        const result = await response.json() as { cleared?: number };
+                        setActionState(`Cleared ${formatCount(result.cleared ?? 0)} failures for ${selectedUser.userDisplayName || selectedUser.userHandle}.`);
+                        load();
+                        const detail = await fetchAdminUserDetail(selectedHandle);
+                        setSelectedUser(detail);
+                        setSelectedUserError(null);
+                      } catch (err) {
+                        setActionState(err instanceof Error ? err.message : "Could not clear this player's failures.");
+                      } finally {
+                        setRunningAction(false);
+                      }
+                    })()} disabled={runningAction}>
+                      {runningAction ? "Working..." : "Clear this player's failures"}
+                    </Button>
+                    <Button
+                      href={`${API_BASE_URL}/admin/failures/export?format=csv&handle=${encodeURIComponent(selectedUser.userHandle)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Export this player's failures
+                    </Button>
+                  </div>
                   {selectedUser.recentFailures.length ? (
                     <ScrollArea className="max-h-[260px] pr-2">
                       <div className="grid gap-2">

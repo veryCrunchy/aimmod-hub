@@ -2222,3 +2222,118 @@ func (s *Store) ReclassifyTracking(ctx context.Context) (pgconn.CommandTag, erro
 	      )
 	`)
 }
+
+func (s *Store) ReclassifyTrackingForUser(ctx context.Context, handle string) (pgconn.CommandTag, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return pgconn.CommandTag{}, fmt.Errorf("user handle is required")
+	}
+
+	if _, err := s.pool.Exec(ctx, `
+	    UPDATE scenario_runs sr
+	    SET scenario_type = NULLIF(rs.summary_json->>'scenarioType', ''),
+	        updated_at = NOW()
+	    FROM run_summaries rs
+	    WHERE sr.session_id = rs.session_id
+	      AND sr.user_id = (
+	        SELECT hu.id
+	        FROM hub_users hu
+	        LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	        WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	           OR LOWER(hu.external_id) = $1
+	        LIMIT 1
+	      )
+	      AND sr.scenario_type IN ('Unknown', '')
+	      AND NULLIF(rs.summary_json->>'scenarioType', '') IS NOT NULL
+	      AND rs.summary_json->>'scenarioType' <> 'Unknown'
+	`, handle); err != nil {
+		return pgconn.CommandTag{}, err
+	}
+
+	return s.pool.Exec(ctx, `
+	    UPDATE scenario_runs sr
+	    SET scenario_type = 'Tracking',
+	        updated_at = NOW()
+	    FROM run_summaries rs
+	    WHERE sr.session_id = rs.session_id
+	      AND sr.user_id = (
+	        SELECT hu.id
+	        FROM hub_users hu
+	        LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+	        WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+	           OR LOWER(hu.external_id) = $1
+	        LIMIT 1
+	      )
+	      AND sr.scenario_type IN ('MultiHitClicking', 'Unknown', '')
+	      AND (
+	        (rs.summary_json->>'csvAvgTtk')::float >= 5.0
+	        OR (
+	          (rs.summary_json->>'killsPerSecond')::float > 0
+	          AND (sr.duration_ms::float / 1000.0) > 0
+	          AND (rs.summary_json->>'damageDone')::float
+	            / NULLIF(
+	                (rs.summary_json->>'killsPerSecond')::float * (sr.duration_ms::float / 1000.0),
+	                0
+	              ) < 0.5
+	        )
+	      )
+	`, handle)
+}
+
+func (s *Store) GetAdminFailures(ctx context.Context, handle string, limit int) ([]AdminIngestFailure, error) {
+	query := `
+		SELECT
+			id,
+			user_external_id,
+			session_id,
+			scenario_name,
+			error_message,
+			created_at
+		FROM ingest_failures
+	`
+	args := []any{}
+	where := ""
+	if trimmed := strings.TrimSpace(strings.ToLower(handle)); trimmed != "" {
+		where = `
+		WHERE LOWER(user_external_id) = (
+			SELECT LOWER(hu.external_id)
+			FROM hub_users hu
+			LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+			WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
+			   OR LOWER(hu.external_id) = $1
+			LIMIT 1
+		)
+		`
+		args = append(args, trimmed)
+	}
+	query += where + ` ORDER BY created_at DESC`
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d", limit)
+	}
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("load admin failures: %w", err)
+	}
+	defer rows.Close()
+
+	failures := []AdminIngestFailure{}
+	for rows.Next() {
+		var item AdminIngestFailure
+		if err := rows.Scan(
+			&item.ID,
+			&item.UserExternalID,
+			&item.SessionID,
+			&item.ScenarioName,
+			&item.ErrorMessage,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan admin failure: %w", err)
+		}
+		failures = append(failures, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate admin failures: %w", err)
+	}
+	return failures, nil
+}

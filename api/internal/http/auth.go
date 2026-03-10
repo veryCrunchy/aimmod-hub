@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"encoding/csv"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -110,6 +111,9 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/admin/user", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserDetail)))
 	mux.Handle("/admin/actions/reclassify", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminReclassify)))
 	mux.Handle("/admin/actions/clear-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearFailures)))
+	mux.Handle("/admin/actions/reclassify-user", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminReclassifyUser)))
+	mux.Handle("/admin/actions/clear-user-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearUserFailures)))
+	mux.Handle("/admin/failures/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminFailuresExport)))
 }
 
 func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request) {
@@ -306,6 +310,116 @@ func (h *authHandler) handleAdminClearFailures(w http.ResponseWriter, r *http.Re
 		"ok":      true,
 		"cleared": count,
 	})
+}
+
+func (h *authHandler) handleAdminReclassifyUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	if handle == "" {
+		http.Error(w, "handle is required", http.StatusBadRequest)
+		return
+	}
+
+	tag, err := h.store.ReclassifyTrackingForUser(r.Context(), handle)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"updated": tag.RowsAffected(),
+	})
+}
+
+func (h *authHandler) handleAdminClearUserFailures(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	if handle == "" {
+		http.Error(w, "handle is required", http.StatusBadRequest)
+		return
+	}
+
+	count, err := h.store.ClearIngestFailuresForUser(r.Context(), handle)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok":      true,
+		"cleared": count,
+	})
+}
+
+func (h *authHandler) handleAdminFailuresExport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+
+	handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+	format := strings.TrimSpace(strings.ToLower(r.URL.Query().Get("format")))
+	if format == "" {
+		format = "csv"
+	}
+
+	failures, err := h.store.GetAdminFailures(r.Context(), handle, 0)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if format == "json" {
+		filename := "aimmod-hub-failures.json"
+		if handle != "" {
+			filename = "aimmod-hub-failures-" + handle + ".json"
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+		_ = json.NewEncoder(w).Encode(failures)
+		return
+	}
+
+	filename := "aimmod-hub-failures.csv"
+	if handle != "" {
+		filename = "aimmod-hub-failures-" + handle + ".csv"
+	}
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	writer := csv.NewWriter(w)
+	_ = writer.Write([]string{"id", "user_external_id", "session_id", "scenario_name", "error_message", "created_at"})
+	for _, failure := range failures {
+		_ = writer.Write([]string{
+			fmt.Sprintf("%d", failure.ID),
+			failure.UserExternalID,
+			failure.SessionID,
+			failure.ScenarioName,
+			failure.ErrorMessage,
+			failure.CreatedAt.UTC().Format(time.RFC3339),
+		})
+	}
+	writer.Flush()
 }
 
 func (h *authHandler) handleLogout(w http.ResponseWriter, r *http.Request) {

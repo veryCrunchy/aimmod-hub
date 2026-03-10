@@ -262,7 +262,25 @@ export async function fetchAdminOverview(): Promise<AdminOverviewResponse> {
   if (!response.ok) {
     throw new Error(await response.text() || "Could not load admin overview.");
   }
-  return response.json() as Promise<AdminOverviewResponse>;
+  const payload = (await response.json()) as Partial<AdminOverviewResponse> | null;
+  return {
+    totalRuns: payload?.totalRuns ?? 0,
+    totalPlayers: payload?.totalPlayers ?? 0,
+    totalScenarios: payload?.totalScenarios ?? 0,
+    unknownTypeRuns: payload?.unknownTypeRuns ?? 0,
+    missingSummaryRuns: payload?.missingSummaryRuns ?? 0,
+    missingFeatureRuns: payload?.missingFeatureRuns ?? 0,
+    missingTimelineRuns: payload?.missingTimelineRuns ?? 0,
+    missingContextRuns: payload?.missingContextRuns ?? 0,
+    zeroScoreRuns: payload?.zeroScoreRuns ?? 0,
+    missingSourceSessionRuns: payload?.missingSourceSessionRuns ?? 0,
+    appVersions: Array.isArray(payload?.appVersions) ? payload.appVersions : [],
+    schemaVersions: Array.isArray(payload?.schemaVersions) ? payload.schemaVersions : [],
+    topUnknownScenarios: Array.isArray(payload?.topUnknownScenarios) ? payload.topUnknownScenarios : [],
+    recentIngests: Array.isArray(payload?.recentIngests) ? payload.recentIngests : [],
+    userSyncHealth: Array.isArray(payload?.userSyncHealth) ? payload.userSyncHealth : [],
+    recentFailures: Array.isArray(payload?.recentFailures) ? payload.recentFailures : [],
+  };
 }
 
 export async function runAdminReclassify(): Promise<{ ok: boolean; updated: number }> {
@@ -294,5 +312,20 @@ export async function fetchAdminUserDetail(handle: string): Promise<AdminUserDet
   if (!response.ok) {
     throw new Error(await response.text() || "Could not load user admin detail.");
   }
-  return response.json() as Promise<AdminUserDetailResponse>;
+  const payload = (await response.json()) as Partial<AdminUserDetailResponse> | null;
+  return {
+    userHandle: payload?.userHandle ?? handle,
+    userDisplayName: payload?.userDisplayName ?? handle,
+    runCount: payload?.runCount ?? 0,
+    scenarioCount: payload?.scenarioCount ?? 0,
+    unknownTypeRuns: payload?.unknownTypeRuns ?? 0,
+    missingTimelineRuns: payload?.missingTimelineRuns ?? 0,
+    missingContextRuns: payload?.missingContextRuns ?? 0,
+    zeroScoreRuns: payload?.zeroScoreRuns ?? 0,
+    lastPlayedAt: payload?.lastPlayedAt ?? "",
+    lastIngestedAt: payload?.lastIngestedAt ?? "",
+    topUnknownScenarios: Array.isArray(payload?.topUnknownScenarios) ? payload.topUnknownScenarios : [],
+    recentFailures: Array.isArray(payload?.recentFailures) ? payload.recentFailures : [],
+    recentRuns: Array.isArray(payload?.recentRuns) ? payload.recentRuns : [],
+  };
 }
