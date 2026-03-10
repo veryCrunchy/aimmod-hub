@@ -54,6 +54,30 @@ func (s *Store) GetReplayMediaUploadTarget(ctx context.Context, userID int64, se
 	return target, nil
 }
 
+func (s *Store) GetReplayMediaMetaByStoredSessionID(ctx context.Context, sessionID string) (ReplayMediaMeta, error) {
+	var meta ReplayMediaMeta
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			sr.public_run_id,
+			rma.quality,
+			rma.storage_key,
+			rma.content_type,
+			rma.byte_size
+		FROM replay_media_assets rma
+		JOIN scenario_runs sr ON sr.session_id = rma.session_id
+		WHERE rma.session_id = $1
+	`, sessionID).Scan(
+		&meta.PublicRunID,
+		&meta.Quality,
+		&meta.StorageKey,
+		&meta.ContentType,
+		&meta.ByteSize,
+	); err != nil {
+		return ReplayMediaMeta{}, fmt.Errorf("load replay media meta by stored session id: %w", err)
+	}
+	return meta, nil
+}
+
 func (s *Store) UpsertReplayMediaAsset(
 	ctx context.Context,
 	sessionID string,

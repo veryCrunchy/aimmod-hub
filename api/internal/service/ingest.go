@@ -112,6 +112,52 @@ func normalizeAccuracyPercent(raw float64, shots uint32, hits uint32, fallbackPe
 	return raw
 }
 
+func deriveDamageEfficiencyPercent(done float64, possible float64) (float64, bool) {
+	if math.IsNaN(done) || math.IsInf(done, 0) || math.IsNaN(possible) || math.IsInf(possible, 0) || possible <= 0 {
+		return 0, false
+	}
+	return (done / possible) * 100.0, true
+}
+
+func normalizeDamageEfficiencyPercent(raw float64, done float64, possible float64, fallbackPercent *float64) float64 {
+	if derived, ok := deriveDamageEfficiencyPercent(done, possible); ok {
+		if raw > 1.0 {
+			if math.Abs(raw-derived) <= 1.0 {
+				return raw
+			}
+			return derived
+		}
+		if raw >= 0.0 {
+			if math.Abs((raw*100.0)-derived) <= 1.0 {
+				return derived
+			}
+			return derived
+		}
+		return derived
+	}
+
+	if fallbackPercent != nil && *fallbackPercent > 1.0 {
+		if raw <= 1.0 {
+			return *fallbackPercent
+		}
+		return raw
+	}
+
+	if raw > 1.0 {
+		return raw
+	}
+	if raw >= 0.0 {
+		return raw * 100.0
+	}
+	return raw
+}
+
+func summaryValueWithNumber(number float64) *hubv1.SessionSummaryValue {
+	return &hubv1.SessionSummaryValue{
+		Kind: &hubv1.SessionSummaryValue_NumberValue{NumberValue: number},
+	}
+}
+
 func normalizeScenarioType(raw string, summary map[string]*hubv1.SessionSummaryValue) string {
 	trimmed := strings.TrimSpace(raw)
 	switch trimmed {
@@ -150,14 +196,46 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 		return store.IngestedRun{}, invalidArgument(fmt.Errorf("played_at_iso must be RFC3339: %w", err))
 	}
 
-	summaryJSON, err := store.SummaryMapToJSON(req.GetSummary())
-	if err != nil {
-		return store.IngestedRun{}, connect.NewError(connect.CodeInvalidArgument, err)
-	}
-
 	var csvAccuracyPtr *float64
 	if csvAccuracy, ok := summaryNumber(req.GetSummary(), "csvAccuracy"); ok {
 		csvAccuracyPtr = &csvAccuracy
+	}
+
+	var summaryDamageDone float64
+	var summaryDamagePossible float64
+	var summaryDamageEfficiencyPtr *float64
+	if damageDone, ok := summaryNumber(req.GetSummary(), "damageDone"); ok {
+		summaryDamageDone = damageDone
+	}
+	if damagePossible, ok := summaryNumber(req.GetSummary(), "damagePossible"); ok {
+		summaryDamagePossible = damagePossible
+	}
+	if damageEfficiency, ok := summaryNumber(req.GetSummary(), "damageEfficiency"); ok {
+		summaryDamageEfficiencyPtr = &damageEfficiency
+	}
+
+	normalizedSummary := make(map[string]*hubv1.SessionSummaryValue, len(req.GetSummary()))
+	for key, value := range req.GetSummary() {
+		normalizedSummary[key] = value
+	}
+	if summaryDamageEfficiencyPtr != nil || summaryDamagePossible > 0 {
+		rawDamageEfficiency := 0.0
+		if summaryDamageEfficiencyPtr != nil {
+			rawDamageEfficiency = *summaryDamageEfficiencyPtr
+		}
+		normalizedSummary["damageEfficiency"] = summaryValueWithNumber(
+			normalizeDamageEfficiencyPercent(
+				rawDamageEfficiency,
+				summaryDamageDone,
+				summaryDamagePossible,
+				summaryDamageEfficiencyPtr,
+			),
+		)
+	}
+
+	summaryJSON, err := store.SummaryMapToJSON(normalizedSummary)
+	if err != nil {
+		return store.IngestedRun{}, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	featureJSON, err := store.SummaryMapToJSON(req.GetFeatureSet())
@@ -180,7 +258,12 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 			Second:    point.GetTSec(),
 			Score:     point.GetScore(),
 			Accuracy:  normalizedAccuracy,
-			DamageEff: point.GetDamageEff(),
+			DamageEff: normalizeDamageEfficiencyPercent(
+				point.GetDamageEff(),
+				0,
+				0,
+				summaryDamageEfficiencyPtr,
+			),
 			SPM:       point.GetSpm(),
 			Shots:     point.GetShots(),
 			Hits:      point.GetHits(),
@@ -194,7 +277,16 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 		if window == nil {
 			continue
 		}
-		featureSummaryJSON, err := store.SummaryMapToJSON(window.GetFeatureSummary())
+		normalizedFeatureSummary := make(map[string]*hubv1.SessionSummaryValue, len(window.GetFeatureSummary()))
+		for key, value := range window.GetFeatureSummary() {
+			normalizedFeatureSummary[key] = value
+		}
+		if avgDamageEfficiency, ok := summaryNumber(window.GetFeatureSummary(), "avgDamageEfficiency"); ok {
+			normalizedFeatureSummary["avgDamageEfficiency"] = summaryValueWithNumber(
+				normalizeDamageEfficiencyPercent(avgDamageEfficiency, 0, 0, summaryDamageEfficiencyPtr),
+			)
+		}
+		featureSummaryJSON, err := store.SummaryMapToJSON(normalizedFeatureSummary)
 		if err != nil {
 			return store.IngestedRun{}, connect.NewError(connect.CodeInvalidArgument, err)
 		}

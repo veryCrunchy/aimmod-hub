@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -442,6 +443,7 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 		http.Error(w, "run not found for this account", http.StatusNotFound)
 		return
 	}
+	previousMeta, _ := h.store.GetReplayMediaMetaByStoredSessionID(r.Context(), target.StoredSessionID)
 
 	storageKey := strings.TrimPrefix(fmt.Sprintf("replays/%s/%s.mp4", target.PublicRunID, quality), "/")
 	buffer, err := io.ReadAll(r.Body)
@@ -462,6 +464,11 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 	if err := h.store.UpsertReplayMediaAsset(r.Context(), target.StoredSessionID, quality, storageKey, contentType, written); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	if previousMeta.StorageKey != "" && previousMeta.StorageKey != storageKey {
+		if err := h.media.Delete(r.Context(), previousMeta.StorageKey); err != nil {
+			log.Printf("delete old replay media asset %q: %v", previousMeta.StorageKey, err)
+		}
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
