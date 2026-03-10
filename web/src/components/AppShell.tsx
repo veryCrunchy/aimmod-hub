@@ -19,6 +19,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
     { to: "/", label: "Home" },
+    { to: "/app", label: "App" },
     { to: "/community", label: "Community" },
     { to: "/leaderboard", label: "Leaderboard" },
     ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),

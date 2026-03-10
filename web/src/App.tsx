@@ -13,6 +13,7 @@ const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then(
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const RunPage = lazy(() => import("./pages/RunPage").then((m) => ({ default: m.RunPage })));
 const ScenarioPage = lazy(() => import("./pages/ScenarioPage").then((m) => ({ default: m.ScenarioPage })));
+const AimModPage = lazy(() => import("./pages/AimModPage").then((m) => ({ default: m.AimModPage })));
 const SearchPage = lazy(() => import("./pages/SearchPage").then((m) => ({ default: m.SearchPage })));
 
 function RouteLoading() {
@@ -27,6 +28,7 @@ export function App() {
           <Suspense fallback={<RouteLoading />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/app" element={<AimModPage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/admin" element={<AdminPage />} />

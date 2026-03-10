@@ -126,6 +126,114 @@ function ScenarioIntelligence({ page }: { page: GetScenarioPageResponse }) {
   );
 }
 
+function ScenarioPlayerLeaders({ page }: { page: GetScenarioPageResponse }) {
+  const byPlayer = new Map<string, {
+    handle: string;
+    displayName: string;
+    runs: number;
+    bestScore: number;
+    averageScore: number;
+    averageAccuracy: number;
+  }>();
+
+  for (const run of [...page.recentRuns, ...page.topRuns]) {
+    const handle = run.userHandle || run.userDisplayName;
+    if (!handle) continue;
+    const current = byPlayer.get(handle) ?? {
+      handle,
+      displayName: run.userDisplayName || run.userHandle,
+      runs: 0,
+      bestScore: 0,
+      averageScore: 0,
+      averageAccuracy: 0,
+    };
+    current.runs += 1;
+    current.bestScore = Math.max(current.bestScore, run.score);
+    current.averageScore += run.score;
+    current.averageAccuracy += run.accuracy;
+    byPlayer.set(handle, current);
+  }
+
+  const leaders = [...byPlayer.values()]
+    .map((player) => ({
+      ...player,
+      averageScore: player.runs > 0 ? player.averageScore / player.runs : 0,
+      averageAccuracy: player.runs > 0 ? player.averageAccuracy / player.runs : 0,
+    }))
+    .sort((a, b) => b.bestScore - a.bestScore || b.runs - a.runs)
+    .slice(0, 8);
+
+  if (leaders.length === 0) {
+    return <EmptyState title="No player leaders yet" body="Player breakdowns will show up once more runs are uploaded." />;
+  }
+
+  return (
+    <ScrollArea className="max-h-[360px] overflow-auto rounded-[18px] border border-line bg-white/2">
+      <table className="min-w-full text-left text-sm">
+        <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+          <tr>
+            <th className="px-4 py-3">Player</th>
+            <th className="px-4 py-3">Runs</th>
+            <th className="px-4 py-3">Best</th>
+            <th className="px-4 py-3">Avg</th>
+            <th className="px-4 py-3">Acc</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaders.map((player) => (
+            <tr key={player.handle} className="border-b border-white/6 last:border-b-0 hover:bg-white/[0.015]">
+              <td className="px-4 py-3 text-text">
+                <Link className="text-cyan underline underline-offset-3" to={`/profiles/${player.handle}`}>
+                  {player.displayName || player.handle}
+                </Link>
+              </td>
+              <td className="px-4 py-3 text-text">{player.runs}</td>
+              <td className="px-4 py-3 text-gold">{Math.round(player.bestScore).toLocaleString()}</td>
+              <td className="px-4 py-3 text-text">{Math.round(player.averageScore).toLocaleString()}</td>
+              <td className="px-4 py-3 text-text">{player.averageAccuracy.toFixed(1)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ScrollArea>
+  );
+}
+
+function ScenarioRecentPulse({ page }: { page: GetScenarioPageResponse }) {
+  const recent = [...page.recentRuns]
+    .sort((a, b) => new Date(b.playedAtIso).getTime() - new Date(a.playedAtIso).getTime())
+    .slice(0, 10);
+
+  if (recent.length === 0) {
+    return <EmptyState title="No recent activity yet" body="This scenario will show momentum once players start uploading runs." />;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {recent.map((run) => (
+        <div key={run.runId || run.sessionId} className="rounded-[16px] border border-line bg-white/2 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <Link className="truncate text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle || run.userDisplayName}`}>
+                {run.userDisplayName || run.userHandle}
+              </Link>
+              <p className="mt-0.5 truncate text-[11px] text-muted">
+                {formatRelativeTime(run.playedAtIso)} · {run.accuracy.toFixed(1)}% acc · {formatDurationMs(run.durationMs)}
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-sm font-medium text-text">{Math.round(run.score).toLocaleString()}</div>
+              <Link className="text-[11px] text-mint underline underline-offset-2" to={`/runs/${run.runId || run.sessionId}`}>
+                Open run
+              </Link>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ScenarioPage() {
   const { slug = "" } = useParams();
   const [page, setPage] = useState<GetScenarioPageResponse | null>(null);
@@ -422,6 +530,26 @@ export function ScenarioPage() {
         <PageSection>
           <SectionHeader eyebrow="Scenario intelligence" title="At a glance" />
           <ScenarioIntelligence page={page} />
+        </PageSection>
+      </Grid>
+
+      <Grid className="grid-cols-2 max-[1180px]:grid-cols-1">
+        <PageSection>
+          <SectionHeader
+            eyebrow="Top players"
+            title="Who currently owns this scenario"
+            body="A compact player view built from the best and most recent uploaded runs."
+          />
+          <ScenarioPlayerLeaders page={page} />
+        </PageSection>
+
+        <PageSection>
+          <SectionHeader
+            eyebrow="Recent pulse"
+            title="What just happened here"
+            body="The newest uploaded runs on this scenario, sorted by when they were played."
+          />
+          <ScenarioRecentPulse page={page} />
         </PageSection>
       </Grid>
     </PageStack>
