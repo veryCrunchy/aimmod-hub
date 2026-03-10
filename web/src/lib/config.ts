@@ -14,11 +14,7 @@ function getRuntimeApiBaseUrl(): string | undefined {
 }
 
 function getDefaultApiBaseUrl(): string {
-  if (import.meta.env.PROD && typeof window !== "undefined") {
-    // Production default points to same-origin API unless overridden.
-    return window.location.origin;
-  }
-  return "http://localhost:8080";
+  return "https://api.aimmod.app";
 }
 
 export const API_BASE_URL =
