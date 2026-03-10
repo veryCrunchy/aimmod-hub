@@ -42,6 +42,8 @@ type discordUser struct {
 type sessionResponse struct {
 	Authenticated bool                      `json:"authenticated"`
 	IsAdmin       bool                      `json:"isAdmin"`
+	AdminConfigured bool                    `json:"adminConfigured"`
+	AdminReason     string                  `json:"adminReason,omitempty"`
 	User          *store.AuthUser           `json:"user,omitempty"`
 	Tokens        []store.UploadTokenRecord `json:"tokens,omitempty"`
 }
@@ -209,7 +211,10 @@ func (h *authHandler) handleDiscordCallback(w http.ResponseWriter, r *http.Reque
 func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 	user, ok := h.requireSessionUser(w, r)
 	if !ok {
-		writeJSON(w, http.StatusOK, sessionResponse{Authenticated: false, IsAdmin: false})
+		writeJSON(w, http.StatusOK, sessionResponse{
+			Authenticated: false,
+			IsAdmin:       false,
+		})
 		return
 	}
 
@@ -218,11 +223,24 @@ func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	isAdmin, adminReason := h.adminStatus(user)
 	writeJSON(w, http.StatusOK, sessionResponse{
 		Authenticated: true,
-		IsAdmin:       h.isAdminUser(user),
+		IsAdmin:       isAdmin,
 		User:          &user,
 		Tokens:        tokens,
+		AdminConfigured: func() bool {
+			if !isAdmin {
+				return false
+			}
+			return strings.TrimSpace(h.cfg.AdminDiscordUserID) != ""
+		}(),
+		AdminReason: func() string {
+			if !isAdmin {
+				return ""
+			}
+			return adminReason
+		}(),
 	})
 }
 
@@ -731,11 +749,19 @@ func (h *authHandler) requireAdminUser(w http.ResponseWriter, r *http.Request) (
 }
 
 func (h *authHandler) isAdminUser(user store.AuthUser) bool {
+	isAdmin, _ := h.adminStatus(user)
+	return isAdmin
+}
+
+func (h *authHandler) adminStatus(user store.AuthUser) (bool, string) {
 	adminDiscordID := strings.TrimSpace(h.cfg.AdminDiscordUserID)
 	if adminDiscordID == "" {
-		return false
+		return false, "admin_not_configured"
 	}
-	return strings.TrimSpace(user.DiscordUserID) == adminDiscordID
+	if strings.TrimSpace(user.DiscordUserID) != adminDiscordID {
+		return false, "discord_id_mismatch"
+	}
+	return true, ""
 }
 
 func parseAdminDays(raw string) int {

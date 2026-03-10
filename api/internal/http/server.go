@@ -167,7 +167,7 @@ func DefaultConfig() Config {
 		DiscordClientID:     os.Getenv("DISCORD_CLIENT_ID"),
 		DiscordClientSecret: os.Getenv("DISCORD_CLIENT_SECRET"),
 		DiscordRedirectURI:  os.Getenv("DISCORD_REDIRECT_URI"),
-		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("ADMIN_DISCORD_USER_ID")),
+		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("AIMMOD_HUB_ADMIN_DISCORD_USER_ID")),
 		SessionCookieSecure: envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
 	}
 }
@@ -178,6 +178,7 @@ func envOrDefault(key, fallback string) string {
 	}
 	return fallback
 }
+
 
 func withCORS(origin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

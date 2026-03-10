@@ -72,12 +72,20 @@ export function AccountPage() {
             <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Discord</div>
             <div className="mt-2 text-2xl text-text">@{auth.user.username}</div>
             <p className="mt-3 text-sm leading-7 text-muted">This linked identity will drive profile ownership, sharing, and future social/community surfaces.</p>
+            <p className="mt-2 break-all text-xs text-muted">Discord ID · {auth.user.discordUserId}</p>
           </div>
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
             <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Connected devices</div>
             <div className="mt-2 text-2xl text-mint">{auth.tokens?.length ?? 0}</div>
             <p className="mt-3 text-sm leading-7 text-muted">Each linked desktop app gets its own access record. Remove one here if you want to disconnect a machine and stop future uploads from it.</p>
           </div>
+          {auth.isAdmin ? (
+            <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
+              <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Admin access</div>
+              <div className="mt-2 text-2xl text-text">Enabled</div>
+              <p className="mt-3 text-sm leading-7 text-muted">This linked Discord account matches the admin account configured on the API.</p>
+            </div>
+          ) : null}
         </Grid>
       </PageSection>
 
