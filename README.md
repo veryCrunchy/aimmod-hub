@@ -99,10 +99,12 @@ See [`.env.example`](./.env.example).
 
 Frontend uses:
 - `VITE_API_BASE_URL`
+- `AIMMOD_HUB_API_BASE_URL` for Docker/runtime injection
 
 Notes:
 - `VITE_*` values are compiled into the Vite bundle at build time.
 - For runtime-only env injection, set `window.__AIMMOD_HUB__.apiBaseUrl` via `web/public/runtime-config.js` (served as `/runtime-config.js`).
+- The Docker web image now writes `/runtime-config.js` on container startup from `AIMMOD_HUB_API_BASE_URL` and falls back to `VITE_API_BASE_URL`, then `https://api.aimmod.app`.
 - If neither runtime config nor `VITE_API_BASE_URL` is provided, the frontend defaults to `https://api.aimmod.app`.
 
 API uses:

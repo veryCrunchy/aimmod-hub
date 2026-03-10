@@ -10,7 +10,8 @@ function getRuntimeApiBaseUrl(): string | undefined {
   if (typeof window === "undefined") return undefined;
   const runtime = (window as RuntimeWindow).__AIMMOD_HUB__;
   const baseUrl = runtime?.apiBaseUrl?.trim();
-  return baseUrl ? baseUrl : undefined;
+  if (!baseUrl || baseUrl === "__AIMMOD_HUB_API_BASE_URL__") return undefined;
+  return baseUrl;
 }
 
 function getDefaultApiBaseUrl(): string {
