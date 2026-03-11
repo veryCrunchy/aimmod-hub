@@ -123,6 +123,7 @@ export function RunPage() {
   const [replayMediaUrl, setReplayMediaUrl] = useState<string | null>(null);
   const [mousePath, setMousePath] = useState<import("../lib/api").MousePathPoint[]>([]);
   const [hitTimestampsMs, setHitTimestampsMs] = useState<number[]>([]);
+  const [mousePathLoaded, setMousePathLoaded] = useState(false);
   const [playbackMs, setPlaybackMs] = useState(0);
   const [replayDurationMs, setReplayDurationMs] = useState(0);
   const [replayPlaying, setReplayPlaying] = useState(false);
@@ -194,6 +195,7 @@ export function RunPage() {
     setReplayMediaUrl(null);
     setMousePath([]);
     setHitTimestampsMs([]);
+    setMousePathLoaded(false);
     setPlaybackMs(0);
     setReplayDurationMs(0);
     setReplayPlaying(false);
@@ -216,8 +218,15 @@ export function RunPage() {
                 setHitTimestampsMs(payload.hitTimestampsMs);
                 setReplayDurationMs(payload.points[payload.points.length - 1]?.timestampMs ?? 0);
               }
+              if (!cancelled) {
+                setMousePathLoaded(true);
+              }
             })
-            .catch(() => {});
+            .catch(() => {
+              if (!cancelled) {
+                setMousePathLoaded(true);
+              }
+            });
         }
       })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Could not load this run."); });
@@ -231,6 +240,14 @@ export function RunPage() {
   const metaDesc = run
     ? `Score: ${Math.round(run.score).toLocaleString()} · Accuracy: ${run.accuracy.toFixed(1)}%`
     : "Run detail on AimMod Hub.";
+  const replayDurationMsResolved = useMemo(
+    () => Math.max(replayDurationMs, mousePath[mousePath.length - 1]?.timestampMs ?? 0, Number(run?.durationMs || 0)),
+    [mousePath, replayDurationMs, run?.durationMs],
+  );
+  const clickTimestampsMs = useMemo(
+    () => mousePath.filter((point) => point.isClick).map((point) => point.timestampMs),
+    [mousePath],
+  );
 
   if (error) {
     return (
@@ -301,16 +318,8 @@ export function RunPage() {
     auth.authenticated &&
     !!auth.user &&
     auth.user.username.toLowerCase() === run.userHandle.toLowerCase();
-  const replayDurationMsResolved = useMemo(
-    () => Math.max(replayDurationMs, mousePath[mousePath.length - 1]?.timestampMs ?? 0, Number(run.durationMs || 0)),
-    [mousePath, replayDurationMs, run.durationMs],
-  );
   const denseHitStream = shouldClusterHitIndicators(hitTimestampsMs, replayDurationMsResolved);
   const hitTimingWindows = denseHitStream ? clusterHitWindows(hitTimestampsMs) : [];
-  const clickTimestampsMs = useMemo(
-    () => mousePath.filter((point) => point.isClick).map((point) => point.timestampMs),
-    [mousePath],
-  );
 
   // stat card display values
   const spmDisplay     = spm ? `${Math.round(spm).toLocaleString()} /min` : "—";
@@ -463,7 +472,7 @@ export function RunPage() {
                 <video
                   ref={videoRef}
                   preload="metadata"
-                  className="absolute left-[17.5%] top-[18.37%] h-[63.27%] w-[65%] object-fill"
+                  className="absolute left-[17.5%] top-[18.37%] z-0 h-[63.27%] w-[65%] object-fill"
                   src={replayMediaUrl}
                 />
               ) : (
@@ -474,16 +483,29 @@ export function RunPage() {
                 </div>
               )}
               {mousePath.length > 0 ? (
-                <ReplayMouseOverlay points={mousePath} hitTimestampsMs={hitTimestampsMs} playbackMs={playbackMs} />
+                <ReplayMouseOverlay
+                  points={mousePath}
+                  hitTimestampsMs={hitTimestampsMs}
+                  playbackMs={playbackMs}
+                  videoRef={videoRef}
+                />
               ) : null}
             </div>
           </div>
           <div className="mt-3 rounded-xl border border-white/8 bg-black/20 px-3 py-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-[11px] uppercase tracking-[0.08em] text-muted-2">
               <div className="flex flex-wrap items-center gap-3">
-                <span>{mousePath.length > 0 ? `${mousePath.length.toLocaleString()} samples` : "Video only"}</span>
-                <span>{clickTimestampsMs.length} clicks</span>
-                <span>{denseHitStream ? `${hitTimingWindows.length} contact windows` : `${hitTimestampsMs.length} hits`}</span>
+                <span>
+                  {mousePath.length > 0
+                    ? `${mousePath.length.toLocaleString()} samples`
+                    : mousePathLoaded
+                      ? "Video only"
+                      : "Loading movement path"}
+                </span>
+                {mousePath.length > 0 ? <span>{clickTimestampsMs.length} clicks</span> : null}
+                {mousePath.length > 0 ? (
+                  <span>{denseHitStream ? `${hitTimingWindows.length} contact windows` : `${hitTimestampsMs.length} hits`}</span>
+                ) : null}
                 {run.contextWindows.length > 0 ? <span>{run.contextWindows.length} saved moments</span> : null}
               </div>
               <div className="text-text">
@@ -563,15 +585,6 @@ export function RunPage() {
               >
                 Reset
               </button>
-              <input
-                type="range"
-                min={0}
-                max={Math.max(replayDurationMsResolved, 1)}
-                step={10}
-                value={Math.min(playbackMs, replayDurationMsResolved)}
-                onChange={(event) => handleReplaySeek(Number(event.target.value))}
-                className="ml-auto h-2 min-w-[220px] flex-1 accent-[#7fe0ad]"
-              />
             </div>
           </div>
         </PageSection>

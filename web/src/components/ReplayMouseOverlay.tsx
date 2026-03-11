@@ -10,12 +10,19 @@ type Props = {
   points: MousePathPoint[];
   hitTimestampsMs: number[];
   playbackMs: number;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
 };
 
 interface OvershootMarker {
   x: number;
   y: number;
   timestampMs: number;
+}
+
+interface RenderMetrics {
+  speeds: number[];
+  p5: number;
+  p95: number;
 }
 
 function lerpColor(
@@ -94,10 +101,27 @@ function shouldClusterHitIndicators(hitTimestampsMs: number[], durationMs: numbe
   return hitsPerSecond > 2;
 }
 
+function buildRenderMetrics(points: MousePathPoint[]): RenderMetrics {
+  const speeds: number[] = [];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const p = points[i];
+    const q = points[i + 1];
+    const dt = Math.max((q.timestampMs - p.timestampMs) / 1000, 0.001);
+    speeds.push(Math.hypot(q.x - p.x, q.y - p.y) / dt);
+  }
+  const sorted = [...speeds].sort((a, b) => a - b);
+  return {
+    speeds,
+    p5: sorted[Math.floor(sorted.length * 0.05)] ?? 0,
+    p95: sorted[Math.floor(sorted.length * 0.95)] ?? 1,
+  };
+}
+
 function drawPath(
   canvas: HTMLCanvasElement,
   points: MousePathPoint[],
   overshoots: OvershootMarker[],
+  metrics: RenderMetrics,
   playbackMs: number,
   hitTimestampsMs: number[],
 ) {
@@ -131,18 +155,7 @@ function drawPath(
   const toX = (x: number) => CANVAS_W / 2 + (x - cam.x) * scale;
   const toY = (y: number) => CANVAS_H / 2 + (y - cam.y) * scale;
 
-  const speeds: number[] = [];
-  for (let i = 0; i < points.length - 1; i += 1) {
-    const p = points[i];
-    const q = points[i + 1];
-    const dt = Math.max((q.timestampMs - p.timestampMs) / 1000, 0.001);
-    speeds.push(Math.hypot(q.x - p.x, q.y - p.y) / dt);
-  }
-
-  const sorted = [...speeds].sort((a, b) => a - b);
-  const p5 = sorted[Math.floor(sorted.length * 0.05)] ?? 0;
-  const p95 = sorted[Math.floor(sorted.length * 0.95)] ?? 1;
-  const norm = (s: number) => Math.max(0, Math.min(1, (s - p5) / (p95 - p5 || 1)));
+  const norm = (s: number) => Math.max(0, Math.min(1, (s - metrics.p5) / (metrics.p95 - metrics.p5 || 1)));
 
   ctx.strokeStyle = "rgba(255,255,255,0.04)";
   ctx.lineWidth = 1;
@@ -195,14 +208,14 @@ function drawPath(
   ctx.stroke();
   ctx.restore();
 
-  for (let i = 0; i < Math.min(count - 1, speeds.length); i += 1) {
+  for (let i = 0; i < Math.min(count - 1, metrics.speeds.length); i += 1) {
     const age = playbackMs - points[i + 1].timestampMs;
     if (age > TRAIL_MS) continue;
     const alpha = Math.max(0, 1 - age / TRAIL_MS);
     ctx.beginPath();
     ctx.moveTo(toX(points[i].x), toY(points[i].y));
     ctx.lineTo(toX(points[i + 1].x), toY(points[i + 1].y));
-    ctx.strokeStyle = speedColor(norm(speeds[i]), alpha);
+    ctx.strokeStyle = speedColor(norm(metrics.speeds[i]), alpha);
     ctx.lineWidth = 1.8;
     ctx.lineCap = "round";
     ctx.stroke();
@@ -278,9 +291,10 @@ function drawPath(
   ctx.fill();
 }
 
-export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs }: Props) {
+export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const overshoots = useMemo(() => detectOvershoots(points), [points]);
+  const renderMetrics = useMemo(() => buildRenderMetrics(points), [points]);
   const denseHitStream = useMemo(
     () => shouldClusterHitIndicators(hitTimestampsMs, points[points.length - 1]?.timestampMs ?? 0),
     [hitTimestampsMs, points],
@@ -288,14 +302,70 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs }: Prop
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    drawPath(canvas, points, overshoots, playbackMs, hitTimestampsMs);
-  }, [playbackMs, hitTimestampsMs, overshoots, points]);
+    if (!canvas || videoRef?.current) return;
+    drawPath(canvas, points, overshoots, renderMetrics, playbackMs, hitTimestampsMs);
+  }, [hitTimestampsMs, overshoots, playbackMs, points, renderMetrics, videoRef]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const video = videoRef?.current;
+    if (!canvas || !video) return;
+
+    let raf = 0;
+    let cancelled = false;
+
+    const drawFromVideo = () => {
+      if (cancelled) return;
+      drawPath(canvas, points, overshoots, renderMetrics, video.currentTime * 1000, hitTimestampsMs);
+    };
+
+    const tick = () => {
+      drawFromVideo();
+      if (!cancelled && !video.paused && !video.ended) {
+        raf = window.requestAnimationFrame(tick);
+      }
+    };
+
+    const stop = () => {
+      window.cancelAnimationFrame(raf);
+    };
+
+    const start = () => {
+      stop();
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const onPlay = () => start();
+    const onPause = () => {
+      stop();
+      drawFromVideo();
+    };
+    const onSeek = () => drawFromVideo();
+
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+    video.addEventListener("seeked", onSeek);
+    video.addEventListener("timeupdate", onSeek);
+
+    drawFromVideo();
+    if (!video.paused && !video.ended) {
+      start();
+    }
+
+    return () => {
+      cancelled = true;
+      stop();
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("seeked", onSeek);
+      video.removeEventListener("timeupdate", onSeek);
+    };
+  }, [hitTimestampsMs, overshoots, points, renderMetrics, videoRef]);
 
   if (points.length < 2) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-0">
+    <div className="pointer-events-none absolute inset-0 z-10">
       <canvas
         ref={canvasRef}
         width={CANVAS_W}
@@ -303,14 +373,6 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs }: Prop
         className="block h-full w-full"
         aria-label="Replay mouse path overlay"
       />
-      <div className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-[rgba(4,12,9,0.72)] px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-mint">
-        Mouse path · 2s trail
-        {hitTimestampsMs.length > 0
-          ? denseHitStream
-            ? " · contact timing below"
-            : ` · ${hitTimestampsMs.length} hits`
-          : ""}
-      </div>
     </div>
   );
 }

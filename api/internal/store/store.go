@@ -275,6 +275,7 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 	if _, err := s.pool.Exec(ctx, `
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS source_session_id TEXT;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS public_run_id TEXT;
+		ALTER TABLE run_mouse_paths ADD COLUMN IF NOT EXISTS hit_timestamps_json JSONB NOT NULL DEFAULT '[]'::jsonb;
 		CREATE UNIQUE INDEX IF NOT EXISTS idx_scenario_runs_public_run_id
 			ON scenario_runs(public_run_id)
 			WHERE public_run_id IS NOT NULL;
