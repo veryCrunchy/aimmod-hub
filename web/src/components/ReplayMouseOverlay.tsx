@@ -25,6 +25,46 @@ interface RenderMetrics {
   p95: number;
 }
 
+interface PlaybackSample {
+  index: number;
+  x: number;
+  y: number;
+  timestampMs: number;
+}
+
+function lowerBoundByTimestamp<T extends { timestampMs: number }>(items: T[], timestampMs: number): number {
+  let lo = 0;
+  let hi = items.length;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (items[mid].timestampMs < timestampMs) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+function lowerBoundNumbers(values: number[], target: number): number {
+  let lo = 0;
+  let hi = values.length;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (values[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+function hitWindowIndex(hitTimestampsMs: number[], playbackMs: number, windowMs: number): number {
+  if (hitTimestampsMs.length === 0) return -1;
+  const start = lowerBoundNumbers(hitTimestampsMs, playbackMs - windowMs);
+  for (let i = start; i < hitTimestampsMs.length; i += 1) {
+    const delta = hitTimestampsMs[i] - playbackMs;
+    if (delta > windowMs) break;
+    if (Math.abs(delta) <= windowMs) return i;
+  }
+  return -1;
+}
+
 function lerpColor(
   a: [number, number, number],
   b: [number, number, number],
@@ -117,6 +157,43 @@ function buildRenderMetrics(points: MousePathPoint[]): RenderMetrics {
   };
 }
 
+function sampleAtPlayback(points: MousePathPoint[], playbackMs: number): PlaybackSample {
+  if (points.length === 0) {
+    return { index: 0, x: 0, y: 0, timestampMs: 0 };
+  }
+  if (points.length === 1 || playbackMs <= points[0].timestampMs) {
+    return {
+      index: 0,
+      x: points[0].x,
+      y: points[0].y,
+      timestampMs: points[0].timestampMs,
+    };
+  }
+
+  let lo = 0;
+  let hi = points.length - 1;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi + 1) / 2);
+    if (points[mid].timestampMs <= playbackMs) lo = mid;
+    else hi = mid - 1;
+  }
+
+  const index = Math.max(0, Math.min(points.length - 1, lo));
+  const current = points[index];
+  const next = points[Math.min(points.length - 1, index + 1)];
+  const span = Math.max(1, next.timestampMs - current.timestampMs);
+  const t = index < points.length - 1
+    ? Math.max(0, Math.min(1, (playbackMs - current.timestampMs) / span))
+    : 0;
+
+  return {
+    index,
+    x: current.x + (next.x - current.x) * t,
+    y: current.y + (next.y - current.y) * t,
+    timestampMs: playbackMs,
+  };
+}
+
 function drawPath(
   canvas: HTMLCanvasElement,
   points: MousePathPoint[],
@@ -135,25 +212,20 @@ function drawPath(
     points[points.length - 1]?.timestampMs ?? 0,
   );
 
-  const count = (() => {
-    if (playbackMs <= points[0].timestampMs) return 2;
-    let lo = 0;
-    let hi = points.length - 1;
-    while (lo < hi) {
-      const mid = Math.floor((lo + hi + 1) / 2);
-      if (points[mid].timestampMs <= playbackMs) lo = mid;
-      else hi = mid - 1;
-    }
-    return Math.max(2, Math.min(points.length, lo + 1));
-  })();
+  const playbackSample = sampleAtPlayback(points, playbackMs);
+  const count = Math.max(2, Math.min(points.length, playbackSample.index + 1));
+  const trailStartMs = Math.max(0, playbackMs - TRAIL_MS);
+  const trailStartIndex = Math.max(0, lowerBoundByTimestamp(points, trailStartMs) - 1);
+  const trailEndIndex = Math.min(points.length - 1, Math.max(trailStartIndex + 1, playbackSample.index));
+  const clickStartIndex = lowerBoundByTimestamp(points, trailStartMs);
+  const overshootStartIndex = lowerBoundByTimestamp(overshoots, trailStartMs);
 
   const pad = 28;
   const width = CANVAS_W - pad * 2;
   const height = CANVAS_H - pad * 2;
   const scale = (CANVAS_W * 0.65) / VIEWPORT_PX;
-  const cam = points[Math.min(count - 1, points.length - 1)];
-  const toX = (x: number) => CANVAS_W / 2 + (x - cam.x) * scale;
-  const toY = (y: number) => CANVAS_H / 2 + (y - cam.y) * scale;
+  const toX = (x: number) => CANVAS_W / 2 + (x - playbackSample.x) * scale;
+  const toY = (y: number) => CANVAS_H / 2 + (y - playbackSample.y) * scale;
 
   const norm = (s: number) => Math.max(0, Math.min(1, (s - metrics.p5) / (metrics.p95 - metrics.p5 || 1)));
 
@@ -208,7 +280,7 @@ function drawPath(
   ctx.stroke();
   ctx.restore();
 
-  for (let i = 0; i < Math.min(count - 1, metrics.speeds.length); i += 1) {
+  for (let i = trailStartIndex; i < Math.min(trailEndIndex, metrics.speeds.length); i += 1) {
     const age = playbackMs - points[i + 1].timestampMs;
     if (age > TRAIL_MS) continue;
     const alpha = Math.max(0, 1 - age / TRAIL_MS);
@@ -221,9 +293,26 @@ function drawPath(
     ctx.stroke();
   }
 
-  const cutoff = points[Math.min(count - 1, points.length - 1)]?.timestampMs ?? Infinity;
-  for (const marker of overshoots) {
-    if (marker.timestampMs > cutoff) continue;
+  if (count < points.length) {
+    const prev = points[Math.max(0, count - 1)];
+    const age = playbackMs - playbackSample.timestampMs;
+    const alpha = Math.max(0, 1 - age / TRAIL_MS);
+    ctx.beginPath();
+    ctx.moveTo(toX(prev.x), toY(prev.y));
+    ctx.lineTo(toX(playbackSample.x), toY(playbackSample.y));
+    ctx.strokeStyle = speedColor(
+      norm(metrics.speeds[Math.max(0, Math.min(metrics.speeds.length - 1, count - 1))] ?? 0),
+      alpha,
+    );
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+
+  const cutoff = playbackSample.timestampMs;
+  for (let i = overshootStartIndex; i < overshoots.length; i += 1) {
+    const marker = overshoots[i];
+    if (marker.timestampMs > cutoff) break;
     const age = playbackMs - marker.timestampMs;
     if (age > TRAIL_MS) continue;
     const alpha = Math.max(0, 0.85 * (1 - age / TRAIL_MS));
@@ -241,7 +330,7 @@ function drawPath(
     ctx.stroke();
   }
 
-  for (let i = 0; i < Math.min(count, points.length); i += 1) {
+  for (let i = clickStartIndex; i < Math.min(count, points.length); i += 1) {
     const point = points[i];
     if (!point.isClick) continue;
     const age = playbackMs - point.timestampMs;
@@ -256,12 +345,12 @@ function drawPath(
     ctx.stroke();
   }
 
-  const activeHit = hitTimestampsMs.find((ts) => Math.abs(playbackMs - ts) <= 90);
-  if (activeHit != null) {
-    const anchor = points[Math.max(0, Math.min(count - 1, points.length - 1))];
+  const activeHitIndex = hitWindowIndex(hitTimestampsMs, playbackMs, 90);
+  if (activeHitIndex >= 0) {
+    const activeHit = hitTimestampsMs[activeHitIndex];
     const pulse = Math.max(0, 1 - Math.abs(playbackMs - activeHit) / 90);
-    const px = toX(anchor.x);
-    const py = toY(anchor.y);
+    const px = toX(playbackSample.x);
+    const py = toY(playbackSample.y);
     const size = denseHitStream ? 8 : 10;
     const gap = denseHitStream ? 3 : 4;
     const alpha = denseHitStream ? 0.4 + pulse * 0.3 : 0.55 + pulse * 0.35;
@@ -293,6 +382,8 @@ function drawPath(
 
 export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const displayedMediaMsRef = useRef(0);
+  const displayedFramePerfMsRef = useRef(0);
   const overshoots = useMemo(() => detectOvershoots(points), [points]);
   const renderMetrics = useMemo(() => buildRenderMetrics(points), [points]);
   const denseHitStream = useMemo(
@@ -312,15 +403,45 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
     if (!canvas || !video) return;
 
     let raf = 0;
+    let frameCallbackHandle = 0;
     let cancelled = false;
 
-    const drawFromVideo = () => {
+    const drawAtMs = (mediaMs: number) => {
       if (cancelled) return;
-      drawPath(canvas, points, overshoots, renderMetrics, video.currentTime * 1000, hitTimestampsMs);
+      drawPath(canvas, points, overshoots, renderMetrics, mediaMs, hitTimestampsMs);
+    };
+
+    const estimateDisplayedMediaMs = () => {
+      if (video.paused || video.ended) return video.currentTime * 1000;
+      const frameMediaMs = displayedMediaMsRef.current;
+      const framePerfMs = displayedFramePerfMsRef.current;
+      if (framePerfMs <= 0) return video.currentTime * 1000;
+      const elapsedMs = performance.now() - framePerfMs;
+      const estimated = frameMediaMs + elapsedMs * video.playbackRate;
+      const upperBound = Math.max(frameMediaMs, video.currentTime * 1000 + 34);
+      return Math.min(estimated, upperBound);
+    };
+
+    const scheduleVideoFrameTracking = () => {
+      const videoWithCallback = video as HTMLVideoElement & {
+        requestVideoFrameCallback?: (
+          callback: (now: number, metadata: { mediaTime: number }) => void,
+        ) => number;
+        cancelVideoFrameCallback?: (handle: number) => void;
+      };
+      if (!videoWithCallback.requestVideoFrameCallback) return;
+      const handleFrame = (now: number, metadata: { mediaTime: number }) => {
+        displayedMediaMsRef.current = metadata.mediaTime * 1000;
+        displayedFramePerfMsRef.current = now;
+        if (!cancelled) {
+          frameCallbackHandle = videoWithCallback.requestVideoFrameCallback!(handleFrame);
+        }
+      };
+      frameCallbackHandle = videoWithCallback.requestVideoFrameCallback(handleFrame);
     };
 
     const tick = () => {
-      drawFromVideo();
+      drawAtMs(estimateDisplayedMediaMs());
       if (!cancelled && !video.paused && !video.ended) {
         raf = window.requestAnimationFrame(tick);
       }
@@ -338,16 +459,22 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
     const onPlay = () => start();
     const onPause = () => {
       stop();
-      drawFromVideo();
+      drawAtMs(video.currentTime * 1000);
     };
-    const onSeek = () => drawFromVideo();
+    const onSeek = () => {
+      displayedMediaMsRef.current = video.currentTime * 1000;
+      displayedFramePerfMsRef.current = performance.now();
+      drawAtMs(video.currentTime * 1000);
+    };
 
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("seeked", onSeek);
-    video.addEventListener("timeupdate", onSeek);
 
-    drawFromVideo();
+    displayedMediaMsRef.current = video.currentTime * 1000;
+    displayedFramePerfMsRef.current = performance.now();
+    scheduleVideoFrameTracking();
+    drawAtMs(video.currentTime * 1000);
     if (!video.paused && !video.ended) {
       start();
     }
@@ -355,10 +482,15 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
     return () => {
       cancelled = true;
       stop();
+      const videoWithCallback = video as HTMLVideoElement & {
+        cancelVideoFrameCallback?: (handle: number) => void;
+      };
+      if (frameCallbackHandle && videoWithCallback.cancelVideoFrameCallback) {
+        videoWithCallback.cancelVideoFrameCallback(frameCallbackHandle);
+      }
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
       video.removeEventListener("seeked", onSeek);
-      video.removeEventListener("timeupdate", onSeek);
     };
   }, [hitTimestampsMs, overshoots, points, renderMetrics, videoRef]);
 

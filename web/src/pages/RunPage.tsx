@@ -130,11 +130,18 @@ export function RunPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingReplay, setDeletingReplay] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const lastPlaybackUiSyncRef = useRef(0);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const sync = () => setPlaybackMs(video.currentTime * 1000);
+    const sync = (force = false) => {
+      const nextMs = video.currentTime * 1000;
+      if (force || Math.abs(nextMs - lastPlaybackUiSyncRef.current) >= 80) {
+        lastPlaybackUiSyncRef.current = nextMs;
+        setPlaybackMs(nextMs);
+      }
+    };
     const syncDuration = () => {
       if (Number.isFinite(video.duration) && video.duration > 0) {
         setReplayDurationMs((current) => Math.max(current, video.duration * 1000));
@@ -142,24 +149,26 @@ export function RunPage() {
     };
     const onPlay = () => {
       setReplayPlaying(true);
-      sync();
+      sync(true);
     };
     const onPause = () => {
       setReplayPlaying(false);
-      sync();
+      sync(true);
     };
-    video.addEventListener("timeupdate", sync);
-    video.addEventListener("seeked", sync);
+    const onTimeUpdate = () => sync(false);
+    const onSeeked = () => sync(true);
+    video.addEventListener("timeupdate", onTimeUpdate);
+    video.addEventListener("seeked", onSeeked);
     video.addEventListener("loadedmetadata", syncDuration);
     video.addEventListener("durationchange", syncDuration);
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("ended", onPause);
-    sync();
+    sync(true);
     syncDuration();
     return () => {
-      video.removeEventListener("timeupdate", sync);
-      video.removeEventListener("seeked", sync);
+      video.removeEventListener("timeupdate", onTimeUpdate);
+      video.removeEventListener("seeked", onSeeked);
       video.removeEventListener("loadedmetadata", syncDuration);
       video.removeEventListener("durationchange", syncDuration);
       video.removeEventListener("play", onPlay);
