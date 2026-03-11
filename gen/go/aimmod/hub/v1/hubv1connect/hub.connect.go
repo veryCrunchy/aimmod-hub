@@ -54,6 +54,11 @@ const (
 	HubServiceSearchProcedure = "/aimmod.hub.v1.HubService/Search"
 	// HubServiceListReplaysProcedure is the fully-qualified name of the HubService's ListReplays RPC.
 	HubServiceListReplaysProcedure = "/aimmod.hub.v1.HubService/ListReplays"
+	// HubServiceGetReplayMediaProcedure is the fully-qualified name of the HubService's GetReplayMedia
+	// RPC.
+	HubServiceGetReplayMediaProcedure = "/aimmod.hub.v1.HubService/GetReplayMedia"
+	// HubServiceGetMousePathProcedure is the fully-qualified name of the HubService's GetMousePath RPC.
+	HubServiceGetMousePathProcedure = "/aimmod.hub.v1.HubService/GetMousePath"
 	// HubServiceGetLeaderboardProcedure is the fully-qualified name of the HubService's GetLeaderboard
 	// RPC.
 	HubServiceGetLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetLeaderboard"
@@ -79,6 +84,8 @@ type HubServiceClient interface {
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
 	Search(context.Context, *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error)
 	ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error)
+	GetReplayMedia(context.Context, *connect.Request[v1.GetReplayMediaRequest]) (*connect.Response[v1.GetReplayMediaResponse], error)
+	GetMousePath(context.Context, *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
@@ -150,6 +157,18 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("ListReplays")),
 			connect.WithClientOptions(opts...),
 		),
+		getReplayMedia: connect.NewClient[v1.GetReplayMediaRequest, v1.GetReplayMediaResponse](
+			httpClient,
+			baseURL+HubServiceGetReplayMediaProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetReplayMedia")),
+			connect.WithClientOptions(opts...),
+		),
+		getMousePath: connect.NewClient[v1.GetMousePathRequest, v1.GetMousePathResponse](
+			httpClient,
+			baseURL+HubServiceGetMousePathProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetMousePath")),
+			connect.WithClientOptions(opts...),
+		),
 		getLeaderboard: connect.NewClient[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse](
 			httpClient,
 			baseURL+HubServiceGetLeaderboardProcedure,
@@ -188,6 +207,8 @@ type hubServiceClient struct {
 	getProfile               *connect.Client[v1.GetProfileRequest, v1.GetProfileResponse]
 	search                   *connect.Client[v1.SearchRequest, v1.SearchResponse]
 	listReplays              *connect.Client[v1.ListReplaysRequest, v1.ListReplaysResponse]
+	getReplayMedia           *connect.Client[v1.GetReplayMediaRequest, v1.GetReplayMediaResponse]
+	getMousePath             *connect.Client[v1.GetMousePathRequest, v1.GetMousePathResponse]
 	getLeaderboard           *connect.Client[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse]
 	getPlayerScenarioHistory *connect.Client[v1.GetPlayerScenarioHistoryRequest, v1.GetPlayerScenarioHistoryResponse]
 	getAimProfile            *connect.Client[v1.GetAimProfileRequest, v1.GetAimProfileResponse]
@@ -239,6 +260,16 @@ func (c *hubServiceClient) ListReplays(ctx context.Context, req *connect.Request
 	return c.listReplays.CallUnary(ctx, req)
 }
 
+// GetReplayMedia calls aimmod.hub.v1.HubService.GetReplayMedia.
+func (c *hubServiceClient) GetReplayMedia(ctx context.Context, req *connect.Request[v1.GetReplayMediaRequest]) (*connect.Response[v1.GetReplayMediaResponse], error) {
+	return c.getReplayMedia.CallUnary(ctx, req)
+}
+
+// GetMousePath calls aimmod.hub.v1.HubService.GetMousePath.
+func (c *hubServiceClient) GetMousePath(ctx context.Context, req *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error) {
+	return c.getMousePath.CallUnary(ctx, req)
+}
+
 // GetLeaderboard calls aimmod.hub.v1.HubService.GetLeaderboard.
 func (c *hubServiceClient) GetLeaderboard(ctx context.Context, req *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
 	return c.getLeaderboard.CallUnary(ctx, req)
@@ -270,6 +301,8 @@ type HubServiceHandler interface {
 	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
 	Search(context.Context, *connect.Request[v1.SearchRequest]) (*connect.Response[v1.SearchResponse], error)
 	ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error)
+	GetReplayMedia(context.Context, *connect.Request[v1.GetReplayMediaRequest]) (*connect.Response[v1.GetReplayMediaResponse], error)
+	GetMousePath(context.Context, *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
@@ -337,6 +370,18 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("ListReplays")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceGetReplayMediaHandler := connect.NewUnaryHandler(
+		HubServiceGetReplayMediaProcedure,
+		svc.GetReplayMedia,
+		connect.WithSchema(hubServiceMethods.ByName("GetReplayMedia")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetMousePathHandler := connect.NewUnaryHandler(
+		HubServiceGetMousePathProcedure,
+		svc.GetMousePath,
+		connect.WithSchema(hubServiceMethods.ByName("GetMousePath")),
+		connect.WithHandlerOptions(opts...),
+	)
 	hubServiceGetLeaderboardHandler := connect.NewUnaryHandler(
 		HubServiceGetLeaderboardProcedure,
 		svc.GetLeaderboard,
@@ -381,6 +426,10 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceSearchHandler.ServeHTTP(w, r)
 		case HubServiceListReplaysProcedure:
 			hubServiceListReplaysHandler.ServeHTTP(w, r)
+		case HubServiceGetReplayMediaProcedure:
+			hubServiceGetReplayMediaHandler.ServeHTTP(w, r)
+		case HubServiceGetMousePathProcedure:
+			hubServiceGetMousePathHandler.ServeHTTP(w, r)
 		case HubServiceGetLeaderboardProcedure:
 			hubServiceGetLeaderboardHandler.ServeHTTP(w, r)
 		case HubServiceGetPlayerScenarioHistoryProcedure:
@@ -432,6 +481,14 @@ func (UnimplementedHubServiceHandler) Search(context.Context, *connect.Request[v
 
 func (UnimplementedHubServiceHandler) ListReplays(context.Context, *connect.Request[v1.ListReplaysRequest]) (*connect.Response[v1.ListReplaysResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.ListReplays is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetReplayMedia(context.Context, *connect.Request[v1.GetReplayMediaRequest]) (*connect.Response[v1.GetReplayMediaResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetReplayMedia is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetMousePath(context.Context, *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetMousePath is not implemented"))
 }
 
 func (UnimplementedHubServiceHandler) GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {

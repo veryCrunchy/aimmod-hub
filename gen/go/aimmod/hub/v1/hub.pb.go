@@ -2323,6 +2323,306 @@ func (x *ListReplaysResponse) GetItems() []*ReplayPreview {
 	return nil
 }
 
+type GetReplayMediaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetReplayMediaRequest) Reset() {
+	*x = GetReplayMediaRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetReplayMediaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetReplayMediaRequest) ProtoMessage() {}
+
+func (x *GetReplayMediaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetReplayMediaRequest.ProtoReflect.Descriptor instead.
+func (*GetReplayMediaRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetReplayMediaRequest) GetRunId() string {
+	if x != nil {
+		return x.RunId
+	}
+	return ""
+}
+
+type GetReplayMediaResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Available     bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
+	RunId         string                 `protobuf:"bytes,2,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	Quality       string                 `protobuf:"bytes,3,opt,name=quality,proto3" json:"quality,omitempty"`
+	ContentType   string                 `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	ByteSize      uint64                 `protobuf:"varint,5,opt,name=byte_size,json=byteSize,proto3" json:"byte_size,omitempty"`
+	MediaUrl      string                 `protobuf:"bytes,6,opt,name=media_url,json=mediaUrl,proto3" json:"media_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetReplayMediaResponse) Reset() {
+	*x = GetReplayMediaResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetReplayMediaResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetReplayMediaResponse) ProtoMessage() {}
+
+func (x *GetReplayMediaResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetReplayMediaResponse.ProtoReflect.Descriptor instead.
+func (*GetReplayMediaResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GetReplayMediaResponse) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *GetReplayMediaResponse) GetRunId() string {
+	if x != nil {
+		return x.RunId
+	}
+	return ""
+}
+
+func (x *GetReplayMediaResponse) GetQuality() string {
+	if x != nil {
+		return x.Quality
+	}
+	return ""
+}
+
+func (x *GetReplayMediaResponse) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *GetReplayMediaResponse) GetByteSize() uint64 {
+	if x != nil {
+		return x.ByteSize
+	}
+	return 0
+}
+
+func (x *GetReplayMediaResponse) GetMediaUrl() string {
+	if x != nil {
+		return x.MediaUrl
+	}
+	return ""
+}
+
+type MousePathPoint struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	X             float64                `protobuf:"fixed64,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,2,opt,name=y,proto3" json:"y,omitempty"`
+	TimestampMs   uint64                 `protobuf:"varint,3,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
+	IsClick       bool                   `protobuf:"varint,4,opt,name=is_click,json=isClick,proto3" json:"is_click,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MousePathPoint) Reset() {
+	*x = MousePathPoint{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MousePathPoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MousePathPoint) ProtoMessage() {}
+
+func (x *MousePathPoint) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MousePathPoint.ProtoReflect.Descriptor instead.
+func (*MousePathPoint) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *MousePathPoint) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *MousePathPoint) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *MousePathPoint) GetTimestampMs() uint64 {
+	if x != nil {
+		return x.TimestampMs
+	}
+	return 0
+}
+
+func (x *MousePathPoint) GetIsClick() bool {
+	if x != nil {
+		return x.IsClick
+	}
+	return false
+}
+
+type GetMousePathRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMousePathRequest) Reset() {
+	*x = GetMousePathRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMousePathRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMousePathRequest) ProtoMessage() {}
+
+func (x *GetMousePathRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMousePathRequest.ProtoReflect.Descriptor instead.
+func (*GetMousePathRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetMousePathRequest) GetRunId() string {
+	if x != nil {
+		return x.RunId
+	}
+	return ""
+}
+
+type GetMousePathResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Available       bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
+	Points          []*MousePathPoint      `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	HitTimestampsMs []uint64               `protobuf:"varint,3,rep,packed,name=hit_timestamps_ms,json=hitTimestampsMs,proto3" json:"hit_timestamps_ms,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetMousePathResponse) Reset() {
+	*x = GetMousePathResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMousePathResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMousePathResponse) ProtoMessage() {}
+
+func (x *GetMousePathResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMousePathResponse.ProtoReflect.Descriptor instead.
+func (*GetMousePathResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetMousePathResponse) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *GetMousePathResponse) GetPoints() []*MousePathPoint {
+	if x != nil {
+		return x.Points
+	}
+	return nil
+}
+
+func (x *GetMousePathResponse) GetHitTimestampsMs() []uint64 {
+	if x != nil {
+		return x.HitTimestampsMs
+	}
+	return nil
+}
+
 type GetLeaderboardRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ScenarioType  string                 `protobuf:"bytes,1,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
@@ -2332,7 +2632,7 @@ type GetLeaderboardRequest struct {
 
 func (x *GetLeaderboardRequest) Reset() {
 	*x = GetLeaderboardRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[28]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2344,7 +2644,7 @@ func (x *GetLeaderboardRequest) String() string {
 func (*GetLeaderboardRequest) ProtoMessage() {}
 
 func (x *GetLeaderboardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[28]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2357,7 +2657,7 @@ func (x *GetLeaderboardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLeaderboardRequest.ProtoReflect.Descriptor instead.
 func (*GetLeaderboardRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{28}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetLeaderboardRequest) GetScenarioType() string {
@@ -2377,7 +2677,7 @@ type GetLeaderboardResponse struct {
 
 func (x *GetLeaderboardResponse) Reset() {
 	*x = GetLeaderboardResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[29]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2389,7 +2689,7 @@ func (x *GetLeaderboardResponse) String() string {
 func (*GetLeaderboardResponse) ProtoMessage() {}
 
 func (x *GetLeaderboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[29]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2402,7 +2702,7 @@ func (x *GetLeaderboardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLeaderboardResponse.ProtoReflect.Descriptor instead.
 func (*GetLeaderboardResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{29}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetLeaderboardResponse) GetRecords() []*RunPreview {
@@ -2429,7 +2729,7 @@ type GetPlayerScenarioHistoryRequest struct {
 
 func (x *GetPlayerScenarioHistoryRequest) Reset() {
 	*x = GetPlayerScenarioHistoryRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[30]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2441,7 +2741,7 @@ func (x *GetPlayerScenarioHistoryRequest) String() string {
 func (*GetPlayerScenarioHistoryRequest) ProtoMessage() {}
 
 func (x *GetPlayerScenarioHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[30]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2454,7 +2754,7 @@ func (x *GetPlayerScenarioHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPlayerScenarioHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetPlayerScenarioHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{30}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetPlayerScenarioHistoryRequest) GetHandle() string {
@@ -2488,7 +2788,7 @@ type GetPlayerScenarioHistoryResponse struct {
 
 func (x *GetPlayerScenarioHistoryResponse) Reset() {
 	*x = GetPlayerScenarioHistoryResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[31]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2500,7 +2800,7 @@ func (x *GetPlayerScenarioHistoryResponse) String() string {
 func (*GetPlayerScenarioHistoryResponse) ProtoMessage() {}
 
 func (x *GetPlayerScenarioHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[31]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2513,7 +2813,7 @@ func (x *GetPlayerScenarioHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPlayerScenarioHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetPlayerScenarioHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{31}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *GetPlayerScenarioHistoryResponse) GetScenarioName() string {
@@ -2596,7 +2896,7 @@ type TypeProfileBand struct {
 
 func (x *TypeProfileBand) Reset() {
 	*x = TypeProfileBand{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[32]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2608,7 +2908,7 @@ func (x *TypeProfileBand) String() string {
 func (*TypeProfileBand) ProtoMessage() {}
 
 func (x *TypeProfileBand) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[32]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2621,7 +2921,7 @@ func (x *TypeProfileBand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TypeProfileBand.ProtoReflect.Descriptor instead.
 func (*TypeProfileBand) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{32}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *TypeProfileBand) GetScenarioType() string {
@@ -2696,7 +2996,7 @@ type GetAimProfileRequest struct {
 
 func (x *GetAimProfileRequest) Reset() {
 	*x = GetAimProfileRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[33]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2708,7 +3008,7 @@ func (x *GetAimProfileRequest) String() string {
 func (*GetAimProfileRequest) ProtoMessage() {}
 
 func (x *GetAimProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[33]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2721,7 +3021,7 @@ func (x *GetAimProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetAimProfileRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{33}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetAimProfileRequest) GetHandle() string {
@@ -2747,7 +3047,7 @@ type GetAimProfileResponse struct {
 
 func (x *GetAimProfileResponse) Reset() {
 	*x = GetAimProfileResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[34]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2759,7 +3059,7 @@ func (x *GetAimProfileResponse) String() string {
 func (*GetAimProfileResponse) ProtoMessage() {}
 
 func (x *GetAimProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[34]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2772,7 +3072,7 @@ func (x *GetAimProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetAimProfileResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{34}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetAimProfileResponse) GetUserHandle() string {
@@ -2843,7 +3143,7 @@ type AimFingerprintAxis struct {
 
 func (x *AimFingerprintAxis) Reset() {
 	*x = AimFingerprintAxis{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[35]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2855,7 +3155,7 @@ func (x *AimFingerprintAxis) String() string {
 func (*AimFingerprintAxis) ProtoMessage() {}
 
 func (x *AimFingerprintAxis) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[35]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2868,7 +3168,7 @@ func (x *AimFingerprintAxis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AimFingerprintAxis.ProtoReflect.Descriptor instead.
 func (*AimFingerprintAxis) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{35}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *AimFingerprintAxis) GetKey() string {
@@ -2922,7 +3222,7 @@ type AimFingerprint struct {
 
 func (x *AimFingerprint) Reset() {
 	*x = AimFingerprint{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[36]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2934,7 +3234,7 @@ func (x *AimFingerprint) String() string {
 func (*AimFingerprint) ProtoMessage() {}
 
 func (x *AimFingerprint) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[36]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2947,7 +3247,7 @@ func (x *AimFingerprint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AimFingerprint.ProtoReflect.Descriptor instead.
 func (*AimFingerprint) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{36}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *AimFingerprint) GetPrecision() int32 {
@@ -3064,7 +3364,7 @@ type GetAimFingerprintRequest struct {
 
 func (x *GetAimFingerprintRequest) Reset() {
 	*x = GetAimFingerprintRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3076,7 +3376,7 @@ func (x *GetAimFingerprintRequest) String() string {
 func (*GetAimFingerprintRequest) ProtoMessage() {}
 
 func (x *GetAimFingerprintRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3089,7 +3389,7 @@ func (x *GetAimFingerprintRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimFingerprintRequest.ProtoReflect.Descriptor instead.
 func (*GetAimFingerprintRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{37}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *GetAimFingerprintRequest) GetHandle() string {
@@ -3108,7 +3408,7 @@ type GetAimFingerprintResponse struct {
 
 func (x *GetAimFingerprintResponse) Reset() {
 	*x = GetAimFingerprintResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3120,7 +3420,7 @@ func (x *GetAimFingerprintResponse) String() string {
 func (*GetAimFingerprintResponse) ProtoMessage() {}
 
 func (x *GetAimFingerprintResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3133,7 +3433,7 @@ func (x *GetAimFingerprintResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimFingerprintResponse.ProtoReflect.Descriptor instead.
 func (*GetAimFingerprintResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{38}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetAimFingerprintResponse) GetOverall() *AimFingerprint {
@@ -3388,7 +3688,27 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rscenario_name\x18\x02 \x01(\tR\fscenarioName\x12\x1f\n" +
 	"\vuser_handle\x18\x03 \x01(\tR\n" +
 	"userHandle\x122\n" +
-	"\x05items\x18\x04 \x03(\v2\x1c.aimmod.hub.v1.ReplayPreviewR\x05items\"<\n" +
+	"\x05items\x18\x04 \x03(\v2\x1c.aimmod.hub.v1.ReplayPreviewR\x05items\".\n" +
+	"\x15GetReplayMediaRequest\x12\x15\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xc4\x01\n" +
+	"\x16GetReplayMediaResponse\x12\x1c\n" +
+	"\tavailable\x18\x01 \x01(\bR\tavailable\x12\x15\n" +
+	"\x06run_id\x18\x02 \x01(\tR\x05runId\x12\x18\n" +
+	"\aquality\x18\x03 \x01(\tR\aquality\x12!\n" +
+	"\fcontent_type\x18\x04 \x01(\tR\vcontentType\x12\x1b\n" +
+	"\tbyte_size\x18\x05 \x01(\x04R\bbyteSize\x12\x1b\n" +
+	"\tmedia_url\x18\x06 \x01(\tR\bmediaUrl\"j\n" +
+	"\x0eMousePathPoint\x12\f\n" +
+	"\x01x\x18\x01 \x01(\x01R\x01x\x12\f\n" +
+	"\x01y\x18\x02 \x01(\x01R\x01y\x12!\n" +
+	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\x12\x19\n" +
+	"\bis_click\x18\x04 \x01(\bR\aisClick\",\n" +
+	"\x13GetMousePathRequest\x12\x15\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x97\x01\n" +
+	"\x14GetMousePathResponse\x12\x1c\n" +
+	"\tavailable\x18\x01 \x01(\bR\tavailable\x125\n" +
+	"\x06points\x18\x02 \x03(\v2\x1d.aimmod.hub.v1.MousePathPointR\x06points\x12*\n" +
+	"\x11hit_timestamps_ms\x18\x03 \x03(\x04R\x0fhitTimestampsMs\"<\n" +
 	"\x15GetLeaderboardRequest\x12#\n" +
 	"\rscenario_type\x18\x01 \x01(\tR\fscenarioType\"\x87\x01\n" +
 	"\x16GetLeaderboardResponse\x123\n" +
@@ -3463,7 +3783,8 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x18GetAimFingerprintRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\"T\n" +
 	"\x19GetAimFingerprintResponse\x127\n" +
-	"\aoverall\x18\x01 \x01(\v2\x1d.aimmod.hub.v1.AimFingerprintR\aoverall2\xac\t\n" +
+	"\aoverall\x18\x01 \x01(\v2\x1d.aimmod.hub.v1.AimFingerprintR\aoverall2\xe4\n" +
+	"\n" +
 	"\n" +
 	"HubService\x12H\n" +
 	"\tGetHealth\x12\x1c.aimmod.hub.v1.HealthRequest\x1a\x1d.aimmod.hub.v1.HealthResponse\x12Z\n" +
@@ -3476,6 +3797,8 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"GetProfile\x12 .aimmod.hub.v1.GetProfileRequest\x1a!.aimmod.hub.v1.GetProfileResponse\x12E\n" +
 	"\x06Search\x12\x1c.aimmod.hub.v1.SearchRequest\x1a\x1d.aimmod.hub.v1.SearchResponse\x12T\n" +
 	"\vListReplays\x12!.aimmod.hub.v1.ListReplaysRequest\x1a\".aimmod.hub.v1.ListReplaysResponse\x12]\n" +
+	"\x0eGetReplayMedia\x12$.aimmod.hub.v1.GetReplayMediaRequest\x1a%.aimmod.hub.v1.GetReplayMediaResponse\x12W\n" +
+	"\fGetMousePath\x12\".aimmod.hub.v1.GetMousePathRequest\x1a#.aimmod.hub.v1.GetMousePathResponse\x12]\n" +
 	"\x0eGetLeaderboard\x12$.aimmod.hub.v1.GetLeaderboardRequest\x1a%.aimmod.hub.v1.GetLeaderboardResponse\x12{\n" +
 	"\x18GetPlayerScenarioHistory\x12..aimmod.hub.v1.GetPlayerScenarioHistoryRequest\x1a/.aimmod.hub.v1.GetPlayerScenarioHistoryResponse\x12Z\n" +
 	"\rGetAimProfile\x12#.aimmod.hub.v1.GetAimProfileRequest\x1a$.aimmod.hub.v1.GetAimProfileResponse\x12f\n" +
@@ -3493,7 +3816,7 @@ func file_aimmod_hub_v1_hub_proto_rawDescGZIP() []byte {
 	return file_aimmod_hub_v1_hub_proto_rawDescData
 }
 
-var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
+var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
 var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*HealthRequest)(nil),                    // 0: aimmod.hub.v1.HealthRequest
 	(*HealthResponse)(nil),                   // 1: aimmod.hub.v1.HealthResponse
@@ -3523,34 +3846,39 @@ var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*SearchResponse)(nil),                   // 25: aimmod.hub.v1.SearchResponse
 	(*ListReplaysRequest)(nil),               // 26: aimmod.hub.v1.ListReplaysRequest
 	(*ListReplaysResponse)(nil),              // 27: aimmod.hub.v1.ListReplaysResponse
-	(*GetLeaderboardRequest)(nil),            // 28: aimmod.hub.v1.GetLeaderboardRequest
-	(*GetLeaderboardResponse)(nil),           // 29: aimmod.hub.v1.GetLeaderboardResponse
-	(*GetPlayerScenarioHistoryRequest)(nil),  // 30: aimmod.hub.v1.GetPlayerScenarioHistoryRequest
-	(*GetPlayerScenarioHistoryResponse)(nil), // 31: aimmod.hub.v1.GetPlayerScenarioHistoryResponse
-	(*TypeProfileBand)(nil),                  // 32: aimmod.hub.v1.TypeProfileBand
-	(*GetAimProfileRequest)(nil),             // 33: aimmod.hub.v1.GetAimProfileRequest
-	(*GetAimProfileResponse)(nil),            // 34: aimmod.hub.v1.GetAimProfileResponse
-	(*AimFingerprintAxis)(nil),               // 35: aimmod.hub.v1.AimFingerprintAxis
-	(*AimFingerprint)(nil),                   // 36: aimmod.hub.v1.AimFingerprint
-	(*GetAimFingerprintRequest)(nil),         // 37: aimmod.hub.v1.GetAimFingerprintRequest
-	(*GetAimFingerprintResponse)(nil),        // 38: aimmod.hub.v1.GetAimFingerprintResponse
-	nil,                                      // 39: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	nil,                                      // 40: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	nil,                                      // 41: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
-	nil,                                      // 42: aimmod.hub.v1.GetRunResponse.SummaryEntry
-	nil,                                      // 43: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	(*GetReplayMediaRequest)(nil),            // 28: aimmod.hub.v1.GetReplayMediaRequest
+	(*GetReplayMediaResponse)(nil),           // 29: aimmod.hub.v1.GetReplayMediaResponse
+	(*MousePathPoint)(nil),                   // 30: aimmod.hub.v1.MousePathPoint
+	(*GetMousePathRequest)(nil),              // 31: aimmod.hub.v1.GetMousePathRequest
+	(*GetMousePathResponse)(nil),             // 32: aimmod.hub.v1.GetMousePathResponse
+	(*GetLeaderboardRequest)(nil),            // 33: aimmod.hub.v1.GetLeaderboardRequest
+	(*GetLeaderboardResponse)(nil),           // 34: aimmod.hub.v1.GetLeaderboardResponse
+	(*GetPlayerScenarioHistoryRequest)(nil),  // 35: aimmod.hub.v1.GetPlayerScenarioHistoryRequest
+	(*GetPlayerScenarioHistoryResponse)(nil), // 36: aimmod.hub.v1.GetPlayerScenarioHistoryResponse
+	(*TypeProfileBand)(nil),                  // 37: aimmod.hub.v1.TypeProfileBand
+	(*GetAimProfileRequest)(nil),             // 38: aimmod.hub.v1.GetAimProfileRequest
+	(*GetAimProfileResponse)(nil),            // 39: aimmod.hub.v1.GetAimProfileResponse
+	(*AimFingerprintAxis)(nil),               // 40: aimmod.hub.v1.AimFingerprintAxis
+	(*AimFingerprint)(nil),                   // 41: aimmod.hub.v1.AimFingerprint
+	(*GetAimFingerprintRequest)(nil),         // 42: aimmod.hub.v1.GetAimFingerprintRequest
+	(*GetAimFingerprintResponse)(nil),        // 43: aimmod.hub.v1.GetAimFingerprintResponse
+	nil,                                      // 44: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	nil,                                      // 45: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	nil,                                      // 46: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	nil,                                      // 47: aimmod.hub.v1.GetRunResponse.SummaryEntry
+	nil,                                      // 48: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 }
 var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
-	39, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	40, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	41, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	44, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	45, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	46, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
 	3,  // 3: aimmod.hub.v1.IngestSessionRequest.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 4: aimmod.hub.v1.IngestSessionRequest.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 5: aimmod.hub.v1.GetOverviewResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
 	11, // 6: aimmod.hub.v1.GetOverviewResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
 	12, // 7: aimmod.hub.v1.GetOverviewResponse.active_profiles:type_name -> aimmod.hub.v1.CommunityProfilePreview
-	42, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
-	43, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	47, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
+	48, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 	3,  // 10: aimmod.hub.v1.GetRunResponse.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 11: aimmod.hub.v1.GetRunResponse.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 12: aimmod.hub.v1.GetRunResponse.scenario_runs:type_name -> aimmod.hub.v1.RunPreview
@@ -3565,48 +3893,53 @@ var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
 	24, // 21: aimmod.hub.v1.SearchResponse.runs:type_name -> aimmod.hub.v1.ReplayPreview
 	24, // 22: aimmod.hub.v1.SearchResponse.replays:type_name -> aimmod.hub.v1.ReplayPreview
 	24, // 23: aimmod.hub.v1.ListReplaysResponse.items:type_name -> aimmod.hub.v1.ReplayPreview
-	10, // 24: aimmod.hub.v1.GetLeaderboardResponse.records:type_name -> aimmod.hub.v1.RunPreview
-	10, // 25: aimmod.hub.v1.GetLeaderboardResponse.top_scores:type_name -> aimmod.hub.v1.RunPreview
-	10, // 26: aimmod.hub.v1.GetPlayerScenarioHistoryResponse.runs:type_name -> aimmod.hub.v1.RunPreview
-	32, // 27: aimmod.hub.v1.GetAimProfileResponse.type_bands:type_name -> aimmod.hub.v1.TypeProfileBand
-	35, // 28: aimmod.hub.v1.AimFingerprint.axes:type_name -> aimmod.hub.v1.AimFingerprintAxis
-	36, // 29: aimmod.hub.v1.GetAimFingerprintResponse.overall:type_name -> aimmod.hub.v1.AimFingerprint
-	2,  // 30: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 31: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 32: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 33: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 34: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	0,  // 35: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
-	6,  // 36: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
-	8,  // 37: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
-	13, // 38: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
-	15, // 39: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
-	17, // 40: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
-	19, // 41: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
-	21, // 42: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
-	26, // 43: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
-	28, // 44: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
-	30, // 45: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
-	33, // 46: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
-	37, // 47: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
-	1,  // 48: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
-	7,  // 49: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
-	9,  // 50: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
-	14, // 51: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
-	16, // 52: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
-	18, // 53: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
-	20, // 54: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
-	25, // 55: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
-	27, // 56: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
-	29, // 57: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
-	31, // 58: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
-	34, // 59: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
-	38, // 60: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
-	48, // [48:61] is the sub-list for method output_type
-	35, // [35:48] is the sub-list for method input_type
-	35, // [35:35] is the sub-list for extension type_name
-	35, // [35:35] is the sub-list for extension extendee
-	0,  // [0:35] is the sub-list for field type_name
+	30, // 24: aimmod.hub.v1.GetMousePathResponse.points:type_name -> aimmod.hub.v1.MousePathPoint
+	10, // 25: aimmod.hub.v1.GetLeaderboardResponse.records:type_name -> aimmod.hub.v1.RunPreview
+	10, // 26: aimmod.hub.v1.GetLeaderboardResponse.top_scores:type_name -> aimmod.hub.v1.RunPreview
+	10, // 27: aimmod.hub.v1.GetPlayerScenarioHistoryResponse.runs:type_name -> aimmod.hub.v1.RunPreview
+	37, // 28: aimmod.hub.v1.GetAimProfileResponse.type_bands:type_name -> aimmod.hub.v1.TypeProfileBand
+	40, // 29: aimmod.hub.v1.AimFingerprint.axes:type_name -> aimmod.hub.v1.AimFingerprintAxis
+	41, // 30: aimmod.hub.v1.GetAimFingerprintResponse.overall:type_name -> aimmod.hub.v1.AimFingerprint
+	2,  // 31: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 32: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 33: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 34: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 35: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	0,  // 36: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
+	6,  // 37: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
+	8,  // 38: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
+	13, // 39: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
+	15, // 40: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
+	17, // 41: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
+	19, // 42: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
+	21, // 43: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
+	26, // 44: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
+	28, // 45: aimmod.hub.v1.HubService.GetReplayMedia:input_type -> aimmod.hub.v1.GetReplayMediaRequest
+	31, // 46: aimmod.hub.v1.HubService.GetMousePath:input_type -> aimmod.hub.v1.GetMousePathRequest
+	33, // 47: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
+	35, // 48: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
+	38, // 49: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
+	42, // 50: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
+	1,  // 51: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
+	7,  // 52: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
+	9,  // 53: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
+	14, // 54: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
+	16, // 55: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
+	18, // 56: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
+	20, // 57: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
+	25, // 58: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
+	27, // 59: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
+	29, // 60: aimmod.hub.v1.HubService.GetReplayMedia:output_type -> aimmod.hub.v1.GetReplayMediaResponse
+	32, // 61: aimmod.hub.v1.HubService.GetMousePath:output_type -> aimmod.hub.v1.GetMousePathResponse
+	34, // 62: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
+	36, // 63: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
+	39, // 64: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
+	43, // 65: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
+	51, // [51:66] is the sub-list for method output_type
+	36, // [36:51] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_hub_v1_hub_proto_init() }
@@ -3625,7 +3958,7 @@ func file_aimmod_hub_v1_hub_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aimmod_hub_v1_hub_proto_rawDesc), len(file_aimmod_hub_v1_hub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   44,
+			NumMessages:   49,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

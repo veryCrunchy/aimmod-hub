@@ -2,8 +2,10 @@ import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { API_BASE_URL } from "./config";
 import {
+  GetMousePathRequest,
   GetOverviewRequest,
   GetProfileRequest,
+  GetReplayMediaRequest,
   GetRunRequest,
   GetScenarioPageRequest,
   ListReplaysRequest,
@@ -381,18 +383,14 @@ export async function fetchReplayHub(params?: {
 }
 
 export async function fetchReplayMediaMeta(runId: string): Promise<ReplayMediaMeta> {
-  const response = await fetch(`${API_BASE_URL}/media/replays/meta?runId=${encodeURIComponent(runId)}`);
-  if (!response.ok) {
-    throw new Error("Could not load replay media.");
-  }
-  const payload = (await response.json()) as Partial<ReplayMediaMeta> | null;
+  const payload = await hubClient.getReplayMedia(new GetReplayMediaRequest({ runId }));
   return {
-    available: Boolean(payload?.available),
-    runId: payload?.runId,
-    quality: payload?.quality,
-    contentType: payload?.contentType,
-    byteSize: payload?.byteSize,
-    mediaUrl: payload?.mediaUrl,
+    available: Boolean(payload.available),
+    runId: payload.runId,
+    quality: payload.quality,
+    contentType: payload.contentType,
+    byteSize: payload.byteSize ? Number(payload.byteSize) : undefined,
+    mediaUrl: payload.mediaUrl ? resolveHubMediaUrl(payload.mediaUrl) : undefined,
   };
 }
 
@@ -407,16 +405,27 @@ export async function deleteReplayMedia(runId: string): Promise<void> {
 }
 
 export async function fetchMousePath(runId: string): Promise<MousePathMeta> {
-  const response = await fetch(`${API_BASE_URL}/replays/mouse-path?runId=${encodeURIComponent(runId)}`);
-  if (!response.ok) {
-    throw new Error("Could not load mouse path.");
-  }
-  const payload = await response.json();
+  const payload = await hubClient.getMousePath(new GetMousePathRequest({ runId }));
   return {
-    available: Boolean(payload?.available),
-    points: Array.isArray(payload?.points) ? payload.points : [],
-    hitTimestampsMs: Array.isArray(payload?.hitTimestampsMs) ? payload.hitTimestampsMs : [],
+    available: Boolean(payload.available),
+    points: Array.isArray(payload.points)
+      ? payload.points.map((point) => ({
+          x: point.x ?? 0,
+          y: point.y ?? 0,
+          timestampMs: Number(point.timestampMs ?? 0),
+          isClick: Boolean(point.isClick),
+        }))
+      : [],
+    hitTimestampsMs: Array.isArray(payload.hitTimestampsMs)
+      ? payload.hitTimestampsMs.map((value) => Number(value))
+      : [],
   };
+}
+
+function resolveHubMediaUrl(value: string): string {
+  if (/^https?:\/\//i.test(value)) return value;
+  const trimmed = value.startsWith("/") ? value.slice(1) : value;
+  return `${API_BASE_URL.replace(/\/$/, "")}/${trimmed}`;
 }
 
 export async function fetchAdminOverview(days: number): Promise<AdminOverviewResponse> {

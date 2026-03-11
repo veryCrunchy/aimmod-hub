@@ -331,6 +331,67 @@ func (s *HubServer) ListReplays(
 	return connect.NewResponse(resp), nil
 }
 
+func (s *HubServer) GetReplayMedia(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetReplayMediaRequest],
+) (*connect.Response[hubv1.GetReplayMediaResponse], error) {
+	runID := strings.TrimSpace(req.Msg.GetRunId())
+	if runID == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("run_id is required"))
+	}
+
+	meta, err := s.store.GetReplayMediaMeta(ctx, runID)
+	if err != nil {
+		return connect.NewResponse(&hubv1.GetReplayMediaResponse{
+			Available: false,
+		}), nil
+	}
+
+	return connect.NewResponse(&hubv1.GetReplayMediaResponse{
+		Available:   true,
+		RunId:       meta.PublicRunID,
+		Quality:     meta.Quality,
+		ContentType: meta.ContentType,
+		ByteSize:    uint64(meta.ByteSize),
+		MediaUrl:    replayMediaPath(meta.PublicRunID, meta.Quality),
+	}), nil
+}
+
+func (s *HubServer) GetMousePath(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetMousePathRequest],
+) (*connect.Response[hubv1.GetMousePathResponse], error) {
+	runID := strings.TrimSpace(req.Msg.GetRunId())
+	if runID == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("run_id is required"))
+	}
+
+	mousePath, err := s.store.GetMousePath(ctx, runID)
+	if err != nil {
+		return connect.NewResponse(&hubv1.GetMousePathResponse{
+			Available:       false,
+			Points:          []*hubv1.MousePathPoint{},
+			HitTimestampsMs: []uint64{},
+		}), nil
+	}
+
+	points := make([]*hubv1.MousePathPoint, 0, len(mousePath.Points))
+	for _, point := range mousePath.Points {
+		points = append(points, &hubv1.MousePathPoint{
+			X:           point.X,
+			Y:           point.Y,
+			TimestampMs: point.Timestamp,
+			IsClick:     point.IsClick,
+		})
+	}
+
+	return connect.NewResponse(&hubv1.GetMousePathResponse{
+		Available:       true,
+		Points:          points,
+		HitTimestampsMs: mousePath.HitTimestampsMS,
+	}), nil
+}
+
 func (h *HubServer) GetLeaderboard(
 	ctx context.Context,
 	req *connect.Request[hubv1.GetLeaderboardRequest],
@@ -395,6 +456,18 @@ func (h *HubServer) GetAimFingerprint(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	return connect.NewResponse(&hubv1.GetAimFingerprintResponse{Overall: fp}), nil
+}
+
+func replayMediaPath(publicRunID, quality string) string {
+	trimmedRunID := strings.TrimSpace(publicRunID)
+	if trimmedRunID == "" {
+		return ""
+	}
+	trimmedQuality := strings.TrimSpace(quality)
+	if trimmedQuality == "" {
+		trimmedQuality = "standard"
+	}
+	return "/media/replays/" + trimmedRunID + ".mp4?quality=" + trimmedQuality
 }
 
 var _ hubv1connect.HubServiceHandler = (*HubServer)(nil)

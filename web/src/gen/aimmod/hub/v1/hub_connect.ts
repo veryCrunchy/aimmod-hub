@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
+import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -91,6 +91,24 @@ export const HubService = {
       name: "ListReplays",
       I: ListReplaysRequest,
       O: ListReplaysResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetReplayMedia
+     */
+    getReplayMedia: {
+      name: "GetReplayMedia",
+      I: GetReplayMediaRequest,
+      O: GetReplayMediaResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetMousePath
+     */
+    getMousePath: {
+      name: "GetMousePath",
+      I: GetMousePathRequest,
+      O: GetMousePathResponse,
       kind: MethodKind.Unary,
     },
     /**

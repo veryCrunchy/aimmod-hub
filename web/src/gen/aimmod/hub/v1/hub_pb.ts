@@ -1825,6 +1825,251 @@ export class ListReplaysResponse extends Message<ListReplaysResponse> {
 }
 
 /**
+ * @generated from message aimmod.hub.v1.GetReplayMediaRequest
+ */
+export class GetReplayMediaRequest extends Message<GetReplayMediaRequest> {
+  /**
+   * @generated from field: string run_id = 1;
+   */
+  runId = "";
+
+  constructor(data?: PartialMessage<GetReplayMediaRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetReplayMediaRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetReplayMediaRequest {
+    return new GetReplayMediaRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetReplayMediaRequest {
+    return new GetReplayMediaRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetReplayMediaRequest {
+    return new GetReplayMediaRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetReplayMediaRequest | PlainMessage<GetReplayMediaRequest> | undefined, b: GetReplayMediaRequest | PlainMessage<GetReplayMediaRequest> | undefined): boolean {
+    return proto3.util.equals(GetReplayMediaRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetReplayMediaResponse
+ */
+export class GetReplayMediaResponse extends Message<GetReplayMediaResponse> {
+  /**
+   * @generated from field: bool available = 1;
+   */
+  available = false;
+
+  /**
+   * @generated from field: string run_id = 2;
+   */
+  runId = "";
+
+  /**
+   * @generated from field: string quality = 3;
+   */
+  quality = "";
+
+  /**
+   * @generated from field: string content_type = 4;
+   */
+  contentType = "";
+
+  /**
+   * @generated from field: uint64 byte_size = 5;
+   */
+  byteSize = protoInt64.zero;
+
+  /**
+   * @generated from field: string media_url = 6;
+   */
+  mediaUrl = "";
+
+  constructor(data?: PartialMessage<GetReplayMediaResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetReplayMediaResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "quality", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "content_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "byte_size", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 6, name: "media_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetReplayMediaResponse {
+    return new GetReplayMediaResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetReplayMediaResponse {
+    return new GetReplayMediaResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetReplayMediaResponse {
+    return new GetReplayMediaResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetReplayMediaResponse | PlainMessage<GetReplayMediaResponse> | undefined, b: GetReplayMediaResponse | PlainMessage<GetReplayMediaResponse> | undefined): boolean {
+    return proto3.util.equals(GetReplayMediaResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.MousePathPoint
+ */
+export class MousePathPoint extends Message<MousePathPoint> {
+  /**
+   * @generated from field: double x = 1;
+   */
+  x = 0;
+
+  /**
+   * @generated from field: double y = 2;
+   */
+  y = 0;
+
+  /**
+   * @generated from field: uint64 timestamp_ms = 3;
+   */
+  timestampMs = protoInt64.zero;
+
+  /**
+   * @generated from field: bool is_click = 4;
+   */
+  isClick = false;
+
+  constructor(data?: PartialMessage<MousePathPoint>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.MousePathPoint";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "x", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 2, name: "y", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 3, name: "timestamp_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 4, name: "is_click", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MousePathPoint {
+    return new MousePathPoint().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): MousePathPoint {
+    return new MousePathPoint().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): MousePathPoint {
+    return new MousePathPoint().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: MousePathPoint | PlainMessage<MousePathPoint> | undefined, b: MousePathPoint | PlainMessage<MousePathPoint> | undefined): boolean {
+    return proto3.util.equals(MousePathPoint, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetMousePathRequest
+ */
+export class GetMousePathRequest extends Message<GetMousePathRequest> {
+  /**
+   * @generated from field: string run_id = 1;
+   */
+  runId = "";
+
+  constructor(data?: PartialMessage<GetMousePathRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetMousePathRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMousePathRequest {
+    return new GetMousePathRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMousePathRequest {
+    return new GetMousePathRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMousePathRequest {
+    return new GetMousePathRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMousePathRequest | PlainMessage<GetMousePathRequest> | undefined, b: GetMousePathRequest | PlainMessage<GetMousePathRequest> | undefined): boolean {
+    return proto3.util.equals(GetMousePathRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetMousePathResponse
+ */
+export class GetMousePathResponse extends Message<GetMousePathResponse> {
+  /**
+   * @generated from field: bool available = 1;
+   */
+  available = false;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.MousePathPoint points = 2;
+   */
+  points: MousePathPoint[] = [];
+
+  /**
+   * @generated from field: repeated uint64 hit_timestamps_ms = 3;
+   */
+  hitTimestampsMs: bigint[] = [];
+
+  constructor(data?: PartialMessage<GetMousePathResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetMousePathResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "points", kind: "message", T: MousePathPoint, repeated: true },
+    { no: 3, name: "hit_timestamps_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMousePathResponse {
+    return new GetMousePathResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMousePathResponse {
+    return new GetMousePathResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMousePathResponse {
+    return new GetMousePathResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMousePathResponse | PlainMessage<GetMousePathResponse> | undefined, b: GetMousePathResponse | PlainMessage<GetMousePathResponse> | undefined): boolean {
+    return proto3.util.equals(GetMousePathResponse, a, b);
+  }
+}
+
+/**
  * @generated from message aimmod.hub.v1.GetLeaderboardRequest
  */
 export class GetLeaderboardRequest extends Message<GetLeaderboardRequest> {

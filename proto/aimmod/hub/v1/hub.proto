@@ -245,6 +245,36 @@ message ListReplaysResponse {
   repeated ReplayPreview items = 4;
 }
 
+message GetReplayMediaRequest {
+  string run_id = 1;
+}
+
+message GetReplayMediaResponse {
+  bool available = 1;
+  string run_id = 2;
+  string quality = 3;
+  string content_type = 4;
+  uint64 byte_size = 5;
+  string media_url = 6;
+}
+
+message MousePathPoint {
+  double x = 1;
+  double y = 2;
+  uint64 timestamp_ms = 3;
+  bool is_click = 4;
+}
+
+message GetMousePathRequest {
+  string run_id = 1;
+}
+
+message GetMousePathResponse {
+  bool available = 1;
+  repeated MousePathPoint points = 2;
+  repeated uint64 hit_timestamps_ms = 3;
+}
+
 message GetLeaderboardRequest {
   string scenario_type = 1;
 }
@@ -341,6 +371,8 @@ service HubService {
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
   rpc Search(SearchRequest) returns (SearchResponse);
   rpc ListReplays(ListReplaysRequest) returns (ListReplaysResponse);
+  rpc GetReplayMedia(GetReplayMediaRequest) returns (GetReplayMediaResponse);
+  rpc GetMousePath(GetMousePathRequest) returns (GetMousePathResponse);
   rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
   rpc GetPlayerScenarioHistory(GetPlayerScenarioHistoryRequest) returns (GetPlayerScenarioHistoryResponse);
   rpc GetAimProfile(GetAimProfileRequest) returns (GetAimProfileResponse);
