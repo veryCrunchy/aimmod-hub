@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { MousePathPoint } from "../lib/api";
 
 const CANVAS_W = 900;
@@ -9,7 +9,7 @@ const VIEWPORT_PX = 960;
 type Props = {
   points: MousePathPoint[];
   hitTimestampsMs: number[];
-  videoRef: RefObject<HTMLVideoElement | null>;
+  playbackMs: number;
 };
 
 interface OvershootMarker {
@@ -278,9 +278,8 @@ function drawPath(
   ctx.fill();
 }
 
-export function ReplayMouseOverlay({ points, hitTimestampsMs, videoRef }: Props) {
+export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const overshoots = useMemo(() => detectOvershoots(points), [points]);
   const denseHitStream = useMemo(
     () => shouldClusterHitIndicators(hitTimestampsMs, points[points.length - 1]?.timestampMs ?? 0),
@@ -288,58 +287,10 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, videoRef }: Props)
   );
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    let raf = 0;
-
-    const sync = () => {
-      setCurrentTimeMs(video.currentTime * 1000);
-    };
-
-    const tick = () => {
-      sync();
-      if (!video.paused && !video.ended) {
-        raf = window.requestAnimationFrame(tick);
-      }
-    };
-
-    const start = () => {
-      window.cancelAnimationFrame(raf);
-      raf = window.requestAnimationFrame(tick);
-    };
-
-    const stop = () => {
-      window.cancelAnimationFrame(raf);
-      sync();
-    };
-
-    video.addEventListener("play", start);
-    video.addEventListener("pause", stop);
-    video.addEventListener("ended", stop);
-    video.addEventListener("seeked", sync);
-    video.addEventListener("timeupdate", sync);
-    sync();
-
-    if (!video.paused && !video.ended) {
-      raf = window.requestAnimationFrame(tick);
-    }
-
-    return () => {
-      window.cancelAnimationFrame(raf);
-      video.removeEventListener("play", start);
-      video.removeEventListener("pause", stop);
-      video.removeEventListener("ended", stop);
-      video.removeEventListener("seeked", sync);
-      video.removeEventListener("timeupdate", sync);
-    };
-  }, [videoRef]);
-
-  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    drawPath(canvas, points, overshoots, currentTimeMs, hitTimestampsMs);
-  }, [currentTimeMs, hitTimestampsMs, overshoots, points]);
+    drawPath(canvas, points, overshoots, playbackMs, hitTimestampsMs);
+  }, [playbackMs, hitTimestampsMs, overshoots, points]);
 
   if (points.length < 2) return null;
 
