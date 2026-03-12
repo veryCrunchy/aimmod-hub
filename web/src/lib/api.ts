@@ -230,6 +230,8 @@ export type MousePathMeta = {
   available: boolean;
   points: MousePathPoint[];
   hitTimestampsMs: number[];
+  playbackOffsetMs: number;
+  videoOffsetMs: number;
 };
 
 export type AdminVersionBreakdown = {
@@ -461,7 +463,7 @@ export async function deleteReplayMedia(runId: string): Promise<void> {
 
 export async function fetchMousePath(runId: string): Promise<MousePathMeta> {
   const payload = await hubClient.getMousePath(new GetMousePathRequest({ runId }));
-  return {
+  const result = {
     available: Boolean(payload.available),
     points: Array.isArray(payload.points)
       ? payload.points.map((point) => ({
@@ -474,7 +476,30 @@ export async function fetchMousePath(runId: string): Promise<MousePathMeta> {
     hitTimestampsMs: Array.isArray(payload.hitTimestampsMs)
       ? payload.hitTimestampsMs.map((value) => Number(value))
       : [],
+    playbackOffsetMs: Number(payload.playbackOffsetMs ?? 0),
+    videoOffsetMs: Number(payload.videoOffsetMs ?? 0),
   };
+  const firstPointMs = result.points.length > 0 ? result.points[0]?.timestampMs ?? 0 : 0;
+  const lastPointMs =
+    result.points.length > 0 ? result.points[result.points.length - 1]?.timestampMs ?? 0 : 0;
+  const firstHitMs = result.hitTimestampsMs.length > 0 ? result.hitTimestampsMs[0] ?? 0 : 0;
+  const lastHitMs =
+    result.hitTimestampsMs.length > 0
+      ? result.hitTimestampsMs[result.hitTimestampsMs.length - 1] ?? 0
+      : 0;
+  console.info("[aimmod-hub] fetchMousePath", {
+    runId,
+    available: result.available,
+    pointCount: result.points.length,
+    hitCount: result.hitTimestampsMs.length,
+    playbackOffsetMs: result.playbackOffsetMs,
+    videoOffsetMs: result.videoOffsetMs,
+    firstPointMs,
+    lastPointMs,
+    firstHitMs,
+    lastHitMs,
+  });
+  return result;
 }
 
 function resolveHubMediaUrl(value: string): string {

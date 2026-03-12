@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -165,6 +166,8 @@ CREATE TABLE IF NOT EXISTS run_mouse_paths (
   session_id TEXT PRIMARY KEY REFERENCES scenario_runs(session_id) ON DELETE CASCADE,
   point_count INTEGER NOT NULL DEFAULT 0,
   duration_ms BIGINT NOT NULL DEFAULT 0,
+  playback_offset_ms BIGINT NOT NULL DEFAULT 0,
+  video_offset_ms BIGINT NOT NULL DEFAULT 0,
   path_json JSONB NOT NULL DEFAULT '[]'::jsonb,
   hit_timestamps_json JSONB NOT NULL DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -214,6 +217,14 @@ LEFT JOIN LATERAL (
 
 type Store struct {
 	pool *pgxpool.Pool
+
+	scenarioSlugMu    sync.RWMutex
+	scenarioSlugCache scenarioSlugCache
+}
+
+type scenarioSlugCache struct {
+	expiresAt time.Time
+	bySlug    map[string]string
 }
 
 type IngestedRun struct {
@@ -321,6 +332,8 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 		ALTER TABLE linked_accounts ADD COLUMN IF NOT EXISTS verified BOOLEAN NOT NULL DEFAULT FALSE;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS source_session_id TEXT;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS public_run_id TEXT;
+		ALTER TABLE run_mouse_paths ADD COLUMN IF NOT EXISTS playback_offset_ms BIGINT NOT NULL DEFAULT 0;
+		ALTER TABLE run_mouse_paths ADD COLUMN IF NOT EXISTS video_offset_ms BIGINT NOT NULL DEFAULT 0;
 		ALTER TABLE run_mouse_paths ADD COLUMN IF NOT EXISTS hit_timestamps_json JSONB NOT NULL DEFAULT '[]'::jsonb;
 		CREATE UNIQUE INDEX IF NOT EXISTS idx_scenario_runs_public_run_id
 			ON scenario_runs(public_run_id)
@@ -330,6 +343,14 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 			WHERE source_session_id IS NOT NULL;
 		CREATE INDEX IF NOT EXISTS idx_scenario_runs_played_at
 			ON scenario_runs(played_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_scenario_runs_scenario_name_played_at
+			ON scenario_runs(scenario_name, played_at DESC, created_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_scenario_runs_scenario_name_score_played_at
+			ON scenario_runs(scenario_name, score DESC, played_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_scenario_runs_user_scenario_name_played_at
+			ON scenario_runs(user_id, scenario_name, played_at DESC);
+		CREATE INDEX IF NOT EXISTS idx_scenario_runs_scenario_type_score_played_at
+			ON scenario_runs(scenario_type, score DESC, played_at DESC);
 	`); err != nil {
 		return fmt.Errorf("ensure scenario run identifiers: %w", err)
 	}

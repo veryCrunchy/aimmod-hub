@@ -2660,12 +2660,14 @@ func (x *GetMousePathRequest) GetRunId() string {
 }
 
 type GetMousePathResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Available       bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
-	Points          []*MousePathPoint      `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
-	HitTimestampsMs []uint64               `protobuf:"varint,3,rep,packed,name=hit_timestamps_ms,json=hitTimestampsMs,proto3" json:"hit_timestamps_ms,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Available        bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
+	Points           []*MousePathPoint      `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	HitTimestampsMs  []uint64               `protobuf:"varint,3,rep,packed,name=hit_timestamps_ms,json=hitTimestampsMs,proto3" json:"hit_timestamps_ms,omitempty"`
+	PlaybackOffsetMs uint64                 `protobuf:"varint,4,opt,name=playback_offset_ms,json=playbackOffsetMs,proto3" json:"playback_offset_ms,omitempty"`
+	VideoOffsetMs    uint64                 `protobuf:"varint,5,opt,name=video_offset_ms,json=videoOffsetMs,proto3" json:"video_offset_ms,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *GetMousePathResponse) Reset() {
@@ -2717,6 +2719,20 @@ func (x *GetMousePathResponse) GetHitTimestampsMs() []uint64 {
 		return x.HitTimestampsMs
 	}
 	return nil
+}
+
+func (x *GetMousePathResponse) GetPlaybackOffsetMs() uint64 {
+	if x != nil {
+		return x.PlaybackOffsetMs
+	}
+	return 0
+}
+
+func (x *GetMousePathResponse) GetVideoOffsetMs() uint64 {
+	if x != nil {
+		return x.VideoOffsetMs
+	}
+	return 0
 }
 
 type GetLeaderboardRequest struct {
@@ -4844,11 +4860,13 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\x12\x19\n" +
 	"\bis_click\x18\x04 \x01(\bR\aisClick\",\n" +
 	"\x13GetMousePathRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x97\x01\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xed\x01\n" +
 	"\x14GetMousePathResponse\x12\x1c\n" +
 	"\tavailable\x18\x01 \x01(\bR\tavailable\x125\n" +
 	"\x06points\x18\x02 \x03(\v2\x1d.aimmod.hub.v1.MousePathPointR\x06points\x12*\n" +
-	"\x11hit_timestamps_ms\x18\x03 \x03(\x04R\x0fhitTimestampsMs\"<\n" +
+	"\x11hit_timestamps_ms\x18\x03 \x03(\x04R\x0fhitTimestampsMs\x12,\n" +
+	"\x12playback_offset_ms\x18\x04 \x01(\x04R\x10playbackOffsetMs\x12&\n" +
+	"\x0fvideo_offset_ms\x18\x05 \x01(\x04R\rvideoOffsetMs\"<\n" +
 	"\x15GetLeaderboardRequest\x12#\n" +
 	"\rscenario_type\x18\x01 \x01(\tR\fscenarioType\"\x87\x01\n" +
 	"\x16GetLeaderboardResponse\x123\n" +

@@ -2111,6 +2111,16 @@ export class GetMousePathResponse extends Message<GetMousePathResponse> {
    */
   hitTimestampsMs: bigint[] = [];
 
+  /**
+   * @generated from field: uint64 playback_offset_ms = 4;
+   */
+  playbackOffsetMs = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 video_offset_ms = 5;
+   */
+  videoOffsetMs = protoInt64.zero;
+
   constructor(data?: PartialMessage<GetMousePathResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2122,6 +2132,8 @@ export class GetMousePathResponse extends Message<GetMousePathResponse> {
     { no: 1, name: "available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 2, name: "points", kind: "message", T: MousePathPoint, repeated: true },
     { no: 3, name: "hit_timestamps_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */, repeated: true },
+    { no: 4, name: "playback_offset_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 5, name: "video_offset_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMousePathResponse {

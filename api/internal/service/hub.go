@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +21,8 @@ type HubServer struct {
 	store      *store.Store
 	benchmarks *kovaaksbenchmarks.Client
 }
+
+const optionalBenchmarkTimeout = 1500 * time.Millisecond
 
 func NewHubServer(version string, store *store.Store) *HubServer {
 	return &HubServer{
@@ -164,7 +167,9 @@ func (s *HubServer) GetRun(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
-	benchmarkRanks, err := s.fetchScenarioBenchmarkRanks(ctx, run.UserHandle, run.ScenarioName, nil)
+	benchmarkCtx, cancel := context.WithTimeout(ctx, optionalBenchmarkTimeout)
+	defer cancel()
+	benchmarkRanks, err := s.fetchScenarioBenchmarkRanks(benchmarkCtx, run.UserHandle, run.ScenarioName, nil)
 	if err != nil {
 		benchmarkRanks = nil
 	}
@@ -232,7 +237,9 @@ func (s *HubServer) GetProfile(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
-	benchmarks, _, err := s.fetchProfileBenchmarks(ctx, handle)
+	benchmarkCtx, cancel := context.WithTimeout(ctx, optionalBenchmarkTimeout)
+	defer cancel()
+	benchmarks, _, err := s.fetchProfileBenchmarks(benchmarkCtx, handle)
 	if err != nil {
 		benchmarks = nil
 	}
@@ -796,9 +803,10 @@ func (s *HubServer) GetMousePath(
 	mousePath, err := s.store.GetMousePath(ctx, runID)
 	if err != nil {
 		return connect.NewResponse(&hubv1.GetMousePathResponse{
-			Available:       false,
-			Points:          []*hubv1.MousePathPoint{},
-			HitTimestampsMs: []uint64{},
+			Available:        false,
+			Points:           []*hubv1.MousePathPoint{},
+			HitTimestampsMs:  []uint64{},
+			PlaybackOffsetMs: 0,
 		}), nil
 	}
 
@@ -812,10 +820,38 @@ func (s *HubServer) GetMousePath(
 		})
 	}
 
+	firstPointMS := uint64(0)
+	lastPointMS := uint64(0)
+	if len(mousePath.Points) > 0 {
+		firstPointMS = mousePath.Points[0].Timestamp
+		lastPointMS = mousePath.Points[len(mousePath.Points)-1].Timestamp
+	}
+	firstHitMS := uint64(0)
+	lastHitMS := uint64(0)
+	if len(mousePath.HitTimestampsMS) > 0 {
+		firstHitMS = mousePath.HitTimestampsMS[0]
+		lastHitMS = mousePath.HitTimestampsMS[len(mousePath.HitTimestampsMS)-1]
+	}
+	log.Printf(
+		"service_get_mouse_path: run=%q available=%t points=%d hits=%d offset_ms=%d video_offset_ms=%d first_point_ms=%d last_point_ms=%d first_hit_ms=%d last_hit_ms=%d",
+		runID,
+		true,
+		len(mousePath.Points),
+		len(mousePath.HitTimestampsMS),
+		mousePath.PlaybackOffsetMS,
+		mousePath.VideoOffsetMS,
+		firstPointMS,
+		lastPointMS,
+		firstHitMS,
+		lastHitMS,
+	)
+
 	return connect.NewResponse(&hubv1.GetMousePathResponse{
-		Available:       true,
-		Points:          points,
-		HitTimestampsMs: mousePath.HitTimestampsMS,
+		Available:        true,
+		Points:           points,
+		HitTimestampsMs:  mousePath.HitTimestampsMS,
+		PlaybackOffsetMs: mousePath.PlaybackOffsetMS,
+		VideoOffsetMs:    mousePath.VideoOffsetMS,
 	}), nil
 }
 
@@ -841,7 +877,9 @@ func (h *HubServer) GetPlayerScenarioHistory(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	benchmarkRanks, err := h.fetchScenarioBenchmarkRanks(ctx, req.Msg.GetHandle(), history.ScenarioName, nil)
+	benchmarkCtx, cancel := context.WithTimeout(ctx, optionalBenchmarkTimeout)
+	defer cancel()
+	benchmarkRanks, err := h.fetchScenarioBenchmarkRanks(benchmarkCtx, req.Msg.GetHandle(), history.ScenarioName, nil)
 	if err != nil {
 		benchmarkRanks = nil
 	}

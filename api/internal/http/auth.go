@@ -2,8 +2,8 @@ package httpserver
 
 import (
 	"bytes"
-	"encoding/csv"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,12 +45,12 @@ type discordUser struct {
 }
 
 type sessionResponse struct {
-	Authenticated bool                      `json:"authenticated"`
-	IsAdmin       bool                      `json:"isAdmin"`
-	AdminConfigured bool                    `json:"adminConfigured"`
-	AdminReason     string                  `json:"adminReason,omitempty"`
-	User          *store.AuthUser           `json:"user,omitempty"`
-	Tokens        []store.UploadTokenRecord `json:"tokens,omitempty"`
+	Authenticated   bool                      `json:"authenticated"`
+	IsAdmin         bool                      `json:"isAdmin"`
+	AdminConfigured bool                      `json:"adminConfigured"`
+	AdminReason     string                    `json:"adminReason,omitempty"`
+	User            *store.AuthUser           `json:"user,omitempty"`
+	Tokens          []store.UploadTokenRecord `json:"tokens,omitempty"`
 }
 
 type createTokenRequest struct {
@@ -71,12 +71,12 @@ type deviceStartRequest struct {
 }
 
 type deviceStartResponse struct {
-	DeviceCode               string `json:"deviceCode"`
-	UserCode                 string `json:"userCode"`
-	VerificationURI          string `json:"verificationUri"`
-	VerificationURIComplete  string `json:"verificationUriComplete"`
-	ExpiresIn                int64  `json:"expiresIn"`
-	Interval                 int64  `json:"interval"`
+	DeviceCode              string `json:"deviceCode"`
+	UserCode                string `json:"userCode"`
+	VerificationURI         string `json:"verificationUri"`
+	VerificationURIComplete string `json:"verificationUriComplete"`
+	ExpiresIn               int64  `json:"expiresIn"`
+	Interval                int64  `json:"interval"`
 }
 
 type devicePollRequest struct {
@@ -599,8 +599,10 @@ func (h *authHandler) handleMousePathUpload(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var payload struct {
-		Points          []store.MousePathPoint `json:"points"`
-		HitTimestampsMS []uint64               `json:"hitTimestampsMs"`
+		Points           []store.MousePathPoint `json:"points"`
+		HitTimestampsMS  []uint64               `json:"hitTimestampsMs"`
+		PlaybackOffsetMS uint64                 `json:"playbackOffsetMs"`
+		VideoOffsetMS    uint64                 `json:"videoOffsetMs"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -610,15 +612,47 @@ func (h *authHandler) handleMousePathUpload(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "empty mouse path", http.StatusBadRequest)
 		return
 	}
-	if err := h.store.UpsertMousePath(r.Context(), target.StoredSessionID, payload.Points, payload.HitTimestampsMS); err != nil {
+	if err := h.store.UpsertMousePath(
+		r.Context(),
+		target.StoredSessionID,
+		payload.Points,
+		payload.HitTimestampsMS,
+		payload.PlaybackOffsetMS,
+		payload.VideoOffsetMS,
+	); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	firstPointMS := uint64(0)
+	lastPointMS := uint64(0)
+	if len(payload.Points) > 0 {
+		firstPointMS = payload.Points[0].Timestamp
+		lastPointMS = payload.Points[len(payload.Points)-1].Timestamp
+	}
+	firstHitMS := uint64(0)
+	lastHitMS := uint64(0)
+	if len(payload.HitTimestampsMS) > 0 {
+		firstHitMS = payload.HitTimestampsMS[0]
+		lastHitMS = payload.HitTimestampsMS[len(payload.HitTimestampsMS)-1]
+	}
+	log.Printf(
+		"mouse_path_upload: run=%q stored_session=%q points=%d hits=%d offset_ms=%d video_offset_ms=%d first_point_ms=%d last_point_ms=%d first_hit_ms=%d last_hit_ms=%d",
+		target.PublicRunID,
+		target.StoredSessionID,
+		len(payload.Points),
+		len(payload.HitTimestampsMS),
+		payload.PlaybackOffsetMS,
+		payload.VideoOffsetMS,
+		firstPointMS,
+		lastPointMS,
+		firstHitMS,
+		lastHitMS,
+	)
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"ok":              true,
-		"runId":           target.PublicRunID,
-		"pointCount":      len(payload.Points),
-		"hitMarkerCount":  len(payload.HitTimestampsMS),
+		"ok":             true,
+		"runId":          target.PublicRunID,
+		"pointCount":     len(payload.Points),
+		"hitMarkerCount": len(payload.HitTimestampsMS),
 	})
 }
 
@@ -635,16 +669,17 @@ func (h *authHandler) handleMousePathMeta(w http.ResponseWriter, r *http.Request
 	mousePath, err := h.store.GetMousePath(r.Context(), runID)
 	if err != nil {
 		writeJSON(w, http.StatusOK, map[string]any{
-			"available": false,
-			"points": []store.MousePathPoint{},
+			"available":       false,
+			"points":          []store.MousePathPoint{},
 			"hitTimestampsMs": []uint64{},
 		})
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"available": true,
-		"points": mousePath.Points,
-		"hitTimestampsMs": mousePath.HitTimestampsMS,
+		"available":        true,
+		"points":           mousePath.Points,
+		"hitTimestampsMs":  mousePath.HitTimestampsMS,
+		"playbackOffsetMs": mousePath.PlaybackOffsetMS,
 	})
 }
 

@@ -285,6 +285,8 @@ message GetMousePathResponse {
   bool available = 1;
   repeated MousePathPoint points = 2;
   repeated uint64 hit_timestamps_ms = 3;
+  uint64 playback_offset_ms = 4;
+  uint64 video_offset_ms = 5;
 }
 
 message GetLeaderboardRequest {
