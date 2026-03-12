@@ -63,6 +63,12 @@ message IngestSessionRequest {
   map<string, SessionSummaryValue> feature_set = 12;
   repeated TimelineSecond timeline_seconds = 13;
   repeated ContextWindow context_windows = 14;
+  string kovaaks_user_id = 15;
+  string kovaaks_username = 16;
+  string user_display_name = 17;
+  string avatar_url = 18;
+  string steam_id = 19;
+  string steam_display_name = 20;
 }
 
 message IngestSessionResponse {
@@ -113,6 +119,7 @@ message CommunityProfilePreview {
   uint32 run_count = 4;
   uint32 scenario_count = 5;
   string primary_scenario_type = 6;
+  bool is_verified = 7;
 }
 
 message GetOverviewRequest {}
@@ -147,6 +154,7 @@ message GetRunResponse {
   repeated ContextWindow context_windows = 13;
   string run_id = 14;
   repeated RunPreview scenario_runs = 15;
+  repeated ScenarioBenchmarkRank benchmark_ranks = 16;
 }
 
 message GetScenarioPageRequest {
@@ -184,6 +192,8 @@ message GetProfileResponse {
   repeated TopScenario top_scenarios = 10;
   repeated RunPreview recent_runs = 11;
   repeated RunPreview personal_bests = 12;
+  bool is_verified = 13;
+  repeated BenchmarkSummary benchmarks = 14;
 }
 
 message SearchRequest {
@@ -204,6 +214,7 @@ message SearchProfileResult {
   uint32 run_count = 4;
   uint32 scenario_count = 5;
   string primary_scenario_type = 6;
+  bool is_verified = 7;
 }
 
 message ReplayPreview {
@@ -229,6 +240,7 @@ message SearchResponse {
   repeated SearchProfileResult profiles = 3;
   repeated ReplayPreview runs = 4;
   repeated ReplayPreview replays = 5;
+  repeated BenchmarkListItem benchmarks = 6;
 }
 
 message ListReplaysRequest {
@@ -299,6 +311,77 @@ message GetPlayerScenarioHistoryResponse {
   double best_accuracy = 7;
   double average_accuracy = 8;
   int32 run_count = 9;
+  repeated ScenarioBenchmarkRank benchmark_ranks = 10;
+}
+
+message BenchmarkRankVisual {
+  uint32 rank_index = 1;
+  string rank_name = 2;
+  string icon_url = 3;
+  string color = 4;
+  string frame_url = 5;
+}
+
+message BenchmarkSummary {
+  uint32 benchmark_id = 1;
+  string benchmark_name = 2;
+  string benchmark_icon_url = 3;
+  string benchmark_author = 4;
+  string benchmark_type = 5;
+  BenchmarkRankVisual overall_rank = 6;
+}
+
+message ScenarioBenchmarkRank {
+  uint32 benchmark_id = 1;
+  string benchmark_name = 2;
+  string benchmark_icon_url = 3;
+  string category_name = 4;
+  double scenario_score = 5;
+  uint32 leaderboard_rank = 6;
+  uint32 leaderboard_id = 7;
+  BenchmarkRankVisual scenario_rank = 8;
+}
+
+message BenchmarkThreshold {
+  uint32 rank_index = 1;
+  string rank_name = 2;
+  string icon_url = 3;
+  string color = 4;
+  double score = 5;
+}
+
+message BenchmarkScenarioEntry {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string category_name = 3;
+  double score = 4;
+  uint32 leaderboard_rank = 5;
+  uint32 leaderboard_id = 6;
+  BenchmarkRankVisual scenario_rank = 7;
+  repeated BenchmarkThreshold thresholds = 8;
+}
+
+message BenchmarkCategoryPage {
+  string category_name = 1;
+  uint32 category_rank = 2;
+  repeated BenchmarkScenarioEntry scenarios = 3;
+}
+
+message GetBenchmarkPageRequest {
+  string handle = 1;
+  uint32 benchmark_id = 2;
+}
+
+message GetBenchmarkPageResponse {
+  string user_handle = 1;
+  string user_display_name = 2;
+  uint32 benchmark_id = 3;
+  string benchmark_name = 4;
+  string benchmark_icon_url = 5;
+  string benchmark_author = 6;
+  string benchmark_type = 7;
+  BenchmarkRankVisual overall_rank = 8;
+  repeated BenchmarkCategoryPage categories = 9;
 }
 
 message TypeProfileBand {
@@ -361,6 +444,41 @@ message GetAimFingerprintResponse {
   AimFingerprint overall = 1;
 }
 
+message ListBenchmarksRequest {}
+
+message BenchmarkListItem {
+  uint32 benchmark_id = 1;
+  string benchmark_name = 2;
+  string benchmark_icon_url = 3;
+  string benchmark_author = 4;
+  string benchmark_type = 5;
+  uint32 player_count = 6;
+}
+
+message ListBenchmarksResponse {
+  repeated BenchmarkListItem benchmarks = 1;
+}
+
+message GetBenchmarkLeaderboardRequest {
+  uint32 benchmark_id = 1;
+}
+
+message BenchmarkLeaderboardEntry {
+  string user_handle = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string overall_rank_name = 4;
+  string overall_rank_icon_url = 5;
+  uint32 overall_rank_index = 6;
+}
+
+message GetBenchmarkLeaderboardResponse {
+  uint32 benchmark_id = 1;
+  string benchmark_name = 2;
+  string benchmark_icon_url = 3;
+  repeated BenchmarkLeaderboardEntry entries = 4;
+}
+
 service HubService {
   rpc GetHealth(HealthRequest) returns (HealthResponse);
   rpc IngestSession(IngestSessionRequest) returns (IngestSessionResponse);
@@ -375,6 +493,9 @@ service HubService {
   rpc GetMousePath(GetMousePathRequest) returns (GetMousePathResponse);
   rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
   rpc GetPlayerScenarioHistory(GetPlayerScenarioHistoryRequest) returns (GetPlayerScenarioHistoryResponse);
+  rpc GetBenchmarkPage(GetBenchmarkPageRequest) returns (GetBenchmarkPageResponse);
   rpc GetAimProfile(GetAimProfileRequest) returns (GetAimProfileResponse);
   rpc GetAimFingerprint(GetAimFingerprintRequest) returns (GetAimFingerprintResponse);
+  rpc ListBenchmarks(ListBenchmarksRequest) returns (ListBenchmarksResponse);
+  rpc GetBenchmarkLeaderboard(GetBenchmarkLeaderboardRequest) returns (GetBenchmarkLeaderboardResponse);
 }

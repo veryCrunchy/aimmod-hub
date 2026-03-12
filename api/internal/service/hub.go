@@ -4,22 +4,29 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	"connectrpc.com/connect"
 
+	"github.com/veryCrunchy/aimmod-hub/api/internal/kovaaksbenchmarks"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 	hubv1connect "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1/hubv1connect"
 )
 
 type HubServer struct {
-	version string
-	store   *store.Store
+	version    string
+	store      *store.Store
+	benchmarks *kovaaksbenchmarks.Client
 }
 
 func NewHubServer(version string, store *store.Store) *HubServer {
-	return &HubServer{version: version, store: store}
+	return &HubServer{
+		version:    version,
+		store:      store,
+		benchmarks: kovaaksbenchmarks.NewClient(),
+	}
 }
 
 func (s *HubServer) Store() *store.Store {
@@ -43,15 +50,15 @@ func (s *HubServer) IngestAuthorized(
 	authHeader string,
 	req *hubv1.IngestSessionRequest,
 ) (*hubv1.IngestSessionResponse, error) {
-	if authHeader = strings.TrimSpace(authHeader); authHeader != "" {
-		authUser, err := s.store.GetUserByUploadToken(ctx, authHeader)
+	authHeader = strings.TrimSpace(authHeader)
+	var authUser *store.AuthUser
+	if authHeader != "" {
+		resolvedUser, err := s.store.GetUserByUploadToken(ctx, authHeader)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeUnauthenticated, err)
 		}
-		if req.GetUserExternalId() != "" && req.GetUserExternalId() != authUser.UserExternalID {
-			return nil, connect.NewError(connect.CodePermissionDenied, errors.New("upload token does not match user_external_id"))
-		}
-		req.UserExternalId = authUser.UserExternalID
+		req.UserExternalId = resolvedUser.UserExternalID
+		authUser = &resolvedUser
 	}
 
 	run, err := buildIngestedRun(req)
@@ -60,8 +67,13 @@ func (s *HubServer) IngestAuthorized(
 		return nil, err
 	}
 
-	if err := s.store.SaveIngestedRun(ctx, run); err != nil {
+	if err := s.store.SaveIngestedRun(ctx, run, authUser); err != nil {
 		s.recordIngestFailure(ctx, req, err)
+		if strings.Contains(err.Error(), "already verified") ||
+			strings.Contains(err.Error(), "identity conflict") ||
+			strings.Contains(err.Error(), "belongs to a verified profile") {
+			return nil, connect.NewError(connect.CodePermissionDenied, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -152,6 +164,11 @@ func (s *HubServer) GetRun(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
+	benchmarkRanks, err := s.fetchScenarioBenchmarkRanks(ctx, run.UserHandle, run.ScenarioName, nil)
+	if err != nil {
+		benchmarkRanks = nil
+	}
+
 	return connect.NewResponse(&hubv1.GetRunResponse{
 		SessionId:       run.SessionID,
 		ScenarioName:    run.ScenarioName,
@@ -168,6 +185,7 @@ func (s *HubServer) GetRun(
 		ContextWindows:  run.ContextWindows,
 		RunId:           run.PublicRunID,
 		ScenarioRuns:    run.ScenarioRuns,
+		BenchmarkRanks:  benchmarkRanks,
 	}), nil
 }
 
@@ -214,11 +232,17 @@ func (s *HubServer) GetProfile(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
+	benchmarks, _, err := s.fetchProfileBenchmarks(ctx, handle)
+	if err != nil {
+		benchmarks = nil
+	}
+
 	return connect.NewResponse(&hubv1.GetProfileResponse{
 		UserExternalId:      profile.UserExternalID,
 		UserHandle:          profile.UserHandle,
 		UserDisplayName:     profile.UserDisplayName,
 		AvatarUrl:           profile.AvatarURL,
+		IsVerified:          profile.IsVerified,
 		RunCount:            profile.RunCount,
 		ScenarioCount:       profile.ScenarioCount,
 		PrimaryScenarioType: profile.PrimaryScenarioType,
@@ -227,6 +251,7 @@ func (s *HubServer) GetProfile(
 		TopScenarios:        profile.TopScenarios,
 		RecentRuns:          profile.RecentRuns,
 		PersonalBests:       profile.PersonalBests,
+		Benchmarks:          benchmarks,
 	}), nil
 }
 
@@ -244,6 +269,7 @@ func searchProfileResult(record store.SearchProfileRecord) *hubv1.SearchProfileR
 		UserHandle:          record.UserHandle,
 		UserDisplayName:     record.UserDisplayName,
 		AvatarUrl:           record.AvatarURL,
+		IsVerified:          record.IsVerified,
 		RunCount:            record.RunCount,
 		ScenarioCount:       record.ScenarioCount,
 		PrimaryScenarioType: record.PrimaryScenarioType,
@@ -269,21 +295,406 @@ func replayPreview(record store.SearchRunRecord) *hubv1.ReplayPreview {
 	}
 }
 
+func slugifyScenarioName(value string) string {
+	value = strings.TrimSpace(strings.ToLower(value))
+	var out strings.Builder
+	lastDash := false
+	for _, r := range value {
+		switch {
+		case r >= 'a' && r <= 'z':
+			out.WriteRune(r)
+			lastDash = false
+		case r >= '0' && r <= '9':
+			out.WriteRune(r)
+			lastDash = false
+		default:
+			if out.Len() > 0 && !lastDash {
+				out.WriteByte('-')
+				lastDash = true
+			}
+		}
+	}
+	return strings.Trim(out.String(), "-")
+}
+
+func benchmarkRankVisual(rank kovaaksbenchmarks.BenchmarkRankVisual) *hubv1.BenchmarkRankVisual {
+	return &hubv1.BenchmarkRankVisual{
+		RankIndex: rank.RankIndex,
+		RankName:  rank.RankName,
+		IconUrl:   rank.IconURL,
+		Color:     rank.Color,
+		FrameUrl:  rank.FrameURL,
+	}
+}
+
+func benchmarkSummary(summary kovaaksbenchmarks.ProfileBenchmarkSummary) *hubv1.BenchmarkSummary {
+	return &hubv1.BenchmarkSummary{
+		BenchmarkId:      summary.BenchmarkID,
+		BenchmarkName:    summary.BenchmarkName,
+		BenchmarkIconUrl: summary.BenchmarkIconURL,
+		BenchmarkAuthor:  summary.BenchmarkAuthor,
+		BenchmarkType:    summary.BenchmarkType,
+		OverallRank: &hubv1.BenchmarkRankVisual{
+			RankName: summary.OverallRankName,
+			IconUrl:  summary.OverallRankIcon,
+			Color:    summary.OverallRankColor,
+		},
+	}
+}
+
+func scenarioBenchmarkRank(rank kovaaksbenchmarks.ScenarioBenchmarkRank) *hubv1.ScenarioBenchmarkRank {
+	return &hubv1.ScenarioBenchmarkRank{
+		BenchmarkId:      rank.BenchmarkID,
+		BenchmarkName:    rank.BenchmarkName,
+		BenchmarkIconUrl: rank.BenchmarkIconURL,
+		CategoryName:     rank.CategoryName,
+		ScenarioScore:    rank.ScenarioScore,
+		LeaderboardRank:  rank.LeaderboardRank,
+		LeaderboardId:    rank.LeaderboardID,
+		ScenarioRank:     benchmarkRankVisual(rank.ScenarioRank),
+	}
+}
+
+func benchmarkThreshold(threshold kovaaksbenchmarks.BenchmarkThreshold) *hubv1.BenchmarkThreshold {
+	return &hubv1.BenchmarkThreshold{
+		RankIndex: threshold.RankIndex,
+		RankName:  threshold.RankName,
+		IconUrl:   threshold.IconURL,
+		Color:     threshold.Color,
+		Score:     threshold.Score,
+	}
+}
+
+func benchmarkScenarioEntry(entry kovaaksbenchmarks.BenchmarkScenarioPage) *hubv1.BenchmarkScenarioEntry {
+	thresholds := make([]*hubv1.BenchmarkThreshold, 0, len(entry.Thresholds))
+	for _, threshold := range entry.Thresholds {
+		thresholds = append(thresholds, benchmarkThreshold(threshold))
+	}
+	return &hubv1.BenchmarkScenarioEntry{
+		ScenarioName:    entry.ScenarioName,
+		ScenarioSlug:    slugifyScenarioName(entry.ScenarioName),
+		CategoryName:    entry.CategoryName,
+		Score:           entry.Score,
+		LeaderboardRank: entry.LeaderboardRank,
+		LeaderboardId:   entry.LeaderboardID,
+		ScenarioRank:    benchmarkRankVisual(entry.ScenarioRank),
+		Thresholds:      thresholds,
+	}
+}
+
+func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) ([]*hubv1.BenchmarkSummary, []kovaaksbenchmarks.ProfileBenchmarkSummary, error) {
+	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
+	if err != nil {
+		return nil, nil, err
+	}
+	items, err := s.benchmarks.ListPlayerBenchmarks(ctx, identity.KovaaksUsername)
+	if err != nil {
+		return nil, nil, err
+	}
+	out := make([]*hubv1.BenchmarkSummary, 0, len(items))
+	for _, item := range items {
+		out = append(out, benchmarkSummary(item))
+	}
+	return out, items, nil
+}
+
+func (s *HubServer) fetchScenarioBenchmarkRanks(
+	ctx context.Context,
+	handle string,
+	scenarioName string,
+	preloaded []kovaaksbenchmarks.ProfileBenchmarkSummary,
+) ([]*hubv1.ScenarioBenchmarkRank, error) {
+	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	items := preloaded
+	if len(items) == 0 {
+		items, err = s.benchmarks.ListPlayerBenchmarks(ctx, identity.KovaaksUsername)
+		if err != nil {
+			return nil, err
+		}
+	}
+	ranks, err := s.benchmarks.ListScenarioRanks(ctx, identity.SteamID, scenarioName, items)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*hubv1.ScenarioBenchmarkRank, 0, len(ranks))
+	for _, rank := range ranks {
+		out = append(out, scenarioBenchmarkRank(rank))
+	}
+	return out, nil
+}
+
+func (s *HubServer) GetBenchmarkPage(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetBenchmarkPageRequest],
+) (*connect.Response[hubv1.GetBenchmarkPageResponse], error) {
+	handle := strings.TrimSpace(req.Msg.GetHandle())
+	if handle == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("handle is required"))
+	}
+	benchmarkID := req.Msg.GetBenchmarkId()
+	if benchmarkID == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("benchmark_id is required"))
+	}
+
+	profile, err := s.store.GetProfile(ctx, handle)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+
+	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+
+	_, preloaded, err := s.fetchProfileBenchmarks(ctx, handle)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var summary *kovaaksbenchmarks.ProfileBenchmarkSummary
+	for i := range preloaded {
+		if preloaded[i].BenchmarkID == benchmarkID {
+			summary = &preloaded[i]
+			break
+		}
+	}
+	if summary == nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark not found for this player"))
+	}
+
+	detail, categories, err := s.benchmarks.BuildBenchmarkPage(ctx, *summary, identity.SteamID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if detail == nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark detail not found"))
+	}
+
+	outCategories := make([]*hubv1.BenchmarkCategoryPage, 0, len(categories))
+	for _, category := range categories {
+		scenarios := make([]*hubv1.BenchmarkScenarioEntry, 0, len(category.Scenarios))
+		for _, scenario := range category.Scenarios {
+			scenarios = append(scenarios, benchmarkScenarioEntry(scenario))
+		}
+		outCategories = append(outCategories, &hubv1.BenchmarkCategoryPage{
+			CategoryName: category.CategoryName,
+			CategoryRank: category.CategoryRank,
+			Scenarios:    scenarios,
+		})
+	}
+
+	return connect.NewResponse(&hubv1.GetBenchmarkPageResponse{
+		UserHandle:       profile.UserHandle,
+		UserDisplayName:  profile.UserDisplayName,
+		BenchmarkId:      summary.BenchmarkID,
+		BenchmarkName:    summary.BenchmarkName,
+		BenchmarkIconUrl: summary.BenchmarkIconURL,
+		BenchmarkAuthor:  summary.BenchmarkAuthor,
+		BenchmarkType:    summary.BenchmarkType,
+		OverallRank: benchmarkRankVisual(kovaaksbenchmarks.BenchmarkRankVisual{
+			RankName: summary.OverallRankName,
+			IconURL:  summary.OverallRankIcon,
+			Color:    summary.OverallRankColor,
+		}),
+		Categories: outCategories,
+	}), nil
+}
+
+func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
+	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	type fetchResult struct {
+		items []kovaaksbenchmarks.ProfileBenchmarkSummary
+	}
+	results := make(chan fetchResult, len(users))
+	sem := make(chan struct{}, 8)
+	var wg sync.WaitGroup
+	for _, u := range users {
+		wg.Add(1)
+		go func(username string) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			items, _ := s.benchmarks.ListPlayerBenchmarks(ctx, username)
+			results <- fetchResult{items}
+		}(u.KovaaksUsername)
+	}
+	go func() { wg.Wait(); close(results) }()
+
+	type agg struct {
+		summary kovaaksbenchmarks.ProfileBenchmarkSummary
+		count   uint32
+	}
+	byID := map[uint32]*agg{}
+	for r := range results {
+		for _, b := range r.items {
+			if b.BenchmarkID == 0 {
+				continue
+			}
+			if e, ok := byID[b.BenchmarkID]; ok {
+				e.count++
+			} else {
+				byID[b.BenchmarkID] = &agg{summary: b, count: 1}
+			}
+		}
+	}
+
+	out := make([]*hubv1.BenchmarkListItem, 0, len(byID))
+	for _, e := range byID {
+		out = append(out, &hubv1.BenchmarkListItem{
+			BenchmarkId:      e.summary.BenchmarkID,
+			BenchmarkName:    e.summary.BenchmarkName,
+			BenchmarkIconUrl: e.summary.BenchmarkIconURL,
+			BenchmarkAuthor:  e.summary.BenchmarkAuthor,
+			BenchmarkType:    e.summary.BenchmarkType,
+			PlayerCount:      e.count,
+		})
+	}
+	// Sort by player count desc, then name asc.
+	for i := 1; i < len(out); i++ {
+		for j := i; j > 0; j-- {
+			a, b := out[j-1], out[j]
+			if a.PlayerCount < b.PlayerCount || (a.PlayerCount == b.PlayerCount && a.BenchmarkName > b.BenchmarkName) {
+				out[j-1], out[j] = out[j], out[j-1]
+			} else {
+				break
+			}
+		}
+	}
+	return out, nil
+}
+
+func (s *HubServer) ListBenchmarks(
+	ctx context.Context,
+	_ *connect.Request[hubv1.ListBenchmarksRequest],
+) (*connect.Response[hubv1.ListBenchmarksResponse], error) {
+	out, err := s.buildBenchmarkList(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&hubv1.ListBenchmarksResponse{Benchmarks: out}), nil
+}
+
+func (s *HubServer) GetBenchmarkLeaderboard(
+	ctx context.Context,
+	req *connect.Request[hubv1.GetBenchmarkLeaderboardRequest],
+) (*connect.Response[hubv1.GetBenchmarkLeaderboardResponse], error) {
+	benchmarkID := req.Msg.GetBenchmarkId()
+	if benchmarkID == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("benchmark_id is required"))
+	}
+
+	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	type fetchResult struct {
+		entry  *hubv1.BenchmarkLeaderboardEntry
+		rankID uint32
+	}
+	results := make(chan fetchResult, len(users))
+	sem := make(chan struct{}, 8)
+	var wg sync.WaitGroup
+
+	for _, u := range users {
+		wg.Add(1)
+		go func(u store.BenchmarkUserIdentity) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, benchmarkID, u.SteamID)
+			if err != nil || detail == nil || detail.OverallRank == 0 {
+				results <- fetchResult{}
+				return
+			}
+			rv := kovaaksbenchmarks.RankVisualFromDetail(detail, detail.OverallRank)
+			results <- fetchResult{
+				entry: &hubv1.BenchmarkLeaderboardEntry{
+					UserHandle:         u.UserHandle,
+					DisplayName:        u.DisplayName,
+					AvatarUrl:          u.AvatarURL,
+					OverallRankName:    rv.RankName,
+					OverallRankIconUrl: rv.IconURL,
+					OverallRankIndex:   detail.OverallRank,
+				},
+				rankID: detail.OverallRank,
+			}
+		}(u)
+	}
+	go func() { wg.Wait(); close(results) }()
+
+	var entries []*hubv1.BenchmarkLeaderboardEntry
+	var rankIDs []uint32
+	for r := range results {
+		if r.entry != nil {
+			entries = append(entries, r.entry)
+			rankIDs = append(rankIDs, r.rankID)
+		}
+	}
+
+	// Sort by rank index descending (higher = better).
+	for i := 1; i < len(entries); i++ {
+		for j := i; j > 0; j-- {
+			if rankIDs[j] > rankIDs[j-1] {
+				entries[j], entries[j-1] = entries[j-1], entries[j]
+				rankIDs[j], rankIDs[j-1] = rankIDs[j-1], rankIDs[j]
+			} else {
+				break
+			}
+		}
+	}
+
+	// Look up benchmark name from any user's benchmark list.
+	var benchmarkName, benchmarkIconURL string
+	for _, u := range users {
+		items, err := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
+		if err != nil {
+			continue
+		}
+		for _, item := range items {
+			if item.BenchmarkID == benchmarkID {
+				benchmarkName = item.BenchmarkName
+				benchmarkIconURL = item.BenchmarkIconURL
+				break
+			}
+		}
+		if benchmarkName != "" {
+			break
+		}
+	}
+
+	return connect.NewResponse(&hubv1.GetBenchmarkLeaderboardResponse{
+		BenchmarkId:      benchmarkID,
+		BenchmarkName:    benchmarkName,
+		BenchmarkIconUrl: benchmarkIconURL,
+		Entries:          entries,
+	}), nil
+}
+
 func (s *HubServer) Search(
 	ctx context.Context,
 	req *connect.Request[hubv1.SearchRequest],
 ) (*connect.Response[hubv1.SearchResponse], error) {
-	results, err := s.store.Search(ctx, strings.TrimSpace(req.Msg.GetQuery()))
+	query := strings.TrimSpace(req.Msg.GetQuery())
+	results, err := s.store.Search(ctx, query)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	resp := &hubv1.SearchResponse{
-		Query:    results.Query,
-		Scenarios: make([]*hubv1.SearchScenarioResult, 0, len(results.Scenarios)),
-		Profiles:  make([]*hubv1.SearchProfileResult, 0, len(results.Profiles)),
-		Runs:      make([]*hubv1.ReplayPreview, 0, len(results.Runs)),
-		Replays:   make([]*hubv1.ReplayPreview, 0, len(results.Replays)),
+		Query:      results.Query,
+		Scenarios:  make([]*hubv1.SearchScenarioResult, 0, len(results.Scenarios)),
+		Profiles:   make([]*hubv1.SearchProfileResult, 0, len(results.Profiles)),
+		Runs:       make([]*hubv1.ReplayPreview, 0, len(results.Runs)),
+		Replays:    make([]*hubv1.ReplayPreview, 0, len(results.Replays)),
+		Benchmarks: make([]*hubv1.BenchmarkListItem, 0),
 	}
 	for _, record := range results.Scenarios {
 		resp.Scenarios = append(resp.Scenarios, searchScenarioResult(record))
@@ -297,6 +708,22 @@ func (s *HubServer) Search(
 	for _, record := range results.Replays {
 		resp.Replays = append(resp.Replays, replayPreview(record))
 	}
+
+	if query != "" {
+		lower := strings.ToLower(query)
+		allBenchmarks, _ := s.buildBenchmarkList(ctx)
+		for _, b := range allBenchmarks {
+			if strings.Contains(strings.ToLower(b.BenchmarkName), lower) ||
+				strings.Contains(strings.ToLower(b.BenchmarkAuthor), lower) ||
+				strings.Contains(strings.ToLower(b.BenchmarkType), lower) {
+				resp.Benchmarks = append(resp.Benchmarks, b)
+				if len(resp.Benchmarks) >= 6 {
+					break
+				}
+			}
+		}
+	}
+
 	return connect.NewResponse(resp), nil
 }
 
@@ -414,6 +841,10 @@ func (h *HubServer) GetPlayerScenarioHistory(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	benchmarkRanks, err := h.fetchScenarioBenchmarkRanks(ctx, req.Msg.GetHandle(), history.ScenarioName, nil)
+	if err != nil {
+		benchmarkRanks = nil
+	}
 	return connect.NewResponse(&hubv1.GetPlayerScenarioHistoryResponse{
 		ScenarioName:    history.ScenarioName,
 		ScenarioSlug:    history.ScenarioSlug,
@@ -424,6 +855,7 @@ func (h *HubServer) GetPlayerScenarioHistory(
 		BestAccuracy:    history.BestAccuracy,
 		AverageAccuracy: history.AverageAccuracy,
 		RunCount:        history.RunCount,
+		BenchmarkRanks:  benchmarkRanks,
 	}), nil
 }
 

@@ -94,6 +94,14 @@ type deviceApproveRequest struct {
 	UserCode string `json:"userCode"`
 }
 
+type updateProfileHandleRequest struct {
+	Handle string `json:"handle"`
+}
+
+type updateProfileHandleResponse struct {
+	User *store.AuthUser `json:"user,omitempty"`
+}
+
 func requestBaseURL(r *http.Request) string {
 	if r == nil {
 		return ""
@@ -155,6 +163,7 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/auth/logout", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleLogout)))
 	mux.Handle("/auth/upload-tokens", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleUploadTokens)))
 	mux.Handle("/auth/upload-tokens/revoke", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleRevokeUploadToken)))
+	mux.Handle("/auth/profile-handle", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleUpdateProfileHandle)))
 	mux.Handle("/auth/device/start", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDeviceStart)))
 	mux.Handle("/auth/device/poll", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDevicePoll)))
 	mux.Handle("/auth/device/approve", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDeviceApprove)))
@@ -299,6 +308,33 @@ func (h *authHandler) handleSession(w http.ResponseWriter, r *http.Request) {
 			return adminReason
 		}(),
 	})
+}
+
+func (h *authHandler) handleUpdateProfileHandle(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, ok := h.requireSessionUser(w, r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var payload updateProfileHandleRequest
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid JSON body", http.StatusBadRequest)
+		return
+	}
+
+	updated, err := h.store.UpdateProfileHandle(r.Context(), user.UserID, payload.Handle)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, updateProfileHandleResponse{User: &updated})
 }
 
 func (h *authHandler) handleAdminOverview(w http.ResponseWriter, r *http.Request) {

@@ -3,8 +3,8 @@ package store
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,6 +19,8 @@ const schemaSQL = `
 CREATE TABLE IF NOT EXISTS hub_users (
   id BIGSERIAL PRIMARY KEY,
   external_id TEXT NOT NULL UNIQUE,
+  aimmod_user_id TEXT NOT NULL DEFAULT '',
+	profile_handle TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -93,6 +95,7 @@ CREATE TABLE IF NOT EXISTS linked_accounts (
   username TEXT NOT NULL DEFAULT '',
   display_name TEXT NOT NULL DEFAULT '',
   avatar_url TEXT NOT NULL DEFAULT '',
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (provider, provider_account_id),
@@ -175,25 +178,65 @@ CREATE INDEX IF NOT EXISTS idx_ingest_failures_created_at
   ON ingest_failures(created_at DESC);
 `
 
+const hubUserIdentityViewSQL = `
+CREATE OR REPLACE VIEW hub_user_identity AS
+SELECT
+  hu.id AS user_id,
+  hu.external_id,
+	COALESCE(NULLIF(hu.profile_handle, ''), COALESCE(NULLIF(best.username, ''), hu.external_id)) AS user_handle,
+  COALESCE(NULLIF(best.display_name, ''), COALESCE(NULLIF(best.username, ''), hu.external_id)) AS user_display_name,
+  COALESCE(best.avatar_url, '') AS avatar_url,
+  COALESCE(best.verified, FALSE) AS is_verified
+FROM hub_users hu
+LEFT JOIN LATERAL (
+  SELECT
+    la.username,
+    la.display_name,
+    la.avatar_url,
+    la.verified
+  FROM linked_accounts la
+  WHERE la.user_id = hu.id
+  ORDER BY
+    CASE
+      WHEN la.verified AND la.provider = 'kovaaks' THEN 1
+      WHEN la.verified AND la.provider = 'steam' THEN 2
+      WHEN la.verified AND la.provider = 'discord' THEN 3
+      WHEN NOT la.verified AND la.provider = 'kovaaks' THEN 4
+      WHEN NOT la.verified AND la.provider = 'steam' THEN 5
+      WHEN la.provider = 'discord' THEN 6
+      ELSE 7
+    END,
+    la.updated_at DESC,
+    la.id DESC
+  LIMIT 1
+) AS best ON TRUE;
+`
+
 type Store struct {
 	pool *pgxpool.Pool
 }
 
 type IngestedRun struct {
-	AppVersion     string
-	SchemaVersion  uint32
-	UserExternalID string
-	SessionID      string
-	ScenarioName   string
-	ScenarioType   string
-	Score          float64
-	Accuracy       float64
-	DurationMS     uint64
-	PlayedAt       time.Time
-	SummaryJSON    []byte
-	FeatureJSON    []byte
-	Timeline       []TimelineSecond
-	ContextWindows []ContextWindow
+	AppVersion       string
+	SchemaVersion    uint32
+	UserExternalID   string
+	KovaaksUserID    string
+	KovaaksUsername  string
+	UserDisplayName  string
+	AvatarURL        string
+	SteamID          string
+	SteamDisplayName string
+	SessionID        string
+	ScenarioName     string
+	ScenarioType     string
+	Score            float64
+	Accuracy         float64
+	DurationMS       uint64
+	PlayedAt         time.Time
+	SummaryJSON      []byte
+	FeatureJSON      []byte
+	Timeline         []TimelineSecond
+	ContextWindows   []ContextWindow
 }
 
 type TimelineSecond struct {
@@ -273,6 +316,9 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 		return fmt.Errorf("ensure schema: %w", err)
 	}
 	if _, err := s.pool.Exec(ctx, `
+		ALTER TABLE hub_users ADD COLUMN IF NOT EXISTS aimmod_user_id TEXT NOT NULL DEFAULT '';
+		ALTER TABLE hub_users ADD COLUMN IF NOT EXISTS profile_handle TEXT NOT NULL DEFAULT '';
+		ALTER TABLE linked_accounts ADD COLUMN IF NOT EXISTS verified BOOLEAN NOT NULL DEFAULT FALSE;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS source_session_id TEXT;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS public_run_id TEXT;
 		ALTER TABLE run_mouse_paths ADD COLUMN IF NOT EXISTS hit_timestamps_json JSONB NOT NULL DEFAULT '[]'::jsonb;
@@ -286,6 +332,29 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 			ON scenario_runs(played_at DESC);
 	`); err != nil {
 		return fmt.Errorf("ensure scenario run identifiers: %w", err)
+	}
+	if err := s.backfillAimmodUserIDs(ctx); err != nil {
+		return fmt.Errorf("backfill aimmod user ids: %w", err)
+	}
+	if _, err := s.pool.Exec(ctx, `
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_hub_users_aimmod_user_id
+			ON hub_users (aimmod_user_id)
+			WHERE aimmod_user_id <> '';
+	`); err != nil {
+		return fmt.Errorf("ensure aimmod user id index: %w", err)
+	}
+	if err := s.backfillProfileHandles(ctx); err != nil {
+		return fmt.Errorf("backfill profile handles: %w", err)
+	}
+	if _, err := s.pool.Exec(ctx, `
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_hub_users_profile_handle_ci
+			ON hub_users (LOWER(profile_handle))
+			WHERE profile_handle <> '';
+	`); err != nil {
+		return fmt.Errorf("ensure profile handle index: %w", err)
+	}
+	if _, err := s.pool.Exec(ctx, hubUserIdentityViewSQL); err != nil {
+		return fmt.Errorf("ensure hub user identity view: %w", err)
 	}
 	if _, err := s.pool.Exec(ctx, `
 		DELETE FROM ingest_failures
@@ -301,7 +370,7 @@ func makePublicRunID(userExternalID string, sourceSessionID string) string {
 	return "run_" + hex.EncodeToString(sum[:16])
 }
 
-func (s *Store) SaveIngestedRun(ctx context.Context, run IngestedRun) error {
+func (s *Store) SaveIngestedRun(ctx context.Context, run IngestedRun, authUser *AuthUser) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -310,18 +379,12 @@ func (s *Store) SaveIngestedRun(ctx context.Context, run IngestedRun) error {
 		_ = tx.Rollback(ctx)
 	}()
 
-	var userID int64
-	if err := tx.QueryRow(ctx, `
-		INSERT INTO hub_users (external_id)
-		VALUES ($1)
-		ON CONFLICT (external_id)
-		DO UPDATE SET updated_at = NOW()
-		RETURNING id
-	`, run.UserExternalID).Scan(&userID); err != nil {
-		return fmt.Errorf("upsert user: %w", err)
+	userID, resolvedExternalID, err := resolveIngestUserTx(ctx, tx, run, authUser)
+	if err != nil {
+		return err
 	}
 
-	storedRunID := makePublicRunID(run.UserExternalID, run.SessionID)
+	storedRunID := makePublicRunID(resolvedExternalID, run.SessionID)
 
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO scenario_runs (
@@ -437,13 +500,7 @@ func (s *Store) LinkDiscordAccount(ctx context.Context, link DiscordLink) error 
 	}()
 
 	var userID int64
-	if err := tx.QueryRow(ctx, `
-		INSERT INTO hub_users (external_id)
-		VALUES ($1)
-		ON CONFLICT (external_id)
-		DO UPDATE SET updated_at = NOW()
-		RETURNING id
-	`, link.UserExternalID).Scan(&userID); err != nil {
+	if userID, _, err = insertHubUserTx(ctx, tx, link.UserExternalID); err != nil {
 		return fmt.Errorf("upsert user: %w", err)
 	}
 
@@ -461,14 +518,16 @@ func (s *Store) LinkDiscordAccount(ctx context.Context, link DiscordLink) error 
 			provider_account_id,
 			username,
 			display_name,
-			avatar_url
+			avatar_url,
+			verified
 		)
-		VALUES ($1, 'discord', $2, $3, $4, $5)
+		VALUES ($1, 'discord', $2, $3, $4, $5, TRUE)
 		ON CONFLICT (provider, provider_account_id) DO UPDATE SET
 			user_id = EXCLUDED.user_id,
 			username = EXCLUDED.username,
 			display_name = EXCLUDED.display_name,
 			avatar_url = EXCLUDED.avatar_url,
+			verified = TRUE,
 			updated_at = NOW()
 	`, userID, link.DiscordUserID, link.Username, link.GlobalName, link.AvatarURL); err != nil {
 		return fmt.Errorf("upsert discord link: %w", err)
@@ -543,11 +602,10 @@ func (s *Store) ClearIngestFailuresForUser(ctx context.Context, handle string) (
 	tag, err := s.pool.Exec(ctx, `
 		DELETE FROM ingest_failures
 		WHERE LOWER(user_external_id) = (
-			SELECT LOWER(hu.external_id)
-			FROM hub_users hu
-			LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-			WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
-			   OR LOWER(hu.external_id) = $1
+			SELECT LOWER(hui.external_id)
+			FROM hub_user_identity hui
+			WHERE LOWER(hui.user_handle) = $1
+			   OR LOWER(hui.external_id) = $1
 			LIMIT 1
 		)
 	`, handle)

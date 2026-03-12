@@ -424,6 +424,36 @@ export class IngestSessionRequest extends Message<IngestSessionRequest> {
    */
   contextWindows: ContextWindow[] = [];
 
+  /**
+   * @generated from field: string kovaaks_user_id = 15;
+   */
+  kovaaksUserId = "";
+
+  /**
+   * @generated from field: string kovaaks_username = 16;
+   */
+  kovaaksUsername = "";
+
+  /**
+   * @generated from field: string user_display_name = 17;
+   */
+  userDisplayName = "";
+
+  /**
+   * @generated from field: string avatar_url = 18;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: string steam_id = 19;
+   */
+  steamId = "";
+
+  /**
+   * @generated from field: string steam_display_name = 20;
+   */
+  steamDisplayName = "";
+
   constructor(data?: PartialMessage<IngestSessionRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -446,6 +476,12 @@ export class IngestSessionRequest extends Message<IngestSessionRequest> {
     { no: 12, name: "feature_set", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: SessionSummaryValue} },
     { no: 13, name: "timeline_seconds", kind: "message", T: TimelineSecond, repeated: true },
     { no: 14, name: "context_windows", kind: "message", T: ContextWindow, repeated: true },
+    { no: 15, name: "kovaaks_user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 16, name: "kovaaks_username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 17, name: "user_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 18, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 19, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 20, name: "steam_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): IngestSessionRequest {
@@ -810,6 +846,11 @@ export class CommunityProfilePreview extends Message<CommunityProfilePreview> {
    */
   primaryScenarioType = "";
 
+  /**
+   * @generated from field: bool is_verified = 7;
+   */
+  isVerified = false;
+
   constructor(data?: PartialMessage<CommunityProfilePreview>) {
     super();
     proto3.util.initPartial(data, this);
@@ -824,6 +865,7 @@ export class CommunityProfilePreview extends Message<CommunityProfilePreview> {
     { no: 4, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 5, name: "scenario_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 6, name: "primary_scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "is_verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CommunityProfilePreview {
@@ -1063,6 +1105,11 @@ export class GetRunResponse extends Message<GetRunResponse> {
    */
   scenarioRuns: RunPreview[] = [];
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ScenarioBenchmarkRank benchmark_ranks = 16;
+   */
+  benchmarkRanks: ScenarioBenchmarkRank[] = [];
+
   constructor(data?: PartialMessage<GetRunResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1086,6 +1133,7 @@ export class GetRunResponse extends Message<GetRunResponse> {
     { no: 13, name: "context_windows", kind: "message", T: ContextWindow, repeated: true },
     { no: 14, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 15, name: "scenario_runs", kind: "message", T: RunPreview, repeated: true },
+    { no: 16, name: "benchmark_ranks", kind: "message", T: ScenarioBenchmarkRank, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRunResponse {
@@ -1340,6 +1388,16 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
    */
   personalBests: RunPreview[] = [];
 
+  /**
+   * @generated from field: bool is_verified = 13;
+   */
+  isVerified = false;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkSummary benchmarks = 14;
+   */
+  benchmarks: BenchmarkSummary[] = [];
+
   constructor(data?: PartialMessage<GetProfileResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1360,6 +1418,8 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
     { no: 10, name: "top_scenarios", kind: "message", T: TopScenario, repeated: true },
     { no: 11, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
     { no: 12, name: "personal_bests", kind: "message", T: RunPreview, repeated: true },
+    { no: 13, name: "is_verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 14, name: "benchmarks", kind: "message", T: BenchmarkSummary, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetProfileResponse {
@@ -1505,6 +1565,11 @@ export class SearchProfileResult extends Message<SearchProfileResult> {
    */
   primaryScenarioType = "";
 
+  /**
+   * @generated from field: bool is_verified = 7;
+   */
+  isVerified = false;
+
   constructor(data?: PartialMessage<SearchProfileResult>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1519,6 +1584,7 @@ export class SearchProfileResult extends Message<SearchProfileResult> {
     { no: 4, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 5, name: "scenario_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 6, name: "primary_scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "is_verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchProfileResult {
@@ -1682,6 +1748,11 @@ export class SearchResponse extends Message<SearchResponse> {
    */
   replays: ReplayPreview[] = [];
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkListItem benchmarks = 6;
+   */
+  benchmarks: BenchmarkListItem[] = [];
+
   constructor(data?: PartialMessage<SearchResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1695,6 +1766,7 @@ export class SearchResponse extends Message<SearchResponse> {
     { no: 3, name: "profiles", kind: "message", T: SearchProfileResult, repeated: true },
     { no: 4, name: "runs", kind: "message", T: ReplayPreview, repeated: true },
     { no: 5, name: "replays", kind: "message", T: ReplayPreview, repeated: true },
+    { no: 6, name: "benchmarks", kind: "message", T: BenchmarkListItem, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchResponse {
@@ -2241,6 +2313,11 @@ export class GetPlayerScenarioHistoryResponse extends Message<GetPlayerScenarioH
    */
   runCount = 0;
 
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ScenarioBenchmarkRank benchmark_ranks = 10;
+   */
+  benchmarkRanks: ScenarioBenchmarkRank[] = [];
+
   constructor(data?: PartialMessage<GetPlayerScenarioHistoryResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2258,6 +2335,7 @@ export class GetPlayerScenarioHistoryResponse extends Message<GetPlayerScenarioH
     { no: 7, name: "best_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 8, name: "average_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 9, name: "run_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 10, name: "benchmark_ranks", kind: "message", T: ScenarioBenchmarkRank, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPlayerScenarioHistoryResponse {
@@ -2274,6 +2352,530 @@ export class GetPlayerScenarioHistoryResponse extends Message<GetPlayerScenarioH
 
   static equals(a: GetPlayerScenarioHistoryResponse | PlainMessage<GetPlayerScenarioHistoryResponse> | undefined, b: GetPlayerScenarioHistoryResponse | PlainMessage<GetPlayerScenarioHistoryResponse> | undefined): boolean {
     return proto3.util.equals(GetPlayerScenarioHistoryResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkRankVisual
+ */
+export class BenchmarkRankVisual extends Message<BenchmarkRankVisual> {
+  /**
+   * @generated from field: uint32 rank_index = 1;
+   */
+  rankIndex = 0;
+
+  /**
+   * @generated from field: string rank_name = 2;
+   */
+  rankName = "";
+
+  /**
+   * @generated from field: string icon_url = 3;
+   */
+  iconUrl = "";
+
+  /**
+   * @generated from field: string color = 4;
+   */
+  color = "";
+
+  /**
+   * @generated from field: string frame_url = 5;
+   */
+  frameUrl = "";
+
+  constructor(data?: PartialMessage<BenchmarkRankVisual>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkRankVisual";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "rank_index", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "rank_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "color", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "frame_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkRankVisual {
+    return new BenchmarkRankVisual().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkRankVisual {
+    return new BenchmarkRankVisual().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkRankVisual {
+    return new BenchmarkRankVisual().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkRankVisual | PlainMessage<BenchmarkRankVisual> | undefined, b: BenchmarkRankVisual | PlainMessage<BenchmarkRankVisual> | undefined): boolean {
+    return proto3.util.equals(BenchmarkRankVisual, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkSummary
+ */
+export class BenchmarkSummary extends Message<BenchmarkSummary> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 2;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 3;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: string benchmark_author = 4;
+   */
+  benchmarkAuthor = "";
+
+  /**
+   * @generated from field: string benchmark_type = 5;
+   */
+  benchmarkType = "";
+
+  /**
+   * @generated from field: aimmod.hub.v1.BenchmarkRankVisual overall_rank = 6;
+   */
+  overallRank?: BenchmarkRankVisual;
+
+  constructor(data?: PartialMessage<BenchmarkSummary>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkSummary";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "benchmark_author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "benchmark_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "overall_rank", kind: "message", T: BenchmarkRankVisual },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkSummary {
+    return new BenchmarkSummary().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkSummary {
+    return new BenchmarkSummary().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkSummary {
+    return new BenchmarkSummary().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkSummary | PlainMessage<BenchmarkSummary> | undefined, b: BenchmarkSummary | PlainMessage<BenchmarkSummary> | undefined): boolean {
+    return proto3.util.equals(BenchmarkSummary, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ScenarioBenchmarkRank
+ */
+export class ScenarioBenchmarkRank extends Message<ScenarioBenchmarkRank> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 2;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 3;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: string category_name = 4;
+   */
+  categoryName = "";
+
+  /**
+   * @generated from field: double scenario_score = 5;
+   */
+  scenarioScore = 0;
+
+  /**
+   * @generated from field: uint32 leaderboard_rank = 6;
+   */
+  leaderboardRank = 0;
+
+  /**
+   * @generated from field: uint32 leaderboard_id = 7;
+   */
+  leaderboardId = 0;
+
+  /**
+   * @generated from field: aimmod.hub.v1.BenchmarkRankVisual scenario_rank = 8;
+   */
+  scenarioRank?: BenchmarkRankVisual;
+
+  constructor(data?: PartialMessage<ScenarioBenchmarkRank>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ScenarioBenchmarkRank";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "category_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "scenario_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "leaderboard_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "scenario_rank", kind: "message", T: BenchmarkRankVisual },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScenarioBenchmarkRank {
+    return new ScenarioBenchmarkRank().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScenarioBenchmarkRank {
+    return new ScenarioBenchmarkRank().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScenarioBenchmarkRank {
+    return new ScenarioBenchmarkRank().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ScenarioBenchmarkRank | PlainMessage<ScenarioBenchmarkRank> | undefined, b: ScenarioBenchmarkRank | PlainMessage<ScenarioBenchmarkRank> | undefined): boolean {
+    return proto3.util.equals(ScenarioBenchmarkRank, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkThreshold
+ */
+export class BenchmarkThreshold extends Message<BenchmarkThreshold> {
+  /**
+   * @generated from field: uint32 rank_index = 1;
+   */
+  rankIndex = 0;
+
+  /**
+   * @generated from field: string rank_name = 2;
+   */
+  rankName = "";
+
+  /**
+   * @generated from field: string icon_url = 3;
+   */
+  iconUrl = "";
+
+  /**
+   * @generated from field: string color = 4;
+   */
+  color = "";
+
+  /**
+   * @generated from field: double score = 5;
+   */
+  score = 0;
+
+  constructor(data?: PartialMessage<BenchmarkThreshold>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkThreshold";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "rank_index", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "rank_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "color", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkThreshold {
+    return new BenchmarkThreshold().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkThreshold {
+    return new BenchmarkThreshold().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkThreshold {
+    return new BenchmarkThreshold().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkThreshold | PlainMessage<BenchmarkThreshold> | undefined, b: BenchmarkThreshold | PlainMessage<BenchmarkThreshold> | undefined): boolean {
+    return proto3.util.equals(BenchmarkThreshold, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkScenarioEntry
+ */
+export class BenchmarkScenarioEntry extends Message<BenchmarkScenarioEntry> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string category_name = 3;
+   */
+  categoryName = "";
+
+  /**
+   * @generated from field: double score = 4;
+   */
+  score = 0;
+
+  /**
+   * @generated from field: uint32 leaderboard_rank = 5;
+   */
+  leaderboardRank = 0;
+
+  /**
+   * @generated from field: uint32 leaderboard_id = 6;
+   */
+  leaderboardId = 0;
+
+  /**
+   * @generated from field: aimmod.hub.v1.BenchmarkRankVisual scenario_rank = 7;
+   */
+  scenarioRank?: BenchmarkRankVisual;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkThreshold thresholds = 8;
+   */
+  thresholds: BenchmarkThreshold[] = [];
+
+  constructor(data?: PartialMessage<BenchmarkScenarioEntry>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkScenarioEntry";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "category_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "leaderboard_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "scenario_rank", kind: "message", T: BenchmarkRankVisual },
+    { no: 8, name: "thresholds", kind: "message", T: BenchmarkThreshold, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkScenarioEntry {
+    return new BenchmarkScenarioEntry().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkScenarioEntry {
+    return new BenchmarkScenarioEntry().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkScenarioEntry {
+    return new BenchmarkScenarioEntry().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkScenarioEntry | PlainMessage<BenchmarkScenarioEntry> | undefined, b: BenchmarkScenarioEntry | PlainMessage<BenchmarkScenarioEntry> | undefined): boolean {
+    return proto3.util.equals(BenchmarkScenarioEntry, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkCategoryPage
+ */
+export class BenchmarkCategoryPage extends Message<BenchmarkCategoryPage> {
+  /**
+   * @generated from field: string category_name = 1;
+   */
+  categoryName = "";
+
+  /**
+   * @generated from field: uint32 category_rank = 2;
+   */
+  categoryRank = 0;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkScenarioEntry scenarios = 3;
+   */
+  scenarios: BenchmarkScenarioEntry[] = [];
+
+  constructor(data?: PartialMessage<BenchmarkCategoryPage>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkCategoryPage";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "category_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "category_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "scenarios", kind: "message", T: BenchmarkScenarioEntry, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkCategoryPage {
+    return new BenchmarkCategoryPage().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkCategoryPage {
+    return new BenchmarkCategoryPage().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkCategoryPage {
+    return new BenchmarkCategoryPage().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkCategoryPage | PlainMessage<BenchmarkCategoryPage> | undefined, b: BenchmarkCategoryPage | PlainMessage<BenchmarkCategoryPage> | undefined): boolean {
+    return proto3.util.equals(BenchmarkCategoryPage, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetBenchmarkPageRequest
+ */
+export class GetBenchmarkPageRequest extends Message<GetBenchmarkPageRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  /**
+   * @generated from field: uint32 benchmark_id = 2;
+   */
+  benchmarkId = 0;
+
+  constructor(data?: PartialMessage<GetBenchmarkPageRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetBenchmarkPageRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkPageRequest {
+    return new GetBenchmarkPageRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetBenchmarkPageRequest {
+    return new GetBenchmarkPageRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetBenchmarkPageRequest {
+    return new GetBenchmarkPageRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetBenchmarkPageRequest | PlainMessage<GetBenchmarkPageRequest> | undefined, b: GetBenchmarkPageRequest | PlainMessage<GetBenchmarkPageRequest> | undefined): boolean {
+    return proto3.util.equals(GetBenchmarkPageRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetBenchmarkPageResponse
+ */
+export class GetBenchmarkPageResponse extends Message<GetBenchmarkPageResponse> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string user_display_name = 2;
+   */
+  userDisplayName = "";
+
+  /**
+   * @generated from field: uint32 benchmark_id = 3;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 4;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 5;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: string benchmark_author = 6;
+   */
+  benchmarkAuthor = "";
+
+  /**
+   * @generated from field: string benchmark_type = 7;
+   */
+  benchmarkType = "";
+
+  /**
+   * @generated from field: aimmod.hub.v1.BenchmarkRankVisual overall_rank = 8;
+   */
+  overallRank?: BenchmarkRankVisual;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkCategoryPage categories = 9;
+   */
+  categories: BenchmarkCategoryPage[] = [];
+
+  constructor(data?: PartialMessage<GetBenchmarkPageResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetBenchmarkPageResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "benchmark_author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "benchmark_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "overall_rank", kind: "message", T: BenchmarkRankVisual },
+    { no: 9, name: "categories", kind: "message", T: BenchmarkCategoryPage, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkPageResponse {
+    return new GetBenchmarkPageResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetBenchmarkPageResponse {
+    return new GetBenchmarkPageResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetBenchmarkPageResponse {
+    return new GetBenchmarkPageResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetBenchmarkPageResponse | PlainMessage<GetBenchmarkPageResponse> | undefined, b: GetBenchmarkPageResponse | PlainMessage<GetBenchmarkPageResponse> | undefined): boolean {
+    return proto3.util.equals(GetBenchmarkPageResponse, a, b);
   }
 }
 
@@ -2725,6 +3327,300 @@ export class GetAimFingerprintResponse extends Message<GetAimFingerprintResponse
 
   static equals(a: GetAimFingerprintResponse | PlainMessage<GetAimFingerprintResponse> | undefined, b: GetAimFingerprintResponse | PlainMessage<GetAimFingerprintResponse> | undefined): boolean {
     return proto3.util.equals(GetAimFingerprintResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ListBenchmarksRequest
+ */
+export class ListBenchmarksRequest extends Message<ListBenchmarksRequest> {
+  constructor(data?: PartialMessage<ListBenchmarksRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ListBenchmarksRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListBenchmarksRequest {
+    return new ListBenchmarksRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListBenchmarksRequest {
+    return new ListBenchmarksRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListBenchmarksRequest {
+    return new ListBenchmarksRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListBenchmarksRequest | PlainMessage<ListBenchmarksRequest> | undefined, b: ListBenchmarksRequest | PlainMessage<ListBenchmarksRequest> | undefined): boolean {
+    return proto3.util.equals(ListBenchmarksRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkListItem
+ */
+export class BenchmarkListItem extends Message<BenchmarkListItem> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 2;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 3;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: string benchmark_author = 4;
+   */
+  benchmarkAuthor = "";
+
+  /**
+   * @generated from field: string benchmark_type = 5;
+   */
+  benchmarkType = "";
+
+  /**
+   * @generated from field: uint32 player_count = 6;
+   */
+  playerCount = 0;
+
+  constructor(data?: PartialMessage<BenchmarkListItem>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkListItem";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "benchmark_author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "benchmark_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "player_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkListItem {
+    return new BenchmarkListItem().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkListItem {
+    return new BenchmarkListItem().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkListItem {
+    return new BenchmarkListItem().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkListItem | PlainMessage<BenchmarkListItem> | undefined, b: BenchmarkListItem | PlainMessage<BenchmarkListItem> | undefined): boolean {
+    return proto3.util.equals(BenchmarkListItem, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ListBenchmarksResponse
+ */
+export class ListBenchmarksResponse extends Message<ListBenchmarksResponse> {
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkListItem benchmarks = 1;
+   */
+  benchmarks: BenchmarkListItem[] = [];
+
+  constructor(data?: PartialMessage<ListBenchmarksResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ListBenchmarksResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmarks", kind: "message", T: BenchmarkListItem, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListBenchmarksResponse {
+    return new ListBenchmarksResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListBenchmarksResponse {
+    return new ListBenchmarksResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListBenchmarksResponse {
+    return new ListBenchmarksResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListBenchmarksResponse | PlainMessage<ListBenchmarksResponse> | undefined, b: ListBenchmarksResponse | PlainMessage<ListBenchmarksResponse> | undefined): boolean {
+    return proto3.util.equals(ListBenchmarksResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetBenchmarkLeaderboardRequest
+ */
+export class GetBenchmarkLeaderboardRequest extends Message<GetBenchmarkLeaderboardRequest> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  constructor(data?: PartialMessage<GetBenchmarkLeaderboardRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetBenchmarkLeaderboardRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkLeaderboardRequest {
+    return new GetBenchmarkLeaderboardRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetBenchmarkLeaderboardRequest {
+    return new GetBenchmarkLeaderboardRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetBenchmarkLeaderboardRequest {
+    return new GetBenchmarkLeaderboardRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetBenchmarkLeaderboardRequest | PlainMessage<GetBenchmarkLeaderboardRequest> | undefined, b: GetBenchmarkLeaderboardRequest | PlainMessage<GetBenchmarkLeaderboardRequest> | undefined): boolean {
+    return proto3.util.equals(GetBenchmarkLeaderboardRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkLeaderboardEntry
+ */
+export class BenchmarkLeaderboardEntry extends Message<BenchmarkLeaderboardEntry> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string display_name = 2;
+   */
+  displayName = "";
+
+  /**
+   * @generated from field: string avatar_url = 3;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: string overall_rank_name = 4;
+   */
+  overallRankName = "";
+
+  /**
+   * @generated from field: string overall_rank_icon_url = 5;
+   */
+  overallRankIconUrl = "";
+
+  /**
+   * @generated from field: uint32 overall_rank_index = 6;
+   */
+  overallRankIndex = 0;
+
+  constructor(data?: PartialMessage<BenchmarkLeaderboardEntry>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkLeaderboardEntry";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "overall_rank_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "overall_rank_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "overall_rank_index", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkLeaderboardEntry {
+    return new BenchmarkLeaderboardEntry().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkLeaderboardEntry {
+    return new BenchmarkLeaderboardEntry().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkLeaderboardEntry {
+    return new BenchmarkLeaderboardEntry().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkLeaderboardEntry | PlainMessage<BenchmarkLeaderboardEntry> | undefined, b: BenchmarkLeaderboardEntry | PlainMessage<BenchmarkLeaderboardEntry> | undefined): boolean {
+    return proto3.util.equals(BenchmarkLeaderboardEntry, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetBenchmarkLeaderboardResponse
+ */
+export class GetBenchmarkLeaderboardResponse extends Message<GetBenchmarkLeaderboardResponse> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 2;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 3;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkLeaderboardEntry entries = 4;
+   */
+  entries: BenchmarkLeaderboardEntry[] = [];
+
+  constructor(data?: PartialMessage<GetBenchmarkLeaderboardResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetBenchmarkLeaderboardResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "entries", kind: "message", T: BenchmarkLeaderboardEntry, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkLeaderboardResponse {
+    return new GetBenchmarkLeaderboardResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetBenchmarkLeaderboardResponse {
+    return new GetBenchmarkLeaderboardResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetBenchmarkLeaderboardResponse {
+    return new GetBenchmarkLeaderboardResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetBenchmarkLeaderboardResponse | PlainMessage<GetBenchmarkLeaderboardResponse> | undefined, b: GetBenchmarkLeaderboardResponse | PlainMessage<GetBenchmarkLeaderboardResponse> | undefined): boolean {
+    return proto3.util.equals(GetBenchmarkLeaderboardResponse, a, b);
   }
 }
 

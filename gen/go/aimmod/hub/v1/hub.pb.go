@@ -476,23 +476,29 @@ func (x *ScoreBin) GetCount() uint32 {
 }
 
 type IngestSessionRequest struct {
-	state           protoimpl.MessageState          `protogen:"open.v1"`
-	AppVersion      string                          `protobuf:"bytes,1,opt,name=app_version,json=appVersion,proto3" json:"app_version,omitempty"`
-	SchemaVersion   uint32                          `protobuf:"varint,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
-	UserExternalId  string                          `protobuf:"bytes,3,opt,name=user_external_id,json=userExternalId,proto3" json:"user_external_id,omitempty"`
-	SessionId       string                          `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	ScenarioName    string                          `protobuf:"bytes,5,opt,name=scenario_name,json=scenarioName,proto3" json:"scenario_name,omitempty"`
-	ScenarioType    string                          `protobuf:"bytes,6,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
-	Score           float64                         `protobuf:"fixed64,7,opt,name=score,proto3" json:"score,omitempty"`
-	Accuracy        float64                         `protobuf:"fixed64,8,opt,name=accuracy,proto3" json:"accuracy,omitempty"`
-	DurationMs      uint64                          `protobuf:"varint,9,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
-	PlayedAtIso     string                          `protobuf:"bytes,10,opt,name=played_at_iso,json=playedAtIso,proto3" json:"played_at_iso,omitempty"`
-	Summary         map[string]*SessionSummaryValue `protobuf:"bytes,11,rep,name=summary,proto3" json:"summary,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	FeatureSet      map[string]*SessionSummaryValue `protobuf:"bytes,12,rep,name=feature_set,json=featureSet,proto3" json:"feature_set,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	TimelineSeconds []*TimelineSecond               `protobuf:"bytes,13,rep,name=timeline_seconds,json=timelineSeconds,proto3" json:"timeline_seconds,omitempty"`
-	ContextWindows  []*ContextWindow                `protobuf:"bytes,14,rep,name=context_windows,json=contextWindows,proto3" json:"context_windows,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state            protoimpl.MessageState          `protogen:"open.v1"`
+	AppVersion       string                          `protobuf:"bytes,1,opt,name=app_version,json=appVersion,proto3" json:"app_version,omitempty"`
+	SchemaVersion    uint32                          `protobuf:"varint,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	UserExternalId   string                          `protobuf:"bytes,3,opt,name=user_external_id,json=userExternalId,proto3" json:"user_external_id,omitempty"`
+	SessionId        string                          `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	ScenarioName     string                          `protobuf:"bytes,5,opt,name=scenario_name,json=scenarioName,proto3" json:"scenario_name,omitempty"`
+	ScenarioType     string                          `protobuf:"bytes,6,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
+	Score            float64                         `protobuf:"fixed64,7,opt,name=score,proto3" json:"score,omitempty"`
+	Accuracy         float64                         `protobuf:"fixed64,8,opt,name=accuracy,proto3" json:"accuracy,omitempty"`
+	DurationMs       uint64                          `protobuf:"varint,9,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
+	PlayedAtIso      string                          `protobuf:"bytes,10,opt,name=played_at_iso,json=playedAtIso,proto3" json:"played_at_iso,omitempty"`
+	Summary          map[string]*SessionSummaryValue `protobuf:"bytes,11,rep,name=summary,proto3" json:"summary,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	FeatureSet       map[string]*SessionSummaryValue `protobuf:"bytes,12,rep,name=feature_set,json=featureSet,proto3" json:"feature_set,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	TimelineSeconds  []*TimelineSecond               `protobuf:"bytes,13,rep,name=timeline_seconds,json=timelineSeconds,proto3" json:"timeline_seconds,omitempty"`
+	ContextWindows   []*ContextWindow                `protobuf:"bytes,14,rep,name=context_windows,json=contextWindows,proto3" json:"context_windows,omitempty"`
+	KovaaksUserId    string                          `protobuf:"bytes,15,opt,name=kovaaks_user_id,json=kovaaksUserId,proto3" json:"kovaaks_user_id,omitempty"`
+	KovaaksUsername  string                          `protobuf:"bytes,16,opt,name=kovaaks_username,json=kovaaksUsername,proto3" json:"kovaaks_username,omitempty"`
+	UserDisplayName  string                          `protobuf:"bytes,17,opt,name=user_display_name,json=userDisplayName,proto3" json:"user_display_name,omitempty"`
+	AvatarUrl        string                          `protobuf:"bytes,18,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	SteamId          string                          `protobuf:"bytes,19,opt,name=steam_id,json=steamId,proto3" json:"steam_id,omitempty"`
+	SteamDisplayName string                          `protobuf:"bytes,20,opt,name=steam_display_name,json=steamDisplayName,proto3" json:"steam_display_name,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *IngestSessionRequest) Reset() {
@@ -621,6 +627,48 @@ func (x *IngestSessionRequest) GetContextWindows() []*ContextWindow {
 		return x.ContextWindows
 	}
 	return nil
+}
+
+func (x *IngestSessionRequest) GetKovaaksUserId() string {
+	if x != nil {
+		return x.KovaaksUserId
+	}
+	return ""
+}
+
+func (x *IngestSessionRequest) GetKovaaksUsername() string {
+	if x != nil {
+		return x.KovaaksUsername
+	}
+	return ""
+}
+
+func (x *IngestSessionRequest) GetUserDisplayName() string {
+	if x != nil {
+		return x.UserDisplayName
+	}
+	return ""
+}
+
+func (x *IngestSessionRequest) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *IngestSessionRequest) GetSteamId() string {
+	if x != nil {
+		return x.SteamId
+	}
+	return ""
+}
+
+func (x *IngestSessionRequest) GetSteamDisplayName() string {
+	if x != nil {
+		return x.SteamDisplayName
+	}
+	return ""
 }
 
 type IngestSessionResponse struct {
@@ -1019,6 +1067,7 @@ type CommunityProfilePreview struct {
 	RunCount            uint32                 `protobuf:"varint,4,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"`
 	ScenarioCount       uint32                 `protobuf:"varint,5,opt,name=scenario_count,json=scenarioCount,proto3" json:"scenario_count,omitempty"`
 	PrimaryScenarioType string                 `protobuf:"bytes,6,opt,name=primary_scenario_type,json=primaryScenarioType,proto3" json:"primary_scenario_type,omitempty"`
+	IsVerified          bool                   `protobuf:"varint,7,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1093,6 +1142,13 @@ func (x *CommunityProfilePreview) GetPrimaryScenarioType() string {
 		return x.PrimaryScenarioType
 	}
 	return ""
+}
+
+func (x *CommunityProfilePreview) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
 }
 
 type GetOverviewRequest struct {
@@ -1284,6 +1340,7 @@ type GetRunResponse struct {
 	ContextWindows  []*ContextWindow                `protobuf:"bytes,13,rep,name=context_windows,json=contextWindows,proto3" json:"context_windows,omitempty"`
 	RunId           string                          `protobuf:"bytes,14,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	ScenarioRuns    []*RunPreview                   `protobuf:"bytes,15,rep,name=scenario_runs,json=scenarioRuns,proto3" json:"scenario_runs,omitempty"`
+	BenchmarkRanks  []*ScenarioBenchmarkRank        `protobuf:"bytes,16,rep,name=benchmark_ranks,json=benchmarkRanks,proto3" json:"benchmark_ranks,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1419,6 +1476,13 @@ func (x *GetRunResponse) GetRunId() string {
 func (x *GetRunResponse) GetScenarioRuns() []*RunPreview {
 	if x != nil {
 		return x.ScenarioRuns
+	}
+	return nil
+}
+
+func (x *GetRunResponse) GetBenchmarkRanks() []*ScenarioBenchmarkRank {
+	if x != nil {
+		return x.BenchmarkRanks
 	}
 	return nil
 }
@@ -1649,6 +1713,8 @@ type GetProfileResponse struct {
 	TopScenarios        []*TopScenario         `protobuf:"bytes,10,rep,name=top_scenarios,json=topScenarios,proto3" json:"top_scenarios,omitempty"`
 	RecentRuns          []*RunPreview          `protobuf:"bytes,11,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
 	PersonalBests       []*RunPreview          `protobuf:"bytes,12,rep,name=personal_bests,json=personalBests,proto3" json:"personal_bests,omitempty"`
+	IsVerified          bool                   `protobuf:"varint,13,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+	Benchmarks          []*BenchmarkSummary    `protobuf:"bytes,14,rep,name=benchmarks,proto3" json:"benchmarks,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1763,6 +1829,20 @@ func (x *GetProfileResponse) GetRecentRuns() []*RunPreview {
 func (x *GetProfileResponse) GetPersonalBests() []*RunPreview {
 	if x != nil {
 		return x.PersonalBests
+	}
+	return nil
+}
+
+func (x *GetProfileResponse) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
+}
+
+func (x *GetProfileResponse) GetBenchmarks() []*BenchmarkSummary {
+	if x != nil {
+		return x.Benchmarks
 	}
 	return nil
 }
@@ -1887,6 +1967,7 @@ type SearchProfileResult struct {
 	RunCount            uint32                 `protobuf:"varint,4,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"`
 	ScenarioCount       uint32                 `protobuf:"varint,5,opt,name=scenario_count,json=scenarioCount,proto3" json:"scenario_count,omitempty"`
 	PrimaryScenarioType string                 `protobuf:"bytes,6,opt,name=primary_scenario_type,json=primaryScenarioType,proto3" json:"primary_scenario_type,omitempty"`
+	IsVerified          bool                   `protobuf:"varint,7,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1961,6 +2042,13 @@ func (x *SearchProfileResult) GetPrimaryScenarioType() string {
 		return x.PrimaryScenarioType
 	}
 	return ""
+}
+
+func (x *SearchProfileResult) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
 }
 
 type ReplayPreview struct {
@@ -2118,6 +2206,7 @@ type SearchResponse struct {
 	Profiles      []*SearchProfileResult  `protobuf:"bytes,3,rep,name=profiles,proto3" json:"profiles,omitempty"`
 	Runs          []*ReplayPreview        `protobuf:"bytes,4,rep,name=runs,proto3" json:"runs,omitempty"`
 	Replays       []*ReplayPreview        `protobuf:"bytes,5,rep,name=replays,proto3" json:"replays,omitempty"`
+	Benchmarks    []*BenchmarkListItem    `protobuf:"bytes,6,rep,name=benchmarks,proto3" json:"benchmarks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2183,6 +2272,13 @@ func (x *SearchResponse) GetRuns() []*ReplayPreview {
 func (x *SearchResponse) GetReplays() []*ReplayPreview {
 	if x != nil {
 		return x.Replays
+	}
+	return nil
+}
+
+func (x *SearchResponse) GetBenchmarks() []*BenchmarkListItem {
+	if x != nil {
+		return x.Benchmarks
 	}
 	return nil
 }
@@ -2772,16 +2868,17 @@ func (x *GetPlayerScenarioHistoryRequest) GetScenarioSlug() string {
 }
 
 type GetPlayerScenarioHistoryResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	ScenarioName    string                 `protobuf:"bytes,1,opt,name=scenario_name,json=scenarioName,proto3" json:"scenario_name,omitempty"`
-	ScenarioSlug    string                 `protobuf:"bytes,2,opt,name=scenario_slug,json=scenarioSlug,proto3" json:"scenario_slug,omitempty"`
-	ScenarioType    string                 `protobuf:"bytes,3,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
-	Runs            []*RunPreview          `protobuf:"bytes,4,rep,name=runs,proto3" json:"runs,omitempty"`
-	BestScore       float64                `protobuf:"fixed64,5,opt,name=best_score,json=bestScore,proto3" json:"best_score,omitempty"`
-	AverageScore    float64                `protobuf:"fixed64,6,opt,name=average_score,json=averageScore,proto3" json:"average_score,omitempty"`
-	BestAccuracy    float64                `protobuf:"fixed64,7,opt,name=best_accuracy,json=bestAccuracy,proto3" json:"best_accuracy,omitempty"`
-	AverageAccuracy float64                `protobuf:"fixed64,8,opt,name=average_accuracy,json=averageAccuracy,proto3" json:"average_accuracy,omitempty"`
-	RunCount        int32                  `protobuf:"varint,9,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"`
+	state           protoimpl.MessageState   `protogen:"open.v1"`
+	ScenarioName    string                   `protobuf:"bytes,1,opt,name=scenario_name,json=scenarioName,proto3" json:"scenario_name,omitempty"`
+	ScenarioSlug    string                   `protobuf:"bytes,2,opt,name=scenario_slug,json=scenarioSlug,proto3" json:"scenario_slug,omitempty"`
+	ScenarioType    string                   `protobuf:"bytes,3,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
+	Runs            []*RunPreview            `protobuf:"bytes,4,rep,name=runs,proto3" json:"runs,omitempty"`
+	BestScore       float64                  `protobuf:"fixed64,5,opt,name=best_score,json=bestScore,proto3" json:"best_score,omitempty"`
+	AverageScore    float64                  `protobuf:"fixed64,6,opt,name=average_score,json=averageScore,proto3" json:"average_score,omitempty"`
+	BestAccuracy    float64                  `protobuf:"fixed64,7,opt,name=best_accuracy,json=bestAccuracy,proto3" json:"best_accuracy,omitempty"`
+	AverageAccuracy float64                  `protobuf:"fixed64,8,opt,name=average_accuracy,json=averageAccuracy,proto3" json:"average_accuracy,omitempty"`
+	RunCount        int32                    `protobuf:"varint,9,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"`
+	BenchmarkRanks  []*ScenarioBenchmarkRank `protobuf:"bytes,10,rep,name=benchmark_ranks,json=benchmarkRanks,proto3" json:"benchmark_ranks,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -2879,6 +2976,669 @@ func (x *GetPlayerScenarioHistoryResponse) GetRunCount() int32 {
 	return 0
 }
 
+func (x *GetPlayerScenarioHistoryResponse) GetBenchmarkRanks() []*ScenarioBenchmarkRank {
+	if x != nil {
+		return x.BenchmarkRanks
+	}
+	return nil
+}
+
+type BenchmarkRankVisual struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RankIndex     uint32                 `protobuf:"varint,1,opt,name=rank_index,json=rankIndex,proto3" json:"rank_index,omitempty"`
+	RankName      string                 `protobuf:"bytes,2,opt,name=rank_name,json=rankName,proto3" json:"rank_name,omitempty"`
+	IconUrl       string                 `protobuf:"bytes,3,opt,name=icon_url,json=iconUrl,proto3" json:"icon_url,omitempty"`
+	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	FrameUrl      string                 `protobuf:"bytes,5,opt,name=frame_url,json=frameUrl,proto3" json:"frame_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BenchmarkRankVisual) Reset() {
+	*x = BenchmarkRankVisual{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkRankVisual) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkRankVisual) ProtoMessage() {}
+
+func (x *BenchmarkRankVisual) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkRankVisual.ProtoReflect.Descriptor instead.
+func (*BenchmarkRankVisual) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *BenchmarkRankVisual) GetRankIndex() uint32 {
+	if x != nil {
+		return x.RankIndex
+	}
+	return 0
+}
+
+func (x *BenchmarkRankVisual) GetRankName() string {
+	if x != nil {
+		return x.RankName
+	}
+	return ""
+}
+
+func (x *BenchmarkRankVisual) GetIconUrl() string {
+	if x != nil {
+		return x.IconUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkRankVisual) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *BenchmarkRankVisual) GetFrameUrl() string {
+	if x != nil {
+		return x.FrameUrl
+	}
+	return ""
+}
+
+type BenchmarkSummary struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	BenchmarkId      uint32                 `protobuf:"varint,1,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	BenchmarkName    string                 `protobuf:"bytes,2,opt,name=benchmark_name,json=benchmarkName,proto3" json:"benchmark_name,omitempty"`
+	BenchmarkIconUrl string                 `protobuf:"bytes,3,opt,name=benchmark_icon_url,json=benchmarkIconUrl,proto3" json:"benchmark_icon_url,omitempty"`
+	BenchmarkAuthor  string                 `protobuf:"bytes,4,opt,name=benchmark_author,json=benchmarkAuthor,proto3" json:"benchmark_author,omitempty"`
+	BenchmarkType    string                 `protobuf:"bytes,5,opt,name=benchmark_type,json=benchmarkType,proto3" json:"benchmark_type,omitempty"`
+	OverallRank      *BenchmarkRankVisual   `protobuf:"bytes,6,opt,name=overall_rank,json=overallRank,proto3" json:"overall_rank,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *BenchmarkSummary) Reset() {
+	*x = BenchmarkSummary{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkSummary) ProtoMessage() {}
+
+func (x *BenchmarkSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkSummary.ProtoReflect.Descriptor instead.
+func (*BenchmarkSummary) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *BenchmarkSummary) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+func (x *BenchmarkSummary) GetBenchmarkName() string {
+	if x != nil {
+		return x.BenchmarkName
+	}
+	return ""
+}
+
+func (x *BenchmarkSummary) GetBenchmarkIconUrl() string {
+	if x != nil {
+		return x.BenchmarkIconUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkSummary) GetBenchmarkAuthor() string {
+	if x != nil {
+		return x.BenchmarkAuthor
+	}
+	return ""
+}
+
+func (x *BenchmarkSummary) GetBenchmarkType() string {
+	if x != nil {
+		return x.BenchmarkType
+	}
+	return ""
+}
+
+func (x *BenchmarkSummary) GetOverallRank() *BenchmarkRankVisual {
+	if x != nil {
+		return x.OverallRank
+	}
+	return nil
+}
+
+type ScenarioBenchmarkRank struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	BenchmarkId      uint32                 `protobuf:"varint,1,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	BenchmarkName    string                 `protobuf:"bytes,2,opt,name=benchmark_name,json=benchmarkName,proto3" json:"benchmark_name,omitempty"`
+	BenchmarkIconUrl string                 `protobuf:"bytes,3,opt,name=benchmark_icon_url,json=benchmarkIconUrl,proto3" json:"benchmark_icon_url,omitempty"`
+	CategoryName     string                 `protobuf:"bytes,4,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	ScenarioScore    float64                `protobuf:"fixed64,5,opt,name=scenario_score,json=scenarioScore,proto3" json:"scenario_score,omitempty"`
+	LeaderboardRank  uint32                 `protobuf:"varint,6,opt,name=leaderboard_rank,json=leaderboardRank,proto3" json:"leaderboard_rank,omitempty"`
+	LeaderboardId    uint32                 `protobuf:"varint,7,opt,name=leaderboard_id,json=leaderboardId,proto3" json:"leaderboard_id,omitempty"`
+	ScenarioRank     *BenchmarkRankVisual   `protobuf:"bytes,8,opt,name=scenario_rank,json=scenarioRank,proto3" json:"scenario_rank,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ScenarioBenchmarkRank) Reset() {
+	*x = ScenarioBenchmarkRank{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScenarioBenchmarkRank) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScenarioBenchmarkRank) ProtoMessage() {}
+
+func (x *ScenarioBenchmarkRank) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScenarioBenchmarkRank.ProtoReflect.Descriptor instead.
+func (*ScenarioBenchmarkRank) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *ScenarioBenchmarkRank) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+func (x *ScenarioBenchmarkRank) GetBenchmarkName() string {
+	if x != nil {
+		return x.BenchmarkName
+	}
+	return ""
+}
+
+func (x *ScenarioBenchmarkRank) GetBenchmarkIconUrl() string {
+	if x != nil {
+		return x.BenchmarkIconUrl
+	}
+	return ""
+}
+
+func (x *ScenarioBenchmarkRank) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *ScenarioBenchmarkRank) GetScenarioScore() float64 {
+	if x != nil {
+		return x.ScenarioScore
+	}
+	return 0
+}
+
+func (x *ScenarioBenchmarkRank) GetLeaderboardRank() uint32 {
+	if x != nil {
+		return x.LeaderboardRank
+	}
+	return 0
+}
+
+func (x *ScenarioBenchmarkRank) GetLeaderboardId() uint32 {
+	if x != nil {
+		return x.LeaderboardId
+	}
+	return 0
+}
+
+func (x *ScenarioBenchmarkRank) GetScenarioRank() *BenchmarkRankVisual {
+	if x != nil {
+		return x.ScenarioRank
+	}
+	return nil
+}
+
+type BenchmarkThreshold struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RankIndex     uint32                 `protobuf:"varint,1,opt,name=rank_index,json=rankIndex,proto3" json:"rank_index,omitempty"`
+	RankName      string                 `protobuf:"bytes,2,opt,name=rank_name,json=rankName,proto3" json:"rank_name,omitempty"`
+	IconUrl       string                 `protobuf:"bytes,3,opt,name=icon_url,json=iconUrl,proto3" json:"icon_url,omitempty"`
+	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	Score         float64                `protobuf:"fixed64,5,opt,name=score,proto3" json:"score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BenchmarkThreshold) Reset() {
+	*x = BenchmarkThreshold{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkThreshold) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkThreshold) ProtoMessage() {}
+
+func (x *BenchmarkThreshold) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkThreshold.ProtoReflect.Descriptor instead.
+func (*BenchmarkThreshold) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *BenchmarkThreshold) GetRankIndex() uint32 {
+	if x != nil {
+		return x.RankIndex
+	}
+	return 0
+}
+
+func (x *BenchmarkThreshold) GetRankName() string {
+	if x != nil {
+		return x.RankName
+	}
+	return ""
+}
+
+func (x *BenchmarkThreshold) GetIconUrl() string {
+	if x != nil {
+		return x.IconUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkThreshold) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *BenchmarkThreshold) GetScore() float64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+type BenchmarkScenarioEntry struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	ScenarioName    string                 `protobuf:"bytes,1,opt,name=scenario_name,json=scenarioName,proto3" json:"scenario_name,omitempty"`
+	ScenarioSlug    string                 `protobuf:"bytes,2,opt,name=scenario_slug,json=scenarioSlug,proto3" json:"scenario_slug,omitempty"`
+	CategoryName    string                 `protobuf:"bytes,3,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	Score           float64                `protobuf:"fixed64,4,opt,name=score,proto3" json:"score,omitempty"`
+	LeaderboardRank uint32                 `protobuf:"varint,5,opt,name=leaderboard_rank,json=leaderboardRank,proto3" json:"leaderboard_rank,omitempty"`
+	LeaderboardId   uint32                 `protobuf:"varint,6,opt,name=leaderboard_id,json=leaderboardId,proto3" json:"leaderboard_id,omitempty"`
+	ScenarioRank    *BenchmarkRankVisual   `protobuf:"bytes,7,opt,name=scenario_rank,json=scenarioRank,proto3" json:"scenario_rank,omitempty"`
+	Thresholds      []*BenchmarkThreshold  `protobuf:"bytes,8,rep,name=thresholds,proto3" json:"thresholds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *BenchmarkScenarioEntry) Reset() {
+	*x = BenchmarkScenarioEntry{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkScenarioEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkScenarioEntry) ProtoMessage() {}
+
+func (x *BenchmarkScenarioEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkScenarioEntry.ProtoReflect.Descriptor instead.
+func (*BenchmarkScenarioEntry) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *BenchmarkScenarioEntry) GetScenarioName() string {
+	if x != nil {
+		return x.ScenarioName
+	}
+	return ""
+}
+
+func (x *BenchmarkScenarioEntry) GetScenarioSlug() string {
+	if x != nil {
+		return x.ScenarioSlug
+	}
+	return ""
+}
+
+func (x *BenchmarkScenarioEntry) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *BenchmarkScenarioEntry) GetScore() float64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+func (x *BenchmarkScenarioEntry) GetLeaderboardRank() uint32 {
+	if x != nil {
+		return x.LeaderboardRank
+	}
+	return 0
+}
+
+func (x *BenchmarkScenarioEntry) GetLeaderboardId() uint32 {
+	if x != nil {
+		return x.LeaderboardId
+	}
+	return 0
+}
+
+func (x *BenchmarkScenarioEntry) GetScenarioRank() *BenchmarkRankVisual {
+	if x != nil {
+		return x.ScenarioRank
+	}
+	return nil
+}
+
+func (x *BenchmarkScenarioEntry) GetThresholds() []*BenchmarkThreshold {
+	if x != nil {
+		return x.Thresholds
+	}
+	return nil
+}
+
+type BenchmarkCategoryPage struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	CategoryName  string                    `protobuf:"bytes,1,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	CategoryRank  uint32                    `protobuf:"varint,2,opt,name=category_rank,json=categoryRank,proto3" json:"category_rank,omitempty"`
+	Scenarios     []*BenchmarkScenarioEntry `protobuf:"bytes,3,rep,name=scenarios,proto3" json:"scenarios,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BenchmarkCategoryPage) Reset() {
+	*x = BenchmarkCategoryPage{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkCategoryPage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkCategoryPage) ProtoMessage() {}
+
+func (x *BenchmarkCategoryPage) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkCategoryPage.ProtoReflect.Descriptor instead.
+func (*BenchmarkCategoryPage) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *BenchmarkCategoryPage) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *BenchmarkCategoryPage) GetCategoryRank() uint32 {
+	if x != nil {
+		return x.CategoryRank
+	}
+	return 0
+}
+
+func (x *BenchmarkCategoryPage) GetScenarios() []*BenchmarkScenarioEntry {
+	if x != nil {
+		return x.Scenarios
+	}
+	return nil
+}
+
+type GetBenchmarkPageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
+	BenchmarkId   uint32                 `protobuf:"varint,2,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBenchmarkPageRequest) Reset() {
+	*x = GetBenchmarkPageRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBenchmarkPageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBenchmarkPageRequest) ProtoMessage() {}
+
+func (x *GetBenchmarkPageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBenchmarkPageRequest.ProtoReflect.Descriptor instead.
+func (*GetBenchmarkPageRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *GetBenchmarkPageRequest) GetHandle() string {
+	if x != nil {
+		return x.Handle
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageRequest) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+type GetBenchmarkPageResponse struct {
+	state            protoimpl.MessageState   `protogen:"open.v1"`
+	UserHandle       string                   `protobuf:"bytes,1,opt,name=user_handle,json=userHandle,proto3" json:"user_handle,omitempty"`
+	UserDisplayName  string                   `protobuf:"bytes,2,opt,name=user_display_name,json=userDisplayName,proto3" json:"user_display_name,omitempty"`
+	BenchmarkId      uint32                   `protobuf:"varint,3,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	BenchmarkName    string                   `protobuf:"bytes,4,opt,name=benchmark_name,json=benchmarkName,proto3" json:"benchmark_name,omitempty"`
+	BenchmarkIconUrl string                   `protobuf:"bytes,5,opt,name=benchmark_icon_url,json=benchmarkIconUrl,proto3" json:"benchmark_icon_url,omitempty"`
+	BenchmarkAuthor  string                   `protobuf:"bytes,6,opt,name=benchmark_author,json=benchmarkAuthor,proto3" json:"benchmark_author,omitempty"`
+	BenchmarkType    string                   `protobuf:"bytes,7,opt,name=benchmark_type,json=benchmarkType,proto3" json:"benchmark_type,omitempty"`
+	OverallRank      *BenchmarkRankVisual     `protobuf:"bytes,8,opt,name=overall_rank,json=overallRank,proto3" json:"overall_rank,omitempty"`
+	Categories       []*BenchmarkCategoryPage `protobuf:"bytes,9,rep,name=categories,proto3" json:"categories,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetBenchmarkPageResponse) Reset() {
+	*x = GetBenchmarkPageResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBenchmarkPageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBenchmarkPageResponse) ProtoMessage() {}
+
+func (x *GetBenchmarkPageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBenchmarkPageResponse.ProtoReflect.Descriptor instead.
+func (*GetBenchmarkPageResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *GetBenchmarkPageResponse) GetUserHandle() string {
+	if x != nil {
+		return x.UserHandle
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetUserDisplayName() string {
+	if x != nil {
+		return x.UserDisplayName
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+func (x *GetBenchmarkPageResponse) GetBenchmarkName() string {
+	if x != nil {
+		return x.BenchmarkName
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetBenchmarkIconUrl() string {
+	if x != nil {
+		return x.BenchmarkIconUrl
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetBenchmarkAuthor() string {
+	if x != nil {
+		return x.BenchmarkAuthor
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetBenchmarkType() string {
+	if x != nil {
+		return x.BenchmarkType
+	}
+	return ""
+}
+
+func (x *GetBenchmarkPageResponse) GetOverallRank() *BenchmarkRankVisual {
+	if x != nil {
+		return x.OverallRank
+	}
+	return nil
+}
+
+func (x *GetBenchmarkPageResponse) GetCategories() []*BenchmarkCategoryPage {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
+}
+
 type TypeProfileBand struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	ScenarioType         string                 `protobuf:"bytes,1,opt,name=scenario_type,json=scenarioType,proto3" json:"scenario_type,omitempty"`
@@ -2896,7 +3656,7 @@ type TypeProfileBand struct {
 
 func (x *TypeProfileBand) Reset() {
 	*x = TypeProfileBand{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2908,7 +3668,7 @@ func (x *TypeProfileBand) String() string {
 func (*TypeProfileBand) ProtoMessage() {}
 
 func (x *TypeProfileBand) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[37]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2921,7 +3681,7 @@ func (x *TypeProfileBand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TypeProfileBand.ProtoReflect.Descriptor instead.
 func (*TypeProfileBand) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{37}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *TypeProfileBand) GetScenarioType() string {
@@ -2996,7 +3756,7 @@ type GetAimProfileRequest struct {
 
 func (x *GetAimProfileRequest) Reset() {
 	*x = GetAimProfileRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3008,7 +3768,7 @@ func (x *GetAimProfileRequest) String() string {
 func (*GetAimProfileRequest) ProtoMessage() {}
 
 func (x *GetAimProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[38]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3021,7 +3781,7 @@ func (x *GetAimProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetAimProfileRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{38}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GetAimProfileRequest) GetHandle() string {
@@ -3047,7 +3807,7 @@ type GetAimProfileResponse struct {
 
 func (x *GetAimProfileResponse) Reset() {
 	*x = GetAimProfileResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3059,7 +3819,7 @@ func (x *GetAimProfileResponse) String() string {
 func (*GetAimProfileResponse) ProtoMessage() {}
 
 func (x *GetAimProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[39]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3072,7 +3832,7 @@ func (x *GetAimProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetAimProfileResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{39}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *GetAimProfileResponse) GetUserHandle() string {
@@ -3143,7 +3903,7 @@ type AimFingerprintAxis struct {
 
 func (x *AimFingerprintAxis) Reset() {
 	*x = AimFingerprintAxis{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3155,7 +3915,7 @@ func (x *AimFingerprintAxis) String() string {
 func (*AimFingerprintAxis) ProtoMessage() {}
 
 func (x *AimFingerprintAxis) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[40]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3168,7 +3928,7 @@ func (x *AimFingerprintAxis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AimFingerprintAxis.ProtoReflect.Descriptor instead.
 func (*AimFingerprintAxis) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{40}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *AimFingerprintAxis) GetKey() string {
@@ -3222,7 +3982,7 @@ type AimFingerprint struct {
 
 func (x *AimFingerprint) Reset() {
 	*x = AimFingerprint{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3234,7 +3994,7 @@ func (x *AimFingerprint) String() string {
 func (*AimFingerprint) ProtoMessage() {}
 
 func (x *AimFingerprint) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[41]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3247,7 +4007,7 @@ func (x *AimFingerprint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AimFingerprint.ProtoReflect.Descriptor instead.
 func (*AimFingerprint) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{41}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *AimFingerprint) GetPrecision() int32 {
@@ -3364,7 +4124,7 @@ type GetAimFingerprintRequest struct {
 
 func (x *GetAimFingerprintRequest) Reset() {
 	*x = GetAimFingerprintRequest{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3376,7 +4136,7 @@ func (x *GetAimFingerprintRequest) String() string {
 func (*GetAimFingerprintRequest) ProtoMessage() {}
 
 func (x *GetAimFingerprintRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[42]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3389,7 +4149,7 @@ func (x *GetAimFingerprintRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimFingerprintRequest.ProtoReflect.Descriptor instead.
 func (*GetAimFingerprintRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{42}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *GetAimFingerprintRequest) GetHandle() string {
@@ -3408,7 +4168,7 @@ type GetAimFingerprintResponse struct {
 
 func (x *GetAimFingerprintResponse) Reset() {
 	*x = GetAimFingerprintResponse{}
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3420,7 +4180,7 @@ func (x *GetAimFingerprintResponse) String() string {
 func (*GetAimFingerprintResponse) ProtoMessage() {}
 
 func (x *GetAimFingerprintResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[43]
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3433,12 +4193,372 @@ func (x *GetAimFingerprintResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAimFingerprintResponse.ProtoReflect.Descriptor instead.
 func (*GetAimFingerprintResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{43}
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetAimFingerprintResponse) GetOverall() *AimFingerprint {
 	if x != nil {
 		return x.Overall
+	}
+	return nil
+}
+
+type ListBenchmarksRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBenchmarksRequest) Reset() {
+	*x = ListBenchmarksRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBenchmarksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBenchmarksRequest) ProtoMessage() {}
+
+func (x *ListBenchmarksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBenchmarksRequest.ProtoReflect.Descriptor instead.
+func (*ListBenchmarksRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{52}
+}
+
+type BenchmarkListItem struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	BenchmarkId      uint32                 `protobuf:"varint,1,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	BenchmarkName    string                 `protobuf:"bytes,2,opt,name=benchmark_name,json=benchmarkName,proto3" json:"benchmark_name,omitempty"`
+	BenchmarkIconUrl string                 `protobuf:"bytes,3,opt,name=benchmark_icon_url,json=benchmarkIconUrl,proto3" json:"benchmark_icon_url,omitempty"`
+	BenchmarkAuthor  string                 `protobuf:"bytes,4,opt,name=benchmark_author,json=benchmarkAuthor,proto3" json:"benchmark_author,omitempty"`
+	BenchmarkType    string                 `protobuf:"bytes,5,opt,name=benchmark_type,json=benchmarkType,proto3" json:"benchmark_type,omitempty"`
+	PlayerCount      uint32                 `protobuf:"varint,6,opt,name=player_count,json=playerCount,proto3" json:"player_count,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *BenchmarkListItem) Reset() {
+	*x = BenchmarkListItem{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkListItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkListItem) ProtoMessage() {}
+
+func (x *BenchmarkListItem) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkListItem.ProtoReflect.Descriptor instead.
+func (*BenchmarkListItem) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *BenchmarkListItem) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+func (x *BenchmarkListItem) GetBenchmarkName() string {
+	if x != nil {
+		return x.BenchmarkName
+	}
+	return ""
+}
+
+func (x *BenchmarkListItem) GetBenchmarkIconUrl() string {
+	if x != nil {
+		return x.BenchmarkIconUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkListItem) GetBenchmarkAuthor() string {
+	if x != nil {
+		return x.BenchmarkAuthor
+	}
+	return ""
+}
+
+func (x *BenchmarkListItem) GetBenchmarkType() string {
+	if x != nil {
+		return x.BenchmarkType
+	}
+	return ""
+}
+
+func (x *BenchmarkListItem) GetPlayerCount() uint32 {
+	if x != nil {
+		return x.PlayerCount
+	}
+	return 0
+}
+
+type ListBenchmarksResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Benchmarks    []*BenchmarkListItem   `protobuf:"bytes,1,rep,name=benchmarks,proto3" json:"benchmarks,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBenchmarksResponse) Reset() {
+	*x = ListBenchmarksResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBenchmarksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBenchmarksResponse) ProtoMessage() {}
+
+func (x *ListBenchmarksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBenchmarksResponse.ProtoReflect.Descriptor instead.
+func (*ListBenchmarksResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *ListBenchmarksResponse) GetBenchmarks() []*BenchmarkListItem {
+	if x != nil {
+		return x.Benchmarks
+	}
+	return nil
+}
+
+type GetBenchmarkLeaderboardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BenchmarkId   uint32                 `protobuf:"varint,1,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBenchmarkLeaderboardRequest) Reset() {
+	*x = GetBenchmarkLeaderboardRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBenchmarkLeaderboardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBenchmarkLeaderboardRequest) ProtoMessage() {}
+
+func (x *GetBenchmarkLeaderboardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBenchmarkLeaderboardRequest.ProtoReflect.Descriptor instead.
+func (*GetBenchmarkLeaderboardRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *GetBenchmarkLeaderboardRequest) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+type BenchmarkLeaderboardEntry struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	UserHandle         string                 `protobuf:"bytes,1,opt,name=user_handle,json=userHandle,proto3" json:"user_handle,omitempty"`
+	DisplayName        string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	AvatarUrl          string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	OverallRankName    string                 `protobuf:"bytes,4,opt,name=overall_rank_name,json=overallRankName,proto3" json:"overall_rank_name,omitempty"`
+	OverallRankIconUrl string                 `protobuf:"bytes,5,opt,name=overall_rank_icon_url,json=overallRankIconUrl,proto3" json:"overall_rank_icon_url,omitempty"`
+	OverallRankIndex   uint32                 `protobuf:"varint,6,opt,name=overall_rank_index,json=overallRankIndex,proto3" json:"overall_rank_index,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *BenchmarkLeaderboardEntry) Reset() {
+	*x = BenchmarkLeaderboardEntry{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BenchmarkLeaderboardEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BenchmarkLeaderboardEntry) ProtoMessage() {}
+
+func (x *BenchmarkLeaderboardEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BenchmarkLeaderboardEntry.ProtoReflect.Descriptor instead.
+func (*BenchmarkLeaderboardEntry) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *BenchmarkLeaderboardEntry) GetUserHandle() string {
+	if x != nil {
+		return x.UserHandle
+	}
+	return ""
+}
+
+func (x *BenchmarkLeaderboardEntry) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *BenchmarkLeaderboardEntry) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkLeaderboardEntry) GetOverallRankName() string {
+	if x != nil {
+		return x.OverallRankName
+	}
+	return ""
+}
+
+func (x *BenchmarkLeaderboardEntry) GetOverallRankIconUrl() string {
+	if x != nil {
+		return x.OverallRankIconUrl
+	}
+	return ""
+}
+
+func (x *BenchmarkLeaderboardEntry) GetOverallRankIndex() uint32 {
+	if x != nil {
+		return x.OverallRankIndex
+	}
+	return 0
+}
+
+type GetBenchmarkLeaderboardResponse struct {
+	state            protoimpl.MessageState       `protogen:"open.v1"`
+	BenchmarkId      uint32                       `protobuf:"varint,1,opt,name=benchmark_id,json=benchmarkId,proto3" json:"benchmark_id,omitempty"`
+	BenchmarkName    string                       `protobuf:"bytes,2,opt,name=benchmark_name,json=benchmarkName,proto3" json:"benchmark_name,omitempty"`
+	BenchmarkIconUrl string                       `protobuf:"bytes,3,opt,name=benchmark_icon_url,json=benchmarkIconUrl,proto3" json:"benchmark_icon_url,omitempty"`
+	Entries          []*BenchmarkLeaderboardEntry `protobuf:"bytes,4,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetBenchmarkLeaderboardResponse) Reset() {
+	*x = GetBenchmarkLeaderboardResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBenchmarkLeaderboardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBenchmarkLeaderboardResponse) ProtoMessage() {}
+
+func (x *GetBenchmarkLeaderboardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBenchmarkLeaderboardResponse.ProtoReflect.Descriptor instead.
+func (*GetBenchmarkLeaderboardResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *GetBenchmarkLeaderboardResponse) GetBenchmarkId() uint32 {
+	if x != nil {
+		return x.BenchmarkId
+	}
+	return 0
+}
+
+func (x *GetBenchmarkLeaderboardResponse) GetBenchmarkName() string {
+	if x != nil {
+		return x.BenchmarkName
+	}
+	return ""
+}
+
+func (x *GetBenchmarkLeaderboardResponse) GetBenchmarkIconUrl() string {
+	if x != nil {
+		return x.BenchmarkIconUrl
+	}
+	return ""
+}
+
+func (x *GetBenchmarkLeaderboardResponse) GetEntries() []*BenchmarkLeaderboardEntry {
+	if x != nil {
+		return x.Entries
 	}
 	return nil
 }
@@ -3485,7 +4605,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\bScoreBin\x12\x0e\n" +
 	"\x02lo\x18\x01 \x01(\x01R\x02lo\x12\x0e\n" +
 	"\x02hi\x18\x02 \x01(\x01R\x02hi\x12\x14\n" +
-	"\x05count\x18\x03 \x01(\rR\x05count\"\xde\x06\n" +
+	"\x05count\x18\x03 \x01(\rR\x05count\"\xc5\b\n" +
 	"\x14IngestSessionRequest\x12\x1f\n" +
 	"\vapp_version\x18\x01 \x01(\tR\n" +
 	"appVersion\x12%\n" +
@@ -3505,7 +4625,14 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\vfeature_set\x18\f \x03(\v23.aimmod.hub.v1.IngestSessionRequest.FeatureSetEntryR\n" +
 	"featureSet\x12H\n" +
 	"\x10timeline_seconds\x18\r \x03(\v2\x1d.aimmod.hub.v1.TimelineSecondR\x0ftimelineSeconds\x12E\n" +
-	"\x0fcontext_windows\x18\x0e \x03(\v2\x1c.aimmod.hub.v1.ContextWindowR\x0econtextWindows\x1a^\n" +
+	"\x0fcontext_windows\x18\x0e \x03(\v2\x1c.aimmod.hub.v1.ContextWindowR\x0econtextWindows\x12&\n" +
+	"\x0fkovaaks_user_id\x18\x0f \x01(\tR\rkovaaksUserId\x12)\n" +
+	"\x10kovaaks_username\x18\x10 \x01(\tR\x0fkovaaksUsername\x12*\n" +
+	"\x11user_display_name\x18\x11 \x01(\tR\x0fuserDisplayName\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x12 \x01(\tR\tavatarUrl\x12\x19\n" +
+	"\bsteam_id\x18\x13 \x01(\tR\asteamId\x12,\n" +
+	"\x12steam_display_name\x18\x14 \x01(\tR\x10steamDisplayName\x1a^\n" +
 	"\fSummaryEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\x1aa\n" +
@@ -3550,7 +4677,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
 	"\rscenario_type\x18\x03 \x01(\tR\fscenarioType\x12\x1b\n" +
-	"\trun_count\x18\x04 \x01(\rR\brunCount\"\xfd\x01\n" +
+	"\trun_count\x18\x04 \x01(\rR\brunCount\"\x9e\x02\n" +
 	"\x17CommunityProfilePreview\x12\x1f\n" +
 	"\vuser_handle\x18\x01 \x01(\tR\n" +
 	"userHandle\x12*\n" +
@@ -3559,7 +4686,9 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x1b\n" +
 	"\trun_count\x18\x04 \x01(\rR\brunCount\x12%\n" +
 	"\x0escenario_count\x18\x05 \x01(\rR\rscenarioCount\x122\n" +
-	"\x15primary_scenario_type\x18\x06 \x01(\tR\x13primaryScenarioType\"\x14\n" +
+	"\x15primary_scenario_type\x18\x06 \x01(\tR\x13primaryScenarioType\x12\x1f\n" +
+	"\vis_verified\x18\a \x01(\bR\n" +
+	"isVerified\"\x14\n" +
 	"\x12GetOverviewRequest\"\xd0\x02\n" +
 	"\x13GetOverviewResponse\x12\x1d\n" +
 	"\n" +
@@ -3573,7 +4702,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rGetRunRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x15\n" +
-	"\x06run_id\x18\x02 \x01(\tR\x05runId\"\xfe\x06\n" +
+	"\x06run_id\x18\x02 \x01(\tR\x05runId\"\xcd\a\n" +
 	"\x0eGetRunResponse\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12#\n" +
@@ -3594,7 +4723,8 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x10timeline_seconds\x18\f \x03(\v2\x1d.aimmod.hub.v1.TimelineSecondR\x0ftimelineSeconds\x12E\n" +
 	"\x0fcontext_windows\x18\r \x03(\v2\x1c.aimmod.hub.v1.ContextWindowR\x0econtextWindows\x12\x15\n" +
 	"\x06run_id\x18\x0e \x01(\tR\x05runId\x12>\n" +
-	"\rscenario_runs\x18\x0f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\fscenarioRuns\x1a^\n" +
+	"\rscenario_runs\x18\x0f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\fscenarioRuns\x12M\n" +
+	"\x0fbenchmark_ranks\x18\x10 \x03(\v2$.aimmod.hub.v1.ScenarioBenchmarkRankR\x0ebenchmarkRanks\x1a^\n" +
 	"\fSummaryEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\x1aa\n" +
@@ -3619,7 +4749,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	" \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\atopRuns\x12F\n" +
 	"\x12score_distribution\x18\v \x03(\v2\x17.aimmod.hub.v1.ScoreBinR\x11scoreDistribution\"+\n" +
 	"\x11GetProfileRequest\x12\x16\n" +
-	"\x06handle\x18\x01 \x01(\tR\x06handle\"\xb1\x04\n" +
+	"\x06handle\x18\x01 \x01(\tR\x06handle\"\x93\x05\n" +
 	"\x12GetProfileResponse\x12(\n" +
 	"\x10user_external_id\x18\x01 \x01(\tR\x0euserExternalId\x12\x1f\n" +
 	"\vuser_handle\x18\x02 \x01(\tR\n" +
@@ -3636,14 +4766,19 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	" \x03(\v2\x1a.aimmod.hub.v1.TopScenarioR\ftopScenarios\x12:\n" +
 	"\vrecent_runs\x18\v \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\n" +
 	"recentRuns\x12@\n" +
-	"\x0epersonal_bests\x18\f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\rpersonalBests\"%\n" +
+	"\x0epersonal_bests\x18\f \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\rpersonalBests\x12\x1f\n" +
+	"\vis_verified\x18\r \x01(\bR\n" +
+	"isVerified\x12?\n" +
+	"\n" +
+	"benchmarks\x18\x0e \x03(\v2\x1f.aimmod.hub.v1.BenchmarkSummaryR\n" +
+	"benchmarks\"%\n" +
 	"\rSearchRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\"\xa2\x01\n" +
 	"\x14SearchScenarioResult\x12#\n" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
 	"\rscenario_type\x18\x03 \x01(\tR\fscenarioType\x12\x1b\n" +
-	"\trun_count\x18\x04 \x01(\rR\brunCount\"\xf9\x01\n" +
+	"\trun_count\x18\x04 \x01(\rR\brunCount\"\x9a\x02\n" +
 	"\x13SearchProfileResult\x12\x1f\n" +
 	"\vuser_handle\x18\x01 \x01(\tR\n" +
 	"userHandle\x12*\n" +
@@ -3652,7 +4787,9 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x1b\n" +
 	"\trun_count\x18\x04 \x01(\rR\brunCount\x12%\n" +
 	"\x0escenario_count\x18\x05 \x01(\rR\rscenarioCount\x122\n" +
-	"\x15primary_scenario_type\x18\x06 \x01(\tR\x13primaryScenarioType\"\xef\x03\n" +
+	"\x15primary_scenario_type\x18\x06 \x01(\tR\x13primaryScenarioType\x12\x1f\n" +
+	"\vis_verified\x18\a \x01(\bR\n" +
+	"isVerified\"\xef\x03\n" +
 	"\rReplayPreview\x12\"\n" +
 	"\rpublic_run_id\x18\x01 \x01(\tR\vpublicRunId\x12\x1d\n" +
 	"\n" +
@@ -3671,13 +4808,16 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x11user_display_name\x18\v \x01(\tR\x0fuserDisplayName\x12\x1b\n" +
 	"\thas_video\x18\f \x01(\bR\bhasVideo\x12$\n" +
 	"\x0ehas_mouse_path\x18\r \x01(\bR\fhasMousePath\x12%\n" +
-	"\x0ereplay_quality\x18\x0e \x01(\tR\rreplayQuality\"\x93\x02\n" +
+	"\x0ereplay_quality\x18\x0e \x01(\tR\rreplayQuality\"\xd5\x02\n" +
 	"\x0eSearchResponse\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12A\n" +
 	"\tscenarios\x18\x02 \x03(\v2#.aimmod.hub.v1.SearchScenarioResultR\tscenarios\x12>\n" +
 	"\bprofiles\x18\x03 \x03(\v2\".aimmod.hub.v1.SearchProfileResultR\bprofiles\x120\n" +
 	"\x04runs\x18\x04 \x03(\v2\x1c.aimmod.hub.v1.ReplayPreviewR\x04runs\x126\n" +
-	"\areplays\x18\x05 \x03(\v2\x1c.aimmod.hub.v1.ReplayPreviewR\areplays\"}\n" +
+	"\areplays\x18\x05 \x03(\v2\x1c.aimmod.hub.v1.ReplayPreviewR\areplays\x12@\n" +
+	"\n" +
+	"benchmarks\x18\x06 \x03(\v2 .aimmod.hub.v1.BenchmarkListItemR\n" +
+	"benchmarks\"}\n" +
 	"\x12ListReplaysRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12#\n" +
 	"\rscenario_name\x18\x02 \x01(\tR\fscenarioName\x12\x16\n" +
@@ -3717,7 +4857,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"top_scores\x18\x02 \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\ttopScores\"^\n" +
 	"\x1fGetPlayerScenarioHistoryRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\x12#\n" +
-	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\"\xf1\x02\n" +
+	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\"\xc0\x03\n" +
 	" GetPlayerScenarioHistoryResponse\x12#\n" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
@@ -3728,7 +4868,70 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\raverage_score\x18\x06 \x01(\x01R\faverageScore\x12#\n" +
 	"\rbest_accuracy\x18\a \x01(\x01R\fbestAccuracy\x12)\n" +
 	"\x10average_accuracy\x18\b \x01(\x01R\x0faverageAccuracy\x12\x1b\n" +
-	"\trun_count\x18\t \x01(\x05R\brunCount\"\xf0\x02\n" +
+	"\trun_count\x18\t \x01(\x05R\brunCount\x12M\n" +
+	"\x0fbenchmark_ranks\x18\n" +
+	" \x03(\v2$.aimmod.hub.v1.ScenarioBenchmarkRankR\x0ebenchmarkRanks\"\x9f\x01\n" +
+	"\x13BenchmarkRankVisual\x12\x1d\n" +
+	"\n" +
+	"rank_index\x18\x01 \x01(\rR\trankIndex\x12\x1b\n" +
+	"\trank_name\x18\x02 \x01(\tR\brankName\x12\x19\n" +
+	"\bicon_url\x18\x03 \x01(\tR\aiconUrl\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\x12\x1b\n" +
+	"\tframe_url\x18\x05 \x01(\tR\bframeUrl\"\xa3\x02\n" +
+	"\x10BenchmarkSummary\x12!\n" +
+	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\x12%\n" +
+	"\x0ebenchmark_name\x18\x02 \x01(\tR\rbenchmarkName\x12,\n" +
+	"\x12benchmark_icon_url\x18\x03 \x01(\tR\x10benchmarkIconUrl\x12)\n" +
+	"\x10benchmark_author\x18\x04 \x01(\tR\x0fbenchmarkAuthor\x12%\n" +
+	"\x0ebenchmark_type\x18\x05 \x01(\tR\rbenchmarkType\x12E\n" +
+	"\foverall_rank\x18\x06 \x01(\v2\".aimmod.hub.v1.BenchmarkRankVisualR\voverallRank\"\xf6\x02\n" +
+	"\x15ScenarioBenchmarkRank\x12!\n" +
+	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\x12%\n" +
+	"\x0ebenchmark_name\x18\x02 \x01(\tR\rbenchmarkName\x12,\n" +
+	"\x12benchmark_icon_url\x18\x03 \x01(\tR\x10benchmarkIconUrl\x12#\n" +
+	"\rcategory_name\x18\x04 \x01(\tR\fcategoryName\x12%\n" +
+	"\x0escenario_score\x18\x05 \x01(\x01R\rscenarioScore\x12)\n" +
+	"\x10leaderboard_rank\x18\x06 \x01(\rR\x0fleaderboardRank\x12%\n" +
+	"\x0eleaderboard_id\x18\a \x01(\rR\rleaderboardId\x12G\n" +
+	"\rscenario_rank\x18\b \x01(\v2\".aimmod.hub.v1.BenchmarkRankVisualR\fscenarioRank\"\x97\x01\n" +
+	"\x12BenchmarkThreshold\x12\x1d\n" +
+	"\n" +
+	"rank_index\x18\x01 \x01(\rR\trankIndex\x12\x1b\n" +
+	"\trank_name\x18\x02 \x01(\tR\brankName\x12\x19\n" +
+	"\bicon_url\x18\x03 \x01(\tR\aiconUrl\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\x12\x14\n" +
+	"\x05score\x18\x05 \x01(\x01R\x05score\"\xfb\x02\n" +
+	"\x16BenchmarkScenarioEntry\x12#\n" +
+	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
+	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
+	"\rcategory_name\x18\x03 \x01(\tR\fcategoryName\x12\x14\n" +
+	"\x05score\x18\x04 \x01(\x01R\x05score\x12)\n" +
+	"\x10leaderboard_rank\x18\x05 \x01(\rR\x0fleaderboardRank\x12%\n" +
+	"\x0eleaderboard_id\x18\x06 \x01(\rR\rleaderboardId\x12G\n" +
+	"\rscenario_rank\x18\a \x01(\v2\".aimmod.hub.v1.BenchmarkRankVisualR\fscenarioRank\x12A\n" +
+	"\n" +
+	"thresholds\x18\b \x03(\v2!.aimmod.hub.v1.BenchmarkThresholdR\n" +
+	"thresholds\"\xa6\x01\n" +
+	"\x15BenchmarkCategoryPage\x12#\n" +
+	"\rcategory_name\x18\x01 \x01(\tR\fcategoryName\x12#\n" +
+	"\rcategory_rank\x18\x02 \x01(\rR\fcategoryRank\x12C\n" +
+	"\tscenarios\x18\x03 \x03(\v2%.aimmod.hub.v1.BenchmarkScenarioEntryR\tscenarios\"T\n" +
+	"\x17GetBenchmarkPageRequest\x12\x16\n" +
+	"\x06handle\x18\x01 \x01(\tR\x06handle\x12!\n" +
+	"\fbenchmark_id\x18\x02 \x01(\rR\vbenchmarkId\"\xbe\x03\n" +
+	"\x18GetBenchmarkPageResponse\x12\x1f\n" +
+	"\vuser_handle\x18\x01 \x01(\tR\n" +
+	"userHandle\x12*\n" +
+	"\x11user_display_name\x18\x02 \x01(\tR\x0fuserDisplayName\x12!\n" +
+	"\fbenchmark_id\x18\x03 \x01(\rR\vbenchmarkId\x12%\n" +
+	"\x0ebenchmark_name\x18\x04 \x01(\tR\rbenchmarkName\x12,\n" +
+	"\x12benchmark_icon_url\x18\x05 \x01(\tR\x10benchmarkIconUrl\x12)\n" +
+	"\x10benchmark_author\x18\x06 \x01(\tR\x0fbenchmarkAuthor\x12%\n" +
+	"\x0ebenchmark_type\x18\a \x01(\tR\rbenchmarkType\x12E\n" +
+	"\foverall_rank\x18\b \x01(\v2\".aimmod.hub.v1.BenchmarkRankVisualR\voverallRank\x12D\n" +
+	"\n" +
+	"categories\x18\t \x03(\v2$.aimmod.hub.v1.BenchmarkCategoryPageR\n" +
+	"categories\"\xf0\x02\n" +
 	"\x0fTypeProfileBand\x12#\n" +
 	"\rscenario_type\x18\x01 \x01(\tR\fscenarioType\x12\x1b\n" +
 	"\trun_count\x18\x02 \x01(\x05R\brunCount\x12!\n" +
@@ -3783,8 +4986,35 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x18GetAimFingerprintRequest\x12\x16\n" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\"T\n" +
 	"\x19GetAimFingerprintResponse\x127\n" +
-	"\aoverall\x18\x01 \x01(\v2\x1d.aimmod.hub.v1.AimFingerprintR\aoverall2\xe4\n" +
+	"\aoverall\x18\x01 \x01(\v2\x1d.aimmod.hub.v1.AimFingerprintR\aoverall\"\x17\n" +
+	"\x15ListBenchmarksRequest\"\x80\x02\n" +
+	"\x11BenchmarkListItem\x12!\n" +
+	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\x12%\n" +
+	"\x0ebenchmark_name\x18\x02 \x01(\tR\rbenchmarkName\x12,\n" +
+	"\x12benchmark_icon_url\x18\x03 \x01(\tR\x10benchmarkIconUrl\x12)\n" +
+	"\x10benchmark_author\x18\x04 \x01(\tR\x0fbenchmarkAuthor\x12%\n" +
+	"\x0ebenchmark_type\x18\x05 \x01(\tR\rbenchmarkType\x12!\n" +
+	"\fplayer_count\x18\x06 \x01(\rR\vplayerCount\"Z\n" +
+	"\x16ListBenchmarksResponse\x12@\n" +
 	"\n" +
+	"benchmarks\x18\x01 \x03(\v2 .aimmod.hub.v1.BenchmarkListItemR\n" +
+	"benchmarks\"C\n" +
+	"\x1eGetBenchmarkLeaderboardRequest\x12!\n" +
+	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\"\x8b\x02\n" +
+	"\x19BenchmarkLeaderboardEntry\x12\x1f\n" +
+	"\vuser_handle\x18\x01 \x01(\tR\n" +
+	"userHandle\x12!\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12*\n" +
+	"\x11overall_rank_name\x18\x04 \x01(\tR\x0foverallRankName\x121\n" +
+	"\x15overall_rank_icon_url\x18\x05 \x01(\tR\x12overallRankIconUrl\x12,\n" +
+	"\x12overall_rank_index\x18\x06 \x01(\rR\x10overallRankIndex\"\xdd\x01\n" +
+	"\x1fGetBenchmarkLeaderboardResponse\x12!\n" +
+	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\x12%\n" +
+	"\x0ebenchmark_name\x18\x02 \x01(\tR\rbenchmarkName\x12,\n" +
+	"\x12benchmark_icon_url\x18\x03 \x01(\tR\x10benchmarkIconUrl\x12B\n" +
+	"\aentries\x18\x04 \x03(\v2(.aimmod.hub.v1.BenchmarkLeaderboardEntryR\aentries2\xa2\r\n" +
 	"\n" +
 	"HubService\x12H\n" +
 	"\tGetHealth\x12\x1c.aimmod.hub.v1.HealthRequest\x1a\x1d.aimmod.hub.v1.HealthResponse\x12Z\n" +
@@ -3800,9 +5030,12 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x0eGetReplayMedia\x12$.aimmod.hub.v1.GetReplayMediaRequest\x1a%.aimmod.hub.v1.GetReplayMediaResponse\x12W\n" +
 	"\fGetMousePath\x12\".aimmod.hub.v1.GetMousePathRequest\x1a#.aimmod.hub.v1.GetMousePathResponse\x12]\n" +
 	"\x0eGetLeaderboard\x12$.aimmod.hub.v1.GetLeaderboardRequest\x1a%.aimmod.hub.v1.GetLeaderboardResponse\x12{\n" +
-	"\x18GetPlayerScenarioHistory\x12..aimmod.hub.v1.GetPlayerScenarioHistoryRequest\x1a/.aimmod.hub.v1.GetPlayerScenarioHistoryResponse\x12Z\n" +
+	"\x18GetPlayerScenarioHistory\x12..aimmod.hub.v1.GetPlayerScenarioHistoryRequest\x1a/.aimmod.hub.v1.GetPlayerScenarioHistoryResponse\x12c\n" +
+	"\x10GetBenchmarkPage\x12&.aimmod.hub.v1.GetBenchmarkPageRequest\x1a'.aimmod.hub.v1.GetBenchmarkPageResponse\x12Z\n" +
 	"\rGetAimProfile\x12#.aimmod.hub.v1.GetAimProfileRequest\x1a$.aimmod.hub.v1.GetAimProfileResponse\x12f\n" +
-	"\x11GetAimFingerprint\x12'.aimmod.hub.v1.GetAimFingerprintRequest\x1a(.aimmod.hub.v1.GetAimFingerprintResponseB>Z<github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1;hubv1b\x06proto3"
+	"\x11GetAimFingerprint\x12'.aimmod.hub.v1.GetAimFingerprintRequest\x1a(.aimmod.hub.v1.GetAimFingerprintResponse\x12]\n" +
+	"\x0eListBenchmarks\x12$.aimmod.hub.v1.ListBenchmarksRequest\x1a%.aimmod.hub.v1.ListBenchmarksResponse\x12x\n" +
+	"\x17GetBenchmarkLeaderboard\x12-.aimmod.hub.v1.GetBenchmarkLeaderboardRequest\x1a..aimmod.hub.v1.GetBenchmarkLeaderboardResponseB>Z<github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1;hubv1b\x06proto3"
 
 var (
 	file_aimmod_hub_v1_hub_proto_rawDescOnce sync.Once
@@ -3816,7 +5049,7 @@ func file_aimmod_hub_v1_hub_proto_rawDescGZIP() []byte {
 	return file_aimmod_hub_v1_hub_proto_rawDescData
 }
 
-var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
+var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
 var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*HealthRequest)(nil),                    // 0: aimmod.hub.v1.HealthRequest
 	(*HealthResponse)(nil),                   // 1: aimmod.hub.v1.HealthResponse
@@ -3855,91 +5088,124 @@ var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*GetLeaderboardResponse)(nil),           // 34: aimmod.hub.v1.GetLeaderboardResponse
 	(*GetPlayerScenarioHistoryRequest)(nil),  // 35: aimmod.hub.v1.GetPlayerScenarioHistoryRequest
 	(*GetPlayerScenarioHistoryResponse)(nil), // 36: aimmod.hub.v1.GetPlayerScenarioHistoryResponse
-	(*TypeProfileBand)(nil),                  // 37: aimmod.hub.v1.TypeProfileBand
-	(*GetAimProfileRequest)(nil),             // 38: aimmod.hub.v1.GetAimProfileRequest
-	(*GetAimProfileResponse)(nil),            // 39: aimmod.hub.v1.GetAimProfileResponse
-	(*AimFingerprintAxis)(nil),               // 40: aimmod.hub.v1.AimFingerprintAxis
-	(*AimFingerprint)(nil),                   // 41: aimmod.hub.v1.AimFingerprint
-	(*GetAimFingerprintRequest)(nil),         // 42: aimmod.hub.v1.GetAimFingerprintRequest
-	(*GetAimFingerprintResponse)(nil),        // 43: aimmod.hub.v1.GetAimFingerprintResponse
-	nil,                                      // 44: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	nil,                                      // 45: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	nil,                                      // 46: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
-	nil,                                      // 47: aimmod.hub.v1.GetRunResponse.SummaryEntry
-	nil,                                      // 48: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	(*BenchmarkRankVisual)(nil),              // 37: aimmod.hub.v1.BenchmarkRankVisual
+	(*BenchmarkSummary)(nil),                 // 38: aimmod.hub.v1.BenchmarkSummary
+	(*ScenarioBenchmarkRank)(nil),            // 39: aimmod.hub.v1.ScenarioBenchmarkRank
+	(*BenchmarkThreshold)(nil),               // 40: aimmod.hub.v1.BenchmarkThreshold
+	(*BenchmarkScenarioEntry)(nil),           // 41: aimmod.hub.v1.BenchmarkScenarioEntry
+	(*BenchmarkCategoryPage)(nil),            // 42: aimmod.hub.v1.BenchmarkCategoryPage
+	(*GetBenchmarkPageRequest)(nil),          // 43: aimmod.hub.v1.GetBenchmarkPageRequest
+	(*GetBenchmarkPageResponse)(nil),         // 44: aimmod.hub.v1.GetBenchmarkPageResponse
+	(*TypeProfileBand)(nil),                  // 45: aimmod.hub.v1.TypeProfileBand
+	(*GetAimProfileRequest)(nil),             // 46: aimmod.hub.v1.GetAimProfileRequest
+	(*GetAimProfileResponse)(nil),            // 47: aimmod.hub.v1.GetAimProfileResponse
+	(*AimFingerprintAxis)(nil),               // 48: aimmod.hub.v1.AimFingerprintAxis
+	(*AimFingerprint)(nil),                   // 49: aimmod.hub.v1.AimFingerprint
+	(*GetAimFingerprintRequest)(nil),         // 50: aimmod.hub.v1.GetAimFingerprintRequest
+	(*GetAimFingerprintResponse)(nil),        // 51: aimmod.hub.v1.GetAimFingerprintResponse
+	(*ListBenchmarksRequest)(nil),            // 52: aimmod.hub.v1.ListBenchmarksRequest
+	(*BenchmarkListItem)(nil),                // 53: aimmod.hub.v1.BenchmarkListItem
+	(*ListBenchmarksResponse)(nil),           // 54: aimmod.hub.v1.ListBenchmarksResponse
+	(*GetBenchmarkLeaderboardRequest)(nil),   // 55: aimmod.hub.v1.GetBenchmarkLeaderboardRequest
+	(*BenchmarkLeaderboardEntry)(nil),        // 56: aimmod.hub.v1.BenchmarkLeaderboardEntry
+	(*GetBenchmarkLeaderboardResponse)(nil),  // 57: aimmod.hub.v1.GetBenchmarkLeaderboardResponse
+	nil,                                      // 58: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	nil,                                      // 59: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	nil,                                      // 60: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	nil,                                      // 61: aimmod.hub.v1.GetRunResponse.SummaryEntry
+	nil,                                      // 62: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 }
 var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
-	44, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	45, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	46, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	58, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	59, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	60, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
 	3,  // 3: aimmod.hub.v1.IngestSessionRequest.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 4: aimmod.hub.v1.IngestSessionRequest.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 5: aimmod.hub.v1.GetOverviewResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
 	11, // 6: aimmod.hub.v1.GetOverviewResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
 	12, // 7: aimmod.hub.v1.GetOverviewResponse.active_profiles:type_name -> aimmod.hub.v1.CommunityProfilePreview
-	47, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
-	48, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	61, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
+	62, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 	3,  // 10: aimmod.hub.v1.GetRunResponse.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 11: aimmod.hub.v1.GetRunResponse.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 12: aimmod.hub.v1.GetRunResponse.scenario_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 13: aimmod.hub.v1.GetScenarioPageResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 14: aimmod.hub.v1.GetScenarioPageResponse.top_runs:type_name -> aimmod.hub.v1.RunPreview
-	5,  // 15: aimmod.hub.v1.GetScenarioPageResponse.score_distribution:type_name -> aimmod.hub.v1.ScoreBin
-	11, // 16: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
-	10, // 17: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
-	10, // 18: aimmod.hub.v1.GetProfileResponse.personal_bests:type_name -> aimmod.hub.v1.RunPreview
-	22, // 19: aimmod.hub.v1.SearchResponse.scenarios:type_name -> aimmod.hub.v1.SearchScenarioResult
-	23, // 20: aimmod.hub.v1.SearchResponse.profiles:type_name -> aimmod.hub.v1.SearchProfileResult
-	24, // 21: aimmod.hub.v1.SearchResponse.runs:type_name -> aimmod.hub.v1.ReplayPreview
-	24, // 22: aimmod.hub.v1.SearchResponse.replays:type_name -> aimmod.hub.v1.ReplayPreview
-	24, // 23: aimmod.hub.v1.ListReplaysResponse.items:type_name -> aimmod.hub.v1.ReplayPreview
-	30, // 24: aimmod.hub.v1.GetMousePathResponse.points:type_name -> aimmod.hub.v1.MousePathPoint
-	10, // 25: aimmod.hub.v1.GetLeaderboardResponse.records:type_name -> aimmod.hub.v1.RunPreview
-	10, // 26: aimmod.hub.v1.GetLeaderboardResponse.top_scores:type_name -> aimmod.hub.v1.RunPreview
-	10, // 27: aimmod.hub.v1.GetPlayerScenarioHistoryResponse.runs:type_name -> aimmod.hub.v1.RunPreview
-	37, // 28: aimmod.hub.v1.GetAimProfileResponse.type_bands:type_name -> aimmod.hub.v1.TypeProfileBand
-	40, // 29: aimmod.hub.v1.AimFingerprint.axes:type_name -> aimmod.hub.v1.AimFingerprintAxis
-	41, // 30: aimmod.hub.v1.GetAimFingerprintResponse.overall:type_name -> aimmod.hub.v1.AimFingerprint
-	2,  // 31: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 32: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 33: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 34: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 35: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	0,  // 36: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
-	6,  // 37: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
-	8,  // 38: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
-	13, // 39: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
-	15, // 40: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
-	17, // 41: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
-	19, // 42: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
-	21, // 43: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
-	26, // 44: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
-	28, // 45: aimmod.hub.v1.HubService.GetReplayMedia:input_type -> aimmod.hub.v1.GetReplayMediaRequest
-	31, // 46: aimmod.hub.v1.HubService.GetMousePath:input_type -> aimmod.hub.v1.GetMousePathRequest
-	33, // 47: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
-	35, // 48: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
-	38, // 49: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
-	42, // 50: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
-	1,  // 51: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
-	7,  // 52: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
-	9,  // 53: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
-	14, // 54: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
-	16, // 55: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
-	18, // 56: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
-	20, // 57: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
-	25, // 58: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
-	27, // 59: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
-	29, // 60: aimmod.hub.v1.HubService.GetReplayMedia:output_type -> aimmod.hub.v1.GetReplayMediaResponse
-	32, // 61: aimmod.hub.v1.HubService.GetMousePath:output_type -> aimmod.hub.v1.GetMousePathResponse
-	34, // 62: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
-	36, // 63: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
-	39, // 64: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
-	43, // 65: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
-	51, // [51:66] is the sub-list for method output_type
-	36, // [36:51] is the sub-list for method input_type
-	36, // [36:36] is the sub-list for extension type_name
-	36, // [36:36] is the sub-list for extension extendee
-	0,  // [0:36] is the sub-list for field type_name
+	39, // 13: aimmod.hub.v1.GetRunResponse.benchmark_ranks:type_name -> aimmod.hub.v1.ScenarioBenchmarkRank
+	10, // 14: aimmod.hub.v1.GetScenarioPageResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 15: aimmod.hub.v1.GetScenarioPageResponse.top_runs:type_name -> aimmod.hub.v1.RunPreview
+	5,  // 16: aimmod.hub.v1.GetScenarioPageResponse.score_distribution:type_name -> aimmod.hub.v1.ScoreBin
+	11, // 17: aimmod.hub.v1.GetProfileResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
+	10, // 18: aimmod.hub.v1.GetProfileResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
+	10, // 19: aimmod.hub.v1.GetProfileResponse.personal_bests:type_name -> aimmod.hub.v1.RunPreview
+	38, // 20: aimmod.hub.v1.GetProfileResponse.benchmarks:type_name -> aimmod.hub.v1.BenchmarkSummary
+	22, // 21: aimmod.hub.v1.SearchResponse.scenarios:type_name -> aimmod.hub.v1.SearchScenarioResult
+	23, // 22: aimmod.hub.v1.SearchResponse.profiles:type_name -> aimmod.hub.v1.SearchProfileResult
+	24, // 23: aimmod.hub.v1.SearchResponse.runs:type_name -> aimmod.hub.v1.ReplayPreview
+	24, // 24: aimmod.hub.v1.SearchResponse.replays:type_name -> aimmod.hub.v1.ReplayPreview
+	53, // 25: aimmod.hub.v1.SearchResponse.benchmarks:type_name -> aimmod.hub.v1.BenchmarkListItem
+	24, // 26: aimmod.hub.v1.ListReplaysResponse.items:type_name -> aimmod.hub.v1.ReplayPreview
+	30, // 27: aimmod.hub.v1.GetMousePathResponse.points:type_name -> aimmod.hub.v1.MousePathPoint
+	10, // 28: aimmod.hub.v1.GetLeaderboardResponse.records:type_name -> aimmod.hub.v1.RunPreview
+	10, // 29: aimmod.hub.v1.GetLeaderboardResponse.top_scores:type_name -> aimmod.hub.v1.RunPreview
+	10, // 30: aimmod.hub.v1.GetPlayerScenarioHistoryResponse.runs:type_name -> aimmod.hub.v1.RunPreview
+	39, // 31: aimmod.hub.v1.GetPlayerScenarioHistoryResponse.benchmark_ranks:type_name -> aimmod.hub.v1.ScenarioBenchmarkRank
+	37, // 32: aimmod.hub.v1.BenchmarkSummary.overall_rank:type_name -> aimmod.hub.v1.BenchmarkRankVisual
+	37, // 33: aimmod.hub.v1.ScenarioBenchmarkRank.scenario_rank:type_name -> aimmod.hub.v1.BenchmarkRankVisual
+	37, // 34: aimmod.hub.v1.BenchmarkScenarioEntry.scenario_rank:type_name -> aimmod.hub.v1.BenchmarkRankVisual
+	40, // 35: aimmod.hub.v1.BenchmarkScenarioEntry.thresholds:type_name -> aimmod.hub.v1.BenchmarkThreshold
+	41, // 36: aimmod.hub.v1.BenchmarkCategoryPage.scenarios:type_name -> aimmod.hub.v1.BenchmarkScenarioEntry
+	37, // 37: aimmod.hub.v1.GetBenchmarkPageResponse.overall_rank:type_name -> aimmod.hub.v1.BenchmarkRankVisual
+	42, // 38: aimmod.hub.v1.GetBenchmarkPageResponse.categories:type_name -> aimmod.hub.v1.BenchmarkCategoryPage
+	45, // 39: aimmod.hub.v1.GetAimProfileResponse.type_bands:type_name -> aimmod.hub.v1.TypeProfileBand
+	48, // 40: aimmod.hub.v1.AimFingerprint.axes:type_name -> aimmod.hub.v1.AimFingerprintAxis
+	49, // 41: aimmod.hub.v1.GetAimFingerprintResponse.overall:type_name -> aimmod.hub.v1.AimFingerprint
+	53, // 42: aimmod.hub.v1.ListBenchmarksResponse.benchmarks:type_name -> aimmod.hub.v1.BenchmarkListItem
+	56, // 43: aimmod.hub.v1.GetBenchmarkLeaderboardResponse.entries:type_name -> aimmod.hub.v1.BenchmarkLeaderboardEntry
+	2,  // 44: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 45: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 46: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 47: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 48: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	0,  // 49: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
+	6,  // 50: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
+	8,  // 51: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
+	13, // 52: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
+	15, // 53: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
+	17, // 54: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
+	19, // 55: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
+	21, // 56: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
+	26, // 57: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
+	28, // 58: aimmod.hub.v1.HubService.GetReplayMedia:input_type -> aimmod.hub.v1.GetReplayMediaRequest
+	31, // 59: aimmod.hub.v1.HubService.GetMousePath:input_type -> aimmod.hub.v1.GetMousePathRequest
+	33, // 60: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
+	35, // 61: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
+	43, // 62: aimmod.hub.v1.HubService.GetBenchmarkPage:input_type -> aimmod.hub.v1.GetBenchmarkPageRequest
+	46, // 63: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
+	50, // 64: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
+	52, // 65: aimmod.hub.v1.HubService.ListBenchmarks:input_type -> aimmod.hub.v1.ListBenchmarksRequest
+	55, // 66: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:input_type -> aimmod.hub.v1.GetBenchmarkLeaderboardRequest
+	1,  // 67: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
+	7,  // 68: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
+	9,  // 69: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
+	14, // 70: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
+	16, // 71: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
+	18, // 72: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
+	20, // 73: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
+	25, // 74: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
+	27, // 75: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
+	29, // 76: aimmod.hub.v1.HubService.GetReplayMedia:output_type -> aimmod.hub.v1.GetReplayMediaResponse
+	32, // 77: aimmod.hub.v1.HubService.GetMousePath:output_type -> aimmod.hub.v1.GetMousePathResponse
+	34, // 78: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
+	36, // 79: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
+	44, // 80: aimmod.hub.v1.HubService.GetBenchmarkPage:output_type -> aimmod.hub.v1.GetBenchmarkPageResponse
+	47, // 81: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
+	51, // 82: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
+	54, // 83: aimmod.hub.v1.HubService.ListBenchmarks:output_type -> aimmod.hub.v1.ListBenchmarksResponse
+	57, // 84: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:output_type -> aimmod.hub.v1.GetBenchmarkLeaderboardResponse
+	67, // [67:85] is the sub-list for method output_type
+	49, // [49:67] is the sub-list for method input_type
+	49, // [49:49] is the sub-list for extension type_name
+	49, // [49:49] is the sub-list for extension extendee
+	0,  // [0:49] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_hub_v1_hub_proto_init() }
@@ -3958,7 +5224,7 @@ func file_aimmod_hub_v1_hub_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aimmod_hub_v1_hub_proto_rawDesc), len(file_aimmod_hub_v1_hub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   49,
+			NumMessages:   63,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

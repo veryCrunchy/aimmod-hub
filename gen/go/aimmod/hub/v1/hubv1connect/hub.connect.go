@@ -65,12 +65,21 @@ const (
 	// HubServiceGetPlayerScenarioHistoryProcedure is the fully-qualified name of the HubService's
 	// GetPlayerScenarioHistory RPC.
 	HubServiceGetPlayerScenarioHistoryProcedure = "/aimmod.hub.v1.HubService/GetPlayerScenarioHistory"
+	// HubServiceGetBenchmarkPageProcedure is the fully-qualified name of the HubService's
+	// GetBenchmarkPage RPC.
+	HubServiceGetBenchmarkPageProcedure = "/aimmod.hub.v1.HubService/GetBenchmarkPage"
 	// HubServiceGetAimProfileProcedure is the fully-qualified name of the HubService's GetAimProfile
 	// RPC.
 	HubServiceGetAimProfileProcedure = "/aimmod.hub.v1.HubService/GetAimProfile"
 	// HubServiceGetAimFingerprintProcedure is the fully-qualified name of the HubService's
 	// GetAimFingerprint RPC.
 	HubServiceGetAimFingerprintProcedure = "/aimmod.hub.v1.HubService/GetAimFingerprint"
+	// HubServiceListBenchmarksProcedure is the fully-qualified name of the HubService's ListBenchmarks
+	// RPC.
+	HubServiceListBenchmarksProcedure = "/aimmod.hub.v1.HubService/ListBenchmarks"
+	// HubServiceGetBenchmarkLeaderboardProcedure is the fully-qualified name of the HubService's
+	// GetBenchmarkLeaderboard RPC.
+	HubServiceGetBenchmarkLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetBenchmarkLeaderboard"
 )
 
 // HubServiceClient is a client for the aimmod.hub.v1.HubService service.
@@ -88,8 +97,11 @@ type HubServiceClient interface {
 	GetMousePath(context.Context, *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
+	GetBenchmarkPage(context.Context, *connect.Request[v1.GetBenchmarkPageRequest]) (*connect.Response[v1.GetBenchmarkPageResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
 	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
+	ListBenchmarks(context.Context, *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error)
+	GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error)
 }
 
 // NewHubServiceClient constructs a client for the aimmod.hub.v1.HubService service. By default, it
@@ -181,6 +193,12 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioHistory")),
 			connect.WithClientOptions(opts...),
 		),
+		getBenchmarkPage: connect.NewClient[v1.GetBenchmarkPageRequest, v1.GetBenchmarkPageResponse](
+			httpClient,
+			baseURL+HubServiceGetBenchmarkPageProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkPage")),
+			connect.WithClientOptions(opts...),
+		),
 		getAimProfile: connect.NewClient[v1.GetAimProfileRequest, v1.GetAimProfileResponse](
 			httpClient,
 			baseURL+HubServiceGetAimProfileProcedure,
@@ -191,6 +209,18 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			httpClient,
 			baseURL+HubServiceGetAimFingerprintProcedure,
 			connect.WithSchema(hubServiceMethods.ByName("GetAimFingerprint")),
+			connect.WithClientOptions(opts...),
+		),
+		listBenchmarks: connect.NewClient[v1.ListBenchmarksRequest, v1.ListBenchmarksResponse](
+			httpClient,
+			baseURL+HubServiceListBenchmarksProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("ListBenchmarks")),
+			connect.WithClientOptions(opts...),
+		),
+		getBenchmarkLeaderboard: connect.NewClient[v1.GetBenchmarkLeaderboardRequest, v1.GetBenchmarkLeaderboardResponse](
+			httpClient,
+			baseURL+HubServiceGetBenchmarkLeaderboardProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkLeaderboard")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -211,8 +241,11 @@ type hubServiceClient struct {
 	getMousePath             *connect.Client[v1.GetMousePathRequest, v1.GetMousePathResponse]
 	getLeaderboard           *connect.Client[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse]
 	getPlayerScenarioHistory *connect.Client[v1.GetPlayerScenarioHistoryRequest, v1.GetPlayerScenarioHistoryResponse]
+	getBenchmarkPage         *connect.Client[v1.GetBenchmarkPageRequest, v1.GetBenchmarkPageResponse]
 	getAimProfile            *connect.Client[v1.GetAimProfileRequest, v1.GetAimProfileResponse]
 	getAimFingerprint        *connect.Client[v1.GetAimFingerprintRequest, v1.GetAimFingerprintResponse]
+	listBenchmarks           *connect.Client[v1.ListBenchmarksRequest, v1.ListBenchmarksResponse]
+	getBenchmarkLeaderboard  *connect.Client[v1.GetBenchmarkLeaderboardRequest, v1.GetBenchmarkLeaderboardResponse]
 }
 
 // GetHealth calls aimmod.hub.v1.HubService.GetHealth.
@@ -280,6 +313,11 @@ func (c *hubServiceClient) GetPlayerScenarioHistory(ctx context.Context, req *co
 	return c.getPlayerScenarioHistory.CallUnary(ctx, req)
 }
 
+// GetBenchmarkPage calls aimmod.hub.v1.HubService.GetBenchmarkPage.
+func (c *hubServiceClient) GetBenchmarkPage(ctx context.Context, req *connect.Request[v1.GetBenchmarkPageRequest]) (*connect.Response[v1.GetBenchmarkPageResponse], error) {
+	return c.getBenchmarkPage.CallUnary(ctx, req)
+}
+
 // GetAimProfile calls aimmod.hub.v1.HubService.GetAimProfile.
 func (c *hubServiceClient) GetAimProfile(ctx context.Context, req *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error) {
 	return c.getAimProfile.CallUnary(ctx, req)
@@ -288,6 +326,16 @@ func (c *hubServiceClient) GetAimProfile(ctx context.Context, req *connect.Reque
 // GetAimFingerprint calls aimmod.hub.v1.HubService.GetAimFingerprint.
 func (c *hubServiceClient) GetAimFingerprint(ctx context.Context, req *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error) {
 	return c.getAimFingerprint.CallUnary(ctx, req)
+}
+
+// ListBenchmarks calls aimmod.hub.v1.HubService.ListBenchmarks.
+func (c *hubServiceClient) ListBenchmarks(ctx context.Context, req *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error) {
+	return c.listBenchmarks.CallUnary(ctx, req)
+}
+
+// GetBenchmarkLeaderboard calls aimmod.hub.v1.HubService.GetBenchmarkLeaderboard.
+func (c *hubServiceClient) GetBenchmarkLeaderboard(ctx context.Context, req *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error) {
+	return c.getBenchmarkLeaderboard.CallUnary(ctx, req)
 }
 
 // HubServiceHandler is an implementation of the aimmod.hub.v1.HubService service.
@@ -305,8 +353,11 @@ type HubServiceHandler interface {
 	GetMousePath(context.Context, *connect.Request[v1.GetMousePathRequest]) (*connect.Response[v1.GetMousePathResponse], error)
 	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 	GetPlayerScenarioHistory(context.Context, *connect.Request[v1.GetPlayerScenarioHistoryRequest]) (*connect.Response[v1.GetPlayerScenarioHistoryResponse], error)
+	GetBenchmarkPage(context.Context, *connect.Request[v1.GetBenchmarkPageRequest]) (*connect.Response[v1.GetBenchmarkPageResponse], error)
 	GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error)
 	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
+	ListBenchmarks(context.Context, *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error)
+	GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error)
 }
 
 // NewHubServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -394,6 +445,12 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioHistory")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceGetBenchmarkPageHandler := connect.NewUnaryHandler(
+		HubServiceGetBenchmarkPageProcedure,
+		svc.GetBenchmarkPage,
+		connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkPage")),
+		connect.WithHandlerOptions(opts...),
+	)
 	hubServiceGetAimProfileHandler := connect.NewUnaryHandler(
 		HubServiceGetAimProfileProcedure,
 		svc.GetAimProfile,
@@ -404,6 +461,18 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		HubServiceGetAimFingerprintProcedure,
 		svc.GetAimFingerprint,
 		connect.WithSchema(hubServiceMethods.ByName("GetAimFingerprint")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceListBenchmarksHandler := connect.NewUnaryHandler(
+		HubServiceListBenchmarksProcedure,
+		svc.ListBenchmarks,
+		connect.WithSchema(hubServiceMethods.ByName("ListBenchmarks")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetBenchmarkLeaderboardHandler := connect.NewUnaryHandler(
+		HubServiceGetBenchmarkLeaderboardProcedure,
+		svc.GetBenchmarkLeaderboard,
+		connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkLeaderboard")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/aimmod.hub.v1.HubService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -434,10 +503,16 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceGetLeaderboardHandler.ServeHTTP(w, r)
 		case HubServiceGetPlayerScenarioHistoryProcedure:
 			hubServiceGetPlayerScenarioHistoryHandler.ServeHTTP(w, r)
+		case HubServiceGetBenchmarkPageProcedure:
+			hubServiceGetBenchmarkPageHandler.ServeHTTP(w, r)
 		case HubServiceGetAimProfileProcedure:
 			hubServiceGetAimProfileHandler.ServeHTTP(w, r)
 		case HubServiceGetAimFingerprintProcedure:
 			hubServiceGetAimFingerprintHandler.ServeHTTP(w, r)
+		case HubServiceListBenchmarksProcedure:
+			hubServiceListBenchmarksHandler.ServeHTTP(w, r)
+		case HubServiceGetBenchmarkLeaderboardProcedure:
+			hubServiceGetBenchmarkLeaderboardHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -499,10 +574,22 @@ func (UnimplementedHubServiceHandler) GetPlayerScenarioHistory(context.Context, 
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetPlayerScenarioHistory is not implemented"))
 }
 
+func (UnimplementedHubServiceHandler) GetBenchmarkPage(context.Context, *connect.Request[v1.GetBenchmarkPageRequest]) (*connect.Response[v1.GetBenchmarkPageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetBenchmarkPage is not implemented"))
+}
+
 func (UnimplementedHubServiceHandler) GetAimProfile(context.Context, *connect.Request[v1.GetAimProfileRequest]) (*connect.Response[v1.GetAimProfileResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetAimProfile is not implemented"))
 }
 
 func (UnimplementedHubServiceHandler) GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetAimFingerprint is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) ListBenchmarks(context.Context, *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.ListBenchmarks is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetBenchmarkLeaderboard is not implemented"))
 }

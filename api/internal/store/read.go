@@ -52,6 +52,7 @@ type ProfileRecord struct {
 	UserHandle          string
 	UserDisplayName     string
 	AvatarURL           string
+	IsVerified          bool
 	RunCount            uint32
 	ScenarioCount       uint32
 	PrimaryScenarioType string
@@ -79,6 +80,36 @@ type PlayerScenarioHistoryRecord struct {
 	RunCount        int32
 }
 
+type resolvedUserIdentity struct {
+	UserID          int64
+	UserExternalID  string
+	UserHandle      string
+	UserDisplayName string
+}
+
+func (s *Store) resolveUserIdentityByHandle(ctx context.Context, handle string) (resolvedUserIdentity, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return resolvedUserIdentity{}, fmt.Errorf("profile handle is required")
+	}
+
+	var result resolvedUserIdentity
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			hui.user_id,
+			hui.external_id,
+			hui.user_handle,
+			hui.user_display_name
+		FROM hub_user_identity hui
+		WHERE LOWER(hui.user_handle) = $1
+		   OR LOWER(hui.external_id) = $1
+		LIMIT 1
+	`, handle).Scan(&result.UserID, &result.UserExternalID, &result.UserHandle, &result.UserDisplayName); err != nil {
+		return resolvedUserIdentity{}, fmt.Errorf("load user identity by handle: %w", err)
+	}
+	return result, nil
+}
+
 type OverviewRecord struct {
 	TotalRuns      uint32
 	TotalScenarios uint32
@@ -99,6 +130,7 @@ type SearchProfileRecord struct {
 	UserHandle          string `json:"userHandle"`
 	UserDisplayName     string `json:"userDisplayName"`
 	AvatarURL           string `json:"avatarURL"`
+	IsVerified          bool   `json:"isVerified"`
 	RunCount            uint32 `json:"runCount"`
 	ScenarioCount       uint32 `json:"scenarioCount"`
 	PrimaryScenarioType string `json:"primaryScenarioType"`
@@ -174,15 +206,15 @@ type AdminUserSyncHealth struct {
 }
 
 type AdminIngestFailure struct {
-	ID             uint64    `json:"id"`
-	UserExternalID string    `json:"userExternalId"`
-	UserHandle     string    `json:"userHandle"`
-	UserDisplayName string   `json:"userDisplayName"`
-	SessionID      string    `json:"sessionId"`
-	PublicRunID    string    `json:"publicRunId"`
-	ScenarioName   string    `json:"scenarioName"`
-	ErrorMessage   string    `json:"errorMessage"`
-	CreatedAt      time.Time `json:"createdAt"`
+	ID              uint64    `json:"id"`
+	UserExternalID  string    `json:"userExternalId"`
+	UserHandle      string    `json:"userHandle"`
+	UserDisplayName string    `json:"userDisplayName"`
+	SessionID       string    `json:"sessionId"`
+	PublicRunID     string    `json:"publicRunId"`
+	ScenarioName    string    `json:"scenarioName"`
+	ErrorMessage    string    `json:"errorMessage"`
+	CreatedAt       time.Time `json:"createdAt"`
 }
 
 type AdminUserRecentRun struct {
@@ -213,30 +245,30 @@ type AdminUserDetailRecord struct {
 }
 
 type AdminUserMetricsExportRun struct {
-	PublicRunID          string          `json:"publicRunId"`
-	SessionID            string          `json:"sessionId"`
-	SourceSessionID      string          `json:"sourceSessionId"`
-	ScenarioName         string          `json:"scenarioName"`
-	ScenarioType         string          `json:"scenarioType"`
-	PlayedAt             time.Time       `json:"playedAt"`
-	Score                float64         `json:"score"`
-	Accuracy             float64         `json:"accuracy"`
-	DurationMS           uint64          `json:"durationMs"`
-	AppVersion           string          `json:"appVersion"`
-	SchemaVersion        uint32          `json:"schemaVersion"`
-	TimelineSecondCount  uint64          `json:"timelineSecondCount"`
-	ContextWindowCount   uint64          `json:"contextWindowCount"`
-	SummaryJSON          json.RawMessage `json:"summaryJson"`
-	FeatureJSON          json.RawMessage `json:"featureJson"`
+	PublicRunID         string          `json:"publicRunId"`
+	SessionID           string          `json:"sessionId"`
+	SourceSessionID     string          `json:"sourceSessionId"`
+	ScenarioName        string          `json:"scenarioName"`
+	ScenarioType        string          `json:"scenarioType"`
+	PlayedAt            time.Time       `json:"playedAt"`
+	Score               float64         `json:"score"`
+	Accuracy            float64         `json:"accuracy"`
+	DurationMS          uint64          `json:"durationMs"`
+	AppVersion          string          `json:"appVersion"`
+	SchemaVersion       uint32          `json:"schemaVersion"`
+	TimelineSecondCount uint64          `json:"timelineSecondCount"`
+	ContextWindowCount  uint64          `json:"contextWindowCount"`
+	SummaryJSON         json.RawMessage `json:"summaryJson"`
+	FeatureJSON         json.RawMessage `json:"featureJson"`
 }
 
 type AdminUserMetricsExport struct {
-	ExportedAt      time.Time                  `json:"exportedAt"`
-	Days            int                        `json:"days"`
-	UserHandle      string                     `json:"userHandle"`
-	UserDisplayName string                     `json:"userDisplayName"`
-	RunCount        uint64                     `json:"runCount"`
-	RecentFailures  []AdminIngestFailure       `json:"recentFailures"`
+	ExportedAt      time.Time                   `json:"exportedAt"`
+	Days            int                         `json:"days"`
+	UserHandle      string                      `json:"userHandle"`
+	UserDisplayName string                      `json:"userDisplayName"`
+	RunCount        uint64                      `json:"runCount"`
+	RecentFailures  []AdminIngestFailure        `json:"recentFailures"`
 	Runs            []AdminUserMetricsExportRun `json:"runs"`
 }
 
@@ -1326,11 +1358,10 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 			sr.score,
 			sr.accuracy,
 			sr.duration_ms,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+			hui.user_handle,
+			hui.user_display_name
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		ORDER BY sr.played_at DESC, sr.created_at DESC
 		LIMIT 50
 	`)
@@ -1388,23 +1419,23 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 
 	activeProfiles, err := s.pool.Query(ctx, `
 		SELECT
-			COALESCE(la.username, hu.external_id) AS user_handle,
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)) AS user_display_name,
-			COALESCE(la.avatar_url, '') AS avatar_url,
+			hui.user_handle,
+			hui.user_display_name,
+			hui.avatar_url,
+			hui.is_verified,
 			COUNT(sr.*)::bigint AS run_count,
 			COUNT(DISTINCT sr.scenario_name)::bigint AS scenario_count,
 			COALESCE((
 				SELECT COALESCE(NULLIF(sr2.scenario_type, ''), 'Unknown')
 				FROM scenario_runs sr2
-				WHERE sr2.user_id = hu.id
+				WHERE sr2.user_id = hui.user_id
 				GROUP BY COALESCE(NULLIF(sr2.scenario_type, ''), 'Unknown')
 				ORDER BY COUNT(*) DESC, COALESCE(NULLIF(sr2.scenario_type, ''), 'Unknown') ASC
 				LIMIT 1
 			), 'Unknown') AS primary_scenario_type
-		FROM hub_users hu
-		JOIN scenario_runs sr ON sr.user_id = hu.id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		GROUP BY hu.id, user_handle, user_display_name, avatar_url
+		FROM hub_user_identity hui
+		JOIN scenario_runs sr ON sr.user_id = hui.user_id
+		GROUP BY hui.user_id, hui.user_handle, hui.user_display_name, hui.avatar_url, hui.is_verified
 		ORDER BY run_count DESC, user_display_name ASC
 		LIMIT 30
 	`)
@@ -1418,6 +1449,7 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 			&profile.UserHandle,
 			&profile.UserDisplayName,
 			&profile.AvatarUrl,
+			&profile.IsVerified,
 			&profile.RunCount,
 			&profile.ScenarioCount,
 			&profile.PrimaryScenarioType,
@@ -1448,14 +1480,13 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 			sr.score,
 			sr.accuracy,
 			sr.duration_ms,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
-			COALESCE(la.avatar_url, ''),
+			hui.user_handle,
+			hui.user_display_name,
+			hui.avatar_url,
 			COALESCE(rs.summary_json::text, '{}'),
 			COALESCE(rf.feature_json::text, '{}')
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		LEFT JOIN run_summaries rs ON rs.session_id = sr.session_id
 		LEFT JOIN run_feature_sets rf ON rf.session_id = sr.session_id
 		WHERE sr.public_run_id = $1 OR sr.session_id = $1
@@ -1826,15 +1857,15 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 	var userID int64
 	if err := s.pool.QueryRow(ctx, `
 		SELECT
-			hu.id,
-			hu.external_id,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
-			COALESCE(la.avatar_url, '')
-		FROM hub_users hu
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
-		   OR LOWER(hu.external_id) = $1
+			hui.user_id,
+			hui.external_id,
+			hui.user_handle,
+			hui.user_display_name,
+			hui.avatar_url,
+			hui.is_verified
+		FROM hub_user_identity hui
+		WHERE LOWER(hui.user_handle) = $1
+		   OR LOWER(hui.external_id) = $1
 		LIMIT 1
 	`, handle).Scan(
 		&userID,
@@ -1842,6 +1873,7 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 		&record.UserHandle,
 		&record.UserDisplayName,
 		&record.AvatarURL,
+		&record.IsVerified,
 	); err != nil {
 		return ProfileRecord{}, fmt.Errorf("load profile: %w", err)
 	}
@@ -2041,27 +2073,31 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 
 	profileRows, err := s.pool.Query(ctx, `
 		SELECT
-			COALESCE(la.username, hu.external_id) AS user_handle,
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)) AS user_display_name,
-			COALESCE(la.avatar_url, '') AS avatar_url,
+			hui.user_handle,
+			hui.user_display_name,
+			hui.avatar_url,
+			hui.is_verified,
 			COUNT(sr.*)::bigint AS run_count,
 			COUNT(DISTINCT sr.scenario_name)::bigint AS scenario_count,
 			COALESCE((
 				SELECT NULLIF(sr2.scenario_type, '')
 				FROM scenario_runs sr2
-				WHERE sr2.user_id = hu.id
+				WHERE sr2.user_id = hui.user_id
 				  AND NULLIF(sr2.scenario_type, '') IS NOT NULL
 				GROUP BY sr2.scenario_type
 				ORDER BY COUNT(*) DESC, sr2.scenario_type ASC
 				LIMIT 1
 			), '') AS primary_scenario_type
-		FROM hub_users hu
-		JOIN scenario_runs sr ON sr.user_id = hu.id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE COALESCE(la.username, hu.external_id) ILIKE $1
-		   OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
-		   OR hu.external_id ILIKE $1
-		GROUP BY hu.id, user_handle, user_display_name, avatar_url
+		FROM hub_user_identity hui
+		JOIN scenario_runs sr ON sr.user_id = hui.user_id
+		LEFT JOIN linked_accounts la ON la.user_id = hui.user_id
+		WHERE hui.user_handle ILIKE $1
+		   OR hui.user_display_name ILIKE $1
+		   OR hui.external_id ILIKE $1
+		   OR la.username ILIKE $1
+		   OR la.display_name ILIKE $1
+		   OR la.provider_account_id ILIKE $1
+		GROUP BY hui.user_id, hui.user_handle, hui.user_display_name, hui.avatar_url, hui.is_verified
 		ORDER BY run_count DESC, user_display_name ASC
 		LIMIT 12
 	`, pattern)
@@ -2075,6 +2111,7 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			&item.UserHandle,
 			&item.UserDisplayName,
 			&item.AvatarURL,
+			&item.IsVerified,
 			&item.RunCount,
 			&item.ScenarioCount,
 			&item.PrimaryScenarioType,
@@ -2097,17 +2134,16 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			sr.score,
 			sr.accuracy,
 			sr.duration_ms,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			hui.user_handle,
+			hui.user_display_name,
 			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
 			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
 			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		WHERE sr.scenario_name ILIKE $1
-		   OR COALESCE(la.username, hu.external_id) ILIKE $1
-		   OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
+		   OR hui.user_handle ILIKE $1
+		   OR hui.user_display_name ILIKE $1
 		   OR sr.public_run_id ILIKE $1
 		   OR sr.session_id ILIKE $1
 		ORDER BY sr.played_at DESC, sr.created_at DESC
@@ -2153,22 +2189,21 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			sr.score,
 			sr.accuracy,
 			sr.duration_ms,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			hui.user_handle,
+			hui.user_display_name,
 			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
 			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
 			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		WHERE (
 			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id)
 			OR EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id)
 		)
 		  AND (
 			sr.scenario_name ILIKE $1
-			OR COALESCE(la.username, hu.external_id) ILIKE $1
-			OR COALESCE(NULLIF(la.display_name, ''), '') ILIKE $1
+			OR hui.user_handle ILIKE $1
+			OR hui.user_display_name ILIKE $1
 			OR sr.public_run_id ILIKE $1
 			OR sr.session_id ILIKE $1
 		)
@@ -2393,6 +2428,10 @@ func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (Leader
 func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug string) (PlayerScenarioHistoryRecord, error) {
 	var result PlayerScenarioHistoryRecord
 	result.Runs = []*hubv1.RunPreview{}
+	resolvedUser, err := s.resolveUserIdentityByHandle(ctx, handle)
+	if err != nil {
+		return result, err
+	}
 
 	// Resolve scenario name from slug
 	nameRows, err := s.pool.Query(ctx, `
@@ -2423,17 +2462,13 @@ func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug strin
 		SELECT
 			sr.scenario_name, sr.scenario_type,
 			sr.score, sr.accuracy, sr.duration_ms, sr.played_at,
-			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+			COALESCE(sr.public_run_id, sr.session_id), sr.session_id
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE LOWER(COALESCE(la.username, hu.external_id)) = LOWER($1)
+		WHERE sr.user_id = $1
 		  AND sr.scenario_name = $2
 		ORDER BY sr.played_at ASC
 		LIMIT 500
-	`, handle, scenarioName)
+	`, resolvedUser.UserID, scenarioName)
 	if err != nil {
 		return result, err
 	}
@@ -2448,10 +2483,11 @@ func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug strin
 			&rp.ScenarioName, &rp.ScenarioType,
 			&rp.Score, &rp.Accuracy, &durationMs, &playedAt,
 			&rp.RunId, &rp.SessionId,
-			&rp.UserHandle, &rp.UserDisplayName,
 		); err != nil {
 			continue
 		}
+		rp.UserHandle = resolvedUser.UserHandle
+		rp.UserDisplayName = resolvedUser.UserDisplayName
 		rp.DurationMs = uint64(durationMs)
 		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
 		result.Runs = append(result.Runs, &rp)
@@ -2491,17 +2527,12 @@ type AimProfileRecord struct {
 func (s *Store) GetAimProfile(ctx context.Context, handle string) (AimProfileRecord, error) {
 	var result AimProfileRecord
 	result.TypeBands = []*hubv1.TypeProfileBand{}
-
-	// Get user info
-	err := s.pool.QueryRow(ctx, `
-		SELECT la.username, COALESCE(la.display_name, la.username)
-		FROM hub_users hu
-		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE la.username = $1
-	`, handle).Scan(&result.UserHandle, &result.UserDisplayName)
+	resolvedUser, err := s.resolveUserIdentityByHandle(ctx, handle)
 	if err != nil {
 		return result, err
 	}
+	result.UserHandle = resolvedUser.UserHandle
+	result.UserDisplayName = resolvedUser.UserDisplayName
 
 	// Per-type stats for the player
 	rows, err := s.pool.Query(ctx, `
@@ -2513,9 +2544,7 @@ func (s *Store) GetAimProfile(ctx context.Context, handle string) (AimProfileRec
 				AVG(sr.score) AS avg_score,
 				MAX(sr.score) AS best_score
 			FROM scenario_runs sr
-			JOIN hub_users hu ON hu.id = sr.user_id
-			JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-			WHERE la.username = $1
+			WHERE sr.user_id = $1
 			  AND sr.scenario_type NOT IN ('', 'Unknown')
 			GROUP BY sr.scenario_type
 		),
@@ -2546,7 +2575,7 @@ func (s *Store) GetAimProfile(ctx context.Context, handle string) (AimProfileRec
 		FROM player_stats p
 		JOIN community_stats c ON c.scenario_type = p.scenario_type
 		ORDER BY p.run_count DESC
-	`, handle)
+	`, resolvedUser.UserID)
 	if err != nil {
 		return result, err
 	}
@@ -2614,15 +2643,13 @@ func (s *Store) GetAimProfile(ctx context.Context, handle string) (AimProfileRec
 			sr.scenario_type,
 			AVG((rfs.feature_json->>'smoothnessComposite')::float) AS avg_smoothness
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
 		JOIN run_feature_sets rfs ON rfs.session_id = sr.session_id
-		WHERE la.username = $1
+		WHERE sr.user_id = $1
 		  AND sr.scenario_type NOT IN ('', 'Unknown')
 		  AND rfs.feature_json->>'smoothnessComposite' IS NOT NULL
 		  AND (rfs.feature_json->>'smoothnessComposite')::float > 0
 		GROUP BY sr.scenario_type
-	`, handle)
+	`, resolvedUser.UserID)
 	if err == nil {
 		defer smoothRows.Close()
 		smoothMap := map[string]float64{}
@@ -2785,13 +2812,7 @@ func classifyAimStyle(precision, speed, control, consistency, decisiveness, rhyt
 
 func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.AimFingerprint, error) {
 	// Validate user exists
-	var userHandle string
-	err := s.pool.QueryRow(ctx, `
-		SELECT la.username
-		FROM hub_users hu
-		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE la.username = $1
-	`, handle).Scan(&userHandle)
+	resolvedUser, err := s.resolveUserIdentityByHandle(ctx, handle)
 	if err != nil {
 		return nil, err
 	}
@@ -2809,23 +2830,21 @@ func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.Ai
 			(rfs.feature_json->>'smoothnessDirectionalBias')::float,
 			sr.scenario_type
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
 		JOIN run_feature_sets rfs ON rfs.session_id = sr.session_id
-		WHERE la.username = $1
+		WHERE sr.user_id = $1
 		  AND rfs.feature_json->>'smoothnessJitter' IS NOT NULL
 		ORDER BY sr.played_at DESC
 		LIMIT 300
-	`, handle)
+	`, resolvedUser.UserID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	type row struct {
-		jitter, overshootRate, velocityStd, pathEfficiency float64
+		jitter, overshootRate, velocityStd, pathEfficiency        float64
 		avgSpeed, clickTimingCv, correctionRatio, directionalBias float64
-		scenarioType string
+		scenarioType                                              string
 	}
 
 	var allRows []row
@@ -2959,20 +2978,20 @@ func (s *Store) GetAimFingerprint(ctx context.Context, handle string) (*hubv1.Ai
 	)
 
 	return &hubv1.AimFingerprint{
-		Precision:           precision,
-		Speed:               speed,
-		Control:             control,
-		Consistency:         consistency,
-		Decisiveness:        decisiveness,
-		Rhythm:              rhythm,
-		RhythmLabel:         rhythmLabel,
-		SessionCount:        int32(len(allRows)),
-		Axes:                axes,
-		StyleName:           styleName,
-		StyleTagline:        styleTagline,
-		StyleColor:          styleColor,
-		StyleDescription:    styleDesc,
-		StyleFocus:          styleFocus,
+		Precision:            precision,
+		Speed:                speed,
+		Control:              control,
+		Consistency:          consistency,
+		Decisiveness:         decisiveness,
+		Rhythm:               rhythm,
+		RhythmLabel:          rhythmLabel,
+		SessionCount:         int32(len(allRows)),
+		Axes:                 axes,
+		StyleName:            styleName,
+		StyleTagline:         styleTagline,
+		StyleColor:           styleColor,
+		StyleDescription:     styleDesc,
+		StyleFocus:           styleFocus,
 		DominantScenarioType: dominantType,
 	}, nil
 }

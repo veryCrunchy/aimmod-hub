@@ -13,8 +13,11 @@ import (
 )
 
 func validateIngestRequest(req *hubv1.IngestSessionRequest) error {
-	if strings.TrimSpace(req.GetUserExternalId()) == "" {
-		return fmt.Errorf("user_external_id is required")
+	if strings.TrimSpace(req.GetUserExternalId()) == "" &&
+		strings.TrimSpace(req.GetKovaaksUserId()) == "" &&
+		strings.TrimSpace(req.GetKovaaksUsername()) == "" &&
+		strings.TrimSpace(req.GetSteamId()) == "" {
+		return fmt.Errorf("an ingest identity is required")
 	}
 	if strings.TrimSpace(req.GetSessionId()) == "" {
 		return fmt.Errorf("session_id is required")
@@ -255,20 +258,20 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 			csvAccuracyPtr,
 		)
 		timeline = append(timeline, store.TimelineSecond{
-			Second:    point.GetTSec(),
-			Score:     point.GetScore(),
-			Accuracy:  normalizedAccuracy,
+			Second:   point.GetTSec(),
+			Score:    point.GetScore(),
+			Accuracy: normalizedAccuracy,
 			DamageEff: normalizeDamageEfficiencyPercent(
 				point.GetDamageEff(),
 				0,
 				0,
 				summaryDamageEfficiencyPtr,
 			),
-			SPM:       point.GetSpm(),
-			Shots:     point.GetShots(),
-			Hits:      point.GetHits(),
-			Kills:     point.GetKills(),
-			Paused:    point.GetPaused(),
+			SPM:    point.GetSpm(),
+			Shots:  point.GetShots(),
+			Hits:   point.GetHits(),
+			Kills:  point.GetKills(),
+			Paused: point.GetPaused(),
 		})
 	}
 
@@ -315,20 +318,26 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 	normalizedRunAccuracy := normalizeAccuracyPercent(req.GetAccuracy(), finalShots, finalHits, csvAccuracyPtr)
 
 	return store.IngestedRun{
-		AppVersion:     req.GetAppVersion(),
-		SchemaVersion:  req.GetSchemaVersion(),
-		UserExternalID: req.GetUserExternalId(),
-		SessionID:      req.GetSessionId(),
-		ScenarioName:   req.GetScenarioName(),
-		ScenarioType:   normalizeScenarioType(req.GetScenarioType(), req.GetSummary()),
-		Score:          req.GetScore(),
-		Accuracy:       normalizedRunAccuracy,
-		DurationMS:     req.GetDurationMs(),
-		PlayedAt:       playedAt,
-		SummaryJSON:    summaryJSON,
-		FeatureJSON:    featureJSON,
-		Timeline:       timeline,
-		ContextWindows: contextWindows,
+		AppVersion:       req.GetAppVersion(),
+		SchemaVersion:    req.GetSchemaVersion(),
+		UserExternalID:   strings.TrimSpace(req.GetUserExternalId()),
+		KovaaksUserID:    strings.TrimSpace(req.GetKovaaksUserId()),
+		KovaaksUsername:  strings.TrimSpace(req.GetKovaaksUsername()),
+		UserDisplayName:  strings.TrimSpace(req.GetUserDisplayName()),
+		AvatarURL:        strings.TrimSpace(req.GetAvatarUrl()),
+		SteamID:          strings.TrimSpace(req.GetSteamId()),
+		SteamDisplayName: strings.TrimSpace(req.GetSteamDisplayName()),
+		SessionID:        req.GetSessionId(),
+		ScenarioName:     req.GetScenarioName(),
+		ScenarioType:     normalizeScenarioType(req.GetScenarioType(), req.GetSummary()),
+		Score:            req.GetScore(),
+		Accuracy:         normalizedRunAccuracy,
+		DurationMS:       req.GetDurationMs(),
+		PlayedAt:         playedAt,
+		SummaryJSON:      summaryJSON,
+		FeatureJSON:      featureJSON,
+		Timeline:         timeline,
+		ContextWindows:   contextWindows,
 	}, nil
 }
 

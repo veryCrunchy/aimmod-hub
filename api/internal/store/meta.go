@@ -36,16 +36,15 @@ func (s *Store) GetProfileMeta(ctx context.Context, handle string) (*ProfileMeta
 	var m ProfileMeta
 	err := s.pool.QueryRow(ctx, `
 		SELECT
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			hui.user_handle,
+			hui.user_display_name,
 			COUNT(sr.session_id),
 			COUNT(DISTINCT sr.scenario_name)
-		FROM hub_users hu
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		LEFT JOIN scenario_runs sr ON sr.user_id = hu.id
-		WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
-		   OR LOWER(hu.external_id) = $1
-		GROUP BY la.username, hu.external_id, la.display_name
+		FROM hub_user_identity hui
+		LEFT JOIN scenario_runs sr ON sr.user_id = hui.user_id
+		WHERE LOWER(hui.user_handle) = $1
+		   OR LOWER(hui.external_id) = $1
+		GROUP BY hui.user_handle, hui.user_display_name
 		LIMIT 1
 	`, handle).Scan(&m.Handle, &m.DisplayName, &m.RunCount, &m.ScenarioCount)
 	if err != nil {
@@ -95,13 +94,12 @@ func (s *Store) GetRunMeta(ctx context.Context, runID string) (*RunMeta, error) 
 	err := s.pool.QueryRow(ctx, `
 		SELECT
 			sr.scenario_name,
-			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			hui.user_handle,
+			hui.user_display_name,
 			sr.score,
 			sr.accuracy
 		FROM scenario_runs sr
-		JOIN hub_users hu ON hu.id = sr.user_id
-		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		WHERE sr.public_run_id = $1 OR sr.session_id = $1
 		LIMIT 1
 	`, runID).Scan(&m.ScenarioName, &m.UserHandle, &m.UserDisplayName, &m.Score, &m.Accuracy)

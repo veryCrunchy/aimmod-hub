@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
+import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetBenchmarkLeaderboardRequest, GetBenchmarkLeaderboardResponse, GetBenchmarkPageRequest, GetBenchmarkPageResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListBenchmarksRequest, ListBenchmarksResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -130,6 +130,15 @@ export const HubService = {
       kind: MethodKind.Unary,
     },
     /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetBenchmarkPage
+     */
+    getBenchmarkPage: {
+      name: "GetBenchmarkPage",
+      I: GetBenchmarkPageRequest,
+      O: GetBenchmarkPageResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
      * @generated from rpc aimmod.hub.v1.HubService.GetAimProfile
      */
     getAimProfile: {
@@ -145,6 +154,24 @@ export const HubService = {
       name: "GetAimFingerprint",
       I: GetAimFingerprintRequest,
       O: GetAimFingerprintResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.ListBenchmarks
+     */
+    listBenchmarks: {
+      name: "ListBenchmarks",
+      I: ListBenchmarksRequest,
+      O: ListBenchmarksResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetBenchmarkLeaderboard
+     */
+    getBenchmarkLeaderboard: {
+      name: "GetBenchmarkLeaderboard",
+      I: GetBenchmarkLeaderboardRequest,
+      O: GetBenchmarkLeaderboardResponse,
       kind: MethodKind.Unary,
     },
   }
