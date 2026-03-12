@@ -24,6 +24,7 @@ type Client struct {
 	mu          sync.RWMutex
 	listCache   map[string]cachedProfileBenchmarks
 	detailCache map[string]cachedBenchmarkDetail
+	rankCache   map[string]cachedScenarioRanks
 }
 
 type cachedProfileBenchmarks struct {
@@ -34,6 +35,11 @@ type cachedProfileBenchmarks struct {
 type cachedBenchmarkDetail struct {
 	expiresAt time.Time
 	detail    *BenchmarkDetail
+}
+
+type cachedScenarioRanks struct {
+	expiresAt time.Time
+	items     []ScenarioBenchmarkRank
 }
 
 type ProfileBenchmarkSummary struct {
@@ -75,13 +81,13 @@ type BenchmarkThreshold struct {
 }
 
 type BenchmarkScenarioPage struct {
-	ScenarioName     string
-	CategoryName     string
-	Score            float64
-	LeaderboardRank  uint32
-	LeaderboardID    uint32
-	ScenarioRank     BenchmarkRankVisual
-	Thresholds       []BenchmarkThreshold
+	ScenarioName    string
+	CategoryName    string
+	Score           float64
+	LeaderboardRank uint32
+	LeaderboardID   uint32
+	ScenarioRank    BenchmarkRankVisual
+	Thresholds      []BenchmarkThreshold
 }
 
 type BenchmarkDetail struct {
@@ -133,11 +139,11 @@ type benchmarkCategoryRecord struct {
 }
 
 type benchmarkScenarioRecord struct {
-	Score           float64 `json:"score"`
-	LeaderboardRank *uint32 `json:"leaderboard_rank"`
-	ScenarioRank    uint32  `json:"scenario_rank"`
+	Score           float64   `json:"score"`
+	LeaderboardRank *uint32   `json:"leaderboard_rank"`
+	ScenarioRank    uint32    `json:"scenario_rank"`
 	RankMaxes       []float64 `json:"rank_maxes"`
-	LeaderboardID   uint32  `json:"leaderboard_id"`
+	LeaderboardID   uint32    `json:"leaderboard_id"`
 }
 
 type benchmarkRankRecord struct {
@@ -151,10 +157,11 @@ func NewClient() *Client {
 	return &Client{
 		baseURL: "https://kovaaks.com/webapp-backend/benchmarks",
 		http: &http.Client{
-			Timeout: 20 * time.Second,
+			Timeout: 5 * time.Second,
 		},
 		listCache:   map[string]cachedProfileBenchmarks{},
 		detailCache: map[string]cachedBenchmarkDetail{},
+		rankCache:   map[string]cachedScenarioRanks{},
 	}
 }
 
@@ -223,33 +230,84 @@ func (c *Client) ListScenarioRanks(
 	}
 
 	targetSlug := benchmarkScenarioSlug(scenarioName)
-	matches := make([]ScenarioBenchmarkRank, 0, 4)
-	for _, benchmark := range benchmarks {
-		detail, err := c.GetBenchmarkDetail(ctx, benchmark.BenchmarkID, steamID)
-		if err != nil {
-			return nil, err
-		}
-		for categoryName, category := range detail.Categories {
-			for benchmarkScenarioName, scenario := range category.Scenarios {
-				if benchmarkScenarioSlug(benchmarkScenarioName) != targetSlug {
-					continue
-				}
-				if scenario.ScenarioRank == 0 {
-					continue
-				}
-				matches = append(matches, ScenarioBenchmarkRank{
-					BenchmarkID:      benchmark.BenchmarkID,
-					BenchmarkName:    benchmark.BenchmarkName,
-					BenchmarkIconURL: benchmark.BenchmarkIconURL,
-					CategoryName:     categoryName,
-					ScenarioScore:    scenario.Score,
-					LeaderboardRank:  scenario.LeaderboardRank,
-					LeaderboardID:    scenario.LeaderboardID,
-					ScenarioRank:     rankVisual(detail.Ranks, scenario.ScenarioRank),
-				})
-			}
-		}
+	cacheKey := fmt.Sprintf("%s:%s", strings.TrimSpace(steamID), targetSlug)
+
+	c.mu.RLock()
+	if cached, ok := c.rankCache[cacheKey]; ok && time.Now().Before(cached.expiresAt) {
+		c.mu.RUnlock()
+		return append([]ScenarioBenchmarkRank(nil), cached.items...), nil
 	}
+	c.mu.RUnlock()
+
+	type result struct {
+		ranks []ScenarioBenchmarkRank
+	}
+
+	sem := make(chan struct{}, 6)
+	results := make(chan result, len(benchmarks))
+	var wg sync.WaitGroup
+
+	for _, benchmark := range benchmarks {
+		benchmark := benchmark
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			select {
+			case sem <- struct{}{}:
+			case <-ctx.Done():
+				return
+			}
+			defer func() { <-sem }()
+
+			detail, err := c.GetBenchmarkDetail(ctx, benchmark.BenchmarkID, steamID)
+			if err != nil || detail == nil {
+				return
+			}
+
+			out := make([]ScenarioBenchmarkRank, 0, 2)
+			for categoryName, category := range detail.Categories {
+				for benchmarkScenarioName, scenario := range category.Scenarios {
+					if benchmarkScenarioSlug(benchmarkScenarioName) != targetSlug {
+						continue
+					}
+					if scenario.ScenarioRank == 0 {
+						continue
+					}
+					out = append(out, ScenarioBenchmarkRank{
+						BenchmarkID:      benchmark.BenchmarkID,
+						BenchmarkName:    benchmark.BenchmarkName,
+						BenchmarkIconURL: benchmark.BenchmarkIconURL,
+						CategoryName:     categoryName,
+						ScenarioScore:    scenario.Score,
+						LeaderboardRank:  scenario.LeaderboardRank,
+						LeaderboardID:    scenario.LeaderboardID,
+						ScenarioRank:     rankVisual(detail.Ranks, scenario.ScenarioRank),
+					})
+				}
+			}
+			if len(out) > 0 {
+				results <- result{ranks: out}
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	matches := make([]ScenarioBenchmarkRank, 0, 4)
+	for result := range results {
+		matches = append(matches, result.ranks...)
+	}
+
+	c.mu.Lock()
+	c.rankCache[cacheKey] = cachedScenarioRanks{
+		expiresAt: time.Now().Add(cacheTTL),
+		items:     append([]ScenarioBenchmarkRank(nil), matches...),
+	}
+	c.mu.Unlock()
+
 	return matches, nil
 }
 
@@ -291,13 +349,13 @@ func (c *Client) BuildBenchmarkPage(
 				})
 			}
 			scenarios = append(scenarios, BenchmarkScenarioPage{
-				ScenarioName:     scenarioName,
-				CategoryName:     categoryName,
-				Score:            scenario.Score / 100.0,
-				LeaderboardRank:  scenario.LeaderboardRank,
-				LeaderboardID:    scenario.LeaderboardID,
-				ScenarioRank:     rankVisual(detail.Ranks, scenario.ScenarioRank),
-				Thresholds:       thresholds,
+				ScenarioName:    scenarioName,
+				CategoryName:    categoryName,
+				Score:           scenario.Score / 100.0,
+				LeaderboardRank: scenario.LeaderboardRank,
+				LeaderboardID:   scenario.LeaderboardID,
+				ScenarioRank:    rankVisual(detail.Ranks, scenario.ScenarioRank),
+				Thresholds:      thresholds,
 			})
 		}
 		if len(scenarios) == 0 {

@@ -1623,6 +1623,12 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 	var summaryJSON []byte
 	var featureJSON []byte
 	if err := s.pool.QueryRow(ctx, `
+		WITH target_run AS (
+			SELECT sr.session_id
+			FROM scenario_runs sr
+			WHERE sr.session_id = $1 OR sr.public_run_id = $1
+			LIMIT 1
+		)
 		SELECT
 			COALESCE(sr.public_run_id, sr.session_id),
 			COALESCE(sr.source_session_id, sr.session_id),
@@ -1639,10 +1645,10 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 			COALESCE(rs.summary_json::text, '{}'),
 			COALESCE(rf.feature_json::text, '{}')
 		FROM scenario_runs sr
+		JOIN target_run tr ON tr.session_id = sr.session_id
 		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
 		LEFT JOIN run_summaries rs ON rs.session_id = sr.session_id
 		LEFT JOIN run_feature_sets rf ON rf.session_id = sr.session_id
-		WHERE sr.public_run_id = $1 OR sr.session_id = $1
 	`, sessionID).Scan(
 		&record.PublicRunID,
 		&record.SourceSessionID,
@@ -1677,7 +1683,7 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 		FROM run_timeline_seconds
 		WHERE session_id = $1
 		ORDER BY t_sec ASC
-	`, sessionID)
+	`, record.SessionID)
 	if err != nil {
 		return RunRecord{}, fmt.Errorf("load run timeline: %w", err)
 	}
@@ -1708,7 +1714,7 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 		FROM run_context_windows
 		WHERE session_id = $1
 		ORDER BY ordinal ASC
-	`, sessionID)
+	`, record.SessionID)
 	if err != nil {
 		return RunRecord{}, fmt.Errorf("load run context windows: %w", err)
 	}
@@ -1788,29 +1794,9 @@ func (s *Store) GetRun(ctx context.Context, sessionID string) (RunRecord, error)
 }
 
 func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageRecord, error) {
-	rows, err := s.pool.Query(ctx, `
-		SELECT DISTINCT scenario_name
-		FROM scenario_runs
-		ORDER BY scenario_name ASC
-	`)
+	scenarioName, err := s.resolveScenarioNameBySlug(ctx, slug)
 	if err != nil {
-		return ScenarioPageRecord{}, fmt.Errorf("list scenarios: %w", err)
-	}
-	defer rows.Close()
-
-	scenarioName := ""
-	for rows.Next() {
-		var candidate string
-		if err := rows.Scan(&candidate); err != nil {
-			return ScenarioPageRecord{}, fmt.Errorf("scan scenario name: %w", err)
-		}
-		if slugifyScenarioName(candidate) == slug {
-			scenarioName = candidate
-			break
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return ScenarioPageRecord{}, fmt.Errorf("iterate scenarios: %w", err)
+		return ScenarioPageRecord{}, err
 	}
 	if scenarioName == "" {
 		return ScenarioPageRecord{}, fmt.Errorf("scenario not found")
@@ -2289,11 +2275,13 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			sr.duration_ms,
 			hui.user_handle,
 			hui.user_display_name,
-			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
-			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
-			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
+			(rma.session_id IS NOT NULL),
+			(rmp.session_id IS NOT NULL),
+			COALESCE(rma.quality, '')
 		FROM scenario_runs sr
 		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
+		LEFT JOIN replay_media_assets rma ON rma.session_id = sr.session_id
+		LEFT JOIN run_mouse_paths rmp ON rmp.session_id = sr.session_id
 		WHERE sr.scenario_name ILIKE $1
 		   OR hui.user_handle ILIKE $1
 		   OR hui.user_display_name ILIKE $1
@@ -2344,14 +2332,16 @@ func (s *Store) Search(ctx context.Context, query string) (SearchRecord, error) 
 			sr.duration_ms,
 			hui.user_handle,
 			hui.user_display_name,
-			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
-			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
-			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
+			(rma.session_id IS NOT NULL),
+			(rmp.session_id IS NOT NULL),
+			COALESCE(rma.quality, '')
 		FROM scenario_runs sr
 		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
+		LEFT JOIN replay_media_assets rma ON rma.session_id = sr.session_id
+		LEFT JOIN run_mouse_paths rmp ON rmp.session_id = sr.session_id
 		WHERE (
-			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id)
-			OR EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id)
+			rma.session_id IS NOT NULL
+			OR rmp.session_id IS NOT NULL
 		)
 		  AND (
 			sr.scenario_name ILIKE $1
@@ -2457,12 +2447,14 @@ func (s *Store) ListReplays(
 			sr.duration_ms,
 			COALESCE(la.username, hu.external_id),
 			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
-			EXISTS(SELECT 1 FROM replay_media_assets rma WHERE rma.session_id = sr.session_id),
-			EXISTS(SELECT 1 FROM run_mouse_paths rmp WHERE rmp.session_id = sr.session_id),
-			COALESCE((SELECT rma.quality FROM replay_media_assets rma WHERE rma.session_id = sr.session_id LIMIT 1), '')
+			(rma.session_id IS NOT NULL),
+			(rmp.session_id IS NOT NULL),
+			COALESCE(rma.quality, '')
 		FROM scenario_runs sr
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		LEFT JOIN replay_media_assets rma ON rma.session_id = sr.session_id
+		LEFT JOIN run_mouse_paths rmp ON rmp.session_id = sr.session_id
 		WHERE `+strings.Join(clauses, " AND ")+`
 		ORDER BY sr.played_at DESC, sr.created_at DESC
 		LIMIT $`+fmt.Sprintf("%d", len(args)), args...)
@@ -2586,26 +2578,9 @@ func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug strin
 		return result, err
 	}
 
-	// Resolve scenario name from slug
-	nameRows, err := s.pool.Query(ctx, `
-		SELECT DISTINCT scenario_name
-		FROM scenario_runs
-		ORDER BY scenario_name ASC
-	`)
+	scenarioName, err := s.resolveScenarioNameBySlug(ctx, slug)
 	if err != nil {
 		return result, err
-	}
-	defer nameRows.Close()
-	scenarioName := ""
-	for nameRows.Next() {
-		var candidate string
-		if err := nameRows.Scan(&candidate); err != nil {
-			continue
-		}
-		if slugifyScenarioName(candidate) == slug {
-			scenarioName = candidate
-			break
-		}
 	}
 	if scenarioName == "" {
 		return result, fmt.Errorf("scenario not found")
@@ -2664,6 +2639,60 @@ func (s *Store) GetPlayerScenarioHistory(ctx context.Context, handle, slug strin
 		result.AverageAccuracy = totalAccuracy / float64(result.RunCount)
 	}
 	return result, nil
+}
+
+func (s *Store) resolveScenarioNameBySlug(ctx context.Context, slug string) (string, error) {
+	normalized := strings.TrimSpace(strings.ToLower(slug))
+	if normalized == "" {
+		return "", fmt.Errorf("scenario slug is required")
+	}
+
+	now := time.Now()
+	s.scenarioSlugMu.RLock()
+	if s.scenarioSlugCache.bySlug != nil && now.Before(s.scenarioSlugCache.expiresAt) {
+		name := s.scenarioSlugCache.bySlug[normalized]
+		s.scenarioSlugMu.RUnlock()
+		return name, nil
+	}
+	s.scenarioSlugMu.RUnlock()
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT DISTINCT scenario_name
+		FROM scenario_runs
+		ORDER BY scenario_name ASC
+	`)
+	if err != nil {
+		return "", fmt.Errorf("list scenarios: %w", err)
+	}
+	defer rows.Close()
+
+	bySlug := make(map[string]string)
+	for rows.Next() {
+		var scenarioName string
+		if err := rows.Scan(&scenarioName); err != nil {
+			return "", fmt.Errorf("scan scenario name: %w", err)
+		}
+		slugKey := slugifyScenarioName(scenarioName)
+		if slugKey == "" {
+			continue
+		}
+		if _, exists := bySlug[slugKey]; !exists {
+			bySlug[slugKey] = scenarioName
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return "", fmt.Errorf("iterate scenarios: %w", err)
+	}
+
+	s.scenarioSlugMu.Lock()
+	s.scenarioSlugCache = scenarioSlugCache{
+		expiresAt: now.Add(2 * time.Minute),
+		bySlug:    bySlug,
+	}
+	name := s.scenarioSlugCache.bySlug[normalized]
+	s.scenarioSlugMu.Unlock()
+
+	return name, nil
 }
 
 type AimProfileRecord struct {
