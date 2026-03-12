@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { BenchmarkCategoryPage, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import type { BenchmarkCategoryPage, BenchmarkScenarioEntry, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -15,10 +15,17 @@ function hasRank(rankName?: string | null) {
   return Boolean(n && n !== "no rank");
 }
 
-function visibleCategories(categories: BenchmarkCategoryPage[]) {
+type BenchmarkCategoryViewModel = {
+  categoryName: string;
+  categoryRank: number;
+  scenarios: BenchmarkScenarioEntry[];
+};
+
+function visibleCategories(categories: BenchmarkCategoryPage[]): BenchmarkCategoryViewModel[] {
   return categories
     .map((c) => ({
-      ...c,
+      categoryName: c.categoryName,
+      categoryRank: c.categoryRank,
       scenarios: c.scenarios.filter(
         (s) => s.scenarioRank && hasRank(s.scenarioRank.rankName),
       ),
@@ -152,7 +159,7 @@ function CategoryRows({
   userHandle,
   tierCols,
 }: {
-  category: BenchmarkCategoryPage;
+  category: BenchmarkCategoryViewModel;
   userHandle: string;
   tierCols: TierColumn[];
 }) {
