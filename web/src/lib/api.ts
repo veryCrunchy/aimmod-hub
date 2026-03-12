@@ -299,6 +299,11 @@ export type AdminOverviewResponse = {
 export type AdminUserDetailResponse = {
   userHandle: string;
   userDisplayName: string;
+  aimmodUserId: string;
+  legacyExternalId: string;
+  profileHandle: string;
+  avatarUrl: string;
+  isVerified: boolean;
   runCount: number;
   scenarioCount: number;
   unknownTypeRuns: number;
@@ -307,6 +312,20 @@ export type AdminUserDetailResponse = {
   zeroScoreRuns: number;
   lastPlayedAt: string;
   lastIngestedAt: string;
+  lastAppVersion: string;
+  lastSchemaVersion: number;
+  appVersions: AdminVersionBreakdown[];
+  schemaVersions: AdminVersionBreakdown[];
+  linkedAccounts: {
+    provider: string;
+    providerAccountId: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string;
+    verified: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }[];
   topUnknownScenarios: AdminScenarioIssue[];
   recentFailures: {
     id: number;
@@ -536,6 +555,11 @@ export async function fetchAdminUserDetail(handle: string, days: number): Promis
   return {
     userHandle: payload?.userHandle ?? handle,
     userDisplayName: payload?.userDisplayName ?? handle,
+    aimmodUserId: payload?.aimmodUserId ?? "",
+    legacyExternalId: payload?.legacyExternalId ?? "",
+    profileHandle: payload?.profileHandle ?? "",
+    avatarUrl: payload?.avatarUrl ?? "",
+    isVerified: Boolean(payload?.isVerified),
     runCount: payload?.runCount ?? 0,
     scenarioCount: payload?.scenarioCount ?? 0,
     unknownTypeRuns: payload?.unknownTypeRuns ?? 0,
@@ -544,6 +568,22 @@ export async function fetchAdminUserDetail(handle: string, days: number): Promis
     zeroScoreRuns: payload?.zeroScoreRuns ?? 0,
     lastPlayedAt: payload?.lastPlayedAt ?? "",
     lastIngestedAt: payload?.lastIngestedAt ?? "",
+    lastAppVersion: payload?.lastAppVersion ?? "",
+    lastSchemaVersion: payload?.lastSchemaVersion ?? 0,
+    appVersions: Array.isArray(payload?.appVersions) ? payload.appVersions : [],
+    schemaVersions: Array.isArray(payload?.schemaVersions) ? payload.schemaVersions : [],
+    linkedAccounts: Array.isArray(payload?.linkedAccounts)
+      ? payload.linkedAccounts.map((account) => ({
+          provider: account?.provider ?? "",
+          providerAccountId: account?.providerAccountId ?? "",
+          username: account?.username ?? "",
+          displayName: account?.displayName ?? "",
+          avatarUrl: account?.avatarUrl ?? "",
+          verified: Boolean(account?.verified),
+          createdAt: account?.createdAt ?? "",
+          updatedAt: account?.updatedAt ?? "",
+        }))
+      : [],
     topUnknownScenarios: Array.isArray(payload?.topUnknownScenarios) ? payload.topUnknownScenarios : [],
     recentFailures: Array.isArray(payload?.recentFailures) ? payload.recentFailures : [],
     recentRuns: Array.isArray(payload?.recentRuns) ? payload.recentRuns : [],

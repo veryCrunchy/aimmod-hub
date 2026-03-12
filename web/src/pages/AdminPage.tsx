@@ -29,6 +29,19 @@ function formatCount(value: number) {
   return value.toLocaleString();
 }
 
+function providerLabel(provider: string) {
+  switch (provider.trim().toLowerCase()) {
+    case "discord":
+      return "Discord";
+    case "steam":
+      return "Steam";
+    case "kovaaks":
+      return "KovaaK's";
+    default:
+      return provider || "Unknown";
+  }
+}
+
 export function AdminPage() {
   const auth = useAuth();
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
@@ -405,6 +418,111 @@ export function AdminPage() {
                 <StatCard label="Scenarios" value={formatCount(selectedUser.scenarioCount)} detail="Distinct scenario pages" accent="cyan" />
                 <StatCard label="Unknown" value={formatCount(selectedUser.unknownTypeRuns)} detail="Still missing a family" accent="violet" />
                 <StatCard label="Zero score" value={formatCount(selectedUser.zeroScoreRuns)} detail="Runs saved with 0 score" accent="gold" />
+              </Grid>
+
+              <Grid className="grid-cols-2 max-[1180px]:grid-cols-1">
+                <div className="rounded-[18px] border border-line bg-white/2 p-4">
+                  <div className="mb-3 text-[12px] uppercase tracking-[0.1em] text-cyan">Identity</div>
+                  <div className="flex items-start gap-4">
+                    {selectedUser.avatarUrl ? (
+                      <img
+                        src={selectedUser.avatarUrl}
+                        alt={selectedUser.userDisplayName || selectedUser.userHandle}
+                        className="h-16 w-16 rounded-full border border-line object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white/5 text-xl text-text">
+                        {(selectedUser.userDisplayName || selectedUser.userHandle || "?").slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="grid flex-1 gap-2 text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-base text-text">{selectedUser.userDisplayName || selectedUser.userHandle}</span>
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-[0.08em] ${selectedUser.isVerified ? "border-mint/40 text-mint" : "border-gold/35 text-gold"}`}>
+                          {selectedUser.isVerified ? "Verified" : "Unverified"}
+                        </span>
+                      </div>
+                      <div className="grid gap-1 text-muted">
+                        <div><span className="text-text">AimMod ID:</span> {selectedUser.aimmodUserId || "Pending"}</div>
+                        <div><span className="text-text">Legacy external key:</span> {selectedUser.legacyExternalId || "—"}</div>
+                        <div><span className="text-text">Profile handle:</span> {selectedUser.profileHandle || selectedUser.userHandle || "—"}</div>
+                        <div><span className="text-text">Last AimMod version:</span> {selectedUser.lastAppVersion || "Unknown"}</div>
+                        <div><span className="text-text">Last schema version:</span> {selectedUser.lastSchemaVersion ? `v${selectedUser.lastSchemaVersion}` : "Unknown"}</div>
+                        <div><span className="text-text">Last played:</span> {selectedUser.lastPlayedAt ? formatRelativeTime(selectedUser.lastPlayedAt) : "Never"}</div>
+                        <div><span className="text-text">Last ingested:</span> {selectedUser.lastIngestedAt ? formatRelativeTime(selectedUser.lastIngestedAt) : "Never"}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[18px] border border-line bg-white/2 p-4">
+                  <div className="mb-3 text-[12px] uppercase tracking-[0.1em] text-cyan">Linked accounts</div>
+                  {selectedUser.linkedAccounts.length ? (
+                    <div className="grid gap-2">
+                      {selectedUser.linkedAccounts.map((account) => (
+                        <div key={`${account.provider}:${account.providerAccountId}`} className="flex items-start gap-3 rounded-[14px] border border-line bg-white/2 px-3 py-3">
+                          {account.avatarUrl ? (
+                            <img src={account.avatarUrl} alt={account.displayName || account.username || account.providerAccountId} className="h-10 w-10 rounded-full border border-line object-cover" />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white/5 text-xs uppercase text-text">
+                              {providerLabel(account.provider).slice(0, 1)}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-text">{providerLabel(account.provider)}</span>
+                              <span className={`rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-[0.08em] ${account.verified ? "border-mint/40 text-mint" : "border-gold/35 text-gold"}`}>
+                                {account.verified ? "Verified" : "Unverified"}
+                              </span>
+                            </div>
+                            <div className="mt-1 grid gap-1 text-xs text-muted">
+                              <div>ID: {account.providerAccountId || "—"}</div>
+                              <div>Username: {account.username || "—"}</div>
+                              <div>Display: {account.displayName || "—"}</div>
+                              <div>Updated: {account.updatedAt ? formatRelativeTime(account.updatedAt) : "Unknown"}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">No linked accounts are stored for this player.</div>
+                  )}
+                </div>
+              </Grid>
+
+              <Grid className="grid-cols-2 max-[1180px]:grid-cols-1">
+                <div className="rounded-[18px] border border-line bg-white/2 p-4">
+                  <div className="mb-3 text-[12px] uppercase tracking-[0.1em] text-cyan">AimMod versions</div>
+                  {selectedUser.appVersions.length ? (
+                    <div className="grid gap-2">
+                      {selectedUser.appVersions.map((version) => (
+                        <div key={version.label} className="flex items-center justify-between rounded-[14px] border border-line bg-white/2 px-3 py-2">
+                          <span className="text-text">{version.label || "Unknown"}</span>
+                          <span className="text-sm text-mint">{formatCount(version.runCount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">No app version data stored for this player.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[18px] border border-line bg-white/2 p-4">
+                  <div className="mb-3 text-[12px] uppercase tracking-[0.1em] text-cyan">Schema versions</div>
+                  {selectedUser.schemaVersions.length ? (
+                    <div className="grid gap-2">
+                      {selectedUser.schemaVersions.map((version) => (
+                        <div key={version.label} className="flex items-center justify-between rounded-[14px] border border-line bg-white/2 px-3 py-2">
+                          <span className="text-text">v{version.label || "Unknown"}</span>
+                          <span className="text-sm text-cyan">{formatCount(version.runCount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">No schema version data stored for this player.</div>
+                  )}
+                </div>
               </Grid>
 
               <Grid className="grid-cols-2 max-[1180px]:grid-cols-1">

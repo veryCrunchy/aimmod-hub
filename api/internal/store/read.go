@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
@@ -228,20 +229,41 @@ type AdminUserRecentRun struct {
 	DurationMS   uint64    `json:"durationMs"`
 }
 
+type AdminLinkedAccountRecord struct {
+	Provider          string    `json:"provider"`
+	ProviderAccountID string    `json:"providerAccountId"`
+	Username          string    `json:"username"`
+	DisplayName       string    `json:"displayName"`
+	AvatarURL         string    `json:"avatarUrl"`
+	Verified          bool      `json:"verified"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+}
+
 type AdminUserDetailRecord struct {
-	UserHandle          string               `json:"userHandle"`
-	UserDisplayName     string               `json:"userDisplayName"`
-	RunCount            uint64               `json:"runCount"`
-	ScenarioCount       uint64               `json:"scenarioCount"`
-	UnknownTypeRuns     uint64               `json:"unknownTypeRuns"`
-	MissingTimelineRuns uint64               `json:"missingTimelineRuns"`
-	MissingContextRuns  uint64               `json:"missingContextRuns"`
-	ZeroScoreRuns       uint64               `json:"zeroScoreRuns"`
-	LastPlayedAt        time.Time            `json:"lastPlayedAt"`
-	LastIngestedAt      time.Time            `json:"lastIngestedAt"`
-	TopUnknownScenarios []AdminScenarioIssue `json:"topUnknownScenarios"`
-	RecentFailures      []AdminIngestFailure `json:"recentFailures"`
-	RecentRuns          []AdminUserRecentRun `json:"recentRuns"`
+	UserHandle          string                     `json:"userHandle"`
+	UserDisplayName     string                     `json:"userDisplayName"`
+	AimmodUserID        string                     `json:"aimmodUserId"`
+	LegacyExternalID    string                     `json:"legacyExternalId"`
+	ProfileHandle       string                     `json:"profileHandle"`
+	AvatarURL           string                     `json:"avatarUrl"`
+	IsVerified          bool                       `json:"isVerified"`
+	RunCount            uint64                     `json:"runCount"`
+	ScenarioCount       uint64                     `json:"scenarioCount"`
+	UnknownTypeRuns     uint64                     `json:"unknownTypeRuns"`
+	MissingTimelineRuns uint64                     `json:"missingTimelineRuns"`
+	MissingContextRuns  uint64                     `json:"missingContextRuns"`
+	ZeroScoreRuns       uint64                     `json:"zeroScoreRuns"`
+	LastPlayedAt        time.Time                  `json:"lastPlayedAt"`
+	LastIngestedAt      time.Time                  `json:"lastIngestedAt"`
+	LastAppVersion      string                     `json:"lastAppVersion"`
+	LastSchemaVersion   uint32                     `json:"lastSchemaVersion"`
+	AppVersions         []AdminVersionBreakdown    `json:"appVersions"`
+	SchemaVersions      []AdminVersionBreakdown    `json:"schemaVersions"`
+	LinkedAccounts      []AdminLinkedAccountRecord `json:"linkedAccounts"`
+	TopUnknownScenarios []AdminScenarioIssue       `json:"topUnknownScenarios"`
+	RecentFailures      []AdminIngestFailure       `json:"recentFailures"`
+	RecentRuns          []AdminUserRecentRun       `json:"recentRuns"`
 }
 
 type AdminUserMetricsExportRun struct {
@@ -645,14 +667,31 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string, days int)
 	if err := s.pool.QueryRow(ctx, `
 		SELECT
 			hu.id,
+			COALESCE(hu.aimmod_user_id, ''),
+			hu.external_id,
+			COALESCE(hu.profile_handle, ''),
 			COALESCE(la.username, hu.external_id),
-			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
+			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id)),
+			COALESCE(hui.avatar_url, ''),
+			COALESCE(hui.is_verified, FALSE)
 		FROM hub_users hu
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
+		LEFT JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE LOWER(COALESCE(la.username, hu.external_id)) = $1
 		   OR LOWER(hu.external_id) = $1
+		   OR LOWER(COALESCE(hu.aimmod_user_id, '')) = $1
+		   OR LOWER(COALESCE(hu.profile_handle, '')) = $1
 		LIMIT 1
-	`, handle).Scan(&userID, &detail.UserHandle, &detail.UserDisplayName); err != nil {
+	`, handle).Scan(
+		&userID,
+		&detail.AimmodUserID,
+		&detail.LegacyExternalID,
+		&detail.ProfileHandle,
+		&detail.UserHandle,
+		&detail.UserDisplayName,
+		&detail.AvatarURL,
+		&detail.IsVerified,
+	); err != nil {
 		return AdminUserDetailRecord{}, fmt.Errorf("load admin user detail: %w", err)
 	}
 
@@ -689,6 +728,120 @@ func (s *Store) GetAdminUserDetail(ctx context.Context, handle string, days int)
 		&detail.LastIngestedAt,
 	); err != nil {
 		return AdminUserDetailRecord{}, fmt.Errorf("load admin user detail aggregates: %w", err)
+	}
+
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			COALESCE(sr.app_version, ''),
+			COALESCE(sr.schema_version, 0)
+		FROM scenario_runs sr
+		WHERE sr.user_id = $1
+		`+userWhere+`
+		ORDER BY sr.played_at DESC, sr.created_at DESC
+		LIMIT 1
+	`, append([]any{userID}, userArgs...)...).Scan(&detail.LastAppVersion, &detail.LastSchemaVersion); err != nil {
+		if err != pgx.ErrNoRows {
+			return AdminUserDetailRecord{}, fmt.Errorf("load admin user current version: %w", err)
+		}
+	}
+
+	appVersionRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(NULLIF(sr.app_version, ''), 'Unknown'),
+			COUNT(*)::bigint
+		FROM scenario_runs sr
+		WHERE sr.user_id = $1
+		`+userWhere+`
+		GROUP BY COALESCE(NULLIF(sr.app_version, ''), 'Unknown')
+		ORDER BY COUNT(*) DESC, COALESCE(NULLIF(sr.app_version, ''), 'Unknown') DESC
+		LIMIT 12
+	`, append([]any{userID}, userArgs...)...)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user app versions: %w", err)
+	}
+	defer appVersionRows.Close()
+	for appVersionRows.Next() {
+		var item AdminVersionBreakdown
+		if err := appVersionRows.Scan(&item.Label, &item.RunCount); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user app version: %w", err)
+		}
+		detail.AppVersions = append(detail.AppVersions, item)
+	}
+	if err := appVersionRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user app versions: %w", err)
+	}
+
+	schemaVersionRows, err := s.pool.Query(ctx, `
+		SELECT
+			COALESCE(sr.schema_version::text, '0'),
+			COUNT(*)::bigint
+		FROM scenario_runs sr
+		WHERE sr.user_id = $1
+		`+userWhere+`
+		GROUP BY sr.schema_version
+		ORDER BY COUNT(*) DESC, sr.schema_version DESC
+		LIMIT 12
+	`, append([]any{userID}, userArgs...)...)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user schema versions: %w", err)
+	}
+	defer schemaVersionRows.Close()
+	for schemaVersionRows.Next() {
+		var item AdminVersionBreakdown
+		if err := schemaVersionRows.Scan(&item.Label, &item.RunCount); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user schema version: %w", err)
+		}
+		detail.SchemaVersions = append(detail.SchemaVersions, item)
+	}
+	if err := schemaVersionRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user schema versions: %w", err)
+	}
+
+	linkedAccountRows, err := s.pool.Query(ctx, `
+		SELECT
+			la.provider,
+			la.provider_account_id,
+			COALESCE(la.username, ''),
+			COALESCE(la.display_name, ''),
+			COALESCE(la.avatar_url, ''),
+			la.verified,
+			la.created_at,
+			la.updated_at
+		FROM linked_accounts la
+		WHERE la.user_id = $1
+		ORDER BY
+			la.verified DESC,
+			CASE
+				WHEN la.provider = 'kovaaks' THEN 1
+				WHEN la.provider = 'steam' THEN 2
+				WHEN la.provider = 'discord' THEN 3
+				ELSE 4
+			END,
+			la.updated_at DESC,
+			la.id DESC
+	`, userID)
+	if err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("load admin user linked accounts: %w", err)
+	}
+	defer linkedAccountRows.Close()
+	for linkedAccountRows.Next() {
+		var item AdminLinkedAccountRecord
+		if err := linkedAccountRows.Scan(
+			&item.Provider,
+			&item.ProviderAccountID,
+			&item.Username,
+			&item.DisplayName,
+			&item.AvatarURL,
+			&item.Verified,
+			&item.CreatedAt,
+			&item.UpdatedAt,
+		); err != nil {
+			return AdminUserDetailRecord{}, fmt.Errorf("scan admin user linked account: %w", err)
+		}
+		detail.LinkedAccounts = append(detail.LinkedAccounts, item)
+	}
+	if err := linkedAccountRows.Err(); err != nil {
+		return AdminUserDetailRecord{}, fmt.Errorf("iterate admin user linked accounts: %w", err)
 	}
 
 	unknownRows, err := s.pool.Query(ctx, `
