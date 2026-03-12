@@ -12,6 +12,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ReplayMouseOverlay } from "../components/ReplayMouseOverlay";
+import { ScenarioBenchmarkRankList } from "../components/BenchmarkCards";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { deleteReplayMedia, fetchMousePath, fetchReplayMediaMeta, fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
@@ -326,7 +327,7 @@ export function RunPage() {
     Boolean(replayMediaUrl) &&
     auth.authenticated &&
     !!auth.user &&
-    auth.user.username.toLowerCase() === run.userHandle.toLowerCase();
+    (auth.user.profileHandle || auth.user.username).toLowerCase() === run.userHandle.toLowerCase();
   const denseHitStream = shouldClusterHitIndicators(hitTimestampsMs, replayDurationMsResolved);
   const hitTimingWindows = denseHitStream ? clusterHitWindows(hitTimestampsMs) : [];
 
@@ -430,6 +431,17 @@ export function RunPage() {
           />
         </Grid>
       </PageSection>
+
+      {run.benchmarkRanks.length > 0 && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Benchmark ranks"
+            title="Rank for this score"
+            body="These benchmark systems already have a rank for this exact scenario."
+          />
+          <ScenarioBenchmarkRankList title="Ranks" ranks={run.benchmarkRanks} handle={run.userHandle} />
+        </PageSection>
+      )}
 
       {/* ── timeline chart ── */}
       {hasTimeline && (

@@ -3,11 +3,13 @@ import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ReplayResultCard } from "../components/ReplayResultCard";
+import { BenchmarkSummaryGrid } from "../components/BenchmarkCards";
 import { RunTrendChart } from "../components/charts/RunTrendChart";
 import { ScenarioTypeChart } from "../components/charts/ScenarioTypeChart";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
+import { VerificationBadge } from "../components/VerificationBadge";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
@@ -174,7 +176,10 @@ export function ProfilePage() {
       <PageSection className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,0.9fr)] gap-4 max-[980px]:grid-cols-1">
         <div>
           <Breadcrumb crumbs={[{ label: "Community", to: "/community" }, { label: `@${profile.userHandle}` }]} />
-          <h1>@{profile.userHandle}</h1>
+          <div className="flex items-center gap-3">
+            <h1>@{profile.userHandle}</h1>
+            <VerificationBadge verified={Boolean(profile.isVerified)} />
+          </div>
           <p className="text-sm leading-7 text-muted">
             {profile.userDisplayName || profile.userHandle} has {profile.runCount.toLocaleString()} runs across{" "}
             {profile.scenarioCount.toLocaleString()} scenarios.
@@ -217,6 +222,22 @@ export function ProfilePage() {
         <AimProfileSection handle={profile.userHandle} />
         <AimFingerprintSection handle={profile.userHandle} />
       </Grid>
+
+      {profile.benchmarks.length > 0 && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Benchmarks"
+            title="Current benchmark ranks"
+            body="These are the benchmark sets this player has already ranked in."
+            aside={
+              <Link to={`/profiles/${profile.userHandle}/benchmarks`} className="text-cyan hover:text-text transition-colors">
+                View all →
+              </Link>
+            }
+          />
+          <BenchmarkSummaryGrid benchmarks={profile.benchmarks} handle={profile.userHandle} />
+        </PageSection>
+      )}
 
       {profile.personalBests.length > 0 && (
         <PageSection>

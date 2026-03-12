@@ -5,6 +5,7 @@ import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
+import { VerificationBadge } from "../components/VerificationBadge";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
@@ -15,13 +16,14 @@ import {
   formatDurationMs,
   formatRelativeTime,
   searchHub,
+  type HubSearchBenchmark,
   type HubSearchProfile,
   type HubSearchResponse,
   type HubSearchRun,
   type HubSearchScenario,
 } from "../lib/api";
 
-type SearchView = "all" | "scenarios" | "players" | "runs" | "replays";
+type SearchView = "all" | "scenarios" | "players" | "runs" | "replays" | "benchmarks";
 
 type SearchScenarioCardData = Pick<
   HubSearchScenario,
@@ -30,7 +32,7 @@ type SearchScenarioCardData = Pick<
 
 type SearchProfileCardData = Pick<
   HubSearchProfile,
-  "userHandle" | "userDisplayName" | "runCount" | "scenarioCount" | "primaryScenarioType"
+  "userHandle" | "userDisplayName" | "isVerified" | "runCount" | "scenarioCount" | "primaryScenarioType"
 >;
 
 type SearchRunCardData = Pick<
@@ -38,34 +40,15 @@ type SearchRunCardData = Pick<
   "publicRunID" | "sessionID" | "scenarioName" | "scenarioType" | "playedAt" | "score" | "accuracy" | "durationMS" | "userHandle" | "userDisplayName"
 >;
 
-type SearchQuickResult =
-  | {
-      kind: "scenario";
-      key: string;
-      title: string;
-      subtitle: string;
-      meta: string;
-      to: string;
-      badge: string;
-    }
-  | {
-      kind: "player";
-      key: string;
-      title: string;
-      subtitle: string;
-      meta: string;
-      to: string;
-      badge: string;
-    }
-  | {
-      kind: "run";
-      key: string;
-      title: string;
-      subtitle: string;
-      meta: string;
-      to: string;
-      badge: string;
-    };
+type SearchQuickResult = {
+  kind: "scenario" | "player" | "run" | "benchmark";
+  key: string;
+  title: string;
+  subtitle: string;
+  meta: string;
+  to: string;
+  badge: string;
+};
 
 function normalize(value: string) {
   return value.trim().toLowerCase();
@@ -158,9 +141,12 @@ function SearchProfileCard({ profile }: { profile: SearchProfileCardData }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <strong className="block truncate text-[15px] text-text">
-            {profile.userDisplayName || profile.userHandle}
-          </strong>
+          <div className="flex items-center gap-2">
+            <strong className="block truncate text-[15px] text-text">
+              {profile.userDisplayName || profile.userHandle}
+            </strong>
+            <VerificationBadge verified={profile.isVerified} />
+          </div>
           <p className="mt-1 truncate text-[12px] text-muted">@{profile.userHandle}</p>
         </div>
         <span className="shrink-0 text-sm text-cyan">{profile.runCount.toLocaleString()} runs</span>
@@ -191,6 +177,30 @@ function SearchRunCard({ run }: { run: SearchRunCardData }) {
         <span>{run.accuracy.toFixed(1)}% acc</span>
         <span>{formatDurationMs(run.durationMS)}</span>
         {run.playedAt ? <span>{formatRelativeTime(run.playedAt)}</span> : null}
+      </div>
+    </Link>
+  );
+}
+
+function SearchBenchmarkCard({ benchmark }: { benchmark: HubSearchBenchmark }) {
+  return (
+    <Link
+      to={`/benchmarks/${benchmark.benchmarkId}`}
+      className="rounded-[16px] border border-line bg-white/2 px-4 py-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {benchmark.benchmarkIconUrl ? (
+            <img src={benchmark.benchmarkIconUrl} alt="" className="h-8 w-8 shrink-0 rounded-lg border border-white/10 object-cover" />
+          ) : null}
+          <div className="min-w-0">
+            <strong className="block truncate text-[15px] text-text">{benchmark.benchmarkName}</strong>
+            {benchmark.benchmarkAuthor ? (
+              <p className="mt-0.5 truncate text-[12px] text-muted">by {benchmark.benchmarkAuthor}</p>
+            ) : null}
+          </div>
+        </div>
+        <span className="shrink-0 text-sm text-cyan">{benchmark.playerCount} player{benchmark.playerCount !== 1 ? "s" : ""}</span>
       </div>
     </Link>
   );
@@ -245,7 +255,7 @@ function SearchQuickJump({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-cyan">
                   <span>
-                    {item.kind === "scenario" ? "Scenario" : item.kind === "player" ? "Player" : "Run"}
+                    {item.kind === "scenario" ? "Scenario" : item.kind === "player" ? "Player" : item.kind === "benchmark" ? "Benchmark" : "Run"}
                   </span>
                   <ScenarioTypeBadge type={item.badge} />
                 </div>
@@ -461,7 +471,8 @@ export function SearchPage() {
   const profileCount = results?.profiles.length ?? 0;
   const runCount = results?.runs.length ?? 0;
   const replayCount = results?.replays.length ?? 0;
-  const totalCount = scenarioCount + profileCount + runCount + replayCount;
+  const benchmarkCount = results?.benchmarks.length ?? 0;
+  const totalCount = scenarioCount + profileCount + runCount + replayCount + benchmarkCount;
   const hasResults = totalCount > 0;
 
   const ranked = useMemo(() => {
@@ -530,8 +541,17 @@ export function SearchPage() {
         to: `/runs/${run.publicRunID || run.sessionID}`,
         badge: run.scenarioType,
       })),
+      ...(results?.benchmarks ?? []).slice(0, 2).map((b) => ({
+        kind: "benchmark" as const,
+        key: `benchmark:${b.benchmarkId}`,
+        title: b.benchmarkName,
+        subtitle: b.benchmarkAuthor ? `by ${b.benchmarkAuthor}` : "Benchmark",
+        meta: `${b.playerCount} player${b.playerCount !== 1 ? "s" : ""}`,
+        to: `/benchmarks/${b.benchmarkId}`,
+        badge: b.benchmarkType,
+      })),
     ].slice(0, 8);
-  }, [query, ranked]);
+  }, [query, ranked, results]);
 
   useEffect(() => {
     if (!query || quickResults.length === 0) return;
@@ -617,6 +637,7 @@ export function SearchPage() {
   const showProfiles = view === "all" || view === "players";
   const showRuns = view === "all" || view === "runs";
   const showReplays = view === "all" || view === "replays";
+  const showBenchmarks = view === "all" || view === "benchmarks";
 
   return (
     <PageStack>
@@ -666,6 +687,7 @@ export function SearchPage() {
               { key: "all", label: "All", count: totalCount },
               { key: "scenarios", label: "Scenarios", count: scenarioCount },
               { key: "players", label: "Players", count: profileCount },
+              { key: "benchmarks", label: "Benchmarks", count: benchmarkCount },
               { key: "runs", label: "Runs", count: runCount },
               { key: "replays", label: "Replays", count: replayCount },
             ].map((item) => (
@@ -768,6 +790,19 @@ export function SearchPage() {
                           <SearchProfileCard key={profile.userHandle} profile={profile} />
                         ))
                       : <EmptyState title="No player matches" body="No player profiles matched this search." />}
+                  </div>
+                </ScrollArea>
+              </PageSection>
+            ) : null}
+
+            {showBenchmarks && benchmarkCount > 0 ? (
+              <PageSection>
+                <SectionHeader eyebrow="Benchmarks" title="Benchmark ranks" body="Hub players ranked in benchmarks matching your search." />
+                <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
+                  <div className="grid gap-2.5">
+                    {(results?.benchmarks ?? []).map((b) => (
+                      <SearchBenchmarkCard key={b.benchmarkId} benchmark={b} />
+                    ))}
                   </div>
                 </ScrollArea>
               </PageSection>

@@ -6,6 +6,10 @@ import { AuthProvider } from "./lib/AuthContext";
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
 const CommunityPage = lazy(() => import("./pages/CommunityPage").then((m) => ({ default: m.CommunityPage })));
+const BenchmarkPage = lazy(() => import("./pages/BenchmarkPage").then((m) => ({ default: m.BenchmarkPage })));
+const BenchmarksPage = lazy(() => import("./pages/BenchmarksPage").then((m) => ({ default: m.BenchmarksPage })));
+const GlobalBenchmarksPage = lazy(() => import("./pages/GlobalBenchmarksPage").then((m) => ({ default: m.GlobalBenchmarksPage })));
+const BenchmarkLeaderboardPage = lazy(() => import("./pages/BenchmarkLeaderboardPage").then((m) => ({ default: m.BenchmarkLeaderboardPage })));
 const DeviceLinkPage = lazy(() => import("./pages/DeviceLinkPage").then((m) => ({ default: m.DeviceLinkPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m.HomePage })));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
@@ -31,6 +35,10 @@ export function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/app" element={<AimModPage />} />
               <Route path="/community" element={<CommunityPage />} />
+              <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
+              <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
+              <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />
+              <Route path="/profiles/:handle/benchmarks" element={<BenchmarksPage />} />
               <Route path="/replays" element={<ReplayHubPage />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/admin" element={<AdminPage />} />

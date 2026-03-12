@@ -2,12 +2,15 @@ import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { API_BASE_URL } from "./config";
 import {
+  GetBenchmarkLeaderboardRequest,
+  GetBenchmarkPageRequest,
   GetMousePathRequest,
   GetOverviewRequest,
   GetProfileRequest,
   GetReplayMediaRequest,
   GetRunRequest,
   GetScenarioPageRequest,
+  ListBenchmarksRequest,
   ListReplaysRequest,
   SearchRequest,
   SessionSummaryValue,
@@ -101,6 +104,7 @@ export type HubSearchProfile = {
   userHandle: string;
   userDisplayName: string;
   avatarURL: string;
+  isVerified: boolean;
   runCount: number;
   scenarioCount: number;
   primaryScenarioType: string;
@@ -123,12 +127,22 @@ export type HubSearchRun = {
   replayQuality: string;
 };
 
+export type HubSearchBenchmark = {
+  benchmarkId: number;
+  benchmarkName: string;
+  benchmarkIconUrl: string;
+  benchmarkAuthor: string;
+  benchmarkType: string;
+  playerCount: number;
+};
+
 export type HubSearchResponse = {
   query: string;
   scenarios: HubSearchScenario[];
   profiles: HubSearchProfile[];
   runs: HubSearchRun[];
   replays: HubSearchRun[];
+  benchmarks: HubSearchBenchmark[];
 };
 
 function mapSearchProfileResult(
@@ -136,6 +150,7 @@ function mapSearchProfileResult(
     userHandle?: string;
     userDisplayName?: string;
     avatarUrl?: string;
+    isVerified?: boolean;
     runCount?: number;
     scenarioCount?: number;
     primaryScenarioType?: string;
@@ -145,6 +160,7 @@ function mapSearchProfileResult(
     userHandle: profile.userHandle ?? "",
     userDisplayName: profile.userDisplayName ?? "",
     avatarURL: profile.avatarUrl ?? "",
+    isVerified: Boolean(profile.isVerified),
     runCount: profile.runCount ?? 0,
     scenarioCount: profile.scenarioCount ?? 0,
     primaryScenarioType: profile.primaryScenarioType ?? "",
@@ -331,6 +347,18 @@ export async function fetchProfile(handle: string) {
   return hubClient.getProfile(new GetProfileRequest({ handle }));
 }
 
+export async function fetchBenchmarkPage(handle: string, benchmarkId: number) {
+  return hubClient.getBenchmarkPage(new GetBenchmarkPageRequest({ handle, benchmarkId }));
+}
+
+export async function fetchBenchmarkList() {
+  return hubClient.listBenchmarks(new ListBenchmarksRequest());
+}
+
+export async function fetchBenchmarkLeaderboard(benchmarkId: number) {
+  return hubClient.getBenchmarkLeaderboard(new GetBenchmarkLeaderboardRequest({ benchmarkId }));
+}
+
 export function formatRelativeTime(dateStr: string | undefined | null): string {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -357,6 +385,14 @@ export async function searchHub(query: string): Promise<HubSearchResponse> {
     profiles: Array.isArray(payload.profiles) ? payload.profiles.map(mapSearchProfileResult) : [],
     runs: Array.isArray(payload.runs) ? payload.runs.map(mapReplayPreview) : [],
     replays: Array.isArray(payload.replays) ? payload.replays.map(mapReplayPreview) : [],
+    benchmarks: (payload.benchmarks ?? []).map((b) => ({
+      benchmarkId: b.benchmarkId ?? 0,
+      benchmarkName: b.benchmarkName ?? "",
+      benchmarkIconUrl: b.benchmarkIconUrl ?? "",
+      benchmarkAuthor: b.benchmarkAuthor ?? "",
+      benchmarkType: b.benchmarkType ?? "",
+      playerCount: b.playerCount ?? 0,
+    })),
   };
 }
 

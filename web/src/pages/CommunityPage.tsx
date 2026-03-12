@@ -11,6 +11,7 @@ import { SortableTh } from "../components/ui/SortableTh";
 import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
+import { VerificationBadge } from "../components/VerificationBadge";
 import { fetchOverview, formatDurationMs, formatRelativeTime, slugifyScenarioName } from "../lib/api";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 
@@ -164,11 +165,14 @@ export function CommunityPage() {
                 <Link
                   key={profile.userHandle}
                   to={`/profiles/${profile.userHandle}`}
-                  className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <strong className="block text-text truncate">{profile.userDisplayName || profile.userHandle}</strong>
+                      <div className="flex items-center gap-2">
+                        <strong className="block text-text truncate">{profile.userDisplayName || profile.userHandle}</strong>
+                        <VerificationBadge verified={Boolean(profile.isVerified)} />
+                      </div>
                       <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
                     </div>
                     <span className="text-sm text-mint shrink-0">{profile.runCount.toLocaleString()} runs</span>

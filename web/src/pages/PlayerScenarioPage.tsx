@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import type { GetPlayerScenarioHistoryResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { GetPlayerScenarioHistoryRequest } from "../gen/aimmod/hub/v1/hub_pb";
 import { ProgressChart } from "../components/charts/ProgressChart";
+import { ScenarioBenchmarkRankList } from "../components/BenchmarkCards";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
@@ -160,6 +161,17 @@ export function PlayerScenarioPage() {
           />
         </Grid>
       </PageSection>
+
+      {history.benchmarkRanks.length > 0 && (
+        <PageSection>
+          <SectionHeader
+            eyebrow="Benchmark ranks"
+            title="This player's rank on this scenario"
+            body="These benchmark systems already include this scenario and score."
+          />
+          <ScenarioBenchmarkRankList title="Ranks" ranks={history.benchmarkRanks} handle={handle} />
+        </PageSection>
+      )}
 
       {chartRuns.length >= 2 && (
         <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">

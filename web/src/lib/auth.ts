@@ -3,10 +3,18 @@ import { API_BASE_URL } from "./config";
 export type AuthUser = {
   userId: number;
   userExternalId: string;
+  aimmodUserId: string;
   discordUserId: string;
   username: string;
   displayName: string;
   avatarUrl: string;
+  steamId: string;
+  steamDisplayName: string;
+  kovaaksUserId: string;
+  kovaaksUsername: string;
+  profileHandle: string;
+  profileDisplayName: string;
+  profileVerified: boolean;
   isAdmin?: boolean;
 };
 
@@ -76,6 +84,21 @@ export async function revokeUploadToken(id: number) {
   if (!response.ok) {
     throw new Error(await response.text() || `Revoke upload token failed: ${response.status}`);
   }
+}
+
+export async function updateProfileHandle(handle: string) {
+  const response = await fetch(`${apiBase}/auth/profile-handle`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ handle })
+  });
+  if (!response.ok) {
+    throw new Error(await response.text() || `Profile handle update failed: ${response.status}`);
+  }
+  return response.json() as Promise<{ user: AuthUser }>;
 }
 
 export async function approveDeviceLink(userCode: string) {

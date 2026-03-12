@@ -12,7 +12,7 @@ const quickNavItems = [
 ];
 
 type DropdownItem = {
-  kind: "scenario" | "player" | "run";
+  kind: "scenario" | "player" | "run" | "benchmark";
   title: string;
   subtitle: string;
   to: string;
@@ -37,6 +37,14 @@ function buildItems(results: HubSearchResponse): DropdownItem[] {
       to: `/profiles/${p.userHandle}`,
       meta: `${p.runCount.toLocaleString()} runs`,
       badge: p.primaryScenarioType,
+    })),
+    ...(results.benchmarks ?? []).slice(0, 2).map((b) => ({
+      kind: "benchmark" as const,
+      title: b.benchmarkName,
+      subtitle: b.benchmarkAuthor ? `by ${b.benchmarkAuthor}` : "benchmark",
+      to: `/benchmarks/${b.benchmarkId}`,
+      meta: `${b.playerCount} player${b.playerCount !== 1 ? "s" : ""}`,
+      badge: b.benchmarkType,
     })),
     ...results.replays.slice(0, 2).map((r) => ({
       kind: "run" as const,
@@ -146,8 +154,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const q = value.trim();
-    if (!q) return;
-    navigate(`/search?q=${encodeURIComponent(q)}`);
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
     setOpen(false);
   }
 

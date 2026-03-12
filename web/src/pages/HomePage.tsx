@@ -5,6 +5,7 @@ import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { StatCard } from "../components/StatCard";
+import { VerificationBadge } from "../components/VerificationBadge";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
@@ -186,9 +187,12 @@ export function HomePage() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <strong className="block text-text truncate">
-                          {profile.userDisplayName || profile.userHandle}
-                        </strong>
+                        <div className="flex items-center gap-2">
+                          <strong className="block text-text truncate">
+                            {profile.userDisplayName || profile.userHandle}
+                          </strong>
+                          <VerificationBadge verified={Boolean(profile.isVerified)} />
+                        </div>
                         <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
                       </div>
                       <div className="text-right shrink-0">
