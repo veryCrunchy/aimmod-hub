@@ -127,11 +127,16 @@ export function RunPage() {
   const [mousePathLoaded, setMousePathLoaded] = useState(false);
   const [playbackMs, setPlaybackMs] = useState(0);
   const [replayDurationMs, setReplayDurationMs] = useState(0);
+  const [videoDurationMs, setVideoDurationMs] = useState(0);
   const [replayPlaying, setReplayPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingReplay, setDeletingReplay] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastPlaybackUiSyncRef = useRef(0);
+  const replayDurationMsResolved = useMemo(
+    () => Math.max(replayDurationMs, mousePath[mousePath.length - 1]?.timestampMs ?? 0, Number(run?.durationMs || 0)),
+    [mousePath, replayDurationMs, run?.durationMs],
+  );
 
   useEffect(() => {
     const video = videoRef.current;
@@ -145,7 +150,7 @@ export function RunPage() {
     };
     const syncDuration = () => {
       if (Number.isFinite(video.duration) && video.duration > 0) {
-        setReplayDurationMs((current) => Math.max(current, video.duration * 1000));
+        setVideoDurationMs(video.duration * 1000);
       }
     };
     const onPlay = () => {
@@ -153,8 +158,20 @@ export function RunPage() {
       sync(true);
     };
     const onPause = () => {
+      if (video.ended && replayDurationMsResolved > videoDurationMs + 80) {
+        sync(true);
+        return;
+      }
       setReplayPlaying(false);
       sync(true);
+    };
+    const onEnded = () => {
+      sync(true);
+      if (replayDurationMsResolved > videoDurationMs + 80) {
+        setReplayPlaying(true);
+        return;
+      }
+      setReplayPlaying(false);
     };
     const onTimeUpdate = () => sync(false);
     const onSeeked = () => sync(true);
@@ -164,7 +181,7 @@ export function RunPage() {
     video.addEventListener("durationchange", syncDuration);
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
-    video.addEventListener("ended", onPause);
+    video.addEventListener("ended", onEnded);
     sync(true);
     syncDuration();
     return () => {
@@ -174,12 +191,12 @@ export function RunPage() {
       video.removeEventListener("durationchange", syncDuration);
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
-      video.removeEventListener("ended", onPause);
+      video.removeEventListener("ended", onEnded);
     };
-  }, [replayMediaUrl]);
+  }, [replayDurationMsResolved, replayMediaUrl, videoDurationMs]);
 
   useEffect(() => {
-    if (replayMediaUrl || mousePath.length < 2 || !replayPlaying) return;
+    if (mousePath.length < 2 || !replayPlaying) return;
     let raf = 0;
     let last = 0;
     const tick = (timestamp: number) => {
@@ -187,8 +204,17 @@ export function RunPage() {
       const delta = timestamp - last;
       last = timestamp;
       setPlaybackMs((current) => {
-        const next = Math.min(current + delta, replayDurationMs);
-        if (next >= replayDurationMs) {
+        let base = current;
+        if (replayMediaUrl) {
+          const video = videoRef.current;
+          const currentVideoMs = video ? Math.min(video.currentTime * 1000, videoDurationMs) : 0;
+          if (currentVideoMs + 40 < videoDurationMs) {
+            return current;
+          }
+          base = Math.max(base, currentVideoMs);
+        }
+        const next = Math.min(base + delta, replayDurationMsResolved);
+        if (next >= replayDurationMsResolved) {
           setReplayPlaying(false);
         }
         return next;
@@ -197,7 +223,7 @@ export function RunPage() {
     };
     raf = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(raf);
-  }, [mousePath.length, replayDurationMs, replayMediaUrl, replayPlaying]);
+  }, [mousePath.length, replayDurationMs, replayDurationMsResolved, replayMediaUrl, replayPlaying, videoDurationMs]);
 
   useEffect(() => {
     let cancelled = false;
@@ -208,6 +234,7 @@ export function RunPage() {
     setMousePathLoaded(false);
     setPlaybackMs(0);
     setReplayDurationMs(0);
+    setVideoDurationMs(0);
     setReplayPlaying(false);
     setError(null);
     void fetchRun(runId)
@@ -250,10 +277,6 @@ export function RunPage() {
   const metaDesc = run
     ? `Score: ${Math.round(run.score).toLocaleString()} · Accuracy: ${run.accuracy.toFixed(1)}%`
     : "Run detail on AimMod Hub.";
-  const replayDurationMsResolved = useMemo(
-    () => Math.max(replayDurationMs, mousePath[mousePath.length - 1]?.timestampMs ?? 0, Number(run?.durationMs || 0)),
-    [mousePath, replayDurationMs, run?.durationMs],
-  );
   const clickTimestampsMs = useMemo(
     () => mousePath.filter((point) => point.isClick).map((point) => point.timestampMs),
     [mousePath],
@@ -343,12 +366,19 @@ export function RunPage() {
     setPlaybackMs(clamped);
     const video = videoRef.current;
     if (video) {
-      video.currentTime = clamped / 1000;
+      video.currentTime = Math.min(clamped, videoDurationMs) / 1000;
     }
   };
   const toggleReplayPlayback = () => {
     const video = videoRef.current;
     if (video) {
+      if (videoDurationMs > 0 && video.paused && playbackMs >= videoDurationMs && replayDurationMsResolved > videoDurationMs + 80) {
+        if (playbackMs >= replayDurationMsResolved) {
+          setPlaybackMs(videoDurationMs);
+        }
+        setReplayPlaying(true);
+        return;
+      }
       if (video.paused) {
         void video.play();
       } else {

@@ -382,14 +382,8 @@ function drawPath(
 
 export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const displayedMediaMsRef = useRef(0);
-  const displayedFramePerfMsRef = useRef(0);
   const overshoots = useMemo(() => detectOvershoots(points), [points]);
   const renderMetrics = useMemo(() => buildRenderMetrics(points), [points]);
-  const denseHitStream = useMemo(
-    () => shouldClusterHitIndicators(hitTimestampsMs, points[points.length - 1]?.timestampMs ?? 0),
-    [hitTimestampsMs, points],
-  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -401,58 +395,58 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
     const canvas = canvasRef.current;
     const video = videoRef?.current;
     if (!canvas || !video) return;
+    if (!video.paused && !video.ended && Math.abs(playbackMs - video.currentTime * 1000) < 24) return;
+    drawPath(canvas, points, overshoots, renderMetrics, playbackMs, hitTimestampsMs);
+  }, [hitTimestampsMs, overshoots, playbackMs, points, renderMetrics, videoRef]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const video = videoRef?.current;
+    if (!canvas || !video) return;
 
     let raf = 0;
     let frameCallbackHandle = 0;
     let cancelled = false;
+    const videoWithCallback = video as HTMLVideoElement & {
+      requestVideoFrameCallback?: (
+        callback: (now: number, metadata: { mediaTime: number }) => void,
+      ) => number;
+      cancelVideoFrameCallback?: (handle: number) => void;
+    };
 
     const drawAtMs = (mediaMs: number) => {
       if (cancelled) return;
       drawPath(canvas, points, overshoots, renderMetrics, mediaMs, hitTimestampsMs);
     };
 
-    const estimateDisplayedMediaMs = () => {
-      if (video.paused || video.ended) return video.currentTime * 1000;
-      const frameMediaMs = displayedMediaMsRef.current;
-      const framePerfMs = displayedFramePerfMsRef.current;
-      if (framePerfMs <= 0) return video.currentTime * 1000;
-      const elapsedMs = performance.now() - framePerfMs;
-      const estimated = frameMediaMs + elapsedMs * video.playbackRate;
-      const upperBound = Math.max(frameMediaMs, video.currentTime * 1000 + 34);
-      return Math.min(estimated, upperBound);
-    };
-
-    const scheduleVideoFrameTracking = () => {
-      const videoWithCallback = video as HTMLVideoElement & {
-        requestVideoFrameCallback?: (
-          callback: (now: number, metadata: { mediaTime: number }) => void,
-        ) => number;
-        cancelVideoFrameCallback?: (handle: number) => void;
-      };
-      if (!videoWithCallback.requestVideoFrameCallback) return;
-      const handleFrame = (now: number, metadata: { mediaTime: number }) => {
-        displayedMediaMsRef.current = metadata.mediaTime * 1000;
-        displayedFramePerfMsRef.current = now;
-        if (!cancelled) {
-          frameCallbackHandle = videoWithCallback.requestVideoFrameCallback!(handleFrame);
-        }
-      };
-      frameCallbackHandle = videoWithCallback.requestVideoFrameCallback(handleFrame);
+    const stop = () => {
+      window.cancelAnimationFrame(raf);
+      raf = 0;
+      if (frameCallbackHandle && videoWithCallback.cancelVideoFrameCallback) {
+        videoWithCallback.cancelVideoFrameCallback(frameCallbackHandle);
+      }
+      frameCallbackHandle = 0;
     };
 
     const tick = () => {
-      drawAtMs(estimateDisplayedMediaMs());
+      drawAtMs(video.currentTime * 1000);
       if (!cancelled && !video.paused && !video.ended) {
         raf = window.requestAnimationFrame(tick);
       }
     };
 
-    const stop = () => {
-      window.cancelAnimationFrame(raf);
-    };
-
     const start = () => {
       stop();
+      if (videoWithCallback.requestVideoFrameCallback) {
+        const handleFrame = (_now: number, metadata: { mediaTime: number }) => {
+          drawAtMs(metadata.mediaTime * 1000);
+          if (!cancelled && !video.paused && !video.ended) {
+            frameCallbackHandle = videoWithCallback.requestVideoFrameCallback!(handleFrame);
+          }
+        };
+        frameCallbackHandle = videoWithCallback.requestVideoFrameCallback(handleFrame);
+        return;
+      }
       raf = window.requestAnimationFrame(tick);
     };
 
@@ -462,18 +456,17 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
       drawAtMs(video.currentTime * 1000);
     };
     const onSeek = () => {
-      displayedMediaMsRef.current = video.currentTime * 1000;
-      displayedFramePerfMsRef.current = performance.now();
       drawAtMs(video.currentTime * 1000);
+      if (!video.paused && !video.ended) {
+        start();
+      }
     };
 
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onPause);
     video.addEventListener("seeked", onSeek);
 
-    displayedMediaMsRef.current = video.currentTime * 1000;
-    displayedFramePerfMsRef.current = performance.now();
-    scheduleVideoFrameTracking();
     drawAtMs(video.currentTime * 1000);
     if (!video.paused && !video.ended) {
       start();
@@ -482,14 +475,9 @@ export function ReplayMouseOverlay({ points, hitTimestampsMs, playbackMs, videoR
     return () => {
       cancelled = true;
       stop();
-      const videoWithCallback = video as HTMLVideoElement & {
-        cancelVideoFrameCallback?: (handle: number) => void;
-      };
-      if (frameCallbackHandle && videoWithCallback.cancelVideoFrameCallback) {
-        videoWithCallback.cancelVideoFrameCallback(frameCallbackHandle);
-      }
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onPause);
       video.removeEventListener("seeked", onSeek);
     };
   }, [hitTimestampsMs, overshoots, points, renderMetrics, videoRef]);

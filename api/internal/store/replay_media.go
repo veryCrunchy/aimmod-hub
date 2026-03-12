@@ -2,8 +2,9 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -23,13 +24,89 @@ type MousePathPoint struct {
 }
 
 type MousePathData struct {
-	Points           []MousePathPoint `json:"points"`
-	HitTimestampsMS  []uint64         `json:"hitTimestampsMs"`
+	Points          []MousePathPoint `json:"points"`
+	HitTimestampsMS []uint64         `json:"hitTimestampsMs"`
 }
 
 type ReplayMediaUploadTarget struct {
 	StoredSessionID string
 	PublicRunID     string
+}
+
+func normalizeMousePathData(
+	points []MousePathPoint,
+	hitTimestampsMS []uint64,
+	targetDurationMS uint64,
+) MousePathData {
+	if len(points) == 0 {
+		return MousePathData{
+			Points:          []MousePathPoint{},
+			HitTimestampsMS: append([]uint64(nil), hitTimestampsMS...),
+		}
+	}
+
+	normalizedPoints := append([]MousePathPoint(nil), points...)
+	normalizedHits := append([]uint64(nil), hitTimestampsMS...)
+	sort.Slice(normalizedPoints, func(i, j int) bool {
+		return normalizedPoints[i].Timestamp < normalizedPoints[j].Timestamp
+	})
+	sort.Slice(normalizedHits, func(i, j int) bool {
+		return normalizedHits[i] < normalizedHits[j]
+	})
+
+	startOffsetMS := normalizedPoints[0].Timestamp
+	if len(normalizedHits) > 0 && normalizedHits[0] < startOffsetMS {
+		startOffsetMS = normalizedHits[0]
+	}
+	if startOffsetMS > 0 {
+		for index := range normalizedPoints {
+			normalizedPoints[index].Timestamp -= startOffsetMS
+		}
+		for index := range normalizedHits {
+			normalizedHits[index] -= startOffsetMS
+		}
+	}
+
+	observedDurationMS := normalizedPoints[len(normalizedPoints)-1].Timestamp
+	if len(normalizedHits) > 0 && normalizedHits[len(normalizedHits)-1] > observedDurationMS {
+		observedDurationMS = normalizedHits[len(normalizedHits)-1]
+	}
+
+	if targetDurationMS > 0 &&
+		observedDurationMS > targetDurationMS+1500 &&
+		observedDurationMS > (targetDurationMS*12)/10 {
+		scale := float64(targetDurationMS) / float64(observedDurationMS)
+		for index := range normalizedPoints {
+			normalizedPoints[index].Timestamp = uint64(float64(normalizedPoints[index].Timestamp)*scale + 0.5)
+		}
+		for index := range normalizedHits {
+			normalizedHits[index] = uint64(float64(normalizedHits[index])*scale + 0.5)
+		}
+	}
+
+	if targetDurationMS > 0 {
+		limitMS := targetDurationMS + 250
+		filteredPoints := normalizedPoints[:0]
+		for _, point := range normalizedPoints {
+			if point.Timestamp <= limitMS {
+				filteredPoints = append(filteredPoints, point)
+			}
+		}
+		normalizedPoints = filteredPoints
+
+		filteredHits := normalizedHits[:0]
+		for _, timestampMS := range normalizedHits {
+			if timestampMS <= limitMS {
+				filteredHits = append(filteredHits, timestampMS)
+			}
+		}
+		normalizedHits = filteredHits
+	}
+
+	return MousePathData{
+		Points:          normalizedPoints,
+		HitTimestampsMS: normalizedHits,
+	}
 }
 
 func normalizeReplayMediaQuality(value string) string {
@@ -202,12 +279,16 @@ func (s *Store) UpsertMousePath(
 func (s *Store) GetMousePath(ctx context.Context, runID string) (MousePathData, error) {
 	var payload []byte
 	var hitPayload []byte
+	var targetDurationMS int64
 	if err := s.pool.QueryRow(ctx, `
-		SELECT rmp.path_json::text, rmp.hit_timestamps_json::text
+		SELECT
+			rmp.path_json::text,
+			rmp.hit_timestamps_json::text,
+			COALESCE(sr.duration_ms, 0)
 		FROM run_mouse_paths rmp
 		JOIN scenario_runs sr ON sr.session_id = rmp.session_id
 		WHERE sr.public_run_id = $1 OR sr.session_id = $1 OR sr.source_session_id = $1
-	`, runID).Scan(&payload, &hitPayload); err != nil {
+	`, runID).Scan(&payload, &hitPayload, &targetDurationMS); err != nil {
 		return MousePathData{}, fmt.Errorf("load mouse path: %w", err)
 	}
 	var points []MousePathPoint
@@ -220,8 +301,9 @@ func (s *Store) GetMousePath(ctx context.Context, runID string) (MousePathData, 
 			return MousePathData{}, fmt.Errorf("decode hit timestamps: %w", err)
 		}
 	}
-	return MousePathData{
-		Points: points,
-		HitTimestampsMS: hitTimestampsMS,
-	}, nil
+	normalizedDurationMS := uint64(0)
+	if targetDurationMS > 0 {
+		normalizedDurationMS = uint64(targetDurationMS)
+	}
+	return normalizeMousePathData(points, hitTimestampsMS, normalizedDurationMS), nil
 }
