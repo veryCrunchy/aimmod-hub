@@ -101,11 +101,11 @@ function TierBar({ col, score }: { col: TierColumn; score: number }) {
 // ─── category color palette ───────────────────────────────────────────────────
 
 const PALETTE = ["#b8ffe1", "#ffd956", "#c2a9ff", "#79c997", "#ff8787", "#50c8ff"];
-let _idx = 0;
-const _cache = new Map<string, string>();
-function catColor(name: string) {
-  if (!_cache.has(name)) _cache.set(name, PALETTE[_idx++ % PALETTE.length]);
-  return _cache.get(name)!;
+
+function buildCatColorMap(categories: CategoryViewModel[]): Map<string, string> {
+  const map = new Map<string, string>();
+  categories.forEach((c, i) => map.set(c.categoryName, PALETTE[i % PALETTE.length]));
+  return map;
 }
 
 // ─── category rows ────────────────────────────────────────────────────────────
@@ -120,12 +120,14 @@ function CategoryRows({
   category,
   tierCols,
   aimmodHandle,
+  catColors,
 }: {
   category: CategoryViewModel;
   tierCols: TierColumn[];
   aimmodHandle?: string;
+  catColors: Map<string, string>;
 }) {
-  const accent = catColor(category.categoryName);
+  const accent = catColors.get(category.categoryName) ?? PALETTE[0];
   const count = category.scenarios.length;
 
   return (
@@ -305,6 +307,8 @@ export function ExternalBenchmarkPage() {
     [page, showUnranked],
   );
 
+  const catColors = useMemo(() => buildCatColorMap(categories), [categories]);
+
   const tierCols = useMemo(() => {
     for (const cat of categories) {
       for (const sc of cat.scenarios) {
@@ -353,6 +357,14 @@ export function ExternalBenchmarkPage() {
 
       <Card className="p-3.5 md:p-4.5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-3 min-w-0">
+            {page.benchmarkIconUrl && (
+              <img
+                src={page.benchmarkIconUrl}
+                alt=""
+                className="mt-0.5 h-10 w-10 shrink-0 rounded-[10px] border border-white/10 object-cover"
+              />
+            )}
           <div className="min-w-0">
             <Breadcrumb
               crumbs={[
@@ -375,6 +387,7 @@ export function ExternalBenchmarkPage() {
                 <span className="text-[11px] text-muted/60">KovaaK's only user</span>
               )}
             </div>
+          </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
@@ -450,6 +463,7 @@ export function ExternalBenchmarkPage() {
                     category={category}
                     tierCols={tierCols}
                     aimmodHandle={page.isAimmodUser ? page.aimmodHandle : undefined}
+                    catColors={catColors}
                   />
                 ))}
               </tbody>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import type { BenchmarkCategoryPage, BenchmarkScenarioEntry, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
@@ -145,11 +146,11 @@ function TierBar({
 // ─── category color palette ───────────────────────────────────────────────────
 
 const PALETTE = ["#b8ffe1", "#ffd956", "#c2a9ff", "#79c997", "#ff8787", "#50c8ff"];
-let _idx = 0;
-const _cache = new Map<string, string>();
-function catColor(name: string) {
-  if (!_cache.has(name)) _cache.set(name, PALETTE[_idx++ % PALETTE.length]);
-  return _cache.get(name)!;
+
+function buildCatColorMap(categories: BenchmarkCategoryViewModel[]): Map<string, string> {
+  const map = new Map<string, string>();
+  categories.forEach((c, i) => map.set(c.categoryName, PALETTE[i % PALETTE.length]));
+  return map;
 }
 
 // ─── category rows ────────────────────────────────────────────────────────────
@@ -158,12 +159,14 @@ function CategoryRows({
   category,
   userHandle,
   tierCols,
+  catColors,
 }: {
   category: BenchmarkCategoryViewModel;
   userHandle: string;
   tierCols: TierColumn[];
+  catColors: Map<string, string>;
 }) {
-  const accent = catColor(category.categoryName);
+  const accent = catColors.get(category.categoryName) ?? PALETTE[0];
   const count = category.scenarios.length;
 
   return (
@@ -321,6 +324,8 @@ export function BenchmarkPage() {
 
   const categories = useMemo(() => visibleCategories(page?.categories ?? []), [page]);
 
+  const catColors = useMemo(() => buildCatColorMap(categories), [categories]);
+
   // Derive tier columns from the first scenario that has thresholds
   const tierCols = useMemo(() => {
     for (const cat of categories) {
@@ -360,25 +365,40 @@ export function BenchmarkPage() {
     );
   }
 
+  const displayName = page.userDisplayName || page.userHandle;
+
   return (
     <PageStack>
+      <Helmet>
+        <title>{page.benchmarkName} · {displayName} · AimMod Hub</title>
+      </Helmet>
+
       {/* header */}
       <Card className="p-3.5 md:p-4.5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <Breadcrumb
-              crumbs={[
-                { label: `@${page.userHandle}`, to: `/profiles/${page.userHandle}` },
-                { label: page.benchmarkName },
-              ]}
-            />
-            <h1 className="mt-2 text-base font-medium text-text leading-tight">
-              {page.benchmarkName}
-            </h1>
-            <p className="mt-0.5 text-[11px] text-muted/70">
-              {page.benchmarkAuthor ? `by ${page.benchmarkAuthor}` : "Community benchmark"}
-              {page.benchmarkType ? ` · ${page.benchmarkType}` : ""}
-            </p>
+          <div className="flex items-start gap-3 min-w-0">
+            {page.benchmarkIconUrl && (
+              <img
+                src={page.benchmarkIconUrl}
+                alt=""
+                className="mt-0.5 h-10 w-10 shrink-0 rounded-[10px] border border-white/10 object-cover"
+              />
+            )}
+            <div className="min-w-0">
+              <Breadcrumb
+                crumbs={[
+                  { label: displayName, to: `/profiles/${page.userHandle}` },
+                  { label: page.benchmarkName },
+                ]}
+              />
+              <h1 className="mt-2 text-base font-medium text-text leading-tight">
+                {page.benchmarkName}
+              </h1>
+              <p className="mt-0.5 text-[11px] text-muted/70">
+                {page.benchmarkAuthor ? `by ${page.benchmarkAuthor}` : "Community benchmark"}
+                {page.benchmarkType ? ` · ${page.benchmarkType}` : ""}
+              </p>
+            </div>
           </div>
           {page.overallRank && hasRank(page.overallRank.rankName) && (
             <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/3 px-3 py-2 shrink-0">
@@ -432,6 +452,7 @@ export function BenchmarkPage() {
                   category={category}
                   userHandle={page.userHandle}
                   tierCols={tierCols}
+                  catColors={catColors}
                 />
               ))}
             </tbody>

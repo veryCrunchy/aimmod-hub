@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -393,12 +394,18 @@ func (c *Client) BuildBenchmarkPage(
 		if len(scenarios) == 0 {
 			continue
 		}
+		sort.Slice(scenarios, func(i, j int) bool {
+			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
+		})
 		categories = append(categories, BenchmarkCategoryPageRecord{
 			CategoryName: categoryName,
 			CategoryRank: category.CategoryRank,
 			Scenarios:    scenarios,
 		})
 	}
+	sort.Slice(categories, func(i, j int) bool {
+		return categories[i].CategoryName < categories[j].CategoryName
+	})
 	return detail, categories, nil
 }
 
@@ -745,12 +752,18 @@ func (c *Client) BuildFullBenchmarkPage(
 		if len(scenarios) == 0 {
 			continue
 		}
+		sort.Slice(scenarios, func(i, j int) bool {
+			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
+		})
 		categories = append(categories, BenchmarkCategoryPageRecord{
 			CategoryName: categoryName,
 			CategoryRank: category.CategoryRank,
 			Scenarios:    scenarios,
 		})
 	}
+	sort.Slice(categories, func(i, j int) bool {
+		return categories[i].CategoryName < categories[j].CategoryName
+	})
 	return detail, categories, nil
 }
 
