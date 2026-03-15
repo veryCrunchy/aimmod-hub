@@ -18,7 +18,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
     { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
-    { to: "/app", label: "App", title: "Download the AimMod desktop app" },
+    { to: "/app", label: "Get the App", title: "Download the AimMod desktop app", highlight: true },
     { to: "/community", label: "Community", title: "Browse all scenarios and players" },
     { to: "/replays", label: "Replays", title: "Watch replay videos and mouse paths" },
     { to: "/leaderboard", label: "Leaderboard", title: "All-time records and top 100 scores" },
@@ -49,70 +49,52 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen overflow-x-clip">
       <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.96),rgba(4,12,9,0.92))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
-        <div className="mx-auto flex w-[min(1380px,100%)] min-w-0 flex-col gap-2.5 xl:grid xl:grid-cols-[auto_auto_minmax(220px,320px)_auto] xl:items-center xl:gap-4">
-          <div className="flex min-w-0 items-center justify-between gap-3 xl:contents">
+        <div className="mx-auto flex w-[min(1380px,100%)] min-w-0 flex-col gap-2.5">
+          <div className="flex min-w-0 items-center justify-between gap-3">
             <Link to="/" className="grid min-w-0 gap-0.5">
               <span className="text-[10px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
-              <span className="truncate text-[12px] text-text max-[640px]:hidden">shared practice intelligence</span>
+              <span className="truncate text-[12px] text-text max-[400px]:hidden">shared practice intelligence</span>
             </Link>
 
-            <div className="flex flex-wrap items-center justify-end gap-2 xl:contents">
-              <nav className="hidden min-w-0 flex-wrap items-center gap-1.5 xl:flex" aria-label="Primary">
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    title={item.title}
-                    className={({ isActive }) =>
-                      cn(
-                        "rounded-full border border-transparent px-3 py-2 text-[13px] text-muted transition-colors",
-                        "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
-                        isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
-                      )
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
-              </nav>
-
-              {auth.loading ? null : auth.authenticated && auth.user ? (
-                <div className="inline-flex min-w-0 items-center gap-2">
-                  <Link to="/account" className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-[240px] md:px-[14px] md:text-[13px]">
-                    {auth.user.displayName || auth.user.username}
-                  </Link>
-                  <Button onClick={() => void auth.signOut()} className="shrink-0">
-                    Sign out
-                  </Button>
-                </div>
-              ) : (
-                <Button href={discordStartUrl("/account")} variant="primary" className="shrink-0">
-                  Sign in with Discord
+            {auth.loading ? null : auth.authenticated && auth.user ? (
+              <div className="inline-flex min-w-0 items-center gap-2">
+                <Link to="/account" className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-60 md:px-3.5 md:text-[13px]">
+                  {auth.user.displayName || auth.user.username}
+                </Link>
+                <Button onClick={() => void auth.signOut()} className="shrink-0">
+                  Sign out
                 </Button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <Button href={discordStartUrl("/account")} variant="primary" className="shrink-0">
+                Sign in with Discord
+              </Button>
+            )}
           </div>
 
           <HeaderSearch ref={searchRef} />
 
-          <div className="flex flex-wrap items-center gap-1.5 xl:hidden">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              title={item.title}
-              className={({ isActive }) =>
-                cn(
-                  "rounded-full border border-transparent px-3 py-1.5 text-[12px] text-muted transition-colors",
-                  "hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
-                  isActive && "border-line bg-[rgba(121,201,151,0.1)] text-text"
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          </div>
+          <nav className="flex flex-wrap items-center gap-1.5" aria-label="Primary">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                title={item.title}
+                className={({ isActive }) =>
+                  cn(
+                    "rounded-full border px-3 py-1.5 text-[12px] transition-colors",
+                    item.highlight
+                      ? "border-cyan/25 bg-cyan/8 text-cyan hover:border-cyan/40 hover:bg-cyan/12"
+                      : "border-transparent text-muted hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
+                    isActive && !item.highlight && "border-line bg-[rgba(121,201,151,0.1)] text-text",
+                    isActive && item.highlight && "border-cyan/40 bg-cyan/12"
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 
