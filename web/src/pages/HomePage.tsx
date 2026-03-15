@@ -90,22 +90,22 @@ export function HomePage() {
       <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
         <div className="absolute inset-y-0 right-[8%] w-[28%] rounded-full bg-[radial-gradient(circle,rgba(121,201,151,0.14),transparent_68%)] blur-3xl" />
         <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
-        <h1 className="my-2.5 max-w-[14ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
-          Shared practice data that is finally useful.
+        <h1 className="my-2.5 max-w-[16ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
+          See how the best KovaaK's players aim.
         </h1>
         <p className="max-w-[700px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
-          AimMod turns your practice into player profiles, scenario pages, and run detail you can study, share, and
-          learn from.
+          Mouse path replays, aim fingerprint analysis, and per-run coaching — for every player that's shared their
+          practice data. No account required to explore.
         </p>
         <div className="relative mt-3 flex flex-wrap gap-2">
           <Button to="/community" variant="primary">
-            Explore community data
+            Explore community
+          </Button>
+          <Button to="/replays">
+            Watch replays
           </Button>
           {featuredScenario ? (
-            <Button to={`/scenarios/${featuredScenario.scenarioSlug}`}>Open top scenario</Button>
-          ) : null}
-          {featuredProfile ? (
-            <Button to={`/profiles/${featuredProfile.userHandle}`}>Open active profile</Button>
+            <Button to={`/scenarios/${featuredScenario.scenarioSlug}`}>Top scenario</Button>
           ) : null}
         </div>
       </PageSection>
@@ -129,6 +129,42 @@ export function HomePage() {
           accent="gold"
         />
       </Grid>
+
+      <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
+        <Link
+          to="/replays"
+          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-cyan/30 hover:bg-white/3"
+        >
+          <div className="mb-3 text-[11px] uppercase tracking-widest text-cyan">Mouse paths</div>
+          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Watch exactly how they moved</h3>
+          <p className="text-[13px] leading-relaxed text-muted">
+            See the full mouse path for any shared run — where targets were hit clean, where corrections happened, where pace broke down.
+          </p>
+          <div className="mt-3 text-[12px] text-cyan">Browse replays →</div>
+        </Link>
+        <Link
+          to="/community"
+          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-[rgba(212,175,55,0.3)] hover:bg-white/3"
+        >
+          <div className="mb-3 text-[11px] uppercase tracking-widest text-gold">Aim Fingerprint</div>
+          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">6-axis aim style analysis</h3>
+          <p className="text-[13px] leading-relaxed text-muted">
+            Precision, Speed, Control, Consistency, Decisiveness, Rhythm — mapped across a player's full history and benchmarked against the community.
+          </p>
+          <div className="mt-3 text-[12px] text-gold">Explore profiles →</div>
+        </Link>
+        <Link
+          to="/leaderboard"
+          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-mint/30 hover:bg-white/3"
+        >
+          <div className="mb-3 text-[11px] uppercase tracking-widest text-mint">Coaching</div>
+          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Per-run feedback, not just a score</h3>
+          <p className="text-[13px] leading-relaxed text-muted">
+            Every run comes with coaching tags and second-by-second context windows — specific observations about what happened during the run.
+          </p>
+          <div className="mt-3 text-[12px] text-mint">View leaderboard →</div>
+        </Link>
+      </div>
 
       <Grid className="grid-cols-2 max-[1100px]:grid-cols-1">
         <PageSection>
@@ -290,6 +326,25 @@ export function HomePage() {
             body={error || "Recent runs will appear here once there is practice history to show."}
           />
         )}
+      </PageSection>
+
+      <PageSection className="relative overflow-hidden border-mint/20 bg-[radial-gradient(circle_at_60%_0%,rgba(121,201,151,0.1),transparent_40%),linear-gradient(180deg,rgba(6,18,12,0.98),rgba(4,12,9,0.97))]">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="mb-2 text-[11px] uppercase tracking-widest text-mint">AimMod App</div>
+            <h2 className="mb-2 max-w-[22ch] text-[clamp(18px,2.8vw,28px)] font-medium leading-[1.1] tracking-[-0.035em]">
+              This is everyone else's data.<br />Want to see yours?
+            </h2>
+            <p className="max-w-125 text-[13px] leading-relaxed text-muted">
+              Install AimMod to automatically sync your KovaaK's runs. Get mouse path replays, aim fingerprint
+              analysis, and per-run coaching for your own practice — in real time.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button to="/app" variant="primary">Download AimMod</Button>
+            <Button to="/app">Learn more</Button>
+          </div>
+        </div>
       </PageSection>
     </PageStack>
   );
