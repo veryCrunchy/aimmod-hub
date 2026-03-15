@@ -195,7 +195,7 @@ function ScenarioPlayerLeaders({ page, slug }: { page: GetScenarioPageResponse; 
               <td className="px-4 py-3 text-text">{Math.round(player.averageScore).toLocaleString()}</td>
               <td className="px-4 py-3 text-text">{player.averageAccuracy.toFixed(1)}%</td>
               <td className="px-4 py-3">
-                <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${player.handle}/scenarios/${slug}`}>
+                <Link className="text-cyan underline underline-offset-3 text-[12px]" to={`/profiles/${player.handle}/scenarios/${slug}`}>
                   History
                 </Link>
               </td>
@@ -231,8 +231,8 @@ function ScenarioRecentPulse({ page }: { page: GetScenarioPageResponse }) {
             </div>
             <div className="shrink-0 text-right">
               <div className="text-sm font-medium text-text">{Math.round(run.score).toLocaleString()}</div>
-              <Link className="text-[11px] text-mint underline underline-offset-2" to={`/runs/${run.runId || run.sessionId}`}>
-                Open run
+              <Link className="text-[11px] text-cyan underline underline-offset-2" to={`/runs/${run.runId || run.sessionId}`}>
+                Open
               </Link>
             </div>
           </div>
@@ -467,7 +467,7 @@ export function ScenarioPage() {
                               </Link>
                             </td>
                             <td className="px-4 py-3">
-                              <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
+                              <Link className="text-cyan underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
                                 History
                               </Link>
                             </td>
@@ -531,7 +531,7 @@ export function ScenarioPage() {
                               </Link>
                             </td>
                             <td className="px-4 py-3">
-                              <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
+                              <Link className="text-cyan underline underline-offset-3 text-[12px]" to={`/profiles/${handle}/scenarios/${slug}`}>
                                 History
                               </Link>
                             </td>

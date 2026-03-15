@@ -23,7 +23,7 @@ export function AppShell({ children }: PropsWithChildren) {
     { to: "/replays", label: "Replays", title: "Watch replay videos and mouse paths" },
     { to: "/leaderboard", label: "Leaderboard", title: "All-time records and top 100 scores" },
     ...(isAdmin ? [{ to: "/admin", label: "Admin", title: "Admin panel" }] : []),
-    { to: "/account", label: "Account", title: "Your profile, linked devices, and settings" },
+    { to: "/account", label: "Settings", title: "Linked devices, handle, and account settings" },
   ];
 
   // Keyboard shortcut to focus search
@@ -58,9 +58,15 @@ export function AppShell({ children }: PropsWithChildren) {
 
             {auth.loading ? null : auth.authenticated && auth.user ? (
               <div className="inline-flex min-w-0 items-center gap-2">
-                <Link to="/account" className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-60 md:px-3.5 md:text-[13px]">
-                  {auth.user.displayName || auth.user.username}
+                <Link
+                  to={auth.user.profileHandle ? `/profiles/${auth.user.profileHandle}` : "/account"}
+                  className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-60 md:px-3.5 md:text-[13px]"
+                >
+                  {auth.user.profileDisplayName || auth.user.displayName || auth.user.username}
                 </Link>
+                <Button to="/account" className="shrink-0 max-[500px]:hidden">
+                  Settings
+                </Button>
                 <Button onClick={() => void auth.signOut()} className="shrink-0">
                   Sign out
                 </Button>

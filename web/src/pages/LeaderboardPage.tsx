@@ -187,7 +187,7 @@ export function LeaderboardPage() {
                       </td>
                       <td className="px-4 py-3">
                         <Link
-                          className="text-violet underline underline-offset-3 text-[12px]"
+                          className="text-cyan underline underline-offset-3 text-[12px]"
                           to={`/profiles/${entry.userHandle}/scenarios/${slugifyScenarioName(entry.scenarioName)}`}
                         >
                           History
