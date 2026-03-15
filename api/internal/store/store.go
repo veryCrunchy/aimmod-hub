@@ -179,6 +179,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_replay_media_assets_storage_key
 
 CREATE INDEX IF NOT EXISTS idx_ingest_failures_created_at
   ON ingest_failures(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS kovaaks_user_cache (
+  steam_id TEXT PRIMARY KEY,
+  kovaaks_username TEXT NOT NULL DEFAULT '',
+  steam_display_name TEXT NOT NULL DEFAULT '',
+  avatar_url TEXT NOT NULL DEFAULT '',
+  country TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_username
+  ON kovaaks_user_cache (LOWER(kovaaks_username));
+
+CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_display_name
+  ON kovaaks_user_cache (LOWER(steam_display_name));
 `
 
 const hubUserIdentityViewSQL = `

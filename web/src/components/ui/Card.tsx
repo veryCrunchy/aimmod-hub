@@ -26,7 +26,8 @@ export function Card({ className, children, onMouseMove, onMouseLeave, ...props 
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "relative min-h-0 min-w-0 overflow-hidden rounded-[18px] border border-line bg-panel shadow-panel max-[720px]:rounded-[16px]",
+        "relative min-h-0 min-w-0 rounded-[18px] border border-line bg-panel shadow-panel max-[720px]:rounded-[16px]",
+        !className?.includes("overflow-") && "overflow-hidden",
         className
       )}
     >

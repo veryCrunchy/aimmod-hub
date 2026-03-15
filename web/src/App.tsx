@@ -20,6 +20,9 @@ const RunPage = lazy(() => import("./pages/RunPage").then((m) => ({ default: m.R
 const ScenarioPage = lazy(() => import("./pages/ScenarioPage").then((m) => ({ default: m.ScenarioPage })));
 const AimModPage = lazy(() => import("./pages/AimModPage").then((m) => ({ default: m.AimModPage })));
 const SearchPage = lazy(() => import("./pages/SearchPage").then((m) => ({ default: m.SearchPage })));
+const ExternalProfilePage = lazy(() => import("./pages/ExternalProfilePage").then((m) => ({ default: m.ExternalProfilePage })));
+const ExternalKovaaksPage = lazy(() => import("./pages/ExternalProfilePage").then((m) => ({ default: m.ExternalKovaaksPage })));
+const ExternalBenchmarkPage = lazy(() => import("./pages/ExternalBenchmarkPage").then((m) => ({ default: m.ExternalBenchmarkPage })));
 
 function RouteLoading() {
   return <div className="rounded-[18px] border border-line bg-white/2 px-6 py-10 text-sm text-muted">Loading page...</div>;
@@ -49,6 +52,9 @@ export function App() {
               <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
               <Route path="/scenarios/:slug" element={<ScenarioPage />} />
               <Route path="/runs/:runId" element={<RunPage />} />
+              <Route path="/u/:steamId" element={<ExternalProfilePage />} />
+              <Route path="/u/:steamId/benchmarks/:benchmarkId" element={<ExternalBenchmarkPage />} />
+              <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

@@ -3,6 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type BenchmarkUserIdentity struct {
@@ -105,4 +108,70 @@ func (s *Store) GetBenchmarkIdentityByHandle(ctx context.Context, handle string)
 		result.KovaaksUsername = resolvedUser.UserHandle
 	}
 	return result, nil
+}
+
+// GetBenchmarkIdentityByKovaaksUsername returns the BenchmarkUserIdentity for the hub user
+// whose KovaaK's linked account username or display name matches the given value.
+// Returns nil, nil if no such user exists.
+func (s *Store) GetBenchmarkIdentityByKovaaksUsername(ctx context.Context, username string) (*BenchmarkUserIdentity, error) {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return nil, nil
+	}
+	row := s.pool.QueryRow(ctx, `
+		SELECT
+			hui.user_handle,
+			hui.user_display_name,
+			COALESCE(steam.avatar_url, hui.avatar_url, '') AS avatar_url,
+			COALESCE(NULLIF(TRIM(steam.provider_account_id), ''), '') AS steam_id,
+			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, hui.user_handle) AS kovaaks_username
+		FROM hub_user_identity hui
+		LEFT JOIN linked_accounts steam
+			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
+		JOIN linked_accounts kovaaks
+			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks'
+		WHERE LOWER(TRIM(kovaaks.username)) = LOWER($1)
+		   OR LOWER(TRIM(kovaaks.display_name)) = LOWER($1)
+		LIMIT 1
+	`, username)
+	var r BenchmarkUserIdentity
+	if err := row.Scan(&r.UserHandle, &r.DisplayName, &r.AvatarURL, &r.SteamID, &r.KovaaksUsername); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get benchmark identity by kovaaks username: %w", err)
+	}
+	return &r, nil
+}
+
+// GetBenchmarkIdentityBySteamId returns the BenchmarkUserIdentity for the hub user
+// who has linked the given Steam ID. Returns nil, nil if no AimMod user has that Steam ID.
+func (s *Store) GetBenchmarkIdentityBySteamId(ctx context.Context, steamId string) (*BenchmarkUserIdentity, error) {
+	steamId = strings.TrimSpace(steamId)
+	if steamId == "" {
+		return nil, nil
+	}
+	row := s.pool.QueryRow(ctx, `
+		SELECT
+			hui.user_handle,
+			hui.user_display_name,
+			COALESCE(steam.avatar_url, hui.avatar_url, '') AS avatar_url,
+			steam.provider_account_id AS steam_id,
+			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, hui.user_handle) AS kovaaks_username
+		FROM hub_user_identity hui
+		JOIN linked_accounts steam
+			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
+		LEFT JOIN linked_accounts kovaaks
+			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks'
+		WHERE TRIM(steam.provider_account_id) = $1
+		LIMIT 1
+	`, steamId)
+	var r BenchmarkUserIdentity
+	if err := row.Scan(&r.UserHandle, &r.DisplayName, &r.AvatarURL, &r.SteamID, &r.KovaaksUsername); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get benchmark identity by steam id: %w", err)
+	}
+	return &r, nil
 }

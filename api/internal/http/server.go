@@ -112,6 +112,9 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		}
 		_ = json.NewEncoder(w).Encode(result)
 	})))
+	externalHandler := newExternalHandler(hub)
+	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))
+	mux.Handle("/api/lookup/", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))

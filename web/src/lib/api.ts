@@ -615,6 +615,128 @@ export async function fetchAdminUserDetail(handle: string, days: number): Promis
   };
 }
 
+// ---- Player search (fuzzy, across AimMod + KovaaK's) ----
+
+export type PlayerSearchResult = {
+  /** "aimmod" = has an AimMod Hub profile; "kovaaks" = KovaaK's-only player */
+  type: "aimmod" | "kovaaks";
+  steamId: string;
+  /** AimMod profile handle — only set for type "aimmod" */
+  handle: string;
+  displayName: string;
+  username: string;
+  avatarUrl: string;
+  country: string;
+  runCount: number;
+};
+
+export async function searchPlayers(query: string): Promise<PlayerSearchResult[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/lookup/search?q=${encodeURIComponent(query.trim())}`,
+  );
+  if (!response.ok) return [];
+  const data = (await response.json()) as { players?: PlayerSearchResult[] };
+  return data.players ?? [];
+}
+
+// ---- External (Steam ID) lookup ----
+
+export type ExternalBenchmarkSummary = {
+  benchmarkId: number;
+  benchmarkName: string;
+  benchmarkIconUrl: string;
+  benchmarkAuthor: string;
+  benchmarkType: string;
+  overallRankName: string;
+  overallRankIcon: string;
+  overallRankColor: string;
+};
+
+export type ExternalProfileResponse = {
+  /** Canonical Steam64 ID — may be empty for KovaaK's-username-only lookups. */
+  resolvedSteamId: string;
+  kovaaksUsername: string;
+  isAimmodUser: boolean;
+  aimmodHandle: string;
+  aimmodDisplayName: string;
+  benchmarks: ExternalBenchmarkSummary[];
+};
+
+export type ExternalRankVisual = {
+  rankIndex: number;
+  rankName: string;
+  iconUrl: string;
+  color: string;
+  frameUrl: string;
+};
+
+export type ExternalThreshold = {
+  rankIndex: number;
+  rankName: string;
+  iconUrl: string;
+  color: string;
+  score: number;
+};
+
+export type ExternalScenarioPage = {
+  scenarioName: string;
+  score: number;
+  leaderboardRank: number;
+  leaderboardId: number;
+  rankIndex: number;
+  rankName: string;
+  rankIconUrl: string;
+  rankColor: string;
+  thresholds: ExternalThreshold[];
+};
+
+export type ExternalCategoryPage = {
+  categoryName: string;
+  categoryRank: number;
+  scenarios: ExternalScenarioPage[];
+};
+
+export type ExternalBenchmarkPageResponse = {
+  steamId: string;
+  kovaaksUsername: string;
+  isAimmodUser: boolean;
+  aimmodHandle: string;
+  benchmarkId: number;
+  benchmarkName: string;
+  benchmarkIconUrl: string;
+  overallRankIndex: number;
+  overallRankName: string;
+  overallRankIcon: string;
+  overallRankColor: string;
+  ranks: ExternalRankVisual[];
+  categories: ExternalCategoryPage[];
+};
+
+export async function lookupExternalUser(query: string): Promise<ExternalProfileResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/lookup?q=${encodeURIComponent(query.trim())}`,
+  );
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? `Lookup failed (${response.status})`);
+  }
+  return response.json() as Promise<ExternalProfileResponse>;
+}
+
+export async function fetchExternalBenchmarkPage(
+  steamId: string,
+  benchmarkId: number,
+): Promise<ExternalBenchmarkPageResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/lookup/benchmark?q=${encodeURIComponent(steamId.trim())}&benchmarkId=${benchmarkId}`,
+  );
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? `Benchmark lookup failed (${response.status})`);
+  }
+  return response.json() as Promise<ExternalBenchmarkPageResponse>;
+}
+
 export async function runAdminReclassifyUser(handle: string): Promise<{ ok: boolean; updated: number }> {
   const response = await fetch(`${API_BASE_URL}/admin/actions/reclassify-user?handle=${encodeURIComponent(handle)}`, {
     method: "POST",

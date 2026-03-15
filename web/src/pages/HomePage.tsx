@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, NavLink } from "react-router-dom";
+import { PlayerLookup } from "../components/PlayerLookup";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
@@ -40,6 +41,7 @@ function AnimatedStatCard({
     />
   );
 }
+
 
 export function HomePage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
@@ -129,6 +131,18 @@ export function HomePage() {
           accent="gold"
         />
       </Grid>
+
+      <PageSection className="overflow-visible">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <div className="shrink-0">
+            <div className="text-[11px] uppercase tracking-widest text-muted/60">KovaaK's lookup</div>
+            <div className="mt-0.5 text-[13px] text-text">Find any player</div>
+          </div>
+          <div className="flex-1">
+            <PlayerLookup />
+          </div>
+        </div>
+      </PageSection>
 
       <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
         <Link

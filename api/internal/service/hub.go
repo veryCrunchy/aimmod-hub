@@ -36,6 +36,10 @@ func (s *HubServer) Store() *store.Store {
 	return s.store
 }
 
+func (s *HubServer) Benchmarks() *kovaaksbenchmarks.Client {
+	return s.benchmarks
+}
+
 func (s *HubServer) GetHealth(
 	context.Context,
 	*connect.Request[hubv1.HealthRequest],
