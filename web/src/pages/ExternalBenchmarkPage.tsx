@@ -38,8 +38,15 @@ type TierColumn = {
   key: string;
   label: string;
   color: string;
+  iconUrl: string;
   thresholds: ExternalThreshold[];
 };
+
+function fmtScore(n: number): string {
+  if (n >= 10_000) return `${Math.round(n / 1000)}k`;
+  if (n >= 1_000)  return `${(n / 1000).toFixed(1)}k`;
+  return String(Math.round(n));
+}
 
 function deriveTierColumns(thresholds: ExternalThreshold[]): TierColumn[] {
   if (thresholds.length === 0) return [];
@@ -55,6 +62,7 @@ function deriveTierColumns(thresholds: ExternalThreshold[]): TierColumn[] {
       key,
       label: shortName(sorted[0].rankName),
       color: sorted[0].color?.trim() || "#a7c2b3",
+      iconUrl: sorted[sorted.length - 1].iconUrl ?? "",
       thresholds: sorted,
     };
   });
@@ -64,36 +72,40 @@ function deriveTierColumns(thresholds: ExternalThreshold[]): TierColumn[] {
 
 // ─── tier bar ─────────────────────────────────────────────────────────────────
 
-function TierBar({ col, score }: { col: TierColumn; score: number }) {
-  const ts = col.thresholds;
-  const maxT = ts[ts.length - 1];
+function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: number; startScore?: number }) {
+  const ts = col.thresholds; // sorted ascending
   const color = col.color;
-  const highestMet = [...ts].reverse().find((t) => score >= t.score) ?? null;
-  const target = highestMet ? maxT : ts[0];
-  const pct = Math.min(100, ((score - 0) / (target.score - 0 || 1)) * 100);
-  const fullyComplete = score >= maxT.score;
-  const anyMet = highestMet !== null;
-  const fill = fullyComplete
-    ? color
-    : anyMet
-      ? `linear-gradient(90deg, ${color}, ${color}88)`
-      : `${color}44`;
 
   return (
-    <div className="relative h-5 rounded-sm overflow-hidden bg-black/20 min-w-16">
-      <div
-        className="absolute inset-y-0 left-0 rounded-sm"
-        style={{ width: `${Math.max(0, pct)}%`, background: fill }}
-      />
-      <div
-        className="absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums z-10"
-        style={{
-          color: anyMet ? "rgba(0,0,0,0.75)" : `${color}cc`,
-          mixBlendMode: anyMet ? "multiply" : "normal",
-        }}
-      >
-        {Math.round(maxT.score).toLocaleString()}
-      </div>
+    <div className="flex h-5 min-w-16 overflow-hidden rounded-sm bg-black/20">
+      {ts.map((t, i) => {
+        const prevScore = i === 0 ? startScore : ts[i - 1].score;
+        const met = score >= t.score;
+        const inProgress = !met && score > prevScore;
+        const pct = inProgress
+          ? Math.min(100, ((score - prevScore) / ((t.score - prevScore) || 1)) * 100)
+          : met ? 100 : 0;
+        const textColor = met ? "rgba(0,0,0,0.7)" : `${color}bb`;
+
+        return (
+          <div
+            key={t.rankIndex}
+            className="relative flex-1 overflow-hidden"
+            style={{ borderLeft: i > 0 ? "1px solid rgba(0,0,0,0.35)" : undefined }}
+          >
+            <div
+              className="absolute inset-y-0 left-0"
+              style={{ width: `${pct}%`, background: met ? color : `${color}55` }}
+            />
+            <div
+              className="absolute inset-0 flex items-center justify-center text-[9px] font-medium tabular-nums z-10 leading-none"
+              style={{ color: textColor, mixBlendMode: met ? "multiply" : "normal" }}
+            >
+              {fmtScore(t.score)}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -142,6 +154,11 @@ function CategoryRows({
         const colThresholds = tierCols.map((col) => {
           const ts = scenarioByColor.get(col.key);
           return ts ? [...ts].sort((a, b) => a.rankIndex - b.rankIndex) : null;
+        });
+        const colStartScores = tierCols.map((_, ci) => {
+          if (ci === 0) return 0;
+          const prevTs = colThresholds[ci - 1];
+          return prevTs ? prevTs[prevTs.length - 1].score : Infinity;
         });
         const maxTierThreshold =
           tierCols.length > 0 ? colThresholds[tierCols.length - 1] : null;
@@ -229,7 +246,7 @@ function CategoryRows({
               }
               return (
                 <td key={col.key} className="px-1.5 py-2">
-                  <TierBar col={{ ...col, thresholds: ts }} score={scenario.score} />
+                  <TierBar col={{ ...col, thresholds: ts }} score={scenario.score} startScore={colStartScores[ci]} />
                 </td>
               );
             })}
@@ -445,10 +462,19 @@ export function ExternalBenchmarkPage() {
                   {tierCols.map((col) => (
                     <th
                       key={col.key}
-                      className="px-1.5 py-2 text-[9px] uppercase tracking-widest font-normal text-center"
+                      className="px-1.5 py-1.5 font-normal text-center"
                       style={{ color: `${col.color}cc` }}
                     >
-                      {col.label}
+                      <div className="flex flex-col items-center gap-0.5">
+                        {col.iconUrl && (
+                          <img
+                            src={col.iconUrl}
+                            alt=""
+                            className="h-4 w-4 rounded-sm border border-white/10 object-cover"
+                          />
+                        )}
+                        <span className="text-[8px] uppercase tracking-widest leading-none">{col.label}</span>
+                      </div>
                     </th>
                   ))}
                   <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">

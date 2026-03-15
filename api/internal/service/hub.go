@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -520,64 +521,113 @@ func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkL
 		return nil, err
 	}
 
-	type fetchResult struct {
-		items []kovaaksbenchmarks.ProfileBenchmarkSummary
+	// Phase 1: collect the set of benchmarks each user participates in via the
+	// cheap list endpoint (one call per user, paginated).
+	type listResult struct {
+		steamID string
+		items   []kovaaksbenchmarks.ProfileBenchmarkSummary
 	}
-	results := make(chan fetchResult, len(users))
+	listCh := make(chan listResult, len(users))
 	sem := make(chan struct{}, 8)
 	var wg sync.WaitGroup
 	for _, u := range users {
 		wg.Add(1)
-		go func(username string) {
+		go func(u store.BenchmarkUserIdentity) {
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			items, _ := s.benchmarks.ListPlayerBenchmarks(ctx, username)
-			results <- fetchResult{items}
-		}(u.KovaaksUsername)
+			items, _ := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
+			listCh <- listResult{steamID: u.SteamID, items: items}
+		}(u)
 	}
-	go func() { wg.Wait(); close(results) }()
+	go func() { wg.Wait(); close(listCh) }()
 
-	type agg struct {
-		summary kovaaksbenchmarks.ProfileBenchmarkSummary
-		count   uint32
+	type aggEntry struct {
+		summary  kovaaksbenchmarks.ProfileBenchmarkSummary
+		steamIDs []string
 	}
-	byID := map[uint32]*agg{}
-	for r := range results {
+	byID := map[uint32]*aggEntry{}
+	for r := range listCh {
 		for _, b := range r.items {
 			if b.BenchmarkID == 0 {
 				continue
 			}
 			if e, ok := byID[b.BenchmarkID]; ok {
-				e.count++
+				e.steamIDs = append(e.steamIDs, r.steamID)
 			} else {
-				byID[b.BenchmarkID] = &agg{summary: b, count: 1}
+				byID[b.BenchmarkID] = &aggEntry{summary: b, steamIDs: []string{r.steamID}}
 			}
 		}
 	}
 
+	// Phase 2: verify each (benchmarkID, steamID) pair via GetBenchmarkDetail so
+	// that the displayed count matches exactly what the leaderboard will show.
+	type verifyWork struct {
+		benchmarkID uint32
+		steamID     string
+	}
+	type verifyResult struct {
+		benchmarkID uint32
+		counted     bool
+	}
+	var pairs []verifyWork
+	for id, e := range byID {
+		for _, sid := range e.steamIDs {
+			pairs = append(pairs, verifyWork{benchmarkID: id, steamID: sid})
+		}
+	}
+	verifyCh := make(chan verifyResult, len(pairs))
+	var wg2 sync.WaitGroup
+	for _, p := range pairs {
+		wg2.Add(1)
+		go func(p verifyWork) {
+			defer wg2.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, p.benchmarkID, p.steamID)
+			if err != nil || detail == nil || detail.OverallRank == 0 {
+				verifyCh <- verifyResult{benchmarkID: p.benchmarkID, counted: false}
+				return
+			}
+			rv := kovaaksbenchmarks.RankVisualFromDetail(detail, detail.OverallRank)
+			rankName := strings.TrimSpace(rv.RankName)
+			verifyCh <- verifyResult{
+				benchmarkID: p.benchmarkID,
+				counted:     rankName != "" && !strings.EqualFold(rankName, "No Rank"),
+			}
+		}(p)
+	}
+	go func() { wg2.Wait(); close(verifyCh) }()
+
+	counts := map[uint32]uint32{}
+	for r := range verifyCh {
+		if r.counted {
+			counts[r.benchmarkID]++
+		}
+	}
+
 	out := make([]*hubv1.BenchmarkListItem, 0, len(byID))
-	for _, e := range byID {
+	for id, e := range byID {
+		c := counts[id]
+		if c == 0 {
+			continue // skip benchmarks with no verified ranked players
+		}
 		out = append(out, &hubv1.BenchmarkListItem{
 			BenchmarkId:      e.summary.BenchmarkID,
 			BenchmarkName:    e.summary.BenchmarkName,
 			BenchmarkIconUrl: e.summary.BenchmarkIconURL,
 			BenchmarkAuthor:  e.summary.BenchmarkAuthor,
 			BenchmarkType:    e.summary.BenchmarkType,
-			PlayerCount:      e.count,
+			PlayerCount:      c,
 		})
 	}
 	// Sort by player count desc, then name asc.
-	for i := 1; i < len(out); i++ {
-		for j := i; j > 0; j-- {
-			a, b := out[j-1], out[j]
-			if a.PlayerCount < b.PlayerCount || (a.PlayerCount == b.PlayerCount && a.BenchmarkName > b.BenchmarkName) {
-				out[j-1], out[j] = out[j], out[j-1]
-			} else {
-				break
-			}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].PlayerCount != out[j].PlayerCount {
+			return out[i].PlayerCount > out[j].PlayerCount
 		}
-	}
+		return out[i].BenchmarkName < out[j].BenchmarkName
+	})
 	return out, nil
 }
 

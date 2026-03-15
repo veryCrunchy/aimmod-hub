@@ -60,85 +60,83 @@ type TierColumn = {
   key: string;               // unique key (color or rankIndex fallback)
   label: string;             // e.g. "Bronze"
   color: string;             // CSS color
+  iconUrl: string;           // highest sub-tier icon
   thresholds: BenchmarkThreshold[]; // sorted ascending by score
 };
 
+function fmtScore(n: number): string {
+  if (n >= 100_000) return `${Math.round(n / 1000)}k`;
+  if (n >= 10_000)  return `${Math.round(n / 1000)}k`;
+  if (n >= 1_000)   return `${(n / 1000).toFixed(1)}k`;
+  return String(Math.round(n));
+}
+
+// Group thresholds by color so Bronze I/II/III collapse into one "Bronze" column.
 function deriveTierColumns(thresholds: BenchmarkThreshold[]): TierColumn[] {
   if (thresholds.length === 0) return [];
-
-  // Group by color
   const byColor = new Map<string, BenchmarkThreshold[]>();
   for (const t of thresholds) {
     const key = t.color?.trim() || `__idx_${t.rankIndex}`;
     if (!byColor.has(key)) byColor.set(key, []);
     byColor.get(key)!.push(t);
   }
-
-  // Build columns sorted by the lowest rankIndex within each group
   const columns: TierColumn[] = [...byColor.entries()].map(([key, ts]) => {
     const sorted = [...ts].sort((a, b) => a.rankIndex - b.rankIndex);
     return {
       key,
       label: shortName(sorted[0].rankName),
       color: tierColor(sorted[0].color),
+      iconUrl: sorted[sorted.length - 1].iconUrl ?? "",
       thresholds: sorted,
     };
   });
-
   columns.sort((a, b) => a.thresholds[0].rankIndex - b.thresholds[0].rankIndex);
   return columns;
 }
 
 // ─── tier bar cell ────────────────────────────────────────────────────────────
 //
-// Shows a single horizontal bar for one tier column:
-// - If the highest sub-tier in the group is met → full bar, solid color, score label
-// - If any sub-tier is met → partially met, show highest met / highest total
-// - If none met → show progress toward the first sub-tier
+// Segmented bar — one segment per sub-tier (e.g. Bronze I / II / III).
+// Segments are equal-width, separated by a hairline divider.
+// A segment is fully filled when its threshold is met; partially filled while
+// in progress; empty when not yet reached.
 
-function TierBar({
-  col,
-  score,
-}: {
-  col: TierColumn;
-  score: number;
-}) {
-  const ts = col.thresholds; // already sorted ascending
-  const maxT = ts[ts.length - 1];
+function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: number; startScore?: number }) {
+  const ts = col.thresholds; // sorted ascending
   const color = col.color;
 
-  // Highest threshold in this group that the user has met
-  const highestMet = [...ts].reverse().find((t) => score >= t.score) ?? null;
-  // If none met, progress bar goes from 0 → first threshold
-  const target = highestMet ? maxT : ts[0];
-  const from = 0;
-  const pct = Math.min(100, ((score - from) / (target.score - from || 1)) * 100);
-  const fullyComplete = score >= maxT.score;
-  const anyMet = highestMet !== null;
-
-  const fill = fullyComplete
-    ? color
-    : anyMet
-      ? `linear-gradient(90deg, ${color}, ${color}88)`
-      : `${color}44`;
-
   return (
-    <div className="relative h-5 rounded-sm overflow-hidden bg-black/20 min-w-16">
-      {/* fill bar */}
-      <div
-        className="absolute inset-y-0 left-0 rounded-sm"
-        style={{ width: `${Math.max(0, pct)}%`, background: fill }}
-      />
-      {/* cutoff label centered */}
-      <div
-        className="absolute inset-0 flex items-center justify-center text-[10px] font-medium tabular-nums z-10"
-        style={{
-          color: anyMet ? "rgba(0,0,0,0.75)" : `${color}cc`,
-          mixBlendMode: anyMet ? "multiply" : "normal",
-        }}
-      >
-        {Math.round(maxT.score).toLocaleString()}
-      </div>
+    <div className="flex h-5 min-w-16 overflow-hidden rounded-sm bg-black/20">
+      {ts.map((t, i) => {
+        // For the first segment, use startScore (the previous column's max) as the
+        // baseline so players don't show "in progress" on tiers they haven't reached.
+        const prevScore = i === 0 ? startScore : ts[i - 1].score;
+        const met = score >= t.score;
+        const inProgress = !met && score > prevScore;
+        const pct = inProgress
+          ? Math.min(100, ((score - prevScore) / ((t.score - prevScore) || 1)) * 100)
+          : met ? 100 : 0;
+        const textColor = met ? "rgba(0,0,0,0.7)" : `${color}bb`;
+
+        return (
+          <div
+            key={t.rankIndex}
+            className="relative flex-1 overflow-hidden"
+            style={{ borderLeft: i > 0 ? "1px solid rgba(0,0,0,0.35)" : undefined }}
+          >
+            <div
+              className="absolute inset-y-0 left-0"
+              style={{ width: `${pct}%`, background: met ? color : `${color}55` }}
+            />
+            <div
+              className="absolute inset-0 flex items-center justify-center text-[9px] font-medium tabular-nums z-10 leading-none"
+              style={{ color: textColor, mixBlendMode: met ? "multiply" : "normal" }}
+            >
+              {fmtScore(t.score)}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -172,17 +170,24 @@ function CategoryRows({
   return (
     <>
       {category.scenarios.map((scenario, i) => {
-        // Build a map from tier column key → matching thresholds for THIS scenario
+        // Build a map from color-key → thresholds for THIS scenario
         const scenarioByColor = new Map<string, BenchmarkThreshold[]>();
         for (const t of scenario.thresholds) {
           const key = t.color?.trim() || `__idx_${t.rankIndex}`;
           if (!scenarioByColor.has(key)) scenarioByColor.set(key, []);
           scenarioByColor.get(key)!.push(t);
         }
-        // For each global tier column, find the scenario-specific thresholds
         const colThresholds = tierCols.map((col) => {
           const ts = scenarioByColor.get(col.key);
           return ts ? [...ts].sort((a, b) => a.rankIndex - b.rankIndex) : null;
+        });
+        // startScore for each column = max threshold of the previous column in this scenario.
+        // If the previous column has no data, use Infinity so the first segment never
+        // shows "in progress" for tiers the player hasn't earned their way into.
+        const colStartScores = tierCols.map((_, ci) => {
+          if (ci === 0) return 0;
+          const prevTs = colThresholds[ci - 1];
+          return prevTs ? prevTs[prevTs.length - 1].score : Infinity;
         });
 
         // % of gold (last tier's highest threshold)
@@ -269,7 +274,7 @@ function CategoryRows({
               }
               return (
                 <td key={col.key} className="px-1.5 py-2">
-                  <TierBar col={{ ...col, thresholds: ts }} score={scenario.score} />
+                  <TierBar col={{ ...col, thresholds: ts }} score={scenario.score} startScore={colStartScores[ci]} />
                 </td>
               );
             })}
@@ -434,10 +439,19 @@ export function BenchmarkPage() {
                 {tierCols.map((col) => (
                   <th
                     key={col.key}
-                    className="px-1.5 py-2 text-[9px] uppercase tracking-widest font-normal text-center"
+                    className="px-1.5 py-1.5 font-normal text-center"
                     style={{ color: `${col.color}cc` }}
                   >
-                    {col.label}
+                    <div className="flex flex-col items-center gap-0.5">
+                      {col.iconUrl && (
+                        <img
+                          src={col.iconUrl}
+                          alt=""
+                          className="h-4 w-4 rounded-sm border border-white/10 object-cover"
+                        />
+                      )}
+                      <span className="text-[8px] uppercase tracking-widest leading-none">{col.label}</span>
+                    </div>
                   </th>
                 ))}
                 <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">
