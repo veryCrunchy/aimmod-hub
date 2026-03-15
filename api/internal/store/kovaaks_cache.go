@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type KovaaksUserCacheEntry struct {
@@ -40,6 +42,27 @@ func (s *Store) UpsertKovaaksUsers(ctx context.Context, users []KovaaksUserCache
 		}
 	}
 	return nil
+}
+
+// GetKovaaksUserBySteamId looks up a single cached KovaaK's player by their
+// Steam64 ID. Returns nil (no error) when the Steam ID is not in the cache.
+func (s *Store) GetKovaaksUserBySteamId(ctx context.Context, steamId string) (*KovaaksUserCacheEntry, error) {
+	if steamId == "" {
+		return nil, nil
+	}
+	var e KovaaksUserCacheEntry
+	err := s.pool.QueryRow(ctx, `
+		SELECT steam_id, kovaaks_username, steam_display_name, avatar_url, country
+		FROM kovaaks_user_cache
+		WHERE steam_id = $1
+	`, steamId).Scan(&e.SteamID, &e.Username, &e.DisplayName, &e.AvatarURL, &e.Country)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get kovaaks user by steam id: %w", err)
+	}
+	return &e, nil
 }
 
 // SearchKovaaksUserCache returns cached KovaaK's players whose username or

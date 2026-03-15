@@ -430,7 +430,16 @@ func resolveFullIdentity(
 	steam64 = steamResolved.Steam64
 	kovaaksUsername = steamResolved.KovaaksUsername
 
-	// Step 2 — AimMod DB lookups
+	// Step 2 — If we have a Steam64 but the KovaaK's username came from the
+	// Steam XML persona name (which may differ from the real KovaaK's username),
+	// prefer the verified username from the kovaaks_user_cache table.
+	if steam64 != "" {
+		if cached, cErr := hub.Store().GetKovaaksUserBySteamId(ctx, steam64); cErr == nil && cached != nil && cached.Username != "" {
+			kovaaksUsername = cached.Username
+		}
+	}
+
+	// Step 3 — AimMod DB lookups
 	var dbIdentity *store.BenchmarkUserIdentity
 
 	if steam64 != "" {
