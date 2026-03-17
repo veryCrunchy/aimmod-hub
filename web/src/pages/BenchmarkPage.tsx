@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+} from "recharts";
 import type { BenchmarkCategoryPage, BenchmarkScenarioEntry, BenchmarkSummary, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -28,9 +33,7 @@ function visibleCategories(categories: BenchmarkCategoryPage[]): BenchmarkCatego
     .map((c) => ({
       categoryName: c.categoryName,
       categoryRank: c.categoryRank,
-      scenarios: c.scenarios.filter(
-        (s) => s.scenarioRank && hasRank(s.scenarioRank.rankName),
-      ),
+      scenarios: c.scenarios,
     }))
     .filter((c) => c.scenarios.length > 0);
 }
@@ -370,6 +373,223 @@ function CategoryRows({
   );
 }
 
+// ─── chart helpers ────────────────────────────────────────────────────────────
+
+function maxRankIndexFromCols(tierCols: TierColumn[]): number {
+  if (tierCols.length === 0) return 1;
+  return Math.max(...tierCols.flatMap((col) => col.thresholds.map((t) => t.rankIndex)));
+}
+
+function scenarioTierCol(scenario: BenchmarkScenarioEntry, tierCols: TierColumn[]): TierColumn | undefined {
+  return tierCols.find((col) =>
+    col.thresholds.some((t) => t.rankIndex === scenario.scenarioRank?.rankIndex),
+  );
+}
+
+function buildRadarData(
+  categories: BenchmarkCategoryViewModel[],
+  tierCols: TierColumn[],
+): { subject: string; value: number; fullMark: number }[] {
+  const maxIdx = maxRankIndexFromCols(tierCols);
+  return categories.map((cat) => {
+    const { sub, parent } = parseCatName(cat.categoryName);
+    const ranked = cat.scenarios.filter(
+      (s) => hasRank(s.scenarioRank?.rankName) && (s.scenarioRank?.rankIndex ?? 0) > 0,
+    );
+    const value =
+      ranked.length === 0
+        ? 0
+        : Math.round(
+            (ranked.reduce((sum, s) => sum + (s.scenarioRank?.rankIndex ?? 0), 0) /
+              ranked.length /
+              maxIdx) *
+              100,
+          );
+    return { subject: sub ?? parent, value, fullMark: 100 };
+  });
+}
+
+function buildRankDistData(
+  categories: BenchmarkCategoryViewModel[],
+  tierCols: TierColumn[],
+): { name: string; value: number; color: string; rankIndex: number }[] {
+  const counts = new Map<string, { count: number; color: string; rankIndex: number }>();
+  for (const cat of categories) {
+    for (const s of cat.scenarios) {
+      if (!hasRank(s.scenarioRank?.rankName) || (s.scenarioRank?.rankIndex ?? 0) === 0) continue;
+      const col = scenarioTierCol(s, tierCols);
+      const label = col?.label ?? shortName(s.scenarioRank?.rankName) ?? "?";
+      if (!counts.has(label)) {
+        counts.set(label, { count: 0, color: col?.color ?? "#808080", rankIndex: col?.thresholds[0].rankIndex ?? 0 });
+      }
+      counts.get(label)!.count++;
+    }
+  }
+  return [...counts.entries()]
+    .map(([name, { count, color, rankIndex }]) => ({ name, value: count, color, rankIndex }))
+    .sort((a, b) => a.rankIndex - b.rankIndex);
+}
+
+function buildScenarioPerfData(
+  categories: BenchmarkCategoryViewModel[],
+  tierCols: TierColumn[],
+): { name: string; value: number; color: string }[] {
+  const pts: { name: string; value: number; color: string }[] = [];
+  for (const cat of categories) {
+    for (const s of cat.scenarios) {
+      if (!hasRank(s.scenarioRank?.rankName) || (s.scenarioRank?.rankIndex ?? 0) === 0) continue;
+      const col = scenarioTierCol(s, tierCols);
+      const name = s.scenarioName
+        .replace(/^VT\s+/i, "")
+        .replace(/\s+S\d+$/i, "")
+        .replace(/\s+(Novice|Intermediate|Advanced|Expert)$/i, "")
+        .trim();
+      pts.push({ name, value: s.scenarioRank?.rankIndex ?? 0, color: col?.color ?? "#808080" });
+    }
+  }
+  return pts;
+}
+
+// ─── chart components ─────────────────────────────────────────────────────────
+
+const CHART_TOOLTIP_STYLE = {
+  background: "#151e1b",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: 8,
+  fontSize: 11,
+  color: "#a7c2b3",
+};
+
+function BenchmarkCharts({
+  categories,
+  tierCols,
+}: {
+  categories: BenchmarkCategoryViewModel[];
+  tierCols: TierColumn[];
+}) {
+  const radarData = useMemo(() => buildRadarData(categories, tierCols), [categories, tierCols]);
+  const rankDistData = useMemo(() => buildRankDistData(categories, tierCols), [categories, tierCols]);
+  const scenarioPerfData = useMemo(() => buildScenarioPerfData(categories, tierCols), [categories, tierCols]);
+  const maxIdx = useMemo(() => maxRankIndexFromCols(tierCols), [tierCols]);
+  const totalRanked = rankDistData.reduce((sum, d) => sum + d.value, 0);
+
+  if (tierCols.length === 0 || categories.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Radar chart */}
+      <Card className="p-4">
+        <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Radar Chart</p>
+        <p className="mb-4 text-[11px] text-muted/40">Average rank index per subcategory</p>
+        <ResponsiveContainer width="100%" height={300}>
+          <RadarChart data={radarData} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
+            <PolarGrid stroke="rgba(255,255,255,0.07)" />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fill: "rgba(167,194,179,0.65)", fontSize: 10 }}
+            />
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+              dataKey="value"
+              stroke="#38c8c0"
+              fill="#38c8c0"
+              fillOpacity={0.15}
+              strokeWidth={1.5}
+            />
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              formatter={(v: unknown) => [`${v}%`, "Performance"]}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* Rank distribution + scenario performance */}
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4">
+        {/* Donut */}
+        <Card className="p-4 flex flex-col">
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Rank Distribution</p>
+          <p className="mb-3 text-[11px] text-muted/40">Scenarios per tier</p>
+          <div className="relative mx-auto">
+            <PieChart width={180} height={180}>
+              <Pie
+                data={rankDistData}
+                cx={90}
+                cy={90}
+                innerRadius={52}
+                outerRadius={76}
+                paddingAngle={rankDistData.length > 1 ? 2 : 0}
+                dataKey="value"
+                strokeWidth={0}
+              >
+                {rankDistData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={(v: unknown, name: unknown) => {
+                  const count = Number(v);
+                  return [`${count} scenario${count !== 1 ? "s" : ""}`, String(name)];
+                }}
+              />
+            </PieChart>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-xl font-medium text-text tabular-nums">{totalRanked}</span>
+              <span className="text-[9px] uppercase tracking-widest text-muted/40">ranked</span>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-col gap-1.5">
+            {rankDistData.map((d) => (
+              <div key={d.name} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 shrink-0 rounded-sm" style={{ background: d.color }} />
+                  <span className="text-[11px] text-text/70">{d.name}</span>
+                </div>
+                <span className="text-[11px] text-muted/50 tabular-nums">{d.value}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Horizontal bar — scenario performance */}
+        <Card className="p-4">
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Rank Performance</p>
+          <p className="mb-4 text-[11px] text-muted/40">Per-scenario rank index</p>
+          <ResponsiveContainer width="100%" height={Math.max(200, scenarioPerfData.length * 28)}>
+            <BarChart
+              data={scenarioPerfData}
+              layout="vertical"
+              margin={{ top: 0, right: 12, bottom: 0, left: 4 }}
+              barSize={14}
+            >
+              <XAxis type="number" domain={[0, maxIdx]} tick={false} axisLine={false} tickLine={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={130}
+                tick={{ fill: "rgba(167,194,179,0.6)", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={(v: unknown, name: unknown) => [`Rank index: ${v}`, String(name)]}
+                cursor={{ fill: "rgba(255,255,255,0.03)" }}
+              />
+              <Bar dataKey="value" radius={[0, 3, 3, 0]} background={{ fill: "rgba(255,255,255,0.03)", radius: 3 }}>
+                {scenarioPerfData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} fillOpacity={0.85} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export function BenchmarkPage() {
@@ -535,6 +755,7 @@ export function BenchmarkPage() {
             })}
           </div>
         )}
+
       </Card>
 
       {/* table */}
@@ -594,6 +815,9 @@ export function BenchmarkPage() {
           </table>
         </div>
       </Card>
+
+      {/* charts */}
+      <BenchmarkCharts categories={categories} tierCols={tierCols} />
     </PageStack>
   );
 }

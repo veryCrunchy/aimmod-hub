@@ -477,7 +477,7 @@ func (s *HubServer) GetBenchmarkPage(
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark not found for this player"))
 	}
 
-	detail, categories, err := s.benchmarks.BuildBenchmarkPage(ctx, *summary, identity.SteamID)
+	detail, categories, err := s.benchmarks.BuildFullBenchmarkPage(ctx, *summary, identity.SteamID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
