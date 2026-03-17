@@ -21,6 +21,7 @@ type HubServer struct {
 	version    string
 	store      *store.Store
 	benchmarks *kovaaksbenchmarks.Client
+	events     *EventBroker
 }
 
 const optionalBenchmarkTimeout = 1500 * time.Millisecond
@@ -30,6 +31,7 @@ func NewHubServer(version string, store *store.Store) *HubServer {
 		version:    version,
 		store:      store,
 		benchmarks: kovaaksbenchmarks.NewClient(),
+		events:     NewEventBroker(),
 	}
 }
 
@@ -39,6 +41,10 @@ func (s *HubServer) Store() *store.Store {
 
 func (s *HubServer) Benchmarks() *kovaaksbenchmarks.Client {
 	return s.benchmarks
+}
+
+func (s *HubServer) Events() *EventBroker {
+	return s.events
 }
 
 func (s *HubServer) GetHealth(
@@ -83,6 +89,10 @@ func (s *HubServer) IngestAuthorized(
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if authUser != nil && authUser.ProfileHandle != "" {
+		s.events.Publish(authUser.ProfileHandle)
 	}
 
 	return &hubv1.IngestSessionResponse{

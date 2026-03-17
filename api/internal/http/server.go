@@ -3,6 +3,7 @@ package httpserver
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -111,6 +112,39 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 		}
 		_ = json.NewEncoder(w).Encode(result)
+	})))
+	mux.Handle("/api/events", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handle := strings.TrimSpace(r.URL.Query().Get("handle"))
+		if handle == "" {
+			http.Error(w, "handle required", http.StatusBadRequest)
+			return
+		}
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("X-Accel-Buffering", "no")
+		ch, unsub := hub.Events().Subscribe(handle)
+		defer unsub()
+		fmt.Fprintf(w, "event: connected\ndata: {}\n\n")
+		flusher.Flush()
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ch:
+				fmt.Fprintf(w, "event: scores_updated\ndata: {}\n\n")
+				flusher.Flush()
+			case <-ticker.C:
+				fmt.Fprintf(w, ": ping\n\n")
+				flusher.Flush()
+			case <-r.Context().Done():
+				return
+			}
+		}
 	})))
 	externalHandler := newExternalHandler(hub)
 	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))

@@ -14,6 +14,7 @@ import { PageStack } from "../components/ui/Stack";
 import { Card } from "../components/ui/Card";
 import { fetchBenchmarkPage, fetchProfile, slugifyScenarioName } from "../lib/api";
 import { groupBenchmarks, extractDifficulty } from "../lib/benchmarkGroups";
+import { API_BASE_URL } from "../lib/config";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -622,6 +623,20 @@ export function BenchmarkPage() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [benchmarkId, handle]);
+
+  // SSE: auto-refresh when new scores are ingested for this player
+  useEffect(() => {
+    if (!handle) return;
+    const url = `${API_BASE_URL}/api/events?handle=${encodeURIComponent(handle)}`;
+    const es = new EventSource(url, { withCredentials: true });
+    es.addEventListener("scores_updated", () => {
+      const parsedId = Number(benchmarkId);
+      if (Number.isFinite(parsedId) && parsedId > 0) {
+        void fetchBenchmarkPage(handle, parsedId).then((next) => setPage(next)).catch(() => {});
+      }
+    });
+    return () => { es.close(); };
+  }, [handle, benchmarkId]);
 
   const categories = useMemo(() => visibleCategories(page?.categories ?? []), [page]);
   const catColors = useMemo(() => buildCatColorMap(categories), [categories]);
