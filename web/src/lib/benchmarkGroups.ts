@@ -1,9 +1,9 @@
 // Shared grouping logic for benchmark series (Voltaic S5 Novice/Intermediate/Advanced, etc.)
 
 const DIFFICULTY_DASH_RE =
-  /\s*[-–]\s*(novice|intermediate|advanced|expert|beginner|easy|medium|hard(?:er)?|eas(?:y|ier)|s\d+[-–]?\s*(?:novice|intermediate|advanced|expert))\s*$/i;
+  /\s*[-–]\s*(novice|intermediate|advanced|expert|beginner|easy|easier|medium|hard(?:er)?|s\d+[-–]?\s*(?:novice|intermediate|advanced|expert))\s*$/i;
 const DIFFICULTY_WORD_RE =
-  /\s+(novice|intermediate|advanced|expert|beginner|easier|harder|medium)\s*$/i;
+  /\s+(novice|intermediate|advanced|expert|beginner|easy|easier|medium|hard(?:er)?)\s*$/i;
 
 export const DIFFICULTY_ORDER = [
   "beginner", "novice", "easy", "easier",
@@ -43,8 +43,10 @@ export function groupBenchmarks<T extends {
   const groups = new Map<string, BenchmarkGroup<T>>();
   for (const item of items) {
     const { base, difficulty } = extractDifficulty(item.benchmarkName);
-    const key = item.benchmarkIconUrl
-      ? `${base.toLowerCase()}:::${item.benchmarkIconUrl}`
+    // Group by base name + author so variants without icons still cluster.
+    // Include author to avoid merging same-named benchmarks from different creators.
+    const key = difficulty !== null
+      ? `${base.toLowerCase()}:::${item.benchmarkAuthor.toLowerCase()}`
       : `__solo__${item.benchmarkId}`;
     if (!groups.has(key)) {
       groups.set(key, {
