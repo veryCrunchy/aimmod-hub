@@ -1,39 +1,58 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import type { BenchmarkLeaderboardEntry } from "../gen/aimmod/hub/v1/hub_pb";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import type { BenchmarkLeaderboardEntry, BenchmarkListItem } from "../gen/aimmod/hub/v1/hub_pb";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { Skeleton } from "../components/ui/Skeleton";
 import { PageStack } from "../components/ui/Stack";
 import { SectionHeader } from "../components/SectionHeader";
-import { fetchBenchmarkLeaderboard } from "../lib/api";
+import { fetchBenchmarkLeaderboard, fetchBenchmarkList } from "../lib/api";
+import { groupBenchmarks, extractDifficulty } from "../lib/benchmarkGroups";
 
 export function BenchmarkLeaderboardPage() {
   const { benchmarkId = "" } = useParams();
+  const navigate = useNavigate();
   const [entries, setEntries] = useState<BenchmarkLeaderboardEntry[] | null>(null);
   const [benchmarkName, setBenchmarkName] = useState("");
+  const [allBenchmarks, setAllBenchmarks] = useState<BenchmarkListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Load leaderboard and benchmark list in parallel
   useEffect(() => {
     if (!benchmarkId) return;
     let cancelled = false;
     setEntries(null);
     setError(null);
 
-    void fetchBenchmarkLeaderboard(Number(benchmarkId))
+    const leaderboardP = fetchBenchmarkLeaderboard(Number(benchmarkId))
       .then((res) => {
         if (!cancelled) {
           setEntries(res.entries ?? []);
           setBenchmarkName(res.benchmarkName || `Benchmark #${benchmarkId}`);
         }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load leaderboard.");
       });
+
+    const listP = fetchBenchmarkList()
+      .then((res) => { if (!cancelled) setAllBenchmarks(res.benchmarks ?? []); })
+      .catch(() => { /* sibling tabs are optional */ });
+
+    Promise.all([leaderboardP, listP]).catch((err) => {
+      if (!cancelled) setError(err instanceof Error ? err.message : "Could not load leaderboard.");
+    });
 
     return () => { cancelled = true; };
   }, [benchmarkId]);
+
+  // Find sibling benchmarks in the same series
+  const siblings = useMemo(() => {
+    if (!allBenchmarks || !benchmarkName) return null;
+    const groups = groupBenchmarks(allBenchmarks);
+    const group = groups.find((g) =>
+      g.variants.some((v) => String(v.item.benchmarkId) === benchmarkId)
+    );
+    return group && group.variants.length > 1 ? group : null;
+  }, [allBenchmarks, benchmarkName, benchmarkId]);
 
   if (error) {
     return (
@@ -62,7 +81,8 @@ export function BenchmarkLeaderboardPage() {
     );
   }
 
-  const title = benchmarkName || `Benchmark #${benchmarkId}`;
+  const { difficulty: currentDifficulty } = extractDifficulty(benchmarkName);
+  const title = siblings ? siblings.base : (benchmarkName || `Benchmark #${benchmarkId}`);
 
   return (
     <PageStack>
@@ -82,6 +102,35 @@ export function BenchmarkLeaderboardPage() {
               : "No ranked players found for this benchmark."
           }
         />
+
+        {/* Difficulty tabs — only shown when the benchmark has variants */}
+        {siblings && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {siblings.variants.map(({ item, difficulty }) => {
+              const isActive = String(item.benchmarkId) === benchmarkId;
+              const label = difficulty ?? item.benchmarkName;
+              return (
+                <button
+                  key={item.benchmarkId}
+                  onClick={() => navigate(`/benchmarks/${item.benchmarkId}`)}
+                  className={[
+                    "rounded-full border px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors",
+                    isActive
+                      ? "border-cyan/40 bg-cyan/10 text-cyan"
+                      : "border-line text-muted/60 hover:border-line/80 hover:text-text",
+                  ].join(" ")}
+                >
+                  {label}
+                  {item.playerCount > 0 && (
+                    <span className={`ml-1.5 text-[9px] ${isActive ? "text-cyan/70" : "text-muted/40"}`}>
+                      {item.playerCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </PageSection>
 
       {entries.length === 0 ? (
@@ -116,11 +165,7 @@ export function BenchmarkLeaderboardPage() {
                         className="flex items-center gap-2 min-w-0 hover:text-cyan transition-colors"
                       >
                         {entry.avatarUrl && (
-                          <img
-                            src={entry.avatarUrl}
-                            alt=""
-                            className="h-6 w-6 rounded-full border border-white/10 object-cover shrink-0"
-                          />
+                          <img src={entry.avatarUrl} alt="" className="h-6 w-6 rounded-full border border-white/10 object-cover shrink-0" />
                         )}
                         <span className="text-[12px] font-medium text-text truncate">
                           {entry.displayName || entry.userHandle}
@@ -131,12 +176,7 @@ export function BenchmarkLeaderboardPage() {
                     <td className="px-3 py-2">
                       <div className="flex items-center justify-center gap-1.5">
                         {entry.overallRankIconUrl && (
-                          <img
-                            src={entry.overallRankIconUrl}
-                            alt={entry.overallRankName}
-                            title={entry.overallRankName}
-                            className="h-5 w-5 rounded-md border border-white/10 object-cover"
-                          />
+                          <img src={entry.overallRankIconUrl} alt={entry.overallRankName} title={entry.overallRankName} className="h-5 w-5 rounded-md border border-white/10 object-cover" />
                         )}
                         <span className="text-[11px] text-text/80">{entry.overallRankName}</span>
                       </div>

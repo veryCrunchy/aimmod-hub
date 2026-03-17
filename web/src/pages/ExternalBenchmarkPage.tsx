@@ -32,6 +32,73 @@ function shortName(name: string | null | undefined): string {
     .trim();
 }
 
+// ─── category grouping ────────────────────────────────────────────────────────
+
+function parseCatName(name: string): { parent: string; sub: string | null } {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return { parent: parts[0], sub: null };
+  return { parent: parts[parts.length - 1], sub: parts.slice(0, -1).join(" ") };
+}
+
+type CategoryViewModel = {
+  categoryName: string;
+  categoryRank: number;
+  scenarios: ExternalScenarioPage[];
+};
+
+type CategoryGroup = {
+  parent: string;
+  cats: CategoryViewModel[];
+  totalRows: number;
+};
+
+function groupCategories(categories: CategoryViewModel[]): CategoryGroup[] {
+  const groups = new Map<string, CategoryViewModel[]>();
+  for (const cat of categories) {
+    const { parent } = parseCatName(cat.categoryName);
+    if (!groups.has(parent)) groups.set(parent, []);
+    groups.get(parent)!.push(cat);
+  }
+  return [...groups.entries()].map(([parent, cats]) => ({
+    parent,
+    cats,
+    totalRows: cats.reduce((s, c) => s + c.scenarios.length, 0),
+  }));
+}
+
+// ─── tier colors ──────────────────────────────────────────────────────────────
+
+const RANK_NAME_COLORS: Record<string, string> = {
+  "iron":        "#6b8c8c",
+  "bronze":      "#b07840",
+  "silver":      "#9098a0",
+  "gold":        "#c0a030",
+  "platinum":    "#6eaec0",
+  "diamond":     "#38c8c0",
+  "jade":        "#38c868",
+  "master":      "#a840c8",
+  "grandmaster": "#e04040",
+  "nova":        "#ff8820",
+};
+
+const RANK_PALETTE = ["#c8956c", "#b0b8b0", "#e8c84a", "#7ec8e3", "#c084fc", "#60e0a0", "#f87171"];
+
+function tierColor(apiColor: string | undefined, rankName?: string, paletteIdx?: number): string {
+  if (rankName) {
+    const known = RANK_NAME_COLORS[rankName.trim().toLowerCase()];
+    if (known) return known;
+  }
+  const c = apiColor?.trim();
+  if (c && c !== "#ffffff" && c !== "#fff") return c;
+  return RANK_PALETTE[(paletteIdx ?? 0) % RANK_PALETTE.length];
+}
+
+// ─── tier column key ──────────────────────────────────────────────────────────
+
+function tierKey(t: { iconUrl?: string | null; color?: string | null; rankIndex: number }): string {
+  return t.iconUrl?.trim() || t.color?.trim() || `__idx_${t.rankIndex}`;
+}
+
 // ─── tier column derivation ───────────────────────────────────────────────────
 
 type TierColumn = {
@@ -50,30 +117,33 @@ function fmtScore(n: number): string {
 
 function deriveTierColumns(thresholds: ExternalThreshold[]): TierColumn[] {
   if (thresholds.length === 0) return [];
-  const byColor = new Map<string, ExternalThreshold[]>();
+  const byKey = new Map<string, ExternalThreshold[]>();
   for (const t of thresholds) {
-    const key = t.color?.trim() || `__idx_${t.rankIndex}`;
-    if (!byColor.has(key)) byColor.set(key, []);
-    byColor.get(key)!.push(t);
+    const key = tierKey(t);
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key)!.push(t);
   }
-  const columns: TierColumn[] = [...byColor.entries()].map(([key, ts]) => {
+  const columns: TierColumn[] = [...byKey.entries()].map(([key, ts]) => {
     const sorted = [...ts].sort((a, b) => a.rankIndex - b.rankIndex);
     return {
       key,
       label: shortName(sorted[0].rankName),
-      color: sorted[0].color?.trim() || "#a7c2b3",
+      color: "#__pending__",
       iconUrl: sorted[sorted.length - 1].iconUrl ?? "",
       thresholds: sorted,
     };
   });
   columns.sort((a, b) => a.thresholds[0].rankIndex - b.thresholds[0].rankIndex);
+  columns.forEach((col, i) => {
+    col.color = tierColor(col.thresholds[0].color, col.thresholds[0].rankName, i);
+  });
   return columns;
 }
 
 // ─── tier bar ─────────────────────────────────────────────────────────────────
 
 function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: number; startScore?: number }) {
-  const ts = col.thresholds; // sorted ascending
+  const ts = col.thresholds;
   const color = col.color;
 
   return (
@@ -122,37 +192,36 @@ function buildCatColorMap(categories: CategoryViewModel[]): Map<string, string> 
 
 // ─── category rows ────────────────────────────────────────────────────────────
 
-type CategoryViewModel = {
-  categoryName: string;
-  categoryRank: number;
-  scenarios: ExternalScenarioPage[];
-};
-
 function CategoryRows({
   category,
   tierCols,
   aimmodHandle,
   catColors,
+  parentLabel,
+  parentRowSpan,
 }: {
   category: CategoryViewModel;
   tierCols: TierColumn[];
   aimmodHandle?: string;
   catColors: Map<string, string>;
+  parentLabel: string | null;
+  parentRowSpan: number;
 }) {
   const accent = catColors.get(category.categoryName) ?? PALETTE[0];
   const count = category.scenarios.length;
+  const { sub } = parseCatName(category.categoryName);
 
   return (
     <>
       {category.scenarios.map((scenario, i) => {
-        const scenarioByColor = new Map<string, ExternalThreshold[]>();
+        const scenarioByKey = new Map<string, ExternalThreshold[]>();
         for (const t of scenario.thresholds) {
-          const key = t.color?.trim() || `__idx_${t.rankIndex}`;
-          if (!scenarioByColor.has(key)) scenarioByColor.set(key, []);
-          scenarioByColor.get(key)!.push(t);
+          const key = tierKey(t);
+          if (!scenarioByKey.has(key)) scenarioByKey.set(key, []);
+          scenarioByKey.get(key)!.push(t);
         }
         const colThresholds = tierCols.map((col) => {
-          const ts = scenarioByColor.get(col.key);
+          const ts = scenarioByKey.get(col.key);
           return ts ? [...ts].sort((a, b) => a.rankIndex - b.rankIndex) : null;
         });
         const colStartScores = tierCols.map((_, ci) => {
@@ -160,12 +229,9 @@ function CategoryRows({
           const prevTs = colThresholds[ci - 1];
           return prevTs ? prevTs[prevTs.length - 1].score : Infinity;
         });
-        const maxTierThreshold =
-          tierCols.length > 0 ? colThresholds[tierCols.length - 1] : null;
+        const maxTierThreshold = tierCols.length > 0 ? colThresholds[tierCols.length - 1] : null;
         const maxScore = maxTierThreshold?.[maxTierThreshold.length - 1]?.score ?? 0;
-        const pctOfMax =
-          maxScore > 0 ? Math.min(100, Math.round((scenario.score / maxScore) * 100)) : null;
-
+        const pctOfMax = maxScore > 0 ? Math.min(100, Math.round((scenario.score / maxScore) * 100)) : null;
         const scenarioSlug = slugifyScenarioName(scenario.scenarioName);
 
         return (
@@ -173,11 +239,33 @@ function CategoryRows({
             key={`${category.categoryName}:${scenario.scenarioName}`}
             className="border-b border-white/4 last:border-0 hover:bg-white/[0.018] transition-colors"
           >
+            {/* Parent group label — first row of first sub-cat only */}
+            {i === 0 && parentLabel !== null && (
+              <td
+                rowSpan={parentRowSpan}
+                className="py-0 align-middle text-center"
+                style={{ width: 20, minWidth: 20 }}
+              >
+                <span
+                  className="text-[7px] uppercase font-medium whitespace-nowrap inline-block"
+                  style={{
+                    color: "rgba(167,194,179,0.35)",
+                    writingMode: "vertical-rl",
+                    transform: "rotate(180deg)",
+                    letterSpacing: "0.14em",
+                  }}
+                >
+                  {parentLabel}
+                </span>
+              </td>
+            )}
+
+            {/* Sub-category label — first row of this sub-cat */}
             {i === 0 && (
               <td
                 rowSpan={count}
                 className="py-0 align-middle text-center"
-                style={{ borderLeft: `2px solid ${accent}55`, width: 28, minWidth: 28 }}
+                style={{ borderLeft: `2px solid ${accent}55`, width: 24, minWidth: 24 }}
               >
                 <span
                   className="text-[8px] uppercase font-medium whitespace-nowrap inline-block"
@@ -188,7 +276,7 @@ function CategoryRows({
                     letterSpacing: "0.14em",
                   }}
                 >
-                  {category.categoryName}
+                  {sub ?? category.categoryName}
                 </span>
               </td>
             )}
@@ -203,10 +291,7 @@ function CategoryRows({
                     className="shrink-0 h-5 w-5 rounded-md border border-white/10 object-cover"
                   />
                 ) : (
-                  <span
-                    className="shrink-0 text-[10px] font-medium"
-                    style={{ color: "rgba(167,194,179,0.45)" }}
-                  >
+                  <span className="shrink-0 text-[10px] font-medium" style={{ color: "rgba(167,194,179,0.45)" }}>
                     {scenario.rankIndex > 0 ? shortName(scenario.rankName) : "—"}
                   </span>
                 )}
@@ -252,16 +337,10 @@ function CategoryRows({
             })}
 
             {i === 0 && (
-              <td
-                rowSpan={count}
-                className="px-3 py-2 text-right align-middle whitespace-nowrap"
-              >
+              <td rowSpan={count} className="px-3 py-2 text-right align-middle whitespace-nowrap">
                 {category.categoryRank > 0 && (
                   <div className="flex flex-col items-end gap-0.5">
-                    <span
-                      className="text-[13px] font-medium tabular-nums"
-                      style={{ color: accent }}
-                    >
+                    <span className="text-[13px] font-medium tabular-nums" style={{ color: accent }}>
                       {category.categoryRank.toLocaleString()}
                     </span>
                     <span className="text-[8px] uppercase tracking-widest text-muted/40">nrg</span>
@@ -325,6 +404,7 @@ export function ExternalBenchmarkPage() {
   );
 
   const catColors = useMemo(() => buildCatColorMap(categories), [categories]);
+  const categoryGroups = useMemo(() => groupCategories(categories), [categories]);
 
   const tierCols = useMemo(() => {
     for (const cat of categories) {
@@ -382,46 +462,39 @@ export function ExternalBenchmarkPage() {
                 className="mt-0.5 h-10 w-10 shrink-0 rounded-[10px] border border-white/10 object-cover"
               />
             )}
-          <div className="min-w-0">
-            <Breadcrumb
-              crumbs={[
-                { label: displayName, to: `/u/${encodeURIComponent(steamId)}` },
-                { label: page.benchmarkName },
-              ]}
-            />
-            <h1 className="mt-2 text-base font-medium text-text leading-tight">
-              {page.benchmarkName}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              {page.isAimmodUser && page.aimmodHandle ? (
-                <Link
-                  to={`/profiles/${page.aimmodHandle}`}
-                  className="text-[11px] text-cyan hover:underline underline-offset-3"
-                >
-                  @{page.aimmodHandle} · AimMod profile →
-                </Link>
-              ) : (
-                <span className="text-[11px] text-muted/60">KovaaK's only user</span>
-              )}
+            <div className="min-w-0">
+              <Breadcrumb
+                crumbs={[
+                  { label: displayName, to: `/u/${encodeURIComponent(steamId)}` },
+                  { label: page.benchmarkName },
+                ]}
+              />
+              <h1 className="mt-2 text-base font-medium text-text leading-tight">
+                {page.benchmarkName}
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                {page.isAimmodUser && page.aimmodHandle ? (
+                  <Link
+                    to={`/profiles/${page.aimmodHandle}`}
+                    className="text-[11px] text-cyan hover:underline underline-offset-3"
+                  >
+                    @{page.aimmodHandle} · AimMod profile →
+                  </Link>
+                ) : (
+                  <span className="text-[11px] text-muted/60">KovaaK's only user</span>
+                )}
+              </div>
             </div>
-          </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
             {page.overallRankName && hasRank(page.overallRankName) && (
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/3 px-3 py-2">
                 {page.overallRankIcon && (
-                  <img
-                    src={page.overallRankIcon}
-                    alt=""
-                    className="h-7 w-7 rounded-lg border border-white/10 object-cover"
-                  />
+                  <img src={page.overallRankIcon} alt="" className="h-7 w-7 rounded-lg border border-white/10 object-cover" />
                 )}
                 <div>
-                  <div
-                    className="text-[12px] font-medium"
-                    style={{ color: page.overallRankColor || "#a7c2b3" }}
-                  >
+                  <div className="text-[12px] font-medium" style={{ color: page.overallRankColor || "#a7c2b3" }}>
                     {page.overallRankName}
                   </div>
                   <div className="text-[9px] text-muted/60 uppercase tracking-widest">Overall</div>
@@ -452,7 +525,8 @@ export function ExternalBenchmarkPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-line bg-white/2">
-                  <th className="py-2 w-7 font-normal" />
+                  <th className="w-5 py-2 font-normal" />
+                  <th className="w-6 py-2 font-normal" />
                   <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">
                     Scenario
                   </th>
@@ -467,11 +541,7 @@ export function ExternalBenchmarkPage() {
                     >
                       <div className="flex flex-col items-center gap-0.5">
                         {col.iconUrl && (
-                          <img
-                            src={col.iconUrl}
-                            alt=""
-                            className="h-4 w-4 rounded-sm border border-white/10 object-cover"
-                          />
+                          <img src={col.iconUrl} alt="" className="h-4 w-4 rounded-sm border border-white/10 object-cover" />
                         )}
                         <span className="text-[8px] uppercase tracking-widest leading-none">{col.label}</span>
                       </div>
@@ -483,15 +553,19 @@ export function ExternalBenchmarkPage() {
                 </tr>
               </thead>
               <tbody>
-                {categories.map((category) => (
-                  <CategoryRows
-                    key={category.categoryName}
-                    category={category}
-                    tierCols={tierCols}
-                    aimmodHandle={page.isAimmodUser ? page.aimmodHandle : undefined}
-                    catColors={catColors}
-                  />
-                ))}
+                {categoryGroups.map((group) =>
+                  group.cats.map((category, catIdx) => (
+                    <CategoryRows
+                      key={category.categoryName}
+                      category={category}
+                      tierCols={tierCols}
+                      aimmodHandle={page.isAimmodUser ? page.aimmodHandle : undefined}
+                      catColors={catColors}
+                      parentLabel={catIdx === 0 ? group.parent : null}
+                      parentRowSpan={group.totalRows}
+                    />
+                  ))
+                )}
               </tbody>
             </table>
           </div>

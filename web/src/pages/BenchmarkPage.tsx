@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link, useParams } from "react-router-dom";
-import type { BenchmarkCategoryPage, BenchmarkScenarioEntry, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import type { BenchmarkCategoryPage, BenchmarkScenarioEntry, BenchmarkSummary, BenchmarkThreshold, GetBenchmarkPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Skeleton } from "../components/ui/Skeleton";
 import { PageStack } from "../components/ui/Stack";
 import { Card } from "../components/ui/Card";
-import { fetchBenchmarkPage, slugifyScenarioName } from "../lib/api";
+import { fetchBenchmarkPage, fetchProfile, slugifyScenarioName } from "../lib/api";
+import { groupBenchmarks, extractDifficulty } from "../lib/benchmarkGroups";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -34,9 +35,73 @@ function visibleCategories(categories: BenchmarkCategoryPage[]): BenchmarkCatego
     .filter((c) => c.scenarios.length > 0);
 }
 
-function tierColor(color: string | undefined): string {
-  if (color?.trim()) return color.trim();
-  return "#a7c2b3";
+// ─── category grouping ────────────────────────────────────────────────────────
+//
+// "Control Tracking" → { parent: "Tracking", sub: "Control" }
+// "Speed"            → { parent: "Speed",    sub: null }
+
+function parseCatName(name: string): { parent: string; sub: string | null } {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return { parent: parts[0], sub: null };
+  return { parent: parts[parts.length - 1], sub: parts.slice(0, -1).join(" ") };
+}
+
+type CategoryGroup = {
+  parent: string;
+  cats: BenchmarkCategoryViewModel[];
+  totalRows: number;
+};
+
+function groupCategories(categories: BenchmarkCategoryViewModel[]): CategoryGroup[] {
+  const groups = new Map<string, BenchmarkCategoryViewModel[]>();
+  for (const cat of categories) {
+    const { parent } = parseCatName(cat.categoryName);
+    if (!groups.has(parent)) groups.set(parent, []);
+    groups.get(parent)!.push(cat);
+  }
+  return [...groups.entries()].map(([parent, cats]) => ({
+    parent,
+    cats,
+    totalRows: cats.reduce((s, c) => s + c.scenarios.length, 0),
+  }));
+}
+
+// ─── tier colors ──────────────────────────────────────────────────────────────
+
+// Known Voltaic rank colors. Used as primary lookup when the API returns white.
+const RANK_NAME_COLORS: Record<string, string> = {
+  "iron":        "#6b8c8c",
+  "bronze":      "#b07840",
+  "silver":      "#9098a0",
+  "gold":        "#c0a030",
+  "platinum":    "#6eaec0",
+  "diamond":     "#38c8c0",
+  "jade":        "#38c868",
+  "master":      "#a840c8",
+  "grandmaster": "#e04040",
+  "nova":        "#ff8820",
+};
+
+// Palette fallback for unknown rank names where the API also returns no color.
+const RANK_PALETTE = ["#c8956c", "#b0b8b0", "#e8c84a", "#7ec8e3", "#c084fc", "#60e0a0", "#f87171"];
+
+function tierColor(apiColor: string | undefined, rankName?: string, paletteIdx?: number): string {
+  if (rankName) {
+    const known = RANK_NAME_COLORS[rankName.trim().toLowerCase()];
+    if (known) return known;
+  }
+  const c = apiColor?.trim();
+  if (c && c !== "#ffffff" && c !== "#fff") return c;
+  return RANK_PALETTE[(paletteIdx ?? 0) % RANK_PALETTE.length];
+}
+
+// ─── tier column key ──────────────────────────────────────────────────────────
+//
+// Prefer icon URL (distinct per tier family), fall back to color, then index.
+// Must be identical in deriveTierColumns and CategoryRows.
+
+function tierKey(t: { iconUrl?: string | null; color?: string | null; rankIndex: number }): string {
+  return t.iconUrl?.trim() || t.color?.trim() || `__idx_${t.rankIndex}`;
 }
 
 // "VT Bronze Novice S5" → "Bronze"
@@ -50,66 +115,55 @@ function shortName(name: string | null | undefined): string {
 }
 
 // ─── tier column derivation ───────────────────────────────────────────────────
-//
-// Group thresholds by color so benchmarks with sub-tiers (Bronze I/II/III)
-// collapse into one column per tier family. The column label and color come
-// from the LOWEST sub-tier in the group. The bar for each column shows the
-// HIGHEST sub-tier reached (or progress toward the lowest if none reached).
 
 type TierColumn = {
-  key: string;               // unique key (color or rankIndex fallback)
-  label: string;             // e.g. "Bronze"
-  color: string;             // CSS color
-  iconUrl: string;           // highest sub-tier icon
-  thresholds: BenchmarkThreshold[]; // sorted ascending by score
+  key: string;
+  label: string;
+  color: string;
+  iconUrl: string;
+  thresholds: BenchmarkThreshold[];
 };
 
 function fmtScore(n: number): string {
-  if (n >= 100_000) return `${Math.round(n / 1000)}k`;
-  if (n >= 10_000)  return `${Math.round(n / 1000)}k`;
-  if (n >= 1_000)   return `${(n / 1000).toFixed(1)}k`;
+  if (n >= 10_000) return `${Math.round(n / 1000)}k`;
+  if (n >= 1_000)  return `${(n / 1000).toFixed(1)}k`;
   return String(Math.round(n));
 }
 
-// Group thresholds by color so Bronze I/II/III collapse into one "Bronze" column.
 function deriveTierColumns(thresholds: BenchmarkThreshold[]): TierColumn[] {
   if (thresholds.length === 0) return [];
-  const byColor = new Map<string, BenchmarkThreshold[]>();
+  const byKey = new Map<string, BenchmarkThreshold[]>();
   for (const t of thresholds) {
-    const key = t.color?.trim() || `__idx_${t.rankIndex}`;
-    if (!byColor.has(key)) byColor.set(key, []);
-    byColor.get(key)!.push(t);
+    const key = tierKey(t);
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key)!.push(t);
   }
-  const columns: TierColumn[] = [...byColor.entries()].map(([key, ts]) => {
+  const columns: TierColumn[] = [...byKey.entries()].map(([key, ts]) => {
     const sorted = [...ts].sort((a, b) => a.rankIndex - b.rankIndex);
     return {
       key,
       label: shortName(sorted[0].rankName),
-      color: tierColor(sorted[0].color),
+      color: "#__pending__",
       iconUrl: sorted[sorted.length - 1].iconUrl ?? "",
       thresholds: sorted,
     };
   });
   columns.sort((a, b) => a.thresholds[0].rankIndex - b.thresholds[0].rankIndex);
+  columns.forEach((col, i) => {
+    col.color = tierColor(col.thresholds[0].color, col.thresholds[0].rankName, i);
+  });
   return columns;
 }
 
-// ─── tier bar cell ────────────────────────────────────────────────────────────
-//
-// Segmented bar — one segment per sub-tier (e.g. Bronze I / II / III).
-// Segments are equal-width, separated by a hairline divider.
-// A segment is fully filled when its threshold is met; partially filled while
-// in progress; empty when not yet reached.
+// ─── tier bar ─────────────────────────────────────────────────────────────────
 
 function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: number; startScore?: number }) {
-  const ts = col.thresholds; // sorted ascending
+  const ts = col.thresholds;
   const color = col.color;
 
   return (
     <div className="flex h-5 min-w-16 overflow-hidden rounded-sm bg-black/20">
       {ts.map((t, i) => {
-        // For the first segment, use startScore (the previous column's max) as the
-        // baseline so players don't show "in progress" on tiers they haven't reached.
         const prevScore = i === 0 ? startScore : ts[i - 1].score;
         const met = score >= t.score;
         const inProgress = !met && score > prevScore;
@@ -158,42 +212,42 @@ function CategoryRows({
   userHandle,
   tierCols,
   catColors,
+  parentLabel,
+  parentRowSpan,
 }: {
   category: BenchmarkCategoryViewModel;
   userHandle: string;
   tierCols: TierColumn[];
   catColors: Map<string, string>;
+  /** Non-null only for the first sub-category in a parent group. */
+  parentLabel: string | null;
+  /** Total scenario rows across all sub-categories in the parent group. */
+  parentRowSpan: number;
 }) {
   const accent = catColors.get(category.categoryName) ?? PALETTE[0];
   const count = category.scenarios.length;
+  const { sub } = parseCatName(category.categoryName);
 
   return (
     <>
       {category.scenarios.map((scenario, i) => {
-        // Build a map from color-key → thresholds for THIS scenario
-        const scenarioByColor = new Map<string, BenchmarkThreshold[]>();
+        const scenarioByKey = new Map<string, BenchmarkThreshold[]>();
         for (const t of scenario.thresholds) {
-          const key = t.color?.trim() || `__idx_${t.rankIndex}`;
-          if (!scenarioByColor.has(key)) scenarioByColor.set(key, []);
-          scenarioByColor.get(key)!.push(t);
+          const key = tierKey(t);
+          if (!scenarioByKey.has(key)) scenarioByKey.set(key, []);
+          scenarioByKey.get(key)!.push(t);
         }
         const colThresholds = tierCols.map((col) => {
-          const ts = scenarioByColor.get(col.key);
+          const ts = scenarioByKey.get(col.key);
           return ts ? [...ts].sort((a, b) => a.rankIndex - b.rankIndex) : null;
         });
-        // startScore for each column = max threshold of the previous column in this scenario.
-        // If the previous column has no data, use Infinity so the first segment never
-        // shows "in progress" for tiers the player hasn't earned their way into.
         const colStartScores = tierCols.map((_, ci) => {
           if (ci === 0) return 0;
           const prevTs = colThresholds[ci - 1];
           return prevTs ? prevTs[prevTs.length - 1].score : Infinity;
         });
 
-        // % of gold (last tier's highest threshold)
-        const maxTierThreshold = tierCols.length > 0
-          ? colThresholds[tierCols.length - 1]
-          : null;
+        const maxTierThreshold = tierCols.length > 0 ? colThresholds[tierCols.length - 1] : null;
         const maxScore = maxTierThreshold?.[maxTierThreshold.length - 1]?.score ?? 0;
         const pctOfMax = maxScore > 0 ? Math.min(100, Math.round((scenario.score / maxScore) * 100)) : null;
 
@@ -202,12 +256,33 @@ function CategoryRows({
             key={`${category.categoryName}:${scenario.scenarioSlug || scenario.scenarioName}`}
             className="border-b border-white/4 last:border-0 hover:bg-white/[0.018] transition-colors"
           >
-            {/* Category label — rowspan */}
+            {/* Parent group label — first row of first sub-cat only */}
+            {i === 0 && parentLabel !== null && (
+              <td
+                rowSpan={parentRowSpan}
+                className="py-0 align-middle text-center"
+                style={{ width: 20, minWidth: 20 }}
+              >
+                <span
+                  className="text-[7px] uppercase font-medium whitespace-nowrap inline-block"
+                  style={{
+                    color: "rgba(167,194,179,0.35)",
+                    writingMode: "vertical-rl",
+                    transform: "rotate(180deg)",
+                    letterSpacing: "0.14em",
+                  }}
+                >
+                  {parentLabel}
+                </span>
+              </td>
+            )}
+
+            {/* Sub-category label — first row of this sub-cat */}
             {i === 0 && (
               <td
                 rowSpan={count}
                 className="py-0 align-middle text-center"
-                style={{ borderLeft: `2px solid ${accent}55`, width: 28, minWidth: 28 }}
+                style={{ borderLeft: `2px solid ${accent}55`, width: 24, minWidth: 24 }}
               >
                 <span
                   className="text-[8px] uppercase font-medium whitespace-nowrap inline-block"
@@ -218,7 +293,7 @@ function CategoryRows({
                     letterSpacing: "0.14em",
                   }}
                 >
-                  {category.categoryName}
+                  {sub ?? category.categoryName}
                 </span>
               </td>
             )}
@@ -226,7 +301,6 @@ function CategoryRows({
             {/* Scenario name + rank badge */}
             <td className="px-3 py-2">
               <div className="flex items-center gap-2 min-w-0">
-                {/* rank icon */}
                 {scenario.scenarioRank?.iconUrl ? (
                   <img
                     src={scenario.scenarioRank.iconUrl}
@@ -235,10 +309,7 @@ function CategoryRows({
                     className="shrink-0 h-5 w-5 rounded-md border border-white/10 object-cover"
                   />
                 ) : (
-                  <span
-                    className="shrink-0 text-[10px] font-medium"
-                    style={{ color: "rgba(167,194,179,0.6)" }}
-                  >
+                  <span className="shrink-0 text-[10px] font-medium" style={{ color: "rgba(167,194,179,0.6)" }}>
                     {shortName(scenario.scenarioRank?.rankName) || "—"}
                   </span>
                 )}
@@ -281,16 +352,10 @@ function CategoryRows({
 
             {/* Energy — rowspan */}
             {i === 0 && (
-              <td
-                rowSpan={count}
-                className="px-3 py-2 text-right align-middle whitespace-nowrap"
-              >
+              <td rowSpan={count} className="px-3 py-2 text-right align-middle whitespace-nowrap">
                 {category.categoryRank > 0 ? (
                   <div className="flex flex-col items-end gap-0.5">
-                    <span
-                      className="text-[13px] font-medium tabular-nums"
-                      style={{ color: accent }}
-                    >
+                    <span className="text-[13px] font-medium tabular-nums" style={{ color: accent }}>
                       {category.categoryRank.toLocaleString()}
                     </span>
                     <span className="text-[8px] uppercase tracking-widest text-muted/40">nrg</span>
@@ -309,7 +374,9 @@ function CategoryRows({
 
 export function BenchmarkPage() {
   const { handle = "", benchmarkId = "" } = useParams();
+  const navigate = useNavigate();
   const [page, setPage] = useState<GetBenchmarkPageResponse | null>(null);
+  const [profileBenchmarks, setProfileBenchmarks] = useState<BenchmarkSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -324,14 +391,27 @@ export function BenchmarkPage() {
     void fetchBenchmarkPage(handle, parsedId)
       .then((next) => { if (!cancelled) setPage(next); })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Could not load this benchmark."); });
+    // Fetch profile benchmarks for sibling tabs (best-effort)
+    void fetchProfile(handle)
+      .then((p) => { if (!cancelled) setProfileBenchmarks(p.benchmarks ?? []); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [benchmarkId, handle]);
 
   const categories = useMemo(() => visibleCategories(page?.categories ?? []), [page]);
-
   const catColors = useMemo(() => buildCatColorMap(categories), [categories]);
+  const categoryGroups = useMemo(() => groupCategories(categories), [categories]);
 
-  // Derive tier columns from the first scenario that has thresholds
+  // Find sibling benchmarks in the same series (Novice / Intermediate / Advanced…)
+  const siblings = useMemo(() => {
+    if (!profileBenchmarks || !page) return null;
+    const groups = groupBenchmarks(profileBenchmarks);
+    const group = groups.find((g) =>
+      g.variants.some((v) => v.item.benchmarkId === page.benchmarkId)
+    );
+    return group && group.variants.length > 1 ? group : null;
+  }, [profileBenchmarks, page]);
+
   const tierCols = useMemo(() => {
     for (const cat of categories) {
       for (const sc of cat.scenarios) {
@@ -393,11 +473,11 @@ export function BenchmarkPage() {
               <Breadcrumb
                 crumbs={[
                   { label: displayName, to: `/profiles/${page.userHandle}` },
-                  { label: page.benchmarkName },
+                  { label: siblings ? siblings.base : page.benchmarkName },
                 ]}
               />
               <h1 className="mt-2 text-base font-medium text-text leading-tight">
-                {page.benchmarkName}
+                {siblings ? siblings.base : page.benchmarkName}
               </h1>
               <p className="mt-0.5 text-[11px] text-muted/70">
                 {page.benchmarkAuthor ? `by ${page.benchmarkAuthor}` : "Community benchmark"}
@@ -421,6 +501,40 @@ export function BenchmarkPage() {
             </div>
           )}
         </div>
+
+        {/* Difficulty tabs */}
+        {siblings && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {siblings.variants.map(({ item, difficulty }) => {
+              const isActive = item.benchmarkId === page.benchmarkId;
+              const label = difficulty ?? item.benchmarkName;
+              const rank = item.overallRank;
+              const hasR = hasRank(rank?.rankName);
+              return (
+                <button
+                  key={item.benchmarkId}
+                  onClick={() => navigate(`/profiles/${page.userHandle}/benchmarks/${item.benchmarkId}`)}
+                  className={[
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors",
+                    isActive
+                      ? "border-cyan/40 bg-cyan/10 text-cyan"
+                      : "border-line text-muted/60 hover:border-line/80 hover:text-text",
+                  ].join(" ")}
+                >
+                  {rank?.iconUrl && (
+                    <img src={rank.iconUrl} alt="" className="h-3.5 w-3.5 rounded-sm border border-white/10 object-cover" />
+                  )}
+                  {label}
+                  {hasR && rank?.rankName && (
+                    <span className={`text-[9px] ${isActive ? "text-cyan/70" : "text-muted/40"}`}>
+                      · {rank.rankName}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </Card>
 
       {/* table */}
@@ -429,7 +543,10 @@ export function BenchmarkPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-line bg-white/2">
-                <th className="py-2 w-7 font-normal" />
+                {/* parent group column */}
+                <th className="w-5 py-2 font-normal" />
+                {/* sub-category column */}
+                <th className="w-6 py-2 font-normal" />
                 <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">
                   Scenario
                 </th>
@@ -460,15 +577,19 @@ export function BenchmarkPage() {
               </tr>
             </thead>
             <tbody>
-              {categories.map((category) => (
-                <CategoryRows
-                  key={category.categoryName}
-                  category={category}
-                  userHandle={page.userHandle}
-                  tierCols={tierCols}
-                  catColors={catColors}
-                />
-              ))}
+              {categoryGroups.map((group) =>
+                group.cats.map((category, catIdx) => (
+                  <CategoryRows
+                    key={category.categoryName}
+                    category={category}
+                    userHandle={page.userHandle}
+                    tierCols={tierCols}
+                    catColors={catColors}
+                    parentLabel={catIdx === 0 ? group.parent : null}
+                    parentRowSpan={group.totalRows}
+                  />
+                ))
+              )}
             </tbody>
           </table>
         </div>
