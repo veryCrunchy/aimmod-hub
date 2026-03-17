@@ -95,8 +95,9 @@ function tierColor(apiColor: string | undefined, rankName?: string, paletteIdx?:
 
 // ─── tier column key ──────────────────────────────────────────────────────────
 
-function tierKey(t: { iconUrl?: string | null; color?: string | null; rankIndex: number }): string {
-  return t.iconUrl?.trim() || t.color?.trim() || `__idx_${t.rankIndex}`;
+function tierKey(t: { rankName?: string | null; rankIndex: number }): string {
+  const family = shortName(t.rankName).replace(/\s+\d+$/, "").trim();
+  return family || `__idx_${t.rankIndex}`;
 }
 
 // ─── tier column derivation ───────────────────────────────────────────────────

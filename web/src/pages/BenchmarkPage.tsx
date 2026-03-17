@@ -100,11 +100,16 @@ function tierColor(apiColor: string | undefined, rankName?: string, paletteIdx?:
 
 // ─── tier column key ──────────────────────────────────────────────────────────
 //
-// Prefer icon URL (distinct per tier family), fall back to color, then index.
-// Must be identical in deriveTierColumns and CategoryRows.
+// Group tiers by rank name family (strip trailing digits and common suffixes).
+// "Cinnamon 1", "Cinnamon 2" → "Cinnamon"  (one column)
+// "Gold 1", "Gold 2"         → "Gold"       (separate column)
+// This works across all benchmark families regardless of icon structure.
 
-function tierKey(t: { iconUrl?: string | null; color?: string | null; rankIndex: number }): string {
-  return t.iconUrl?.trim() || t.color?.trim() || `__idx_${t.rankIndex}`;
+type TierKeyFn = (t: { rankName?: string | null; rankIndex: number }) => string;
+
+function tierKey(t: { rankName?: string | null; rankIndex: number }): string {
+  const family = shortName(t.rankName).replace(/\s+\d+$/, "").trim();
+  return family || `__idx_${t.rankIndex}`;
 }
 
 // "VT Bronze Novice S5" → "Bronze"
