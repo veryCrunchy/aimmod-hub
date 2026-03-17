@@ -873,3 +873,123 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 	}
 	return nil
 }
+
+// computeScenarioRankIndex returns the highest rank index the player achieves
+// given their score and the scenario's rank_maxes array.
+// rank_maxes[n] is the minimum score required to enter rank n+1.
+func computeScenarioRankIndex(score float64, rankMaxes []float64) uint32 {
+	rank := uint32(0)
+	for i, threshold := range rankMaxes {
+		if score >= threshold {
+			rank = uint32(i + 1)
+		} else {
+			break
+		}
+	}
+	return rank
+}
+
+// BuildBenchmarkPageWithLocalScores builds a benchmark page using
+// max(kovaaks_score, localScore) for each scenario and computes ranks
+// directly from score vs thresholds.  This correctly handles players whose
+// leaderboard scores are suppressed by KovaaK's (e.g. banned players) because
+// it never relies on the API's scenario_rank field.
+//
+// localScores maps exact scenario_name → best score as stored by AimMod.
+// Pass nil or an empty map to use only KovaaK's data (still with computed ranks).
+func (c *Client) BuildBenchmarkPageWithLocalScores(
+	ctx context.Context,
+	benchmark ProfileBenchmarkSummary,
+	steamID string,
+	localScores map[string]float64,
+) (*BenchmarkDetail, []BenchmarkCategoryPageRecord, error) {
+	detail, err := c.GetBenchmarkDetail(ctx, benchmark.BenchmarkID, steamID)
+	if err != nil || detail == nil {
+		return nil, nil, err
+	}
+	categories := make([]BenchmarkCategoryPageRecord, 0, len(detail.Categories))
+	for categoryName, category := range detail.Categories {
+		scenarios := make([]BenchmarkScenarioPage, 0, len(category.Scenarios))
+		for scenarioName, scenario := range category.Scenarios {
+			thresholds := make([]BenchmarkThreshold, 0, len(scenario.RankMaxes))
+			for rankIndex, threshold := range scenario.RankMaxes {
+				nextRankIndex := rankIndex + 1
+				if nextRankIndex >= len(detail.Ranks) {
+					continue
+				}
+				rank := detail.Ranks[nextRankIndex]
+				if rank.RankName == "" || strings.EqualFold(rank.RankName, "No Rank") {
+					continue
+				}
+				thresholds = append(thresholds, BenchmarkThreshold{
+					RankIndex: uint32(nextRankIndex),
+					RankName:  rank.RankName,
+					IconURL:   rank.IconURL,
+					Color:     rank.Color,
+					Score:     threshold,
+				})
+			}
+
+			// Use the best available score: max of KovaaK's reported score
+			// and the player's AimMod-ingested score.
+			kovaaksScore := scenario.Score / 100.0
+			effectiveScore := kovaaksScore
+			if ls, ok := localScores[scenarioName]; ok && ls > effectiveScore {
+				effectiveScore = ls
+			}
+
+			// Compute rank from score vs thresholds rather than trusting the
+			// API's scenario_rank (which may be 0 for banned players).
+			computedRankIdx := computeScenarioRankIndex(effectiveScore, scenario.RankMaxes)
+
+			scenarios = append(scenarios, BenchmarkScenarioPage{
+				ScenarioName:    scenarioName,
+				CategoryName:    categoryName,
+				Score:           effectiveScore,
+				LeaderboardRank: scenario.LeaderboardRank,
+				LeaderboardID:   scenario.LeaderboardID,
+				ScenarioRank:    rankVisual(detail.Ranks, computedRankIdx),
+				Thresholds:      thresholds,
+			})
+		}
+		if len(scenarios) == 0 {
+			continue
+		}
+		sort.Slice(scenarios, func(i, j int) bool {
+			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
+		})
+		categories = append(categories, BenchmarkCategoryPageRecord{
+			CategoryName: categoryName,
+			CategoryRank: category.CategoryRank,
+			Scenarios:    scenarios,
+		})
+	}
+	sort.Slice(categories, func(i, j int) bool {
+		return categories[i].CategoryName < categories[j].CategoryName
+	})
+	return detail, categories, nil
+}
+
+// OverallRankFromCategories computes the overall benchmark rank as the
+// minimum scenario rank across all categories (weakest-link rule).
+func OverallRankFromCategories(categories []BenchmarkCategoryPageRecord, ranks []BenchmarkRankVisual) BenchmarkRankVisual {
+	minRankIdx := uint32(0)
+	first := true
+	for _, cat := range categories {
+		for _, sc := range cat.Scenarios {
+			idx := sc.ScenarioRank.RankIndex
+			if idx == 0 {
+				// Any unranked scenario means overall rank is unranked.
+				return BenchmarkRankVisual{}
+			}
+			if first || idx < minRankIdx {
+				minRankIdx = idx
+				first = false
+			}
+		}
+	}
+	if first || minRankIdx == 0 {
+		return BenchmarkRankVisual{}
+	}
+	return rankVisual(ranks, minRankIdx)
+}

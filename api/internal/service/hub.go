@@ -477,13 +477,22 @@ func (s *HubServer) GetBenchmarkPage(
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark not found for this player"))
 	}
 
-	detail, categories, err := s.benchmarks.BuildFullBenchmarkPage(ctx, *summary, identity.SteamID)
+	// Fetch AimMod-ingested best scores best-effort; used to compute ranks for
+	// players whose KovaaK's leaderboard scores are suppressed (e.g. banned).
+	localScores, _ := s.store.GetBestScoresByHandle(ctx, handle)
+
+	detail, categories, err := s.benchmarks.BuildBenchmarkPageWithLocalScores(ctx, *summary, identity.SteamID, localScores)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if detail == nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark detail not found"))
 	}
+
+	// Compute overall rank from scenario ranks (weakest-link rule).
+	// This correctly reflects the player's standing even when the KovaaK's API
+	// returns a stale or suppressed overall_rank.
+	overallRank := kovaaksbenchmarks.OverallRankFromCategories(categories, detail.Ranks)
 
 	outCategories := make([]*hubv1.BenchmarkCategoryPage, 0, len(categories))
 	for _, category := range categories {
@@ -506,12 +515,8 @@ func (s *HubServer) GetBenchmarkPage(
 		BenchmarkIconUrl: summary.BenchmarkIconURL,
 		BenchmarkAuthor:  summary.BenchmarkAuthor,
 		BenchmarkType:    summary.BenchmarkType,
-		OverallRank: benchmarkRankVisual(kovaaksbenchmarks.BenchmarkRankVisual{
-			RankName: summary.OverallRankName,
-			IconURL:  summary.OverallRankIcon,
-			Color:    summary.OverallRankColor,
-		}),
-		Categories: outCategories,
+		OverallRank:      benchmarkRankVisual(overallRank),
+		Categories:       outCategories,
 	}), nil
 }
 

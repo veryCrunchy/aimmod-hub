@@ -3530,3 +3530,36 @@ func (s *Store) GetAdminFailures(ctx context.Context, handle string, limit int) 
 	}
 	return failures, nil
 }
+
+// GetBestScoresByHandle returns the all-time best score per scenario name for
+// the player identified by handle. Scores are keyed by exact scenario_name.
+// Used to compute benchmark ranks from local data (e.g. for players whose
+// leaderboard scores are unavailable via KovaaK's API).
+func (s *Store) GetBestScoresByHandle(ctx context.Context, handle string) (map[string]float64, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return nil, fmt.Errorf("handle required")
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT sr.scenario_name, MAX(sr.score) AS best_score
+		FROM scenario_runs sr
+		JOIN hub_user_identity hui ON hui.user_id = sr.user_id
+		WHERE LOWER(hui.user_handle) = $1
+		   OR LOWER(hui.external_id) = $1
+		GROUP BY sr.scenario_name
+	`, handle)
+	if err != nil {
+		return nil, fmt.Errorf("query best scores: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[string]float64)
+	for rows.Next() {
+		var name string
+		var score float64
+		if err := rows.Scan(&name, &score); err != nil {
+			return nil, fmt.Errorf("scan best score: %w", err)
+		}
+		out[name] = score
+	}
+	return out, rows.Err()
+}
