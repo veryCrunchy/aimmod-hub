@@ -438,6 +438,35 @@ func (s *HubServer) fetchScenarioBenchmarkRanks(
 	return out, nil
 }
 
+// findBenchmarkMeta returns benchmark metadata for benchmarkID by searching
+// other hub users' benchmark lists. skipUsername is the player's own KovaaK's
+// username so they are excluded from the search. Returns nil if not found.
+func (s *HubServer) findBenchmarkMeta(ctx context.Context, benchmarkID uint32, skipUsername string) (*kovaaksbenchmarks.ProfileBenchmarkSummary, error) {
+	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, u := range users {
+		if strings.EqualFold(u.KovaaksUsername, skipUsername) {
+			continue
+		}
+		items, err := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
+		if err != nil {
+			continue
+		}
+		for i := range items {
+			if items[i].BenchmarkID == benchmarkID {
+				meta := items[i]
+				meta.OverallRankName = ""
+				meta.OverallRankIcon = ""
+				meta.OverallRankColor = ""
+				return &meta, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
 func (s *HubServer) GetBenchmarkPage(
 	ctx context.Context,
 	req *connect.Request[hubv1.GetBenchmarkPageRequest],
@@ -474,7 +503,15 @@ func (s *HubServer) GetBenchmarkPage(
 		}
 	}
 	if summary == nil {
-		return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark not found for this player"))
+		// Player not in the KovaaK's benchmark list for this benchmark (e.g.
+		// banned from leaderboards). Look up the benchmark metadata from any
+		// other hub user who has played it so we can still show an AimMod-score
+		// based page.
+		meta, metaErr := s.findBenchmarkMeta(ctx, benchmarkID, identity.KovaaksUsername)
+		if metaErr != nil || meta == nil {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("benchmark not found"))
+		}
+		summary = meta
 	}
 
 	// Fetch AimMod-ingested best scores best-effort; used to compute ranks for
