@@ -177,8 +177,18 @@ CREATE TABLE IF NOT EXISTS run_mouse_paths (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_replay_media_assets_storage_key
   ON replay_media_assets(storage_key);
 
+CREATE TABLE IF NOT EXISTS live_activities (
+  user_id BIGINT PRIMARY KEY REFERENCES hub_users(id) ON DELETE CASCADE,
+  payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_ingest_failures_created_at
   ON ingest_failures(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_live_activities_expires_at
+  ON live_activities(expires_at DESC);
 
 CREATE TABLE IF NOT EXISTS kovaaks_user_cache (
   steam_id TEXT PRIMARY KEY,

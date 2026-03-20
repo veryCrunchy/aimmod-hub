@@ -234,6 +234,35 @@ export type MousePathMeta = {
   videoOffsetMs: number;
 };
 
+export type LiveHubActivity = {
+  active: boolean;
+  userHandle?: string;
+  userDisplayName?: string;
+  avatarUrl?: string;
+  isVerified?: boolean;
+  updatedAt?: string;
+  gameStateCode?: number;
+  gameState?: string;
+  paused?: boolean;
+  scenarioName?: string;
+  scenarioType?: string;
+  scenarioSubtype?: string;
+  score?: number | null;
+  scorePerMinute?: number | null;
+  accuracyPct?: number | null;
+  kills?: number | null;
+  elapsedSecs?: number | null;
+  timeRemainingSecs?: number | null;
+  queueTimeRemainingSecs?: number | null;
+  runtimeLoaded?: boolean;
+  bridgeConnected?: boolean;
+};
+
+export type LiveHubActivityListResponse = {
+  items: LiveHubActivity[];
+  count: number;
+};
+
 export type AdminVersionBreakdown = {
   label: string;
   runCount: number;
@@ -258,6 +287,58 @@ export type AdminRecentIngest = {
   ingestedAt: string;
   score: number;
 };
+
+export async function fetchLiveActivity(handle: string): Promise<LiveHubActivity> {
+  const response = await fetch(`${API_BASE_URL}/activity/live?handle=${encodeURIComponent(handle)}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(`Live activity request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchLiveActivityFeed(limit = 200): Promise<LiveHubActivityListResponse> {
+  const response = await fetch(`${API_BASE_URL}/activity/live/list?limit=${encodeURIComponent(String(limit))}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error(`Live activity feed request failed: ${response.status}`);
+  }
+  const payload = await response.json() as { items?: LiveHubActivity[]; count?: number };
+  return {
+    items: Array.isArray(payload.items) ? payload.items : [],
+    count: typeof payload.count === "number" ? payload.count : Array.isArray(payload.items) ? payload.items.length : 0,
+  };
+}
+
+export function subscribeLiveActivityFeed(options: {
+  onUpdate: () => void;
+  onOpen?: () => void;
+  onError?: () => void;
+}): () => void {
+  if (typeof window === "undefined" || typeof EventSource === "undefined") {
+    return () => {};
+  }
+
+  const stream = new EventSource(`${API_BASE_URL}/activity/live/events`, { withCredentials: true });
+  const handleUpdate = () => options.onUpdate();
+  const handleOpen = () => options.onOpen?.();
+  const handleError = () => options.onError?.();
+
+  stream.addEventListener("live_activity_updated", handleUpdate);
+  stream.addEventListener("connected", handleOpen);
+  stream.onopen = handleOpen;
+  stream.onerror = handleError;
+
+  return () => {
+    stream.removeEventListener("live_activity_updated", handleUpdate);
+    stream.removeEventListener("connected", handleOpen);
+    stream.onopen = null;
+    stream.onerror = null;
+    stream.close();
+  };
+}
 
 export type AdminOverviewResponse = {
   totalRuns: number;

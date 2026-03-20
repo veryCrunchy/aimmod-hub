@@ -38,10 +38,10 @@ type ingestBatchResponse struct {
 }
 
 type Config struct {
-	Addr                string
-	Version             string
-	AllowedWebOrigin    string
-	WebAppOrigin        string
+	Addr             string
+	Version          string
+	AllowedWebOrigin string
+	WebAppOrigin     string
 	// StaticDir, when set, makes the API server also serve the built frontend
 	// with server-side meta tag injection. Set AIMMOD_HUB_STATIC_DIR to enable.
 	StaticDir           string
@@ -63,7 +63,7 @@ type Config struct {
 
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux := http.NewServeMux()
-	auth := newAuthHandler(cfg, hub.Store())
+	auth := newAuthHandler(cfg, hub.Store(), hub.Events())
 	path, handler := hubv1connect.NewHubServiceHandler(hub)
 	mux.Handle(path, withCORS(cfg.AllowedWebOrigin, handler))
 	auth.register(mux)
@@ -241,7 +241,6 @@ func parseEnvBool(key string, fallback bool) bool {
 	}
 	return parsed
 }
-
 
 func withCORS(origin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

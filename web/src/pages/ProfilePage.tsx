@@ -20,27 +20,70 @@ import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { AimProfileSection } from "../components/AimProfileSection";
 import { AimFingerprintSection } from "../components/AimFingerprintSection";
+import { useAnimatedNumber } from "../hooks/useAnimatedNumber";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
-import { fetchProfile, fetchReplayHub, formatDurationMs, slugifyScenarioName, type HubSearchRun } from "../lib/api";
+import { useNow } from "../hooks/useNow";
+import { fetchLiveActivity, fetchProfile, fetchReplayHub, formatDurationMs, formatRelativeTime, slugifyScenarioName, subscribeLiveActivityFeed, type HubSearchRun, type LiveHubActivity } from "../lib/api";
 
 const PAGE_SIZE = 15;
 type RunSortField = "score" | "accuracy" | "duration";
+
+function AnimatedLiveMetric({
+  label,
+  value,
+  format,
+}: {
+  label: string;
+  value: number | null | undefined;
+  format: (value: number) => string;
+}) {
+  const animatedValue = useAnimatedNumber(value, 650);
+  return (
+    <div className="rounded-[14px] border border-white/8 bg-white/[0.03] px-3 py-2">
+      <div className="text-[11px] uppercase tracking-[0.08em] text-muted">{label}</div>
+      <div className="mt-1 text-[18px] tabular-nums">
+        {animatedValue != null ? format(animatedValue) : "—"}
+      </div>
+    </div>
+  );
+}
+
+function resolveLiveTimerSeconds(activity: LiveHubActivity, nowMs: number): number | null {
+  const updatedAtMs = activity.updatedAt ? new Date(activity.updatedAt).getTime() : NaN;
+  const elapsedSinceUpdateSecs =
+    Number.isFinite(updatedAtMs) && updatedAtMs > 0 ? Math.max(0, (nowMs - updatedAtMs) / 1000) : 0;
+  const isPaused = activity.paused === true;
+
+  if (activity.timeRemainingSecs != null && Number.isFinite(activity.timeRemainingSecs)) {
+    return Math.max(0, activity.timeRemainingSecs - (isPaused ? 0 : elapsedSinceUpdateSecs));
+  }
+  if (activity.queueTimeRemainingSecs != null && Number.isFinite(activity.queueTimeRemainingSecs)) {
+    return Math.max(0, activity.queueTimeRemainingSecs - (isPaused ? 0 : elapsedSinceUpdateSecs));
+  }
+  if (activity.elapsedSecs != null && Number.isFinite(activity.elapsedSecs)) {
+    return Math.max(0, activity.elapsedSecs + (isPaused ? 0 : elapsedSinceUpdateSecs));
+  }
+  return null;
+}
 
 export function ProfilePage() {
   const { handle = "" } = useParams();
   const [profile, setProfile] = useState<GetProfileResponse | null>(null);
   const [replays, setReplays] = useState<HubSearchRun[]>([]);
+  const [liveActivity, setLiveActivity] = useState<LiveHubActivity | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string | null>(null);
   const [runSortField, setRunSortField] = useState<RunSortField>("score");
   const [runSortDir, setRunSortDir] = useState<"asc" | "desc">("desc");
   const [scenariosVisible, setScenariosVisible] = useState(PAGE_SIZE);
   const [runsVisible, setRunsVisible] = useState(PAGE_SIZE);
+  const nowMs = useNow(1000);
 
   useEffect(() => {
     let cancelled = false;
     setProfile(null);
     setReplays([]);
+    setLiveActivity(null);
     setError(null);
     setScenariosVisible(PAGE_SIZE);
     setRunsVisible(PAGE_SIZE);
@@ -48,6 +91,11 @@ export function ProfilePage() {
       .then((next) => {
         if (!cancelled) {
           setProfile(next);
+          void fetchLiveActivity(next.userHandle || handle)
+            .then((activity) => {
+              if (!cancelled) setLiveActivity(activity);
+            })
+            .catch(() => {});
           void fetchReplayHub({ handle: next.userHandle || handle, limit: 8 })
             .then((response) => {
               if (!cancelled) setReplays(response.items);
@@ -69,6 +117,23 @@ export function ProfilePage() {
       .catch(() => {});
   }, [handle]);
   useAutoRefresh(doRefresh, 60_000);
+
+  const doRefreshLiveActivity = useCallback(() => {
+    if (!handle.trim()) return;
+    void fetchLiveActivity(handle)
+      .then((next) => setLiveActivity(next))
+      .catch(() => {});
+  }, [handle]);
+  useEffect(() => {
+    if (!handle.trim()) return;
+    const unsubscribe = subscribeLiveActivityFeed({
+      onUpdate: () => {
+        doRefreshLiveActivity();
+      },
+    });
+    return unsubscribe;
+  }, [doRefreshLiveActivity, handle]);
+  useAutoRefresh(doRefreshLiveActivity, 30_000);
 
   const topScenarios = profile?.topScenarios ?? [];
 
@@ -147,6 +212,14 @@ export function ProfilePage() {
 
   const hasTrend = profile.recentRuns.length >= 2;
 
+  const liveTimer = (seconds?: number | null) => {
+    if (seconds == null || !Number.isFinite(seconds)) return null;
+    const whole = Math.max(0, Math.round(seconds));
+    const minutes = Math.floor(whole / 60);
+    const secs = whole % 60;
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const filteredScenarios = scenarioTypeFilter
     ? profile.topScenarios.filter((s) => s.scenarioType === scenarioTypeFilter)
     : profile.topScenarios;
@@ -185,14 +258,67 @@ export function ProfilePage() {
             {profile.scenarioCount.toLocaleString()} scenarios.
           </p>
         </div>
-        <div className="grid min-w-0 content-start gap-2 rounded-[18px] border border-cyan/18 bg-[linear-gradient(180deg,rgba(57,208,255,0.08),rgba(182,151,255,0.06))] p-[16px]">
-          <span className="text-[12px] uppercase tracking-[0.08em] text-cyan">Main focus</span>
-          <strong className="break-words text-[24px] leading-tight md:text-[28px]">{primaryFocus}</strong>
-          <em className="text-sm not-italic leading-7 text-muted">
-            {primaryFocus === "Mixed practice"
-              ? "This player spreads their time across multiple scenario styles."
-              : "The scenario family this player spends the most time in."}
-          </em>
+        <div className="grid gap-3">
+          <div className="grid min-w-0 content-start gap-2 rounded-[18px] border border-cyan/18 bg-[linear-gradient(180deg,rgba(57,208,255,0.08),rgba(182,151,255,0.06))] p-[16px]">
+            <span className="text-[12px] uppercase tracking-[0.08em] text-cyan">Main focus</span>
+            <strong className="break-words text-[24px] leading-tight md:text-[28px]">{primaryFocus}</strong>
+            <em className="text-sm not-italic leading-7 text-muted">
+              {primaryFocus === "Mixed practice"
+                ? "This player spreads their time across multiple scenario styles."
+                : "The scenario family this player spends the most time in."}
+            </em>
+          </div>
+
+          {liveActivity?.active && (
+            <div className="grid min-w-0 content-start gap-3 rounded-[18px] border border-mint/22 bg-[linear-gradient(180deg,rgba(121,201,151,0.12),rgba(57,208,255,0.05))] p-[16px] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-[12px] uppercase tracking-[0.08em] text-mint">Live now</span>
+                  <strong className="mt-1 block break-words text-[21px] leading-tight md:text-[24px]">
+                    {liveActivity.scenarioName || liveActivity.gameState || "Practicing"}
+                  </strong>
+                </div>
+                {liveActivity.scenarioType ? <ScenarioTypeBadge type={liveActivity.scenarioType} /> : null}
+              </div>
+
+              <p className="text-sm leading-7 text-muted">
+                {liveActivity.gameState || "In session"}
+                {liveActivity.scenarioSubtype ? ` · ${liveActivity.scenarioSubtype}` : ""}
+                {liveActivity.updatedAt ? ` · Updated ${formatRelativeTime(liveActivity.updatedAt)}` : ""}
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 text-sm text-text max-[520px]:grid-cols-1">
+                <AnimatedLiveMetric
+                  label="Score"
+                  value={liveActivity.score}
+                  format={(value) => Math.round(value).toLocaleString()}
+                />
+                <AnimatedLiveMetric
+                  label="Accuracy"
+                  value={liveActivity.accuracyPct}
+                  format={(value) => `${value.toFixed(1)}%`}
+                />
+                <AnimatedLiveMetric
+                  label="Kills"
+                  value={liveActivity.kills ?? null}
+                  format={(value) => Math.round(value).toLocaleString()}
+                />
+                <AnimatedLiveMetric
+                  label="Timer"
+                  value={resolveLiveTimerSeconds(liveActivity, nowMs)}
+                  format={(value) => liveTimer(value) ?? "—"}
+                />
+              </div>
+
+              {liveActivity.runtimeLoaded === false || liveActivity.bridgeConnected === false ? (
+                <div className="text-[12px] leading-6 text-muted">
+                  Bridge status: {liveActivity.runtimeLoaded ? "runtime loaded" : "runtime not loaded"}
+                  {" · "}
+                  {liveActivity.bridgeConnected ? "bridge connected" : "bridge reconnecting"}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </PageSection>
 

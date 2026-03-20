@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/media"
+	"github.com/veryCrunchy/aimmod-hub/api/internal/service"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
 
@@ -28,6 +29,7 @@ const (
 type authHandler struct {
 	cfg    Config
 	store  *store.Store
+	events *service.EventBroker
 	media  media.Storage
 	client *http.Client
 }
@@ -132,7 +134,7 @@ func replayMediaURL(r *http.Request, publicRunID string, quality string) string 
 	return fmt.Sprintf("%s/media/replays/%s.mp4?quality=%s", baseURL, publicRunID, url.QueryEscape(quality))
 }
 
-func newAuthHandler(cfg Config, store *store.Store) *authHandler {
+func newAuthHandler(cfg Config, store *store.Store, events *service.EventBroker) *authHandler {
 	mediaStorage, err := media.New(media.Config{
 		Backend:        cfg.MediaBackend,
 		LocalDir:       cfg.MediaDir,
@@ -147,9 +149,10 @@ func newAuthHandler(cfg Config, store *store.Store) *authHandler {
 		panic(err)
 	}
 	return &authHandler{
-		cfg:   cfg,
-		store: store,
-		media: mediaStorage,
+		cfg:    cfg,
+		store:  store,
+		events: events,
+		media:  mediaStorage,
 		client: &http.Client{
 			Timeout: 15 * time.Second,
 		},
@@ -183,6 +186,7 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/media/replays/", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaStream)))
 	mux.Handle("/replays/mouse-path/upload", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleMousePathUpload)))
 	mux.Handle("/replays/mouse-path", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleMousePathMeta)))
+	h.registerLiveActivity(mux)
 }
 
 func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request) {

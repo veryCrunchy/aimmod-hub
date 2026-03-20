@@ -13,6 +13,7 @@ const BenchmarkLeaderboardPage = lazy(() => import("./pages/BenchmarkLeaderboard
 const DeviceLinkPage = lazy(() => import("./pages/DeviceLinkPage").then((m) => ({ default: m.DeviceLinkPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m.HomePage })));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
+const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m.LivePage })));
 const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then((m) => ({ default: m.PlayerScenarioPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const ReplayHubPage = lazy(() => import("./pages/ReplayHubPage").then((m) => ({ default: m.ReplayHubPage })));
@@ -38,6 +39,7 @@ export function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/app" element={<AimModPage />} />
               <Route path="/community" element={<CommunityPage />} />
+              <Route path="/live" element={<LivePage />} />
               <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
               <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
               <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />

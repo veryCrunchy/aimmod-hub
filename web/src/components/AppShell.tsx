@@ -20,6 +20,7 @@ export function AppShell({ children }: PropsWithChildren) {
     { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
     { to: "/app", label: "Get the App", title: "Download the AimMod desktop app", highlight: true },
     { to: "/community", label: "Community", title: "Browse all scenarios and players" },
+    { to: "/live", label: "Live", title: "See who is practicing right now" },
     { to: "/benchmarks", label: "Benchmarks", title: "KovaaK's benchmark rankings and leaderboards" },
     { to: "/replays", label: "Replays", title: "Watch replay videos and mouse paths" },
     { to: "/leaderboard", label: "Leaderboard", title: "All-time records and top 100 scores" },

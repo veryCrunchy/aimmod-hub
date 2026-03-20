@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+const liveFeedTopic = "__live_feed__"
+
 // EventBroker is a lightweight fan-out pub/sub for player score-update events.
 // Each subscriber gets a buffered channel that receives a signal whenever new
 // scores are ingested for a given player handle.
@@ -20,7 +22,7 @@ func NewEventBroker() *EventBroker {
 // Subscribe returns a channel that receives a signal when scores are updated
 // for handle.  Call unsub when done to release the channel.
 func (b *EventBroker) Subscribe(handle string) (ch chan struct{}, unsub func()) {
-	handle = strings.ToLower(strings.TrimSpace(handle))
+	handle = normalizeTopic(handle)
 	ch = make(chan struct{}, 1)
 	b.mu.Lock()
 	b.subs[handle] = append(b.subs[handle], ch)
@@ -44,7 +46,7 @@ func (b *EventBroker) Subscribe(handle string) (ch chan struct{}, unsub func()) 
 // Publish signals all subscribers of handle that scores have been updated.
 // Non-blocking: slow subscribers are skipped rather than held.
 func (b *EventBroker) Publish(handle string) {
-	handle = strings.ToLower(strings.TrimSpace(handle))
+	handle = normalizeTopic(handle)
 	if handle == "" {
 		return
 	}
@@ -57,4 +59,16 @@ func (b *EventBroker) Publish(handle string) {
 		default:
 		}
 	}
+}
+
+func (b *EventBroker) SubscribeLiveFeed() (chan struct{}, func()) {
+	return b.Subscribe(liveFeedTopic)
+}
+
+func (b *EventBroker) PublishLiveFeed() {
+	b.Publish(liveFeedTopic)
+}
+
+func normalizeTopic(value string) string {
+	return strings.ToLower(strings.TrimSpace(value))
 }
