@@ -3,10 +3,10 @@
 @theme {
   --color-bg: #020806;
   --color-bg-2: #081610;
-  --color-panel: rgba(8, 18, 14, 0.68);
+  --color-panel: rgba(8, 18, 14, 0.72);
   --color-panel-strong: rgba(10, 24, 18, 0.98);
-  --color-line: rgba(130, 201, 157, 0.16);
-  --color-line-strong: rgba(130, 201, 157, 0.34);
+  --color-line: rgba(130, 201, 157, 0.14);
+  --color-line-strong: rgba(130, 201, 157, 0.32);
   --color-text: #f3fff8;
   --color-muted: #a7c2b3;
   --color-muted-2: #6f9480;
@@ -15,7 +15,7 @@
   --color-gold: #ffd956;
   --color-violet: #c2a9ff;
   --color-danger: #ff8787;
-  --shadow-panel: 0 22px 72px rgba(0, 0, 0, 0.34);
+  --shadow-panel: 0 16px 56px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(130, 201, 157, 0.06);
   --font-display: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -34,12 +34,9 @@
     margin: 0;
     overflow-x: hidden;
     background:
-      radial-gradient(circle, rgba(121, 201, 151, 0.055) 1px, transparent 1px),
-      /* radial-gradient(circle at top left, rgba(121, 201, 151, 0.22), transparent 22%), */
-      /* radial-gradient(circle at top right, rgba(184, 255, 225, 0.12), transparent 16%), */
-      /* radial-gradient(circle at 50% 0%, rgba(121, 201, 151, 0.08), transparent 30%), */
+      radial-gradient(circle, rgba(121, 201, 151, 0.042) 1px, transparent 1px),
       linear-gradient(180deg, #020806 0%, #04100b 36%, #010302 100%);
-    background-size: 28px 28px, auto;
+    background-size: 24px 24px, auto;
     background-attachment: fixed;
     color: var(--color-text);
     font-family: var(--font-display);
@@ -51,7 +48,7 @@
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.038'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
     background-size: 200px 200px;
   }
 
@@ -64,7 +61,7 @@
 @layer utilities {
   .hub-scroll {
     scrollbar-width: thin;
-    scrollbar-color: rgba(109, 128, 171, 0.55) transparent;
+    scrollbar-color: rgba(121, 201, 151, 0.32) transparent;
   }
 
   .hub-scroll::-webkit-scrollbar {
@@ -79,12 +76,12 @@
   .hub-scroll::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 999px;
-    background: rgba(109, 128, 171, 0.38);
+    background: rgba(121, 201, 151, 0.28);
     background-clip: padding-box;
   }
 
   .hub-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(109, 128, 171, 0.58);
+    background: rgba(121, 201, 151, 0.48);
     background-clip: padding-box;
   }
 }

@@ -50,12 +50,15 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="min-h-screen overflow-x-clip">
-      <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.96),rgba(4,12,9,0.92))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
+      <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.97),rgba(4,12,9,0.94))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
         <div className="mx-auto flex w-[min(1380px,100%)] min-w-0 flex-col gap-2.5">
           <div className="flex min-w-0 items-center justify-between gap-3">
-            <Link to="/" className="grid min-w-0 gap-0.5">
-              <span className="text-[10px] uppercase tracking-[0.12em] text-cyan">AimMod Hub</span>
-              <span className="truncate text-[12px] text-text max-[400px]:hidden">shared practice intelligence</span>
+            <Link to="/" className="flex min-w-0 items-center gap-2.5">
+              <span className="hidden h-5 w-[3px] rounded-sm bg-mint/70 sm:block" aria-hidden />
+              <div className="grid min-w-0 gap-0.5">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-cyan">AimMod Hub</span>
+                <span className="truncate text-[11px] text-muted-2 max-[400px]:hidden">shared practice intelligence</span>
+              </div>
             </Link>
 
             {auth.loading ? null : auth.authenticated && auth.user ? (
@@ -82,7 +85,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
           <HeaderSearch ref={searchRef} />
 
-          <nav className="flex flex-wrap items-center gap-1.5" aria-label="Primary">
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-0" aria-label="Primary">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -90,12 +93,10 @@ export function AppShell({ children }: PropsWithChildren) {
                 title={item.title}
                 className={({ isActive }) =>
                   cn(
-                    "rounded-full border px-3 py-1.5 text-[12px] transition-colors",
+                    "border-b pb-[5px] pt-0.5 text-[12px] transition-colors",
                     item.highlight
-                      ? "border-cyan/25 bg-cyan/8 text-cyan hover:border-cyan/40 hover:bg-cyan/12"
-                      : "border-transparent text-muted hover:border-line hover:bg-[rgba(121,201,151,0.08)] hover:text-text",
-                    isActive && !item.highlight && "border-line bg-[rgba(121,201,151,0.1)] text-text",
-                    isActive && item.highlight && "border-cyan/40 bg-cyan/12"
+                      ? cn("text-cyan", isActive ? "border-cyan" : "border-transparent hover:border-cyan/50")
+                      : cn("text-muted hover:text-text", isActive ? "border-mint text-text" : "border-transparent"),
                   )
                 }
               >

@@ -89,9 +89,8 @@ export function HomePage() {
         <title>AimMod Hub · Shared practice intelligence</title>
         <meta name="description" content="Shared KovaaK's practice data. View scenario pages, player profiles, and run history." />
       </Helmet>
-      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.22),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.1),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-        <div className="absolute inset-y-0 right-[8%] w-[28%] rounded-full bg-[radial-gradient(circle,rgba(121,201,151,0.14),transparent_68%)] blur-3xl" />
-        <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
+      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.18),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.08),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
+        <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
         <h1 className="my-2.5 max-w-[16ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
           See how the best KovaaK's players aim.
         </h1>
@@ -135,7 +134,7 @@ export function HomePage() {
       <PageSection className="overflow-visible">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="shrink-0">
-            <div className="text-[11px] uppercase tracking-widest text-muted/60">KovaaK's lookup</div>
+            <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">KovaaK's lookup</div>
             <div className="mt-0.5 text-[13px] text-text">Find any player</div>
           </div>
           <div className="flex-1">
@@ -149,34 +148,34 @@ export function HomePage() {
           to="/replays"
           className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-cyan/30 hover:bg-white/3"
         >
-          <div className="mb-3 text-[11px] uppercase tracking-widest text-cyan">Mouse paths</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-cyan">Mouse paths</div>
           <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Watch exactly how they moved</h3>
           <p className="text-[13px] leading-relaxed text-muted">
             See the full mouse path for any shared run — where targets were hit clean, where corrections happened, where pace broke down.
           </p>
-          <div className="mt-3 text-[12px] text-cyan">Browse replays →</div>
+          <div className="mt-4 text-[12px] text-cyan">Browse replays →</div>
         </Link>
         <Link
           to="/community"
-          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-[rgba(212,175,55,0.3)] hover:bg-white/3"
+          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-gold/25 hover:bg-white/3"
         >
-          <div className="mb-3 text-[11px] uppercase tracking-widest text-gold">Aim Fingerprint</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-gold">Aim fingerprint</div>
           <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">6-axis aim style analysis</h3>
           <p className="text-[13px] leading-relaxed text-muted">
             Precision, Speed, Control, Consistency, Decisiveness, Rhythm — mapped across a player's full history and benchmarked against the community.
           </p>
-          <div className="mt-3 text-[12px] text-gold">Explore profiles →</div>
+          <div className="mt-4 text-[12px] text-gold">Explore profiles →</div>
         </Link>
         <Link
           to="/leaderboard"
           className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-mint/30 hover:bg-white/3"
         >
-          <div className="mb-3 text-[11px] uppercase tracking-widest text-mint">Coaching</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-mint">Coaching</div>
           <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Per-run feedback, not just a score</h3>
           <p className="text-[13px] leading-relaxed text-muted">
             Every run comes with coaching tags and second-by-second context windows — specific observations about what happened during the run.
           </p>
-          <div className="mt-3 text-[12px] text-mint">View leaderboard →</div>
+          <div className="mt-4 text-[12px] text-mint">View leaderboard →</div>
         </Link>
       </div>
 
@@ -195,7 +194,7 @@ export function HomePage() {
                   <Link
                     key={scenario.scenarioSlug}
                     to={`/scenarios/${scenario.scenarioSlug}`}
-                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -203,7 +202,7 @@ export function HomePage() {
                         <div className="mt-1.5"><ScenarioTypeBadge type={scenario.scenarioType} /></div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="block text-sm text-mint">{scenario.runCount.toLocaleString()}</span>
+                        <span className="block tabular-nums text-sm text-mint">{scenario.runCount.toLocaleString()}</span>
                         <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
                       </div>
                     </div>
@@ -233,7 +232,7 @@ export function HomePage() {
                   <Link
                     key={profile.userHandle}
                     to={`/profiles/${profile.userHandle}`}
-                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -246,12 +245,12 @@ export function HomePage() {
                         <p className="mt-1 text-sm text-muted">@{profile.userHandle}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="block text-sm text-cyan">{profile.runCount.toLocaleString()}</span>
+                        <span className="block tabular-nums text-sm text-cyan">{profile.runCount.toLocaleString()}</span>
                         <span className="text-[10px] text-muted-2 uppercase tracking-wider">runs</span>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-2">
-                      <span className="text-sm text-muted">{profile.scenarioCount.toLocaleString()} scenarios</span>
+                      <span className="text-[12px] text-muted">{profile.scenarioCount.toLocaleString()} scenarios</span>
                       <ScenarioTypeBadge type={profile.primaryScenarioType} />
                     </div>
                   </Link>
@@ -345,7 +344,7 @@ export function HomePage() {
       <PageSection className="relative overflow-hidden border-mint/20 bg-[radial-gradient(circle_at_60%_0%,rgba(121,201,151,0.1),transparent_40%),linear-gradient(180deg,rgba(6,18,12,0.98),rgba(4,12,9,0.97))]">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 text-[11px] uppercase tracking-widest text-mint">AimMod App</div>
+            <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-mint">AimMod App</div>
             <h2 className="mb-2 max-w-[22ch] text-[clamp(18px,2.8vw,28px)] font-medium leading-[1.1] tracking-[-0.035em]">
               This is everyone else's data.<br />Want to see yours?
             </h2>

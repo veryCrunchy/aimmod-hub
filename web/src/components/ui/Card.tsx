@@ -11,7 +11,7 @@ export function Card({ className, children, onMouseMove, onMouseLeave, ...props 
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     spotRef.current.style.background =
-      `radial-gradient(circle at ${x}% ${y}%, rgba(121,201,151,0.05) 0%, transparent 72%)`;
+      `radial-gradient(circle at ${x}% ${y}%, rgba(121,201,151,0.07) 0%, transparent 68%)`;
     spotRef.current.style.opacity = "1";
   }
 
