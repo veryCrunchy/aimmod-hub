@@ -839,3 +839,44 @@ export async function runAdminRepairUserMetrics(handle: string): Promise<{ ok: b
   }
   return response.json() as Promise<{ ok: boolean; updated: number }>;
 }
+
+// ── Coaching KB analytics ─────────────────────────────────────────────────────
+
+export type CoachingQueryRow = {
+  id: number;
+  scenarioName: string;
+  scenarioType: string;
+  question: string;
+  signalKeys: string[];
+  contextTags: string[];
+  focusArea: string;
+  itemsReturned: number;
+  matchedEntryIds: string[];
+  questionTermsMatched: string[];
+  isMiss: boolean;
+  createdAt: string;
+};
+
+export type CoachingAnalytics = {
+  days: number;
+  totalQueries: number;
+  hitCount: number;
+  missCount: number;
+  hitRatePct: number;
+  avgItemsPerHit: number;
+  topMissTerms: { term: string; count: number }[];
+  topScenarios: { scenarioName: string; count: number }[];
+  topMatchedEntries: { entryId: string; count: number }[];
+  recentQueries: CoachingQueryRow[];
+};
+
+export async function fetchCoachingAnalytics(days: number): Promise<CoachingAnalytics> {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/coaching/analytics?days=${encodeURIComponent(String(days))}`,
+    { credentials: "include" },
+  );
+  if (!response.ok) {
+    throw new Error(await response.text() || "Could not load coaching analytics.");
+  }
+  return response.json() as Promise<CoachingAnalytics>;
+}

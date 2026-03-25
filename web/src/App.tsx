@@ -5,6 +5,7 @@ import { AuthProvider } from "./lib/AuthContext";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
+const AdminCoachingPage = lazy(() => import("./pages/AdminCoachingPage").then((m) => ({ default: m.AdminCoachingPage })));
 const CommunityPage = lazy(() => import("./pages/CommunityPage").then((m) => ({ default: m.CommunityPage })));
 const BenchmarkPage = lazy(() => import("./pages/BenchmarkPage").then((m) => ({ default: m.BenchmarkPage })));
 const BenchmarksPage = lazy(() => import("./pages/BenchmarksPage").then((m) => ({ default: m.BenchmarksPage })));
@@ -47,6 +48,7 @@ export function App() {
               <Route path="/replays" element={<ReplayHubPage />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/coaching" element={<AdminCoachingPage />} />
               <Route path="/link-device" element={<DeviceLinkPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />

@@ -204,6 +204,27 @@ CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_username
 
 CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_display_name
   ON kovaaks_user_cache (LOWER(steam_display_name));
+
+CREATE TABLE IF NOT EXISTS coaching_queries (
+  id BIGSERIAL PRIMARY KEY,
+  scenario_name TEXT NOT NULL DEFAULT '',
+  scenario_type TEXT NOT NULL DEFAULT '',
+  question TEXT NOT NULL DEFAULT '',
+  signal_keys TEXT[] NOT NULL DEFAULT '{}',
+  context_tags TEXT[] NOT NULL DEFAULT '{}',
+  focus_area TEXT NOT NULL DEFAULT '',
+  items_returned INTEGER NOT NULL DEFAULT 0,
+  matched_entry_ids TEXT[] NOT NULL DEFAULT '{}',
+  question_terms_matched TEXT[] NOT NULL DEFAULT '{}',
+  is_miss BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_coaching_queries_created_at
+  ON coaching_queries(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_coaching_queries_is_miss
+  ON coaching_queries(is_miss, created_at DESC);
 `
 
 const hubUserIdentityViewSQL = `

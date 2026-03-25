@@ -158,7 +158,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		}
 	})))
 	externalHandler := newExternalHandler(hub)
-	coachingHandler := newCoachingHandler()
+	coachingHandler := newCoachingHandler(hub.Store())
 	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/lookup/", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))

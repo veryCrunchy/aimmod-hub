@@ -180,6 +180,7 @@ func (h *authHandler) register(mux *http.ServeMux) {
 	mux.Handle("/admin/actions/clear-user-failures", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminClearUserFailures)))
 	mux.Handle("/admin/failures/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminFailuresExport)))
 	mux.Handle("/admin/user/export", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminUserMetricsExport)))
+	mux.Handle("/admin/coaching/analytics", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleAdminCoachingAnalytics)))
 	mux.Handle("/media/replays/upload", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaUpload)))
 	mux.Handle("/media/replays/delete", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaDelete)))
 	mux.Handle("/media/replays/meta", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleReplayMediaMeta)))
@@ -1211,4 +1212,20 @@ func bearerTokenFromRequest(r *http.Request) string {
 		return ""
 	}
 	return strings.TrimSpace(strings.TrimPrefix(header, "Bearer "))
+}
+
+func (h *authHandler) handleAdminCoachingAnalytics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if _, ok := h.requireAdminUser(w, r); !ok {
+		return
+	}
+	analytics, err := h.store.GetCoachingAnalytics(r.Context(), parseAdminDays(r.URL.Query().Get("days")))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, analytics)
 }

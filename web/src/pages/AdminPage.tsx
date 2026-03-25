@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
+
 import { StatCard } from "../components/StatCard";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -214,6 +215,9 @@ export function AdminPage() {
           body="A compact view of ingest quality, missing data, and the latest runs coming in."
           aside={
             <div className="flex flex-wrap items-center gap-2">
+              <Link to="/admin/coaching">
+                <Button variant="secondary">Coaching KB →</Button>
+              </Link>
               {actionState ? <span>{actionState}</span> : null}
               <input
                 value={filter}
