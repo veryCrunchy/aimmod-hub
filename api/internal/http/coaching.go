@@ -35,9 +35,7 @@ func newCoachingHandler(st *store.Store) http.Handler {
 		}
 		var query coaching.Query
 		if r.Body != nil {
-			decoder := json.NewDecoder(r.Body)
-			decoder.DisallowUnknownFields()
-			if err := decoder.Decode(&query); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&query); err != nil {
 				writeJSON(w, http.StatusBadRequest, coachingErrorResponse{Error: "invalid coaching query: " + err.Error()})
 				return
 			}
