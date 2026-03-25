@@ -1,0 +1,10 @@
+{
+  "id": "reactive-reading",
+  "name": "Reactive tracking reading",
+  "aliases": ["viscose reactive reading"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Reactive tasks that isolate reading of acceleration or strafe changes while still demanding snappy but accurate corrections.",
+  "whatItTrains": ["acceleration reading", "snappy controlled corrections", "reactive anticipation"],
+  "goodForFlaws": ["rushed_direction_change_corrections", "weak_arc_reading"],
+  "cautions": ["The goal is not only to react faster but to read better before the correction"]
+}

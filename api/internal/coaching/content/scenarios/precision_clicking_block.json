@@ -1,0 +1,10 @@
+{
+  "id": "precision-clicking-block",
+  "name": "Precision clicking block",
+  "aliases": ["precision clicking micro adjustment"],
+  "scenarioTypes": ["staticclicking", "dynamicclicking", "reactiveclicking"],
+  "summary": "A block that reinforces clean landing quality and lower correction pressure.",
+  "whatItTrains": ["first-shot quality", "micro-adjustment control"],
+  "goodForFlaws": ["correction_load"],
+  "cautions": ["Return tempo gradually so arrival quality does not collapse immediately"]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "warmup-routine",
+  "title": "Structured warm-up routine",
+  "summary": "A fixed opener that gets movement quality and commit timing online before serious score attempts.",
+  "cues": ["Use the same opening order every session", "Gate score attempts behind stable movement quality"],
+  "failureModes": ["Adding more random warm-up volume instead of more structure"],
+  "relatedSignalKeys": ["warmup_tax", "warmup_efficiency"]
+}

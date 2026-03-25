@@ -1,0 +1,18 @@
+{
+  "id": "tension_lockout",
+  "title": "Tension causes lockout",
+  "summary": "The player holds too much tension during higher-speed adjustments or flicks, limiting smooth deceleration, micro-adjustment, and follow-through.",
+  "signalKeys": ["block_fade", "stable_response", "tension_management", "stabilization"],
+  "contextTags": ["pace_fade", "closing"],
+  "mechanicIds": ["tension-management"],
+  "telltales": [
+    "The wrist feels stuck during faster reactive or post-flick tasks",
+    "Landings become unstable because tension stays high too long"
+  ],
+  "contraindications": [
+    "Do not push sensitivity or speed higher if tension is already the bottleneck"
+  ],
+  "avoid": [
+    "Holding speed tension all the way through the landing"
+  ]
+}

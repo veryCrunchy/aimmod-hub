@@ -1,0 +1,18 @@
+{
+  "id": "excess_mouse_movement",
+  "title": "Mouse displacement is larger than necessary",
+  "summary": "The player moves more than the target path actually calls for, which hurts precision clicking and increases cleanup work.",
+  "signalKeys": ["precision_balance", "movement_efficiency", "micro_adjustment"],
+  "contextTags": [],
+  "mechanicIds": ["minimal-displacement"],
+  "telltales": [
+    "Short target motions produce oversized cursor motions",
+    "Precision tasks feel harder because the cursor rarely stays near center mass"
+  ],
+  "contraindications": [
+    "Do not confuse bigger movement with better commitment"
+  ],
+  "avoid": [
+    "Adding travel distance when a smaller correction would work"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "control-tracking-blending",
+  "name": "Control tracking blending",
+  "aliases": ["viscose control tracking blending"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "The blending subcategory pushes arm, wrist, and fingertips to work together without obvious delay when movement width changes.",
+  "whatItTrains": ["muscle-group blending", "seamless scale changes", "multi-group coordination"],
+  "goodForFlaws": ["weak_muscle_group_blending"],
+  "cautions": ["The task loses value if movements are segmented into obvious stages"]
+}

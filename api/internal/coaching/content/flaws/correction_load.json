@@ -1,0 +1,11 @@
+{
+  "id": "correction_load",
+  "title": "High correction load",
+  "summary": "The player reaches the target area but spends too much extra motion cleaning up the hit.",
+  "signalKeys": ["correction_load", "precision_balance"],
+  "contextTags": [],
+  "mechanicIds": ["deceleration"],
+  "telltales": ["Extra cleanup shots after otherwise decent acquires", "Visible overshoot before secure hits"],
+  "contraindications": ["Do not assume every miss is a speed problem"],
+  "avoid": ["Forcing more tempo before arrival quality is stable"]
+}

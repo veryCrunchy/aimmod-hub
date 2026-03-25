@@ -1,0 +1,44 @@
+{
+  "id": "momentum-transfer",
+  "flawId": "momentum_transfer",
+  "title": "Exploit current momentum with nearby transfer work",
+  "summary": "When momentum is positive, the best move is often to expand slightly from the current strength rather than making a huge jump away from it.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["speed", "transfer", "balanced"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["near-transfer-progression"],
+  "scenarioIds": ["near-transfer-block"],
+  "why": [
+    "Momentum is easiest to convert when the next task is close enough to reuse current movement quality.",
+    "Huge jumps in task demand can waste an otherwise productive session."
+  ],
+  "actions": [
+    "Follow a strong block with one nearby transfer scenario that asks for slightly more speed, smaller targets, or faster recognition.",
+    "Keep the transfer task close enough that the same movement standard still makes sense.",
+    "If the transfer block collapses immediately, the jump was probably too large."
+  ],
+  "avoid": [
+    "Do not waste strong form by swapping into an unrelated task just because it sounds hard."
+  ],
+  "drills": [
+    {
+      "label": "Near-transfer block",
+      "query": "near transfer aim drill progression",
+      "reason": "Close transfer work converts good form into durable range instead of random difficulty spikes."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Strong current form is best converted by nearby transfer work rather than unrelated challenge jumps.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "family-balance-transfer",
+  "flawId": "family_balance",
+  "title": "Balance family exposure so gains transfer better",
+  "summary": "If practice is dominated by one family, the player may build narrow strength that does not hold up well in other aim demands.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "balanced", "consistency"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["contrast-practice", "near-transfer-progression"],
+  "scenarioIds": ["contrast-family-block", "near-transfer-block"],
+  "why": [
+    "Transfer usually improves when the player keeps one strong family while feeding a smaller contrast family alongside it.",
+    "The goal is not equal time everywhere; it is enough contrast to stop adaptation from becoming too narrow."
+  ],
+  "actions": [
+    "Keep the main family as the anchor, then add one supporting family that challenges the opposite weakness.",
+    "Review the weakest family for movement qualities that are missing from the main block.",
+    "Use contrast work consistently for a week before judging whether it is helping."
+  ],
+  "avoid": [
+    "Do not swing from over-specialized practice to completely random scenario selection."
+  ],
+  "drills": [
+    {
+      "label": "Contrast family block",
+      "query": "contrast aim training tracking clicking target switching",
+      "reason": "A contrast block broadens adaptation without discarding the main training theme."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Practice transfer improves when an anchor family is paired with a purposeful contrast family.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

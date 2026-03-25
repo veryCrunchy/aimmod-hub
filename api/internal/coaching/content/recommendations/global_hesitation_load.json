@@ -1,0 +1,45 @@
+{
+  "id": "global-hesitation-load",
+  "flawId": "hesitation_load",
+  "title": "Clean up delayed commit timing",
+  "summary": "Hesitation load points to delayed fire commitment after the target is already mostly acquired, which slows scoring even when raw aim is good enough.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["speed", "transfer", "balanced"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["commit-timing"],
+  "scenarioIds": ["commit-drill"],
+  "why": [
+    "Hesitation wastes already-correct aim by delaying the click or release decision.",
+    "Commit timing issues often feel like confidence problems, not mechanical inability."
+  ],
+  "actions": [
+    "Run short blocks where you accept slightly lower accuracy in exchange for cleaner, earlier decisions.",
+    "Use a simple acquire -> commit -> fire rhythm and keep the cadence consistent for a full block.",
+    "Review whether hesitation appears more on small targets, after misses, or during target switches."
+  ],
+  "avoid": [
+    "Do not solve hesitation by panicking shots earlier with no acquire standard.",
+    "Avoid stacking too much punishment after misses; it usually creates more double-checking."
+  ],
+  "drills": [
+    {
+      "label": "Commit drill",
+      "query": "commit timing click rhythm scenario",
+      "reason": "Commit-focused reps make delayed confirmation easier to spot and reduce."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Hesitation is best targeted by cleaner decision timing, not only by more raw accuracy work.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "reactive-tracking-tension-management",
+  "flawId": "tension_lockout",
+  "title": "Use reactive speed work to clean up tension, not to hide it",
+  "summary": "Reactive speed tasks expose whether your wrist and hand can decelerate and stabilize cleanly at higher speeds without locking up.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "consistency", "balanced"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["tension-management"],
+  "scenarioIds": ["reactive-speed"],
+  "why": [
+    "Higher adjustment speed only helps if tension is released early enough for controlled follow-through and micro-correction.",
+    "Reactive tasks can reveal lockout fast because the player must switch from a fast adjustment speed to a slower controlled tracking speed seamlessly."
+  ],
+  "actions": [
+    "Pay attention to whether your wrist is responsible for the follow-through and whether tension makes it stick.",
+    "Choose a sensitivity where you can stay mobile rather than locked, then gradually push speed from there.",
+    "If your landing gets worse as speed rises, test whether the real issue is unbroken tension instead of under-commitment."
+  ],
+  "avoid": [
+    "Do not use more speed to hide a lockout problem.",
+    "Avoid treating a tense landing as a sign that you merely need more aggression."
+  ],
+  "drills": [
+    {
+      "label": "Reactive tracking speed",
+      "query": "viscose reactive speed",
+      "reason": "The faster reactive tasks reveal whether your deceleration and follow-through stay mobile under pressure."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Reactive speed work sharpened tension awareness because of the need for snappier movement and wrist-driven follow-through.",
+      "excerpt": "I had to be very conscious of my tension to avoid lockout.",
+      "startSec": 395,
+      "endSec": 421,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

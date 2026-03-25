@@ -1,0 +1,11 @@
+{
+  "id": "recognition_braking_gap",
+  "title": "Recognition-to-braking gap",
+  "summary": "The player recognizes the new target path in time but begins deceleration too late.",
+  "signalKeys": ["reaction_latency", "recognition", "anticipation_latency"],
+  "contextTags": ["pace_shift", "opening", "mid"],
+  "mechanicIds": ["recognition-braking-link"],
+  "telltales": ["Late braking after clear target recognition", "Extra overshoot despite adequate reaction timing"],
+  "contraindications": ["Do not mislabel this as purely slow reactions"],
+  "avoid": ["Pushing tempo higher before the recognition-braking link is stable"]
+}

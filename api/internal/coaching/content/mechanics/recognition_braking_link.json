@@ -1,0 +1,8 @@
+{
+  "id": "recognition-braking-link",
+  "title": "Recognition-to-braking link",
+  "summary": "Once the new path is recognized, slowdown should begin immediately instead of lagging behind.",
+  "cues": ["Pair recognition and braking", "Lower tempo until the timing relationship stabilizes"],
+  "failureModes": ["Seeing the answer in time but starting deceleration late"],
+  "relatedSignalKeys": ["reaction_latency", "recognition", "anticipation_latency"]
+}

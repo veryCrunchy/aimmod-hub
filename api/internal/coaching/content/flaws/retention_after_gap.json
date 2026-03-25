@@ -1,0 +1,11 @@
+{
+  "id": "retention_after_gap",
+  "title": "Retention after a break is weak",
+  "summary": "Form drops hard after time away because the player re-enters with too much score pressure and too little recalibration.",
+  "signalKeys": ["retention_after_gap", "consolidation", "consolidation_strength"],
+  "contextTags": [],
+  "mechanicIds": ["reentry-structure"],
+  "telltales": ["First session back feels noisy and over-pressured", "Peak pace is expected before feel is rebuilt"],
+  "contraindications": ["Do not compare the first session back to the best recent hot streak"],
+  "avoid": ["Using hardest tasks first after a gap"]
+}

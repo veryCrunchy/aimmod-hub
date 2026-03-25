@@ -37,6 +37,7 @@ AimMod Hub should own:
 - scenario and replay sharing
 - community-wide analytics
 - APIs that help AimMod learn from aggregate data
+- updateable coaching knowledge packs that local AimMod features can query
 
 ## Current scaffold
 
@@ -62,6 +63,12 @@ pnpm proto:generate
 ```bash
 pnpm dev:db:up
 go run ./cmd/aimmod-hub
+```
+
+### Build the coaching pack
+
+```bash
+pnpm build:coachpack
 ```
 
 ### Run the frontend
@@ -212,3 +219,18 @@ This keeps browser OAuth on the website and avoids forcing a full Discord auth f
 - uploads should be opt-in
 - public sharing should be explicit
 - raw ingest and derived/public analytics should be separated
+
+## Coaching knowledge API
+
+AimMod Hub now also exposes a lightweight JSON coaching layer intended for local tools and future local-LLM orchestration:
+
+- `GET /api/coaching/manifest`
+- `POST /api/coaching/query`
+
+The intent is:
+
+- keep session analytics and flaw detection local in the desktop app
+- let the hub serve updateable structured coaching knowledge
+- let a local model use that knowledge without forcing desktop app updates for every coaching-data tweak
+
+Normalized coaching authoring lives under `api/internal/coaching/content/`, with more detail in [docs/coaching-knowledge.md](./docs/coaching-knowledge.md).

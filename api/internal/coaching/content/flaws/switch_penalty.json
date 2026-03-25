@@ -1,0 +1,11 @@
+{
+  "id": "switch_penalty",
+  "title": "Switch penalty between families",
+  "summary": "Performance drops when moving between scenario families because the previous rhythm carries over into the next task.",
+  "signalKeys": ["switch_penalty", "context_adaptation", "context_reset"],
+  "contextTags": [],
+  "mechanicIds": ["context-reset"],
+  "telltales": ["First reps after a family change feel mechanically wrong", "One direction of transition is much worse than the other"],
+  "contraindications": ["Do not judge transfer from a rushed first rep after a hard switch"],
+  "avoid": ["Switching task families with no reset at all"]
+}

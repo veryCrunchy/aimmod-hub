@@ -1,0 +1,10 @@
+{
+  "id": "deceleration-block",
+  "name": "Deceleration block",
+  "aliases": ["deceleration drill precision clicking"],
+  "scenarioTypes": ["staticclicking", "dynamicclicking", "reactiveclicking"],
+  "summary": "A clicking block that rewards early braking and clean arrive-and-fire patterns.",
+  "whatItTrains": ["deceleration", "first-shot quality"],
+  "goodForFlaws": ["correction_load"],
+  "cautions": ["Do not turn it into a slow-motion drill forever"]
+}

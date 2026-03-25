@@ -1,0 +1,10 @@
+{
+  "id": "dynamic-precision",
+  "name": "Dynamic clicking precision",
+  "aliases": ["viscose dynamic precision"],
+  "scenarioTypes": ["dynamicclicking", "movingclicking"],
+  "summary": "Precision click timing asks for small, controlled mouse movement on readable but compact motion paths.",
+  "whatItTrains": ["minimal displacement", "center-mass discipline", "precision timing"],
+  "goodForFlaws": ["excess_mouse_movement", "poor_target_leading"],
+  "cautions": ["Extra movement hurts these tasks more than slightly less raw speed"]
+}

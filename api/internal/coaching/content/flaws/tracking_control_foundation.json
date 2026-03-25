@@ -1,0 +1,11 @@
+{
+  "id": "tracking_control_foundation",
+  "title": "Tracking control foundation is unstable",
+  "summary": "Continuous target contact breaks down because the player chases late or over-corrects during direction changes.",
+  "signalKeys": ["control_foundation", "stable_response", "correction_load"],
+  "contextTags": ["accuracy_drop", "pace_fade", "pace_shift"],
+  "mechanicIds": ["speed-matching", "deceleration"],
+  "telltales": ["Overshoot bursts during target direction changes", "Contact quality collapses when pace rises"],
+  "contraindications": ["Do not use peak speed as the only quality measure"],
+  "avoid": ["Overgripping to force smoothness"]
+}

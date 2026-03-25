@@ -1,0 +1,15 @@
+{
+  "id": "lead-placement",
+  "title": "Lead placement",
+  "summary": "In dynamic clicking, the crosshair should be placed where the target will be rather than where it currently is, shrinking the physical gap the mouse must close.",
+  "cues": [
+    "Place the crosshair ahead of the target path",
+    "Reduce the physical gap between crosshair and target",
+    "As the read improves, lead less while still staying ahead of the motion"
+  ],
+  "failureModes": [
+    "Flicking to the target's current position every time",
+    "Leading too far because the shot timing is not yet calibrated"
+  ],
+  "relatedSignalKeys": ["anticipation_latency", "recognition", "target_leading"]
+}

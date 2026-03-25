@@ -1,0 +1,10 @@
+{
+  "id": "structured-opener",
+  "name": "Structured opener",
+  "aliases": ["easy tracking click timing warmup routine"],
+  "scenarioTypes": ["tracking", "staticclicking"],
+  "summary": "A fixed opener that turns movement quality on before score attempts begin.",
+  "whatItTrains": ["warm-up readiness", "repeatable session entry"],
+  "goodForFlaws": ["warmup_tax"],
+  "cautions": ["Keep it short and repeatable instead of endlessly extending it"]
+}

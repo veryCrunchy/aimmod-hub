@@ -1,0 +1,8 @@
+{
+  "id": "deceleration",
+  "title": "Deceleration and clean arrival",
+  "summary": "Braking early enough that the cursor finishes on target instead of through target.",
+  "cues": ["Brake sooner", "Let the cursor arrive on target cleanly"],
+  "failureModes": ["Overshooting and fixing it with extra cleanup movement"],
+  "relatedSignalKeys": ["correction_load", "precision_balance", "control_foundation"]
+}

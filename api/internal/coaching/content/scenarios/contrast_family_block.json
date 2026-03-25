@@ -1,0 +1,10 @@
+{
+  "id": "contrast-family-block",
+  "name": "Contrast family block",
+  "aliases": ["contrast aim training tracking clicking target switching"],
+  "scenarioTypes": ["tracking", "staticclicking", "dynamicclicking", "targetswitching"],
+  "summary": "A supporting family block that broadens adaptation without replacing the anchor family.",
+  "whatItTrains": ["transfer range", "contrast adaptation"],
+  "goodForFlaws": ["family_balance"],
+  "cautions": ["Keep the contrast block targeted instead of fully random"]
+}

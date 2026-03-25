@@ -1,0 +1,10 @@
+{
+  "id": "control-tracking-arm",
+  "name": "Control tracking arm",
+  "aliases": ["viscose control tracking arm"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Readable nonlinear tracking tasks where wider follow-throughs place the arm in the primary driver role while still demanding precise smaller-group support.",
+  "whatItTrains": ["slow corrections", "arm integration", "direction-change control"],
+  "goodForFlaws": ["rushed_direction_change_corrections", "weak_muscle_group_blending"],
+  "cautions": ["Go slower if the arm is not actually participating in the correction"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "endurance-tracking-block",
+  "name": "Endurance tracking block",
+  "aliases": ["long tracking endurance smoothness"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "A lower-stress tracking block used to extend how long stable control can be maintained.",
+  "whatItTrains": ["tracking endurance", "sustainable pacing"],
+  "goodForFlaws": ["block_fade"],
+  "cautions": ["Useful only if the player still holds a real smoothness standard"]
+}

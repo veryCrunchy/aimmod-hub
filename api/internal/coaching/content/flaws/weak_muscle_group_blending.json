@@ -1,0 +1,18 @@
+{
+  "id": "weak_muscle_group_blending",
+  "title": "Muscle-group blending is weak",
+  "summary": "The player treats arm, wrist, or fingertips as isolated tools instead of blending them smoothly across the same movement.",
+  "signalKeys": ["control_foundation", "execution_consistency", "muscle_group_blending"],
+  "contextTags": [],
+  "mechanicIds": ["muscle-group-blending"],
+  "telltales": [
+    "Noticeable pause when changing movement scale",
+    "A small correction and a wide follow-through feel disconnected"
+  ],
+  "contraindications": [
+    "Do not assume one scenario should use only one muscle group"
+  ],
+  "avoid": [
+    "Trying to isolate one muscle group completely"
+  ]
+}

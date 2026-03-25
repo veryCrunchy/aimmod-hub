@@ -1,0 +1,44 @@
+{
+  "id": "switching-context-adaptation",
+  "flawId": "switch_penalty",
+  "title": "Reduce the switch penalty between scenario families",
+  "summary": "If performance drops after changing task types, the player may be carrying the previous rhythm and timing model into the next scenario.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "consistency", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["context-reset"],
+  "scenarioIds": ["interleaving-block"],
+  "why": [
+    "Good mechanics do not transfer automatically if the player fails to reset pacing and commit expectations.",
+    "Interleaving works best when each block starts with a deliberate reset, not a rushed carryover."
+  ],
+  "actions": [
+    "Before the first run in a new family, state the new target behavior in one sentence: smooth follow, clean first-shot, or rapid confirm-and-switch.",
+    "Use very short transition blocks when changing scenario families instead of instantly score chasing.",
+    "Track whether the penalty is worse in one direction, such as tracking into clicking or vice versa."
+  ],
+  "avoid": [
+    "Do not judge transfer quality from the very first rushed rep after a hard scenario switch."
+  ],
+  "drills": [
+    {
+      "label": "Interleaving block",
+      "query": "interleaved aim practice scenario switching",
+      "reason": "Structured switching builds adaptation without letting the old tempo leak into the new task."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Scenario switching improves more from deliberate reset behavior than from blind repetition.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

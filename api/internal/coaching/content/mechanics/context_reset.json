@@ -1,0 +1,8 @@
+{
+  "id": "context-reset",
+  "title": "Context reset between task families",
+  "summary": "A short reset helps the player switch timing models instead of carrying one scenario's rhythm into the next.",
+  "cues": ["State the target behavior before the first rep", "Use a short reset block after a hard family switch"],
+  "failureModes": ["Dragging tracking rhythm into clicking or vice versa"],
+  "relatedSignalKeys": ["switch_penalty", "context_adaptation", "context_reset"]
+}

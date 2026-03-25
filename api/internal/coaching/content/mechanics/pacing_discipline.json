@@ -1,0 +1,8 @@
+{
+  "id": "pacing-discipline",
+  "title": "Block pacing discipline",
+  "summary": "The player should choose a sustainable scoring pace instead of front-loading too much intensity.",
+  "cues": ["Treat the middle of the block as the scoring window", "Shorten blocks when quality collapses"],
+  "failureModes": ["Early pace that cannot be sustained into the back half of the run"],
+  "relatedSignalKeys": ["block_fade", "fatigue_pattern", "endurance_strength"]
+}

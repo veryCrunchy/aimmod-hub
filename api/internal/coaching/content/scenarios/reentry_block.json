@@ -1,0 +1,10 @@
+{
+  "id": "reentry-block",
+  "name": "Re-entry block",
+  "aliases": ["return to aim training after break"],
+  "scenarioTypes": ["tracking", "staticclicking", "dynamicclicking"],
+  "summary": "A first-session-back structure that rebuilds feel before score pressure ramps up.",
+  "whatItTrains": ["re-entry pacing", "feel restoration"],
+  "goodForFlaws": ["retention_after_gap"],
+  "cautions": ["Do not start with the hardest scenarios after a break"]
+}

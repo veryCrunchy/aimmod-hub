@@ -1,0 +1,10 @@
+{
+  "id": "control-tracking-wrist",
+  "name": "Control tracking wrist",
+  "aliases": ["viscose control tracking wrist"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Control tracking tasks where the wrist drives most of the correction while larger arm follow-through still matters.",
+  "whatItTrains": ["wrist-led corrections", "readable direction changes", "controlled follow-through"],
+  "goodForFlaws": ["rushed_direction_change_corrections", "weak_muscle_group_blending"],
+  "cautions": ["Do not let wrist speed outpace landing quality"]
+}

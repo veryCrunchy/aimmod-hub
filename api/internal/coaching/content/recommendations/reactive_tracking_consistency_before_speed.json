@@ -1,0 +1,45 @@
+{
+  "id": "reactive-tracking-consistency-before-speed",
+  "flawId": "rushed_direction_change_corrections",
+  "title": "In reactive tracking, land the correction before you push the pace",
+  "summary": "Manageable reactive tasks improve in-game aim best when you use them to make accurate repeated corrections, not to brute-force extreme reactivity.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "speed", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["slow-consistent-corrections"],
+  "scenarioIds": ["reactive-control", "reactive-speed", "reactive-reading"],
+  "why": [
+    "More manageable reactive tasks often transfer to in-game aim better than extreme reactive gauntlets because you can actually train consistent adjustment quality inside them.",
+    "If your corrections miss most of the time, more speed only rehearses bad timing and bad landings."
+  ],
+  "actions": [
+    "Use reactive categories to train repeated accurate corrections, not only raw reaction speed.",
+    "If you are missing the majority of corrections back to target, slow down until those corrections land.",
+    "Once consistency improves, add speed gradually instead of forcing it all at once."
+  ],
+  "avoid": [
+    "Do not treat extreme reactive difficulty as automatically better for improvement.",
+    "Avoid trying to out-speed a scenario you cannot yet control."
+  ],
+  "drills": [
+    {
+      "label": "Reactive tracking control",
+      "query": "viscose reactive control",
+      "reason": "These tasks preserve enough manageability to actually train repeatable adjustment quality."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "The most important skill in reactive tracking is still the consistency of your adjustments.",
+      "excerpt": "I still believe the consistency of your adjustments to be the most important skill here.",
+      "startSec": 366,
+      "endSec": 377,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

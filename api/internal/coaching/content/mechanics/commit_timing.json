@@ -1,0 +1,8 @@
+{
+  "id": "commit-timing",
+  "title": "Commit timing",
+  "summary": "The transition from acquire to fire should be early and consistent once the target is actually confirmed.",
+  "cues": ["Use a simple acquire -> commit -> fire rhythm", "Reduce double-checking before clicking"],
+  "failureModes": ["Delayed commit after the target is already hittable"],
+  "relatedSignalKeys": ["hesitation_load", "precision_balance"]
+}

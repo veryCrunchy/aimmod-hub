@@ -1,0 +1,54 @@
+{
+  "id": "control-tracking-muscle-group-blending",
+  "flawId": "weak_muscle_group_blending",
+  "title": "Blend muscle groups instead of isolating them",
+  "summary": "Control tracking is most effective when smaller groups start the movement and larger groups continue it, rather than pretending arm, wrist, or fingertips operate alone.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "transfer", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["muscle-group-blending"],
+  "scenarioIds": ["control-tracking-fingertip", "control-tracking-blending", "control-tracking-arm"],
+  "why": [
+    "No useful aiming task is truly one isolated muscle group, so training quality depends on smooth handoff and overlap.",
+    "The blending category is valuable because it exposes delays or segmentation between movement layers."
+  ],
+  "actions": [
+    "Think in terms of primary driver plus support, not exclusive muscle-group use.",
+    "On a small correction that grows wider, let the smaller group start the move and the larger group follow through without a pause.",
+    "Use fingertip or blending tasks to sharpen the handoff between movement scales, not to ban the other groups."
+  ],
+  "avoid": [
+    "Do not interpret a subcategory name as permission to use only one group.",
+    "Avoid obvious pauses when changing from a micro-correction into a larger follow-through."
+  ],
+  "drills": [
+    {
+      "label": "Control tracking blending",
+      "query": "viscose control tracking blending",
+      "reason": "The blending tasks exaggerate transitions between groups and make laggy handoffs easy to notice."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Muscle-group labels describe the primary driver, not the only movement source.",
+      "excerpt": "The names dictate what the primary muscle group you will rely on for the scenarios will be, but that doesn't mean it's the only one you should use.",
+      "startSec": 143,
+      "endSec": 171,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    },
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Smaller groups initiate and larger groups continue the movement in control tracking.",
+      "excerpt": "The smaller group starts the movement before the larger one continues it and follows through.",
+      "startSec": 197,
+      "endSec": 210,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

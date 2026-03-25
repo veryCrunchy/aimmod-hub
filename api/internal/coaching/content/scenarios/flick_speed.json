@@ -1,0 +1,10 @@
+{
+  "id": "flick-speed",
+  "name": "Flick technique speed",
+  "aliases": ["viscose flick speed"],
+  "scenarioTypes": ["staticclicking", "targetswitching", "dynamicclicking"],
+  "summary": "The speed subcategory rewards faster flicking, but only when landings stay controlled and the rest of the kill sequence remains efficient.",
+  "whatItTrains": ["controlled flick speed", "stable landings", "productive speed gain"],
+  "goodForFlaws": ["weak_chaining", "tension_lockout"],
+  "cautions": ["Fast flicks are not useful if they destroy the landing or the next transition"]
+}

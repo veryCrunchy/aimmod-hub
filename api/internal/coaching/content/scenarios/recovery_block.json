@@ -1,0 +1,10 @@
+{
+  "id": "recovery-block",
+  "name": "Recovery block",
+  "aliases": ["micro correction stabilization drill"],
+  "scenarioTypes": ["tracking", "staticclicking", "dynamicclicking"],
+  "summary": "A block that focuses on clean settle-after-correction behavior.",
+  "whatItTrains": ["stabilization", "recovery quality"],
+  "goodForFlaws": ["stabilization_recovery"],
+  "cautions": ["Judge the settle quality, not only the initial miss rate"]
+}

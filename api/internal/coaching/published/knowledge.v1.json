@@ -1,0 +1,3232 @@
+{
+  "version": "2026-03-25.v2",
+  "updatedAtIso": "2026-03-25T00:00:00Z",
+  "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer.",
+  "entries": [
+    {
+      "id": "clicking-precision-balance",
+      "title": "Move the speed-accuracy balance back toward clean arrivals",
+      "summary": "When clicking runs are fast but messy, the player often needs cleaner deceleration and first-shot quality before trying to raise tempo again.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "movingclicking",
+        "oneshotclicking",
+        "reactiveclicking",
+        "staticclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "precision_balance"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": null,
+      "timePreferences": null,
+      "why": [
+        "Clicking scores improve fastest when the arrive-and-fire pattern is repeatable.",
+        "A slightly slower first move with a cleaner first shot usually beats a fast miss plus correction."
+      ],
+      "actions": [
+        "Run a block where every rep is judged by first-shot quality, not raw pace.",
+        "Brake a little earlier and keep the cursor path simple instead of snapping through the target.",
+        "When tempo returns, add it in small steps without giving back clean arrival quality."
+      ],
+      "drills": [
+        {
+          "label": "Precision clicking",
+          "query": "precision clicking micro adjustment",
+          "reason": "Precision-first scenarios reinforce landing quality and reduce extra cleanup shots."
+        }
+      ],
+      "avoid": [
+        "Forcing more tempo before arrival quality is stable",
+        "Do not increase difficulty purely because the run felt fast.",
+        "Avoid mixing too many wildly different click tasks in the same corrective block."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "correction_load",
+        "title": "High correction load",
+        "summary": "The player reaches the target area but spends too much extra motion cleaning up the hit.",
+        "signalKeys": [
+          "correction_load",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Extra cleanup shots after otherwise decent acquires",
+          "Visible overshoot before secure hits"
+        ],
+        "contraindications": [
+          "Do not assume every miss is a speed problem"
+        ],
+        "avoid": [
+          "Forcing more tempo before arrival quality is stable"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "deceleration",
+          "title": "Deceleration and clean arrival",
+          "summary": "Braking early enough that the cursor finishes on target instead of through target.",
+          "cues": [
+            "Brake sooner",
+            "Let the cursor arrive on target cleanly"
+          ],
+          "failureModes": [
+            "Overshooting and fixing it with extra cleanup movement"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "precision-clicking-block",
+          "name": "Precision clicking block",
+          "aliases": [
+            "precision clicking micro adjustment"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "reactiveclicking",
+            "staticclicking"
+          ],
+          "summary": "A block that reinforces clean landing quality and lower correction pressure.",
+          "whatItTrains": [
+            "first-shot quality",
+            "micro-adjustment control"
+          ],
+          "goodForFlaws": [
+            "correction_load"
+          ],
+          "cautions": [
+            "Return tempo gradually so arrival quality does not collapse immediately"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Clicking speed should be rebuilt on top of clean arrival quality, not in place of it.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "control-tracking-correction-foundations",
+      "title": "Build slow correction quality before adding snap",
+      "summary": "In control tracking, readable nonlinear direction changes are most useful when you let them teach accurate, gradual corrections first and only add speed once those corrections are reliable.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "direction_change_correction",
+        "stable_response"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "control"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Gradual direction changes give you time to make the correction correctly instead of forcing a guess.",
+        "The category is useful because it punishes inaccurate corrections early, which exposes weak fundamentals fast."
+      ],
+      "actions": [
+        "Start each direction-change correction slower than you think you need, then add speed only after the path stays clean.",
+        "If you are missing the majority of corrections back to the target, lower your pace until those corrections land reliably.",
+        "Use readable control tracking tasks as foundation work before expecting extreme reactive tasks to improve cleanly."
+      ],
+      "drills": [
+        {
+          "label": "Control tracking wrist",
+          "query": "viscose control tracking wrist",
+          "reason": "These tasks isolate readable corrections and make rushed, inaccurate direction changes obvious."
+        }
+      ],
+      "avoid": [
+        "Using snappier corrections before consistency is built",
+        "Do not try to look snappy before the correction path is accurate.",
+        "Avoid treating punish-heavy control scenarios like pure speed tests."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "rushed_direction_change_corrections",
+        "title": "Direction-change corrections are rushed",
+        "summary": "The player tries to snap back to target too aggressively before the correction path is stable, especially on readable but nonlinear strafes.",
+        "signalKeys": [
+          "control_foundation",
+          "correction_load",
+          "direction_change_correction",
+          "stable_response"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Most corrections after direction changes miss or wobble",
+          "Corrections get faster before they get accurate"
+        ],
+        "contraindications": [
+          "Do not chase speed if the majority of corrections still fail"
+        ],
+        "avoid": [
+          "Using snappier corrections before consistency is built"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "slow-consistent-corrections",
+          "title": "Slow, consistent corrections",
+          "summary": "When direction changes are readable, the player should first build accurate corrections at a slower pace and only add snap once those corrections land reliably.",
+          "cues": [
+            "Start slower on direction changes",
+            "Only speed up after the correction path is reliable",
+            "Let the target punish bad corrections instead of hiding them with more force"
+          ],
+          "failureModes": [
+            "Trying to brute-force speed before the correction path is accurate",
+            "Missing the majority of adjustments back to target"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "direction_change_correction",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "control-tracking-arm",
+          "name": "Control tracking arm",
+          "aliases": [
+            "viscose control tracking arm"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Readable nonlinear tracking tasks where wider follow-throughs place the arm in the primary driver role while still demanding precise smaller-group support.",
+          "whatItTrains": [
+            "slow corrections",
+            "arm integration",
+            "direction-change control"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "weak_muscle_group_blending"
+          ],
+          "cautions": [
+            "Go slower if the arm is not actually participating in the correction"
+          ]
+        },
+        {
+          "id": "control-tracking-wrist",
+          "name": "Control tracking wrist",
+          "aliases": [
+            "viscose control tracking wrist"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Control tracking tasks where the wrist drives most of the correction while larger arm follow-through still matters.",
+          "whatItTrains": [
+            "wrist-led corrections",
+            "readable direction changes",
+            "controlled follow-through"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "weak_muscle_group_blending"
+          ],
+          "cautions": [
+            "Do not let wrist speed outpace landing quality"
+          ]
+        },
+        {
+          "id": "reactive-control",
+          "name": "Reactive tracking control",
+          "aliases": [
+            "viscose reactive control"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Manageable reactive tracking tasks where consistency and accuracy of adjustments matter more than extreme difficulty.",
+          "whatItTrains": [
+            "reactive correction quality",
+            "control at moderate speed",
+            "read-to-adjust consistency"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Slow down if most corrections back to target are still missing"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Control tracking should start with slow, strong corrections before speed is layered on.",
+          "excerpt": "You have to start out slow and develop those strong foundations for fundamental corrections before speeding up.",
+          "startSec": 56,
+          "endSec": 84,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "control-tracking-muscle-group-blending",
+      "title": "Blend muscle groups instead of isolating them",
+      "summary": "Control tracking is most effective when smaller groups start the movement and larger groups continue it, rather than pretending arm, wrist, or fingertips operate alone.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "execution_consistency",
+        "muscle_group_blending"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "control",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "No useful aiming task is truly one isolated muscle group, so training quality depends on smooth handoff and overlap.",
+        "The blending category is valuable because it exposes delays or segmentation between movement layers."
+      ],
+      "actions": [
+        "Think in terms of primary driver plus support, not exclusive muscle-group use.",
+        "On a small correction that grows wider, let the smaller group start the move and the larger group follow through without a pause.",
+        "Use fingertip or blending tasks to sharpen the handoff between movement scales, not to ban the other groups."
+      ],
+      "drills": [
+        {
+          "label": "Control tracking blending",
+          "query": "viscose control tracking blending",
+          "reason": "The blending tasks exaggerate transitions between groups and make laggy handoffs easy to notice."
+        }
+      ],
+      "avoid": [
+        "Trying to isolate one muscle group completely",
+        "Do not interpret a subcategory name as permission to use only one group.",
+        "Avoid obvious pauses when changing from a micro-correction into a larger follow-through."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "weak_muscle_group_blending",
+        "title": "Muscle-group blending is weak",
+        "summary": "The player treats arm, wrist, or fingertips as isolated tools instead of blending them smoothly across the same movement.",
+        "signalKeys": [
+          "control_foundation",
+          "execution_consistency",
+          "muscle_group_blending"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Noticeable pause when changing movement scale",
+          "A small correction and a wide follow-through feel disconnected"
+        ],
+        "contraindications": [
+          "Do not assume one scenario should use only one muscle group"
+        ],
+        "avoid": [
+          "Trying to isolate one muscle group completely"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "muscle-group-blending",
+          "title": "Muscle-group blending",
+          "summary": "Aim movements are driven by a primary muscle group but still rely on smooth support from the others, with smaller groups initiating and larger groups following through.",
+          "cues": [
+            "Let the smaller group start the movement and the larger group continue it",
+            "Blend transitions so there is no obvious delay between groups",
+            "Treat arm, wrist, and fingertips as cooperating layers, not isolated modes"
+          ],
+          "failureModes": [
+            "Trying to isolate one muscle group completely",
+            "Noticeable delay when switching from a smaller correction to a larger follow-through"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "execution_consistency",
+            "muscle_group_blending"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "control-tracking-fingertip",
+          "name": "Control tracking fingertip",
+          "aliases": [
+            "viscose control tracking fingertip"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Fingertip-led control tracking tasks intended to sharpen fine control while still blending with larger wrist or arm support.",
+          "whatItTrains": [
+            "fine control",
+            "fingertip-driven corrections",
+            "small-group initiation"
+          ],
+          "goodForFlaws": [
+            "weak_muscle_group_blending"
+          ],
+          "cautions": [
+            "The fingertip label refers to the primary driver, not the only group in use"
+          ]
+        },
+        {
+          "id": "control-tracking-blending",
+          "name": "Control tracking blending",
+          "aliases": [
+            "viscose control tracking blending"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "The blending subcategory pushes arm, wrist, and fingertips to work together without obvious delay when movement width changes.",
+          "whatItTrains": [
+            "muscle-group blending",
+            "seamless scale changes",
+            "multi-group coordination"
+          ],
+          "goodForFlaws": [
+            "weak_muscle_group_blending"
+          ],
+          "cautions": [
+            "The task loses value if movements are segmented into obvious stages"
+          ]
+        },
+        {
+          "id": "control-tracking-arm",
+          "name": "Control tracking arm",
+          "aliases": [
+            "viscose control tracking arm"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Readable nonlinear tracking tasks where wider follow-throughs place the arm in the primary driver role while still demanding precise smaller-group support.",
+          "whatItTrains": [
+            "slow corrections",
+            "arm integration",
+            "direction-change control"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "weak_muscle_group_blending"
+          ],
+          "cautions": [
+            "Go slower if the arm is not actually participating in the correction"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Muscle-group labels describe the primary driver, not the only movement source.",
+          "excerpt": "The names dictate what the primary muscle group you will rely on for the scenarios will be, but that doesn't mean it's the only one you should use.",
+          "startSec": 143,
+          "endSec": 171,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        },
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Smaller groups initiate and larger groups continue the movement in control tracking.",
+          "excerpt": "The smaller group starts the movement before the larger one continues it and follows through.",
+          "startSec": 197,
+          "endSec": 210,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "dynamic-click-leading-and-placement",
+      "title": "Place the crosshair where the target will be",
+      "summary": "The linear dynamic subcategory improves fastest when you reduce the physical gap between your crosshair and the target by leading its future path instead of reacting to its current position.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "movingclicking",
+        "reactiveclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "anticipation_latency",
+        "recognition",
+        "target_leading"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "precision",
+        "speed",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Large gains in dynamic clicking come from shrinking how far the mouse needs to move before the click.",
+        "Leading and then gradually reducing how much you lead builds both anticipation and timing quality."
+      ],
+      "actions": [
+        "Aim at the target's future position instead of its current position on linear dynamic tasks.",
+        "Actively practice reducing the distance you lead by as your timing improves.",
+        "If your cursor is always trailing the bot, treat that as a placement problem before a flick-speed problem."
+      ],
+      "drills": [
+        {
+          "label": "Dynamic clicking linear",
+          "query": "viscose dynamic linear",
+          "reason": "These tasks isolate the placement skill by rewarding future-position aiming over reactive chasing."
+        }
+      ],
+      "avoid": [
+        "Always reacting to the target's current position",
+        "Do not always react to the target's present location.",
+        "Avoid over-leading so much that your timing becomes late in the opposite direction."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "poor_target_leading",
+        "title": "Target leading is weak",
+        "summary": "The player keeps aiming at where the target is instead of where it will be, forcing larger corrective movement in dynamic clicking.",
+        "signalKeys": [
+          "anticipation_latency",
+          "recognition",
+          "target_leading"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "The cursor constantly trails the target path",
+          "Each click needs a larger correction than the target motion really demands"
+        ],
+        "contraindications": [
+          "Do not over-lead so much that timing becomes the next problem"
+        ],
+        "avoid": [
+          "Always reacting to the target's current position"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "lead-placement",
+          "title": "Lead placement",
+          "summary": "In dynamic clicking, the crosshair should be placed where the target will be rather than where it currently is, shrinking the physical gap the mouse must close.",
+          "cues": [
+            "Place the crosshair ahead of the target path",
+            "Reduce the physical gap between crosshair and target",
+            "As the read improves, lead less while still staying ahead of the motion"
+          ],
+          "failureModes": [
+            "Flicking to the target's current position every time",
+            "Leading too far because the shot timing is not yet calibrated"
+          ],
+          "relatedSignalKeys": [
+            "anticipation_latency",
+            "recognition",
+            "target_leading"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "dynamic-linear",
+          "name": "Dynamic clicking linear",
+          "aliases": [
+            "viscose dynamic linear",
+            "viscose dynamic leading",
+            "viscose dynamic placement"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "movingclicking",
+            "reactiveclicking"
+          ],
+          "summary": "Linear dynamic clicking emphasizes placing the crosshair where the target will be instead of chasing where it currently is.",
+          "whatItTrains": [
+            "leading",
+            "placement",
+            "movement reduction"
+          ],
+          "goodForFlaws": [
+            "poor_target_leading"
+          ],
+          "cautions": [
+            "Leading too much is still a timing error, so reduce lead distance as the read improves"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "The main skill in linear dynamic clicking is placing the crosshair where the target will be instead of where it is.",
+          "excerpt": "Putting your crosshair where the target will be instead of where it is.",
+          "startSec": 618,
+          "endSec": 630,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "dynamic-click-minimal-movement",
+      "title": "Move only as much as the target path actually demands",
+      "summary": "Precision click timing becomes much cleaner when you treat small, fast target motions as invitations to reduce displacement rather than to force bigger movement.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "movingclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "micro_adjustment",
+        "movement_efficiency",
+        "precision_balance"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Readable precision tasks reward cursor paths that stay near center mass and avoid unnecessary travel.",
+        "Extra movement makes small targets and short strafes much harder than they need to be."
+      ],
+      "actions": [
+        "On short, quick target motions, ask whether you can move less and still stay on a hittable line.",
+        "Bias toward center mass and simple cursor paths rather than chasing perfect-looking but oversized motions.",
+        "If precision tasks feel hectic, check whether your cursor is traveling farther than the target path requires."
+      ],
+      "drills": [
+        {
+          "label": "Dynamic clicking precision",
+          "query": "viscose dynamic precision",
+          "reason": "These tasks reward minimal displacement and expose oversized movement on small readable paths."
+        }
+      ],
+      "avoid": [
+        "Adding travel distance when a smaller correction would work",
+        "Do not add travel distance when the bot only moved a little.",
+        "Avoid turning compact motion into a full-sized flick out of habit."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "excess_mouse_movement",
+        "title": "Mouse displacement is larger than necessary",
+        "summary": "The player moves more than the target path actually calls for, which hurts precision clicking and increases cleanup work.",
+        "signalKeys": [
+          "micro_adjustment",
+          "movement_efficiency",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Short target motions produce oversized cursor motions",
+          "Precision tasks feel harder because the cursor rarely stays near center mass"
+        ],
+        "contraindications": [
+          "Do not confuse bigger movement with better commitment"
+        ],
+        "avoid": [
+          "Adding travel distance when a smaller correction would work"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "minimal-displacement",
+          "title": "Minimal displacement",
+          "summary": "Precision clicking improves when the player moves the mouse only as much as the target path actually requires, keeping the cursor closer to center mass.",
+          "cues": [
+            "Move only as much as you have to",
+            "Stay as close to center mass as possible",
+            "Reduce unnecessary travel on small, quick movements"
+          ],
+          "failureModes": [
+            "Overswinging short, precise target paths",
+            "Creating extra movement where a small correction would have been enough"
+          ],
+          "relatedSignalKeys": [
+            "micro_adjustment",
+            "movement_efficiency",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "dynamic-precision",
+          "name": "Dynamic clicking precision",
+          "aliases": [
+            "viscose dynamic precision"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "movingclicking"
+          ],
+          "summary": "Precision click timing asks for small, controlled mouse movement on readable but compact motion paths.",
+          "whatItTrains": [
+            "minimal displacement",
+            "center-mass discipline",
+            "precision timing"
+          ],
+          "goodForFlaws": [
+            "excess_mouse_movement",
+            "poor_target_leading"
+          ],
+          "cautions": [
+            "Extra movement hurts these tasks more than slightly less raw speed"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Precision click timing improves when the player moves the mouse only as much as needed.",
+          "excerpt": "I think trying to move your mouse only as much as you have to shines through here.",
+          "startSec": 645,
+          "endSec": 658,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "dynamic-click-reading",
+      "title": "Treat reading-heavy click timing as a prediction task, not just a click task",
+      "summary": "Reading-focused dynamic clicking is partly about hitting the target and partly about correctly understanding the arc or larger pattern before you commit.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "movingclicking",
+        "reactiveclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "arc_reading",
+        "reaction_latency",
+        "recognition"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "control",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "The category builds both micro reading of individual paths and macro reading of the whole map pattern.",
+        "If the read is wrong, extra flick speed does not solve the real issue."
+      ],
+      "actions": [
+        "Before each click, ask whether you truly understand the target's arc or are just reacting late to what you already missed.",
+        "On multi-target arc tasks, practice tracking the overall map pattern in your peripheral vision instead of tunneling on one target at a time.",
+        "Use reading-heavy click timing to train prediction quality before trying to brute-force faster clicks."
+      ],
+      "drills": [
+        {
+          "label": "Dynamic clicking reading",
+          "query": "viscose dynamic reading",
+          "reason": "These tasks expose whether the miss came from weak prediction or from pure execution."
+        }
+      ],
+      "avoid": [
+        "Treating a reading-heavy pattern like a simple static timing task",
+        "Do not reduce reading tasks to pure flick speed.",
+        "Avoid tunnel vision when the challenge is to read several arcs at once."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "weak_arc_reading",
+        "title": "Arc reading is weak",
+        "summary": "The player struggles to identify what a moving target or set of targets is about to do, so shot timing and cursor placement both suffer.",
+        "signalKeys": [
+          "arc_reading",
+          "reaction_latency",
+          "recognition"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Readable arcs still feel visually confusing",
+          "The player can follow the target sometimes, but not predict the next movement cleanly"
+        ],
+        "contraindications": [
+          "Do not reduce this to only flick speed or click speed"
+        ],
+        "avoid": [
+          "Treating a reading-heavy pattern like a simple static timing task"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "arc-reading",
+          "title": "Arc reading",
+          "summary": "Reading-heavy click timing is partly about hitting the target and partly about correctly understanding the arc or acceleration pattern before committing.",
+          "cues": [
+            "Read the movement before trying to force the shot",
+            "Track both the local arc and the larger map pattern",
+            "Use peripheral awareness when multiple arcs are active"
+          ],
+          "failureModes": [
+            "Treating every target as if the path were obvious",
+            "Losing the larger pattern when several arcs are active at once"
+          ],
+          "relatedSignalKeys": [
+            "arc_reading",
+            "reaction_latency",
+            "recognition"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "dynamic-reading",
+          "name": "Dynamic clicking reading",
+          "aliases": [
+            "viscose dynamic reading"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "movingclicking",
+            "reactiveclicking"
+          ],
+          "summary": "Reading-focused click timing forces the player to understand harder-to-follow arcs or multi-target movement patterns before committing.",
+          "whatItTrains": [
+            "arc reading",
+            "macro reading",
+            "multi-arc awareness"
+          ],
+          "goodForFlaws": [
+            "poor_target_leading",
+            "weak_arc_reading"
+          ],
+          "cautions": [
+            "Do not reduce the task to only click speed when the real bottleneck is understanding the arc"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Reading-heavy click timing requires both hitting the target and understanding what it is going to do.",
+          "excerpt": "Here the challenge is part hitting the target and part actually telling what it is going to do.",
+          "startSec": 699,
+          "endSec": 708,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "dynamic-recognition-braking",
+      "title": "Start braking earlier after target recognition",
+      "summary": "When recognition clearly happens before slowdown, the player is seeing the new path in time but beginning deceleration too late.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "movingclicking",
+        "reactiveclicking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "anticipation_latency",
+        "reaction_latency",
+        "recognition"
+      ],
+      "contextTags": [
+        "mid",
+        "opening",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "balanced",
+        "control",
+        "speed"
+      ],
+      "challengePreferences": null,
+      "timePreferences": null,
+      "why": [
+        "This is often a movement-chain timing issue, not a perception issue.",
+        "Earlier braking reduces both overshoot and follow-up correction work."
+      ],
+      "actions": [
+        "Run one constraint block where the main goal is to start braking as soon as the new target path is recognized.",
+        "Treat recognition and slowdown as one linked skill instead of separate phases.",
+        "If braking starts late only at high tempo, lower tempo slightly until the timing relationship stabilizes."
+      ],
+      "drills": [
+        {
+          "label": "Recognition to decel drill",
+          "query": "reactive clicking braking recognition",
+          "reason": "These reps train the exact gap between seeing the answer and beginning the controlled movement."
+        }
+      ],
+      "avoid": [
+        "Pushing tempo higher before the recognition-braking link is stable",
+        "Do not interpret every late brake as slow reactions if the target was recognized in time."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "recognition_braking_gap",
+        "title": "Recognition-to-braking gap",
+        "summary": "The player recognizes the new target path in time but begins deceleration too late.",
+        "signalKeys": [
+          "anticipation_latency",
+          "reaction_latency",
+          "recognition"
+        ],
+        "contextTags": [
+          "mid",
+          "opening",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Late braking after clear target recognition",
+          "Extra overshoot despite adequate reaction timing"
+        ],
+        "contraindications": [
+          "Do not mislabel this as purely slow reactions"
+        ],
+        "avoid": [
+          "Pushing tempo higher before the recognition-braking link is stable"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "recognition-braking-link",
+          "title": "Recognition-to-braking link",
+          "summary": "Once the new path is recognized, slowdown should begin immediately instead of lagging behind.",
+          "cues": [
+            "Pair recognition and braking",
+            "Lower tempo until the timing relationship stabilizes"
+          ],
+          "failureModes": [
+            "Seeing the answer in time but starting deceleration late"
+          ],
+          "relatedSignalKeys": [
+            "anticipation_latency",
+            "reaction_latency",
+            "recognition"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "recognition-to-decel-block",
+          "name": "Recognition to decel block",
+          "aliases": [
+            "reactive clicking braking recognition"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "movingclicking",
+            "reactiveclicking",
+            "tracking"
+          ],
+          "summary": "A reactive block that focuses on beginning slowdown as soon as the new path is recognized.",
+          "whatItTrains": [
+            "recognition-to-braking timing",
+            "controlled redirection"
+          ],
+          "goodForFlaws": [
+            "recognition_braking_gap"
+          ],
+          "cautions": [
+            "Lower tempo slightly if the player cannot preserve the timing link"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Recognition timing and braking timing should be coached as a linked movement-chain skill.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "family-balance-transfer",
+      "title": "Balance family exposure so gains transfer better",
+      "summary": "If practice is dominated by one family, the player may build narrow strength that does not hold up well in other aim demands.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "cross_scenario_transfer",
+        "family_balance",
+        "global_form_drop",
+        "momentum",
+        "transfer_bias"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Transfer usually improves when the player keeps one strong family while feeding a smaller contrast family alongside it.",
+        "The goal is not equal time everywhere; it is enough contrast to stop adaptation from becoming too narrow."
+      ],
+      "actions": [
+        "Keep the main family as the anchor, then add one supporting family that challenges the opposite weakness.",
+        "Review the weakest family for movement qualities that are missing from the main block.",
+        "Use contrast work consistently for a week before judging whether it is helping."
+      ],
+      "drills": [
+        {
+          "label": "Contrast family block",
+          "query": "contrast aim training tracking clicking target switching",
+          "reason": "A contrast block broadens adaptation without discarding the main training theme."
+        }
+      ],
+      "avoid": [
+        "Treating equal time in every family as the goal",
+        "Do not swing from over-specialized practice to completely random scenario selection."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "family_balance",
+        "title": "Family balance is too narrow",
+        "summary": "Practice over-specializes in one family, so gains stop transferring well to neighboring aim demands.",
+        "signalKeys": [
+          "cross_scenario_transfer",
+          "family_balance",
+          "transfer_bias"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "One family dominates volume while another stays weak for weeks",
+          "Transfer scenarios collapse immediately despite strong anchor-family form"
+        ],
+        "contraindications": [
+          "Do not replace all structure with random variety"
+        ],
+        "avoid": [
+          "Treating equal time in every family as the goal"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "contrast-practice",
+          "title": "Contrast practice",
+          "summary": "A supporting family can broaden adaptation without replacing the main training theme.",
+          "cues": [
+            "Keep one anchor family and one contrast family",
+            "Run the contrast block consistently for a week"
+          ],
+          "failureModes": [
+            "Going from over-specialized practice to fully random scenario selection"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "family_balance",
+            "transfer_bias"
+          ]
+        },
+        {
+          "id": "near-transfer-progression",
+          "title": "Near-transfer progression",
+          "summary": "Expand from current form with nearby task demands rather than huge unrelated difficulty jumps.",
+          "cues": [
+            "Use one nearby transfer block after strong form",
+            "Keep the movement standard mostly the same"
+          ],
+          "failureModes": [
+            "Wasting good momentum on an unrelated or overly large jump"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "global_form_drop",
+            "momentum"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "contrast-family-block",
+          "name": "Contrast family block",
+          "aliases": [
+            "contrast aim training tracking clicking target switching"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A supporting family block that broadens adaptation without replacing the anchor family.",
+          "whatItTrains": [
+            "transfer range",
+            "contrast adaptation"
+          ],
+          "goodForFlaws": [
+            "family_balance"
+          ],
+          "cautions": [
+            "Keep the contrast block targeted instead of fully random"
+          ]
+        },
+        {
+          "id": "near-transfer-block",
+          "name": "Near-transfer block",
+          "aliases": [
+            "near transfer aim drill progression"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A follow-up block that asks for a slightly harder version of the current successful movement pattern.",
+          "whatItTrains": [
+            "transfer progression",
+            "form conversion"
+          ],
+          "goodForFlaws": [
+            "family_balance",
+            "momentum_transfer"
+          ],
+          "cautions": [
+            "Keep the jump close enough that the current movement standard still applies"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Practice transfer improves when an anchor family is paired with a purposeful contrast family.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "flick-technique-chaining-over-speed",
+      "title": "Protect chaining before chasing flashier flick speed",
+      "summary": "Flick technique should develop speed in a productive way, where the initial flick lands cleanly and the full kill sequence stays efficient, rather than rewarding brute-force movement.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "staticclicking",
+        "targetswitching"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "block_fade",
+        "chaining",
+        "execution_consistency",
+        "precision_balance",
+        "stabilization",
+        "stable_response",
+        "tension_management"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "speed"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Fast flicks do not matter if they create unstable landings, slower target exits, or extra micro-correction.",
+        "Chaining is a better measure of flick quality than isolated flick speed because it captures what happens across multiple kills."
+      ],
+      "actions": [
+        "Judge your kill sequences by clean first-shot hits and efficient transitions, not only by how fast the first movement felt.",
+        "If you are struggling on speed subcategories, ask which part of the kill chain is failing before trying to flick even faster.",
+        "In stability-biased tasks, actively slow down slightly if that helps you stop missing the initial flick."
+      ],
+      "drills": [
+        {
+          "label": "Flick technique stability",
+          "query": "viscose flick stability",
+          "reason": "These tasks shift emphasis toward clean chaining and punish sloppy first flicks."
+        }
+      ],
+      "avoid": [
+        "Trading away first-shot accuracy for a bit more raw speed",
+        "Do not use brute-force speed as the default answer.",
+        "Avoid sacrificing initial flick accuracy just to feel faster."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "weak_chaining",
+        "title": "Chaining is weaker than raw flick speed",
+        "summary": "The player may have fast single flicks, but the full kill sequence breaks because of misses, extra micro-adjustments, or poor exits.",
+        "signalKeys": [
+          "chaining",
+          "execution_consistency",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Fast flicks do not produce equally fast kill strings",
+          "The run loses time between kills rather than only during the flick"
+        ],
+        "contraindications": [
+          "Do not judge flick quality only by one isolated fast movement"
+        ],
+        "avoid": [
+          "Trading away first-shot accuracy for a bit more raw speed"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "chaining",
+          "title": "Chaining",
+          "summary": "A good flicking run is not just individual flick speed. It is how cleanly the player moves from kill to kill without missing, over-microing, or leaving targets slowly.",
+          "cues": [
+            "Judge time-to-kill across multiple kills, not only single flick speed",
+            "Protect initial flick accuracy even if raw speed dips slightly",
+            "Leave each target in a way that sets up the next kill cleanly"
+          ],
+          "failureModes": [
+            "Fast flicks paired with misses and extra micro-adjustment",
+            "Slow target exits after each kill"
+          ],
+          "relatedSignalKeys": [
+            "chaining",
+            "execution_consistency",
+            "precision_balance"
+          ]
+        },
+        {
+          "id": "tension-management",
+          "title": "Tension management",
+          "summary": "Snappier movement only helps if the player can release tension early enough to avoid lockout and recover into controlled follow-throughs or micro-adjustments.",
+          "cues": [
+            "Release tension early in the flick",
+            "Monitor wrist lockout when higher-speed adjustments are needed",
+            "Let speed increases happen in sync with better control"
+          ],
+          "failureModes": [
+            "Holding tension too long through the follow-through",
+            "Locking the wrist when trying to go faster"
+          ],
+          "relatedSignalKeys": [
+            "block_fade",
+            "stabilization",
+            "stable_response",
+            "tension_management"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "flick-speed",
+          "name": "Flick technique speed",
+          "aliases": [
+            "viscose flick speed"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching"
+          ],
+          "summary": "The speed subcategory rewards faster flicking, but only when landings stay controlled and the rest of the kill sequence remains efficient.",
+          "whatItTrains": [
+            "controlled flick speed",
+            "stable landings",
+            "productive speed gain"
+          ],
+          "goodForFlaws": [
+            "tension_lockout",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "Fast flicks are not useful if they destroy the landing or the next transition"
+          ]
+        },
+        {
+          "id": "flick-stability",
+          "name": "Flick technique stability",
+          "aliases": [
+            "viscose flick stability"
+          ],
+          "scenarioTypes": [
+            "staticclicking",
+            "targetswitching"
+          ],
+          "summary": "Controlled, accurate flicks with enough speed to keep chaining efficient.",
+          "whatItTrains": [
+            "flick stability",
+            "accurate chaining",
+            "controlled speed"
+          ],
+          "goodForFlaws": [
+            "tension_lockout",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "A slight slowdown is worth it if it protects the initial flick hit"
+          ]
+        },
+        {
+          "id": "flick-micro",
+          "name": "Flick technique micro",
+          "aliases": [
+            "viscose flick micro"
+          ],
+          "scenarioTypes": [
+            "staticclicking",
+            "targetswitching"
+          ],
+          "summary": "Smaller, snapper flicks that shift the same speed-control principle down into smaller movement scales.",
+          "whatItTrains": [
+            "micro-flicks",
+            "small-group snap",
+            "clean tiny landings"
+          ],
+          "goodForFlaws": [
+            "excess_mouse_movement",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "Snappiness still has to be paired with clean landings"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Speed scenarios should push speed productively rather than through brute force.",
+          "excerpt": "I tried to choose scenarios that force you to push speed in a productive way rather than relying on brute force.",
+          "startSec": 447,
+          "endSec": 458,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        },
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Chaining should be thought of as time-to-kill across multiple kills rather than a single variable.",
+          "excerpt": "I just think of as looking at your time to kill across multiple kills instead of any single variable like flicking speed.",
+          "startSec": 508,
+          "endSec": 522,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "flick-technique-post-flick-stability",
+      "title": "Train what happens after the flick, not only the flick itself",
+      "summary": "Post-flick tasks are valuable because they force large flick speed, immediate stability, and tension control to coexist inside the same rep.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "targetswitching"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "block_fade",
+        "recovery_time",
+        "stabilization",
+        "stable_response",
+        "tension_management"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": [
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "What happens immediately after the large flick is often the real scoring bottleneck.",
+        "The best post-flick players still flick quickly, but they release tension soon enough to stabilize or track immediately."
+      ],
+      "actions": [
+        "After each large flick, pay attention to whether you can settle or track immediately without an extra wobble.",
+        "Use post-flick tasks to practice releasing tension before the landing rather than after the miss happens.",
+        "Treat the follow-up stability as part of the flick skill, not a separate afterthought."
+      ],
+      "drills": [
+        {
+          "label": "Flick technique post flick",
+          "query": "viscose post flick",
+          "reason": "These tasks make the recovery and immediate stability after a wide flick impossible to ignore."
+        }
+      ],
+      "avoid": [
+        "Holding too much tension during settle phases",
+        "Do not judge these tasks only by the initial flick speed.",
+        "Avoid staying tense through the landing and then trying to fix it with a second correction."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "stabilization_recovery",
+        "title": "Stabilization and recovery are noisy",
+        "summary": "The initial error may be manageable, but the settle-after-correction phase is too slow or unstable.",
+        "signalKeys": [
+          "recovery_time",
+          "stabilization",
+          "stable_response"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "One correction leads to a second wobble",
+          "Mistakes break rhythm longer than they should"
+        ],
+        "contraindications": [
+          "Do not only analyze the first miss and ignore the recovery phase"
+        ],
+        "avoid": [
+          "Holding too much tension during settle phases"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "tension-management",
+          "title": "Tension management",
+          "summary": "Snappier movement only helps if the player can release tension early enough to avoid lockout and recover into controlled follow-throughs or micro-adjustments.",
+          "cues": [
+            "Release tension early in the flick",
+            "Monitor wrist lockout when higher-speed adjustments are needed",
+            "Let speed increases happen in sync with better control"
+          ],
+          "failureModes": [
+            "Holding tension too long through the follow-through",
+            "Locking the wrist when trying to go faster"
+          ],
+          "relatedSignalKeys": [
+            "block_fade",
+            "stabilization",
+            "stable_response",
+            "tension_management"
+          ]
+        },
+        {
+          "id": "stabilization",
+          "title": "Post-correction stabilization",
+          "summary": "After a correction or reversal, the player should settle quickly without introducing a second wobble.",
+          "cues": [
+            "Keep pressure low during the settle phase",
+            "Judge recovery quality separately from the initial miss"
+          ],
+          "failureModes": [
+            "One mistake becoming a full rhythm break because recovery stays noisy"
+          ],
+          "relatedSignalKeys": [
+            "recovery_time",
+            "stabilization",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "flick-post-flick",
+          "name": "Flick technique post-flick",
+          "aliases": [
+            "viscose post flick"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "targetswitching"
+          ],
+          "summary": "Post-flick scenarios focus on what happens immediately after a large flick, especially the stability or tracking skill needed to finish the target cleanly.",
+          "whatItTrains": [
+            "post-flick stability",
+            "mid-flick tension control",
+            "large-flick recovery"
+          ],
+          "goodForFlaws": [
+            "stabilization_recovery",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Do not treat the large flick as the whole task"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Post-flick tasks focus on what happens after the flick and are excellent for tension control mid-flick.",
+          "excerpt": "What I mean by it is flicking scenarios that focus on what happens after the flick.",
+          "startSec": 561,
+          "endSec": 591,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "global-correction-load",
+      "title": "Reduce correction load before chasing more speed",
+      "summary": "High correction load usually means the player reaches the target area, then spends extra movement cleaning up overshoot or path instability before securing the hit.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "precision_balance"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Correction-heavy runs lose score twice: first on the miss or imperfect acquire, then on the cleanup movement.",
+        "Trying to force more tempo while correction load is high often makes the movement chain noisier, not faster."
+      ],
+      "actions": [
+        "Run a short block where the goal is one clean arrive-and-fire pattern, even if tempo dips slightly.",
+        "Brake a little earlier and let the cursor finish on target instead of through target.",
+        "Use slightly easier target sizes first if needed, but keep the movement pattern strict."
+      ],
+      "drills": [
+        {
+          "label": "Deceleration block",
+          "query": "deceleration drill precision clicking",
+          "reason": "Earlier braking reduces cleanup movement and makes later speed gains stick."
+        }
+      ],
+      "avoid": [
+        "Forcing more tempo before arrival quality is stable",
+        "Do not treat every miss as a speed problem.",
+        "Avoid large difficulty jumps while correction load is still the main bottleneck."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "correction_load",
+        "title": "High correction load",
+        "summary": "The player reaches the target area but spends too much extra motion cleaning up the hit.",
+        "signalKeys": [
+          "correction_load",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Extra cleanup shots after otherwise decent acquires",
+          "Visible overshoot before secure hits"
+        ],
+        "contraindications": [
+          "Do not assume every miss is a speed problem"
+        ],
+        "avoid": [
+          "Forcing more tempo before arrival quality is stable"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "deceleration",
+          "title": "Deceleration and clean arrival",
+          "summary": "Braking early enough that the cursor finishes on target instead of through target.",
+          "cues": [
+            "Brake sooner",
+            "Let the cursor arrive on target cleanly"
+          ],
+          "failureModes": [
+            "Overshooting and fixing it with extra cleanup movement"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "deceleration-block",
+          "name": "Deceleration block",
+          "aliases": [
+            "deceleration drill precision clicking"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "reactiveclicking",
+            "staticclicking"
+          ],
+          "summary": "A clicking block that rewards early braking and clean arrive-and-fire patterns.",
+          "whatItTrains": [
+            "deceleration",
+            "first-shot quality"
+          ],
+          "goodForFlaws": [
+            "correction_load"
+          ],
+          "cautions": [
+            "Do not turn it into a slow-motion drill forever"
+          ]
+        },
+        {
+          "id": "precision-clicking-block",
+          "name": "Precision clicking block",
+          "aliases": [
+            "precision clicking micro adjustment"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "reactiveclicking",
+            "staticclicking"
+          ],
+          "summary": "A block that reinforces clean landing quality and lower correction pressure.",
+          "whatItTrains": [
+            "first-shot quality",
+            "micro-adjustment control"
+          ],
+          "goodForFlaws": [
+            "correction_load"
+          ],
+          "cautions": [
+            "Return tempo gradually so arrival quality does not collapse immediately"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Correction load should be lowered before tempo is pushed further.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "global-hesitation-load",
+      "title": "Clean up delayed commit timing",
+      "summary": "Hesitation load points to delayed fire commitment after the target is already mostly acquired, which slows scoring even when raw aim is good enough.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "hesitation_load",
+        "precision_balance"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "speed",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Hesitation wastes already-correct aim by delaying the click or release decision.",
+        "Commit timing issues often feel like confidence problems, not mechanical inability."
+      ],
+      "actions": [
+        "Run short blocks where you accept slightly lower accuracy in exchange for cleaner, earlier decisions.",
+        "Use a simple acquire -\u003e commit -\u003e fire rhythm and keep the cadence consistent for a full block.",
+        "Review whether hesitation appears more on small targets, after misses, or during target switches."
+      ],
+      "drills": [
+        {
+          "label": "Commit drill",
+          "query": "commit timing click rhythm scenario",
+          "reason": "Commit-focused reps make delayed confirmation easier to spot and reduce."
+        }
+      ],
+      "avoid": [
+        "Over-punishing misses inside commit drills",
+        "Do not solve hesitation by panicking shots earlier with no acquire standard.",
+        "Avoid stacking too much punishment after misses; it usually creates more double-checking."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "hesitation_load",
+        "title": "Hesitation load",
+        "summary": "The player delays commitment after the target is already mostly acquired.",
+        "signalKeys": [
+          "hesitation_load",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Late click after acquire",
+          "Double-checking after the aim is already good enough"
+        ],
+        "contraindications": [
+          "Do not solve hesitation by panicking shots with no acquire standard"
+        ],
+        "avoid": [
+          "Over-punishing misses inside commit drills"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "commit-timing",
+          "title": "Commit timing",
+          "summary": "The transition from acquire to fire should be early and consistent once the target is actually confirmed.",
+          "cues": [
+            "Use a simple acquire -\u003e commit -\u003e fire rhythm",
+            "Reduce double-checking before clicking"
+          ],
+          "failureModes": [
+            "Delayed commit after the target is already hittable"
+          ],
+          "relatedSignalKeys": [
+            "hesitation_load",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "commit-drill",
+          "name": "Commit drill",
+          "aliases": [
+            "commit timing click rhythm scenario"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking"
+          ],
+          "summary": "A block that emphasizes clean, earlier decision timing once the target is hittable.",
+          "whatItTrains": [
+            "commit timing",
+            "click rhythm"
+          ],
+          "goodForFlaws": [
+            "hesitation_load"
+          ],
+          "cautions": [
+            "Keep a real acquire standard so the drill does not become panic shooting"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Hesitation is best targeted by cleaner decision timing, not only by more raw accuracy work.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "global-warmup-tax",
+      "title": "Shorten the warm-up tax before serious scoring runs",
+      "summary": "If early runs consistently underperform the settled part of the session, the player is paying a warm-up tax that burns good reps before quality is high enough.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "warmup_efficiency",
+        "warmup_tax"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "endurance"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Long warm-up ramps make peak performance harder to reach inside short practice blocks.",
+        "A predictable pre-routine is usually more valuable than adding more random warm-up volume."
+      ],
+      "actions": [
+        "Build a fixed 5-10 minute opener with one easy tracking drill, one click-timing drill, and one scenario near your target task.",
+        "Do not start score attempts until movement quality and commit timing both feel stable for two consecutive runs.",
+        "If the first serious run is still weak, trim variety before adding duration."
+      ],
+      "drills": [
+        {
+          "label": "Structured opener",
+          "query": "easy tracking click timing warmup routine",
+          "reason": "A fixed opener lowers run-to-run variance better than improvising the warm-up every session."
+        }
+      ],
+      "avoid": [
+        "Changing the opener every day",
+        "Do not solve warm-up tax by endlessly grinding low-focus runs.",
+        "Avoid changing sensitivity or posture during the warm-up unless something is clearly wrong."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "warmup_tax",
+        "title": "Warm-up tax",
+        "summary": "The player needs too many low-quality runs before reaching useful scoring form.",
+        "signalKeys": [
+          "warmup_efficiency",
+          "warmup_tax"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Early runs lag well behind the settled part of the session",
+          "Short sessions lose too many reps to ramp-up time"
+        ],
+        "contraindications": [
+          "Do not turn the warm-up into endless random grinding"
+        ],
+        "avoid": [
+          "Changing the opener every day"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "warmup-routine",
+          "title": "Structured warm-up routine",
+          "summary": "A fixed opener that gets movement quality and commit timing online before serious score attempts.",
+          "cues": [
+            "Use the same opening order every session",
+            "Gate score attempts behind stable movement quality"
+          ],
+          "failureModes": [
+            "Adding more random warm-up volume instead of more structure"
+          ],
+          "relatedSignalKeys": [
+            "warmup_efficiency",
+            "warmup_tax"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "structured-opener",
+          "name": "Structured opener",
+          "aliases": [
+            "easy tracking click timing warmup routine"
+          ],
+          "scenarioTypes": [
+            "staticclicking",
+            "tracking"
+          ],
+          "summary": "A fixed opener that turns movement quality on before score attempts begin.",
+          "whatItTrains": [
+            "warm-up readiness",
+            "repeatable session entry"
+          ],
+          "goodForFlaws": [
+            "warmup_tax"
+          ],
+          "cautions": [
+            "Keep it short and repeatable instead of endlessly extending it"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Warm-up tax is best addressed with a fixed opener instead of more random warm-up volume.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "momentum-transfer",
+      "title": "Exploit current momentum with nearby transfer work",
+      "summary": "When momentum is positive, the best move is often to expand slightly from the current strength rather than making a huge jump away from it.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "cross_scenario_transfer",
+        "global_form_drop",
+        "momentum"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "speed",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Momentum is easiest to convert when the next task is close enough to reuse current movement quality.",
+        "Huge jumps in task demand can waste an otherwise productive session."
+      ],
+      "actions": [
+        "Follow a strong block with one nearby transfer scenario that asks for slightly more speed, smaller targets, or faster recognition.",
+        "Keep the transfer task close enough that the same movement standard still makes sense.",
+        "If the transfer block collapses immediately, the jump was probably too large."
+      ],
+      "drills": [
+        {
+          "label": "Near-transfer block",
+          "query": "near transfer aim drill progression",
+          "reason": "Close transfer work converts good form into durable range instead of random difficulty spikes."
+        }
+      ],
+      "avoid": [
+        "Swapping into an unrelated hard task just because form feels good",
+        "Do not waste strong form by swapping into an unrelated task just because it sounds hard."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "momentum_transfer",
+        "title": "Momentum is not being converted into transfer",
+        "summary": "Good current form is wasted because the next block is too unrelated or too large a jump away from the current strength.",
+        "signalKeys": [
+          "cross_scenario_transfer",
+          "global_form_drop",
+          "momentum"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Strong form disappears after one unrelated block",
+          "Transfer task jumps are too large to hold current quality"
+        ],
+        "contraindications": [
+          "Do not mistake randomness for useful challenge"
+        ],
+        "avoid": [
+          "Swapping into an unrelated hard task just because form feels good"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "near-transfer-progression",
+          "title": "Near-transfer progression",
+          "summary": "Expand from current form with nearby task demands rather than huge unrelated difficulty jumps.",
+          "cues": [
+            "Use one nearby transfer block after strong form",
+            "Keep the movement standard mostly the same"
+          ],
+          "failureModes": [
+            "Wasting good momentum on an unrelated or overly large jump"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "global_form_drop",
+            "momentum"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "near-transfer-block",
+          "name": "Near-transfer block",
+          "aliases": [
+            "near transfer aim drill progression"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A follow-up block that asks for a slightly harder version of the current successful movement pattern.",
+          "whatItTrains": [
+            "transfer progression",
+            "form conversion"
+          ],
+          "goodForFlaws": [
+            "family_balance",
+            "momentum_transfer"
+          ],
+          "cautions": [
+            "Keep the jump close enough that the current movement standard still applies"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Strong current form is best converted by nearby transfer work rather than unrelated challenge jumps.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "reactive-tracking-consistency-before-speed",
+      "title": "In reactive tracking, land the correction before you push the pace",
+      "summary": "Manageable reactive tasks improve in-game aim best when you use them to make accurate repeated corrections, not to brute-force extreme reactivity.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "direction_change_correction",
+        "stable_response"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "balanced",
+        "control",
+        "speed"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "More manageable reactive tasks often transfer to in-game aim better than extreme reactive gauntlets because you can actually train consistent adjustment quality inside them.",
+        "If your corrections miss most of the time, more speed only rehearses bad timing and bad landings."
+      ],
+      "actions": [
+        "Use reactive categories to train repeated accurate corrections, not only raw reaction speed.",
+        "If you are missing the majority of corrections back to target, slow down until those corrections land.",
+        "Once consistency improves, add speed gradually instead of forcing it all at once."
+      ],
+      "drills": [
+        {
+          "label": "Reactive tracking control",
+          "query": "viscose reactive control",
+          "reason": "These tasks preserve enough manageability to actually train repeatable adjustment quality."
+        }
+      ],
+      "avoid": [
+        "Using snappier corrections before consistency is built",
+        "Do not treat extreme reactive difficulty as automatically better for improvement.",
+        "Avoid trying to out-speed a scenario you cannot yet control."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "rushed_direction_change_corrections",
+        "title": "Direction-change corrections are rushed",
+        "summary": "The player tries to snap back to target too aggressively before the correction path is stable, especially on readable but nonlinear strafes.",
+        "signalKeys": [
+          "control_foundation",
+          "correction_load",
+          "direction_change_correction",
+          "stable_response"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Most corrections after direction changes miss or wobble",
+          "Corrections get faster before they get accurate"
+        ],
+        "contraindications": [
+          "Do not chase speed if the majority of corrections still fail"
+        ],
+        "avoid": [
+          "Using snappier corrections before consistency is built"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "slow-consistent-corrections",
+          "title": "Slow, consistent corrections",
+          "summary": "When direction changes are readable, the player should first build accurate corrections at a slower pace and only add snap once those corrections land reliably.",
+          "cues": [
+            "Start slower on direction changes",
+            "Only speed up after the correction path is reliable",
+            "Let the target punish bad corrections instead of hiding them with more force"
+          ],
+          "failureModes": [
+            "Trying to brute-force speed before the correction path is accurate",
+            "Missing the majority of adjustments back to target"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "direction_change_correction",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "reactive-control",
+          "name": "Reactive tracking control",
+          "aliases": [
+            "viscose reactive control"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Manageable reactive tracking tasks where consistency and accuracy of adjustments matter more than extreme difficulty.",
+          "whatItTrains": [
+            "reactive correction quality",
+            "control at moderate speed",
+            "read-to-adjust consistency"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Slow down if most corrections back to target are still missing"
+          ]
+        },
+        {
+          "id": "reactive-speed",
+          "name": "Reactive tracking speed",
+          "aliases": [
+            "viscose reactive speed"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Reactive tasks where higher adjustment speed is required, but only in a way that still preserves clean control and deceleration.",
+          "whatItTrains": [
+            "high-speed adjustments",
+            "controlled deceleration",
+            "tension management"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Do not push speed by sacrificing the majority of your correction accuracy"
+          ]
+        },
+        {
+          "id": "reactive-reading",
+          "name": "Reactive tracking reading",
+          "aliases": [
+            "viscose reactive reading"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Reactive tasks that isolate reading of acceleration or strafe changes while still demanding snappy but accurate corrections.",
+          "whatItTrains": [
+            "acceleration reading",
+            "snappy controlled corrections",
+            "reactive anticipation"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "weak_arc_reading"
+          ],
+          "cautions": [
+            "The goal is not only to react faster but to read better before the correction"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "The most important skill in reactive tracking is still the consistency of your adjustments.",
+          "excerpt": "I still believe the consistency of your adjustments to be the most important skill here.",
+          "startSec": 366,
+          "endSec": 377,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "reactive-tracking-tension-management",
+      "title": "Use reactive speed work to clean up tension, not to hide it",
+      "summary": "Reactive speed tasks expose whether your wrist and hand can decelerate and stabilize cleanly at higher speeds without locking up.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "block_fade",
+        "stabilization",
+        "stable_response",
+        "tension_management"
+      ],
+      "contextTags": [
+        "closing",
+        "pace_fade"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "control"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Higher adjustment speed only helps if tension is released early enough for controlled follow-through and micro-correction.",
+        "Reactive tasks can reveal lockout fast because the player must switch from a fast adjustment speed to a slower controlled tracking speed seamlessly."
+      ],
+      "actions": [
+        "Pay attention to whether your wrist is responsible for the follow-through and whether tension makes it stick.",
+        "Choose a sensitivity where you can stay mobile rather than locked, then gradually push speed from there.",
+        "If your landing gets worse as speed rises, test whether the real issue is unbroken tension instead of under-commitment."
+      ],
+      "drills": [
+        {
+          "label": "Reactive tracking speed",
+          "query": "viscose reactive speed",
+          "reason": "The faster reactive tasks reveal whether your deceleration and follow-through stay mobile under pressure."
+        }
+      ],
+      "avoid": [
+        "Holding speed tension all the way through the landing",
+        "Do not use more speed to hide a lockout problem.",
+        "Avoid treating a tense landing as a sign that you merely need more aggression."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "tension_lockout",
+        "title": "Tension causes lockout",
+        "summary": "The player holds too much tension during higher-speed adjustments or flicks, limiting smooth deceleration, micro-adjustment, and follow-through.",
+        "signalKeys": [
+          "block_fade",
+          "stabilization",
+          "stable_response",
+          "tension_management"
+        ],
+        "contextTags": [
+          "closing",
+          "pace_fade"
+        ],
+        "telltales": [
+          "The wrist feels stuck during faster reactive or post-flick tasks",
+          "Landings become unstable because tension stays high too long"
+        ],
+        "contraindications": [
+          "Do not push sensitivity or speed higher if tension is already the bottleneck"
+        ],
+        "avoid": [
+          "Holding speed tension all the way through the landing"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "tension-management",
+          "title": "Tension management",
+          "summary": "Snappier movement only helps if the player can release tension early enough to avoid lockout and recover into controlled follow-throughs or micro-adjustments.",
+          "cues": [
+            "Release tension early in the flick",
+            "Monitor wrist lockout when higher-speed adjustments are needed",
+            "Let speed increases happen in sync with better control"
+          ],
+          "failureModes": [
+            "Holding tension too long through the follow-through",
+            "Locking the wrist when trying to go faster"
+          ],
+          "relatedSignalKeys": [
+            "block_fade",
+            "stabilization",
+            "stable_response",
+            "tension_management"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "reactive-speed",
+          "name": "Reactive tracking speed",
+          "aliases": [
+            "viscose reactive speed"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Reactive tasks where higher adjustment speed is required, but only in a way that still preserves clean control and deceleration.",
+          "whatItTrains": [
+            "high-speed adjustments",
+            "controlled deceleration",
+            "tension management"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Do not push speed by sacrificing the majority of your correction accuracy"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Reactive speed work sharpened tension awareness because of the need for snappier movement and wrist-driven follow-through.",
+          "excerpt": "I had to be very conscious of my tension to avoid lockout.",
+          "startSec": 395,
+          "endSec": 421,
+          "confidence": "medium",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "retention-after-gap",
+      "title": "Rebuild retention with lighter re-entry sessions",
+      "summary": "If form drops hard after time away, the player may need a better re-entry structure instead of expecting immediate return to peak pace.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "consolidation",
+        "consolidation_strength",
+        "retention_after_gap"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "endurance"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Retention improves when the first session back rebuilds movement quality before score pressure.",
+        "Expecting peak pace immediately after a gap often turns the first session into noisy recalibration."
+      ],
+      "actions": [
+        "Make the first session back a re-entry session with slightly easier pacing and strict movement standards.",
+        "Use familiar scenarios first, then add one transfer scenario after quality stabilizes.",
+        "Judge the first session after a gap by regained feel, not peak score."
+      ],
+      "drills": [
+        {
+          "label": "Re-entry block",
+          "query": "return to aim training after break",
+          "reason": "A softer return preserves quality and improves next-day retention."
+        }
+      ],
+      "avoid": [
+        "Using hardest tasks first after a gap",
+        "Do not compare the first post-gap session directly to your hottest recent peak."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "retention_after_gap",
+        "title": "Retention after a break is weak",
+        "summary": "Form drops hard after time away because the player re-enters with too much score pressure and too little recalibration.",
+        "signalKeys": [
+          "consolidation",
+          "consolidation_strength",
+          "retention_after_gap"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "First session back feels noisy and over-pressured",
+          "Peak pace is expected before feel is rebuilt"
+        ],
+        "contraindications": [
+          "Do not compare the first session back to the best recent hot streak"
+        ],
+        "avoid": [
+          "Using hardest tasks first after a gap"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "reentry-structure",
+          "title": "Re-entry structure after a break",
+          "summary": "The first session after time away should rebuild feel and movement quality before score pressure ramps up.",
+          "cues": [
+            "Start with familiar tasks",
+            "Judge regained feel before judging peak score"
+          ],
+          "failureModes": [
+            "Expecting immediate peak pace after a gap"
+          ],
+          "relatedSignalKeys": [
+            "consolidation",
+            "consolidation_strength",
+            "retention_after_gap"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "reentry-block",
+          "name": "Re-entry block",
+          "aliases": [
+            "return to aim training after break"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "tracking"
+          ],
+          "summary": "A first-session-back structure that rebuilds feel before score pressure ramps up.",
+          "whatItTrains": [
+            "re-entry pacing",
+            "feel restoration"
+          ],
+          "goodForFlaws": [
+            "retention_after_gap"
+          ],
+          "cautions": [
+            "Do not start with the hardest scenarios after a break"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "The first session after a gap should rebuild feel before it chases peak scores.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "stabilization-recovery",
+      "title": "Give the recovery phase a cleaner target",
+      "summary": "If recovery and stabilization are weak, the player may be handling the initial move well enough but failing to settle quickly after correction or direction change.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "recovery_time",
+        "stabilization",
+        "stable_response"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "consistency",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": null,
+      "timePreferences": null,
+      "why": [
+        "Recovery quality determines whether one mistake becomes a small delay or a full rhythm break.",
+        "Many players improve faster by cleaning recovery than by forcing a better first move."
+      ],
+      "actions": [
+        "Use short blocks that deliberately emphasize smooth settle-after-correction behavior.",
+        "Keep the mouse pressure low during the settle phase to avoid a second correction spike.",
+        "Review whether recovery failures happen more after misses, target switches, or fast reversals."
+      ],
+      "drills": [
+        {
+          "label": "Recovery block",
+          "query": "micro correction stabilization drill",
+          "reason": "Stabilization-focused reps make post-correction rhythm easier to clean up."
+        }
+      ],
+      "avoid": [
+        "Holding too much tension during settle phases",
+        "Do not only analyze the first error; the recovery quality afterward matters just as much."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "stabilization_recovery",
+        "title": "Stabilization and recovery are noisy",
+        "summary": "The initial error may be manageable, but the settle-after-correction phase is too slow or unstable.",
+        "signalKeys": [
+          "recovery_time",
+          "stabilization",
+          "stable_response"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "One correction leads to a second wobble",
+          "Mistakes break rhythm longer than they should"
+        ],
+        "contraindications": [
+          "Do not only analyze the first miss and ignore the recovery phase"
+        ],
+        "avoid": [
+          "Holding too much tension during settle phases"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "stabilization",
+          "title": "Post-correction stabilization",
+          "summary": "After a correction or reversal, the player should settle quickly without introducing a second wobble.",
+          "cues": [
+            "Keep pressure low during the settle phase",
+            "Judge recovery quality separately from the initial miss"
+          ],
+          "failureModes": [
+            "One mistake becoming a full rhythm break because recovery stays noisy"
+          ],
+          "relatedSignalKeys": [
+            "recovery_time",
+            "stabilization",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "recovery-block",
+          "name": "Recovery block",
+          "aliases": [
+            "micro correction stabilization drill"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "tracking"
+          ],
+          "summary": "A block that focuses on clean settle-after-correction behavior.",
+          "whatItTrains": [
+            "stabilization",
+            "recovery quality"
+          ],
+          "goodForFlaws": [
+            "stabilization_recovery"
+          ],
+          "cautions": [
+            "Judge the settle quality, not only the initial miss rate"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Recovery quality is a separate and coachable part of the movement chain.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "switching-context-adaptation",
+      "title": "Reduce the switch penalty between scenario families",
+      "summary": "If performance drops after changing task types, the player may be carrying the previous rhythm and timing model into the next scenario.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "context_adaptation",
+        "context_reset",
+        "switch_penalty"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Good mechanics do not transfer automatically if the player fails to reset pacing and commit expectations.",
+        "Interleaving works best when each block starts with a deliberate reset, not a rushed carryover."
+      ],
+      "actions": [
+        "Before the first run in a new family, state the new target behavior in one sentence: smooth follow, clean first-shot, or rapid confirm-and-switch.",
+        "Use very short transition blocks when changing scenario families instead of instantly score chasing.",
+        "Track whether the penalty is worse in one direction, such as tracking into clicking or vice versa."
+      ],
+      "drills": [
+        {
+          "label": "Interleaving block",
+          "query": "interleaved aim practice scenario switching",
+          "reason": "Structured switching builds adaptation without letting the old tempo leak into the new task."
+        }
+      ],
+      "avoid": [
+        "Switching task families with no reset at all",
+        "Do not judge transfer quality from the very first rushed rep after a hard scenario switch."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "switch_penalty",
+        "title": "Switch penalty between families",
+        "summary": "Performance drops when moving between scenario families because the previous rhythm carries over into the next task.",
+        "signalKeys": [
+          "context_adaptation",
+          "context_reset",
+          "switch_penalty"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "First reps after a family change feel mechanically wrong",
+          "One direction of transition is much worse than the other"
+        ],
+        "contraindications": [
+          "Do not judge transfer from a rushed first rep after a hard switch"
+        ],
+        "avoid": [
+          "Switching task families with no reset at all"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "context-reset",
+          "title": "Context reset between task families",
+          "summary": "A short reset helps the player switch timing models instead of carrying one scenario's rhythm into the next.",
+          "cues": [
+            "State the target behavior before the first rep",
+            "Use a short reset block after a hard family switch"
+          ],
+          "failureModes": [
+            "Dragging tracking rhythm into clicking or vice versa"
+          ],
+          "relatedSignalKeys": [
+            "context_adaptation",
+            "context_reset",
+            "switch_penalty"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "interleaving-block",
+          "name": "Interleaving block",
+          "aliases": [
+            "interleaved aim practice scenario switching"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A short switching structure that trains context reset and cleaner family transitions.",
+          "whatItTrains": [
+            "context reset",
+            "task adaptation"
+          ],
+          "goodForFlaws": [
+            "switch_penalty"
+          ],
+          "cautions": [
+            "Do not make the switches so fast that no real adaptation happens"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Scenario switching improves more from deliberate reset behavior than from blind repetition.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tracking-control-foundation",
+      "title": "Prioritize smooth control over aggressive chase behavior",
+      "summary": "Tracking players with overshoot bursts or unstable contact usually need smoother matching and earlier deceleration rather than more reactive intensity.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "precision_balance",
+        "stable_response"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "pace_fade",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "consistency",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": null,
+      "timePreferences": null,
+      "why": [
+        "In tracking, every overshoot burst creates recovery gaps where score leaks continuously.",
+        "Control improvements usually raise both contact quality and later pace ceiling."
+      ],
+      "actions": [
+        "Use a lighter grip and focus on matching target speed exactly instead of chasing late.",
+        "Start with larger or slower tracking variants if needed, but hold a strict smoothness standard.",
+        "If contact breaks repeatedly near direction changes, train braking and re-acceleration as one movement."
+      ],
+      "drills": [
+        {
+          "label": "Smooth tracking block",
+          "query": "smooth tracking large target slow tracking",
+          "reason": "These reps reinforce stable contact and lower overshoot pressure."
+        }
+      ],
+      "avoid": [
+        "Overgripping to force smoothness",
+        "Do not benchmark tracking quality only by peak speed if contact quality is unstable.",
+        "Avoid overgripping to force control; it usually creates more jitter."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "tracking_control_foundation",
+        "title": "Tracking control foundation is unstable",
+        "summary": "Continuous target contact breaks down because the player chases late or over-corrects during direction changes.",
+        "signalKeys": [
+          "control_foundation",
+          "correction_load",
+          "stable_response"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "pace_fade",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Overshoot bursts during target direction changes",
+          "Contact quality collapses when pace rises"
+        ],
+        "contraindications": [
+          "Do not use peak speed as the only quality measure"
+        ],
+        "avoid": [
+          "Overgripping to force smoothness"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "speed-matching",
+          "title": "Speed matching",
+          "summary": "Tracking quality improves when the player matches target speed smoothly instead of chasing late.",
+          "cues": [
+            "Escort the target",
+            "Keep grip pressure low while maintaining contact"
+          ],
+          "failureModes": [
+            "Aggressive chase behavior that creates overshoot bursts"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "stable_response"
+          ]
+        },
+        {
+          "id": "deceleration",
+          "title": "Deceleration and clean arrival",
+          "summary": "Braking early enough that the cursor finishes on target instead of through target.",
+          "cues": [
+            "Brake sooner",
+            "Let the cursor arrive on target cleanly"
+          ],
+          "failureModes": [
+            "Overshooting and fixing it with extra cleanup movement"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "smooth-tracking-block",
+          "name": "Smooth tracking block",
+          "aliases": [
+            "smooth tracking large target slow tracking"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "A tracking block that emphasizes continuous contact and stable speed matching.",
+          "whatItTrains": [
+            "speed matching",
+            "stable contact",
+            "low-tension control"
+          ],
+          "goodForFlaws": [
+            "tracking_control_foundation"
+          ],
+          "cautions": [
+            "Do not benchmark success only by pace if contact quality is unstable"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Tracking overshoot is often better solved by smoothness and braking quality than by more reactive aggression.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tracking-late-block-fade",
+      "title": "Protect quality when tracking pace fades late",
+      "summary": "Late-block pace fade in tracking often signals control fatigue or over-aggressive early pace that the player cannot sustain cleanly.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "block_fade",
+        "endurance_strength",
+        "fatigue_pattern"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "closing",
+        "pace_fade"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "endurance"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "If pace collapses late without a strong accuracy gain, the player is usually spending effort inefficiently earlier in the run.",
+        "Tracking endurance is partly mechanical and partly pacing discipline."
+      ],
+      "actions": [
+        "Treat the middle of the block as the scoring window and avoid overswinging the opening phase.",
+        "Shorten drill blocks temporarily if quality falls off before useful reps are finished.",
+        "Add one low-stress endurance block after the main work to build sustainable control."
+      ],
+      "drills": [
+        {
+          "label": "Endurance tracking",
+          "query": "long tracking endurance smoothness",
+          "reason": "Lower-stress endurance reps help extend stable control without forcing chase behavior."
+        }
+      ],
+      "avoid": [
+        "Judging endurance only by how long the block lasted",
+        "Do not keep extending block length if quality is already collapsing for most of the back half."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "block_fade",
+        "title": "Late block fade",
+        "summary": "The player starts with a pace they cannot sustain cleanly into the back half of the run or block.",
+        "signalKeys": [
+          "block_fade",
+          "endurance_strength",
+          "fatigue_pattern"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "closing",
+          "pace_fade"
+        ],
+        "telltales": [
+          "Late-run pace falls without a real accuracy gain",
+          "Back half of the block is mostly low-quality reps"
+        ],
+        "contraindications": [
+          "Do not extend blocks while quality is already collapsing"
+        ],
+        "avoid": [
+          "Judging endurance only by how long the block lasted"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "pacing-discipline",
+          "title": "Block pacing discipline",
+          "summary": "The player should choose a sustainable scoring pace instead of front-loading too much intensity.",
+          "cues": [
+            "Treat the middle of the block as the scoring window",
+            "Shorten blocks when quality collapses"
+          ],
+          "failureModes": [
+            "Early pace that cannot be sustained into the back half of the run"
+          ],
+          "relatedSignalKeys": [
+            "block_fade",
+            "endurance_strength",
+            "fatigue_pattern"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "endurance-tracking-block",
+          "name": "Endurance tracking block",
+          "aliases": [
+            "long tracking endurance smoothness"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "A lower-stress tracking block used to extend how long stable control can be maintained.",
+          "whatItTrains": [
+            "tracking endurance",
+            "sustainable pacing"
+          ],
+          "goodForFlaws": [
+            "block_fade"
+          ],
+          "cautions": [
+            "Useful only if the player still holds a real smoothness standard"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "seed-aimmod-team",
+          "claim": "Late pace fade often points to pacing discipline problems rather than a simple willpower issue.",
+          "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "seed",
+          "reviewStatus": "approved"
+        }
+      ],
+      "sources": [
+        {
+          "id": "seed-aimmod-team",
+          "kind": "internal_seed",
+          "title": "AimMod seed coaching knowledge",
+          "author": "AimMod",
+          "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "arc-reading",
+  "title": "Arc reading",
+  "summary": "Reading-heavy click timing is partly about hitting the target and partly about correctly understanding the arc or acceleration pattern before committing.",
+  "cues": [
+    "Read the movement before trying to force the shot",
+    "Track both the local arc and the larger map pattern",
+    "Use peripheral awareness when multiple arcs are active"
+  ],
+  "failureModes": [
+    "Treating every target as if the path were obvious",
+    "Losing the larger pattern when several arcs are active at once"
+  ],
+  "relatedSignalKeys": ["recognition", "reaction_latency", "arc_reading"]
+}

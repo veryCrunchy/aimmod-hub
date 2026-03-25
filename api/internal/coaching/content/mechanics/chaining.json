@@ -1,0 +1,15 @@
+{
+  "id": "chaining",
+  "title": "Chaining",
+  "summary": "A good flicking run is not just individual flick speed. It is how cleanly the player moves from kill to kill without missing, over-microing, or leaving targets slowly.",
+  "cues": [
+    "Judge time-to-kill across multiple kills, not only single flick speed",
+    "Protect initial flick accuracy even if raw speed dips slightly",
+    "Leave each target in a way that sets up the next kill cleanly"
+  ],
+  "failureModes": [
+    "Fast flicks paired with misses and extra micro-adjustment",
+    "Slow target exits after each kill"
+  ],
+  "relatedSignalKeys": ["precision_balance", "execution_consistency", "chaining"]
+}

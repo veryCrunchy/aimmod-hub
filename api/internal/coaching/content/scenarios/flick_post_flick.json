@@ -1,0 +1,10 @@
+{
+  "id": "flick-post-flick",
+  "name": "Flick technique post-flick",
+  "aliases": ["viscose post flick"],
+  "scenarioTypes": ["targetswitching", "dynamicclicking"],
+  "summary": "Post-flick scenarios focus on what happens immediately after a large flick, especially the stability or tracking skill needed to finish the target cleanly.",
+  "whatItTrains": ["post-flick stability", "mid-flick tension control", "large-flick recovery"],
+  "goodForFlaws": ["tension_lockout", "stabilization_recovery"],
+  "cautions": ["Do not treat the large flick as the whole task"]
+}

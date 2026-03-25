@@ -1,0 +1,45 @@
+{
+  "id": "control-tracking-correction-foundations",
+  "flawId": "rushed_direction_change_corrections",
+  "title": "Build slow correction quality before adding snap",
+  "summary": "In control tracking, readable nonlinear direction changes are most useful when you let them teach accurate, gradual corrections first and only add speed once those corrections are reliable.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "consistency", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["slow-consistent-corrections"],
+  "scenarioIds": ["control-tracking-arm", "control-tracking-wrist", "reactive-control"],
+  "why": [
+    "Gradual direction changes give you time to make the correction correctly instead of forcing a guess.",
+    "The category is useful because it punishes inaccurate corrections early, which exposes weak fundamentals fast."
+  ],
+  "actions": [
+    "Start each direction-change correction slower than you think you need, then add speed only after the path stays clean.",
+    "If you are missing the majority of corrections back to the target, lower your pace until those corrections land reliably.",
+    "Use readable control tracking tasks as foundation work before expecting extreme reactive tasks to improve cleanly."
+  ],
+  "avoid": [
+    "Do not try to look snappy before the correction path is accurate.",
+    "Avoid treating punish-heavy control scenarios like pure speed tests."
+  ],
+  "drills": [
+    {
+      "label": "Control tracking wrist",
+      "query": "viscose control tracking wrist",
+      "reason": "These tasks isolate readable corrections and make rushed, inaccurate direction changes obvious."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Control tracking should start with slow, strong corrections before speed is layered on.",
+      "excerpt": "You have to start out slow and develop those strong foundations for fundamental corrections before speeding up.",
+      "startSec": 56,
+      "endSec": 84,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

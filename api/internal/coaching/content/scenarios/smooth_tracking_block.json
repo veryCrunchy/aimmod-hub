@@ -1,0 +1,10 @@
+{
+  "id": "smooth-tracking-block",
+  "name": "Smooth tracking block",
+  "aliases": ["smooth tracking large target slow tracking"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "A tracking block that emphasizes continuous contact and stable speed matching.",
+  "whatItTrains": ["speed matching", "stable contact", "low-tension control"],
+  "goodForFlaws": ["tracking_control_foundation"],
+  "cautions": ["Do not benchmark success only by pace if contact quality is unstable"]
+}

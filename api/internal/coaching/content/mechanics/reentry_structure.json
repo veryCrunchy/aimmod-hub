@@ -1,0 +1,8 @@
+{
+  "id": "reentry-structure",
+  "title": "Re-entry structure after a break",
+  "summary": "The first session after time away should rebuild feel and movement quality before score pressure ramps up.",
+  "cues": ["Start with familiar tasks", "Judge regained feel before judging peak score"],
+  "failureModes": ["Expecting immediate peak pace after a gap"],
+  "relatedSignalKeys": ["retention_after_gap", "consolidation", "consolidation_strength"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "reactive-control",
+  "name": "Reactive tracking control",
+  "aliases": ["viscose reactive control"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Manageable reactive tracking tasks where consistency and accuracy of adjustments matter more than extreme difficulty.",
+  "whatItTrains": ["reactive correction quality", "control at moderate speed", "read-to-adjust consistency"],
+  "goodForFlaws": ["rushed_direction_change_corrections", "tension_lockout"],
+  "cautions": ["Slow down if most corrections back to target are still missing"]
+}

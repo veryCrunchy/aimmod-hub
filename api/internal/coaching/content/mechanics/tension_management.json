@@ -1,0 +1,15 @@
+{
+  "id": "tension-management",
+  "title": "Tension management",
+  "summary": "Snappier movement only helps if the player can release tension early enough to avoid lockout and recover into controlled follow-throughs or micro-adjustments.",
+  "cues": [
+    "Release tension early in the flick",
+    "Monitor wrist lockout when higher-speed adjustments are needed",
+    "Let speed increases happen in sync with better control"
+  ],
+  "failureModes": [
+    "Holding tension too long through the follow-through",
+    "Locking the wrist when trying to go faster"
+  ],
+  "relatedSignalKeys": ["block_fade", "stable_response", "tension_management", "stabilization"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "commit-drill",
+  "name": "Commit drill",
+  "aliases": ["commit timing click rhythm scenario"],
+  "scenarioTypes": ["staticclicking", "dynamicclicking"],
+  "summary": "A block that emphasizes clean, earlier decision timing once the target is hittable.",
+  "whatItTrains": ["commit timing", "click rhythm"],
+  "goodForFlaws": ["hesitation_load"],
+  "cautions": ["Keep a real acquire standard so the drill does not become panic shooting"]
+}

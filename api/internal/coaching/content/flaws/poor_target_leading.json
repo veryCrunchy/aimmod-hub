@@ -1,0 +1,18 @@
+{
+  "id": "poor_target_leading",
+  "title": "Target leading is weak",
+  "summary": "The player keeps aiming at where the target is instead of where it will be, forcing larger corrective movement in dynamic clicking.",
+  "signalKeys": ["anticipation_latency", "recognition", "target_leading"],
+  "contextTags": [],
+  "mechanicIds": ["lead-placement"],
+  "telltales": [
+    "The cursor constantly trails the target path",
+    "Each click needs a larger correction than the target motion really demands"
+  ],
+  "contraindications": [
+    "Do not over-lead so much that timing becomes the next problem"
+  ],
+  "avoid": [
+    "Always reacting to the target's current position"
+  ]
+}

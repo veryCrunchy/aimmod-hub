@@ -1,0 +1,45 @@
+{
+  "id": "dynamic-click-reading",
+  "flawId": "weak_arc_reading",
+  "title": "Treat reading-heavy click timing as a prediction task, not just a click task",
+  "summary": "Reading-focused dynamic clicking is partly about hitting the target and partly about correctly understanding the arc or larger pattern before you commit.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["precision", "control", "transfer"],
+  "challengePreferences": ["balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["arc-reading"],
+  "scenarioIds": ["dynamic-reading"],
+  "why": [
+    "The category builds both micro reading of individual paths and macro reading of the whole map pattern.",
+    "If the read is wrong, extra flick speed does not solve the real issue."
+  ],
+  "actions": [
+    "Before each click, ask whether you truly understand the target's arc or are just reacting late to what you already missed.",
+    "On multi-target arc tasks, practice tracking the overall map pattern in your peripheral vision instead of tunneling on one target at a time.",
+    "Use reading-heavy click timing to train prediction quality before trying to brute-force faster clicks."
+  ],
+  "avoid": [
+    "Do not reduce reading tasks to pure flick speed.",
+    "Avoid tunnel vision when the challenge is to read several arcs at once."
+  ],
+  "drills": [
+    {
+      "label": "Dynamic clicking reading",
+      "query": "viscose dynamic reading",
+      "reason": "These tasks expose whether the miss came from weak prediction or from pure execution."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Reading-heavy click timing requires both hitting the target and understanding what it is going to do.",
+      "excerpt": "Here the challenge is part hitting the target and part actually telling what it is going to do.",
+      "startSec": 699,
+      "endSec": 708,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "global-warmup-tax",
+  "flawId": "warmup_tax",
+  "title": "Shorten the warm-up tax before serious scoring runs",
+  "summary": "If early runs consistently underperform the settled part of the session, the player is paying a warm-up tax that burns good reps before quality is high enough.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["consistency", "endurance", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["warmup-routine"],
+  "scenarioIds": ["structured-opener"],
+  "why": [
+    "Long warm-up ramps make peak performance harder to reach inside short practice blocks.",
+    "A predictable pre-routine is usually more valuable than adding more random warm-up volume."
+  ],
+  "actions": [
+    "Build a fixed 5-10 minute opener with one easy tracking drill, one click-timing drill, and one scenario near your target task.",
+    "Do not start score attempts until movement quality and commit timing both feel stable for two consecutive runs.",
+    "If the first serious run is still weak, trim variety before adding duration."
+  ],
+  "avoid": [
+    "Do not solve warm-up tax by endlessly grinding low-focus runs.",
+    "Avoid changing sensitivity or posture during the warm-up unless something is clearly wrong."
+  ],
+  "drills": [
+    {
+      "label": "Structured opener",
+      "query": "easy tracking click timing warmup routine",
+      "reason": "A fixed opener lowers run-to-run variance better than improvising the warm-up every session."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Warm-up tax is best addressed with a fixed opener instead of more random warm-up volume.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

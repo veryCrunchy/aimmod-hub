@@ -1,0 +1,8 @@
+{
+  "id": "near-transfer-progression",
+  "title": "Near-transfer progression",
+  "summary": "Expand from current form with nearby task demands rather than huge unrelated difficulty jumps.",
+  "cues": ["Use one nearby transfer block after strong form", "Keep the movement standard mostly the same"],
+  "failureModes": ["Wasting good momentum on an unrelated or overly large jump"],
+  "relatedSignalKeys": ["momentum", "cross_scenario_transfer", "global_form_drop"]
+}

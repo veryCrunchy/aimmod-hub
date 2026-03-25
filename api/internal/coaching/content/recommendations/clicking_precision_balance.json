@@ -1,0 +1,45 @@
+{
+  "id": "clicking-precision-balance",
+  "flawId": "correction_load",
+  "title": "Move the speed-accuracy balance back toward clean arrivals",
+  "summary": "When clicking runs are fast but messy, the player often needs cleaner deceleration and first-shot quality before trying to raise tempo again.",
+  "scenarioTypes": ["staticclicking", "dynamicclicking", "movingclicking", "oneshotclicking", "reactiveclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["precision", "control", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": [],
+  "mechanicIds": ["deceleration"],
+  "scenarioIds": ["precision-clicking-block"],
+  "why": [
+    "Clicking scores improve fastest when the arrive-and-fire pattern is repeatable.",
+    "A slightly slower first move with a cleaner first shot usually beats a fast miss plus correction."
+  ],
+  "actions": [
+    "Run a block where every rep is judged by first-shot quality, not raw pace.",
+    "Brake a little earlier and keep the cursor path simple instead of snapping through the target.",
+    "When tempo returns, add it in small steps without giving back clean arrival quality."
+  ],
+  "avoid": [
+    "Do not increase difficulty purely because the run felt fast.",
+    "Avoid mixing too many wildly different click tasks in the same corrective block."
+  ],
+  "drills": [
+    {
+      "label": "Precision clicking",
+      "query": "precision clicking micro adjustment",
+      "reason": "Precision-first scenarios reinforce landing quality and reduce extra cleanup shots."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Clicking speed should be rebuilt on top of clean arrival quality, not in place of it.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

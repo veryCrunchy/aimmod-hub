@@ -1,0 +1,15 @@
+{
+  "id": "minimal-displacement",
+  "title": "Minimal displacement",
+  "summary": "Precision clicking improves when the player moves the mouse only as much as the target path actually requires, keeping the cursor closer to center mass.",
+  "cues": [
+    "Move only as much as you have to",
+    "Stay as close to center mass as possible",
+    "Reduce unnecessary travel on small, quick movements"
+  ],
+  "failureModes": [
+    "Overswinging short, precise target paths",
+    "Creating extra movement where a small correction would have been enough"
+  ],
+  "relatedSignalKeys": ["precision_balance", "movement_efficiency", "micro_adjustment"]
+}

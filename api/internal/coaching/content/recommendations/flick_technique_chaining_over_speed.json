@@ -1,0 +1,54 @@
+{
+  "id": "flick-technique-chaining-over-speed",
+  "flawId": "weak_chaining",
+  "title": "Protect chaining before chasing flashier flick speed",
+  "summary": "Flick technique should develop speed in a productive way, where the initial flick lands cleanly and the full kill sequence stays efficient, rather than rewarding brute-force movement.",
+  "scenarioTypes": ["staticclicking", "targetswitching", "dynamicclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["speed", "precision", "balanced"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["chaining", "tension-management"],
+  "scenarioIds": ["flick-speed", "flick-stability", "flick-micro"],
+  "why": [
+    "Fast flicks do not matter if they create unstable landings, slower target exits, or extra micro-correction.",
+    "Chaining is a better measure of flick quality than isolated flick speed because it captures what happens across multiple kills."
+  ],
+  "actions": [
+    "Judge your kill sequences by clean first-shot hits and efficient transitions, not only by how fast the first movement felt.",
+    "If you are struggling on speed subcategories, ask which part of the kill chain is failing before trying to flick even faster.",
+    "In stability-biased tasks, actively slow down slightly if that helps you stop missing the initial flick."
+  ],
+  "avoid": [
+    "Do not use brute-force speed as the default answer.",
+    "Avoid sacrificing initial flick accuracy just to feel faster."
+  ],
+  "drills": [
+    {
+      "label": "Flick technique stability",
+      "query": "viscose flick stability",
+      "reason": "These tasks shift emphasis toward clean chaining and punish sloppy first flicks."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Speed scenarios should push speed productively rather than through brute force.",
+      "excerpt": "I tried to choose scenarios that force you to push speed in a productive way rather than relying on brute force.",
+      "startSec": 447,
+      "endSec": 458,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    },
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Chaining should be thought of as time-to-kill across multiple kills rather than a single variable.",
+      "excerpt": "I just think of as looking at your time to kill across multiple kills instead of any single variable like flicking speed.",
+      "startSec": 508,
+      "endSec": 522,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

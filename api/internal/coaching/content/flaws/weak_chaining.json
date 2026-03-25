@@ -1,0 +1,18 @@
+{
+  "id": "weak_chaining",
+  "title": "Chaining is weaker than raw flick speed",
+  "summary": "The player may have fast single flicks, but the full kill sequence breaks because of misses, extra micro-adjustments, or poor exits.",
+  "signalKeys": ["precision_balance", "execution_consistency", "chaining"],
+  "contextTags": [],
+  "mechanicIds": ["chaining"],
+  "telltales": [
+    "Fast flicks do not produce equally fast kill strings",
+    "The run loses time between kills rather than only during the flick"
+  ],
+  "contraindications": [
+    "Do not judge flick quality only by one isolated fast movement"
+  ],
+  "avoid": [
+    "Trading away first-shot accuracy for a bit more raw speed"
+  ]
+}

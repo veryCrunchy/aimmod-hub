@@ -1,0 +1,10 @@
+{
+  "id": "reactive-speed",
+  "name": "Reactive tracking speed",
+  "aliases": ["viscose reactive speed"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Reactive tasks where higher adjustment speed is required, but only in a way that still preserves clean control and deceleration.",
+  "whatItTrains": ["high-speed adjustments", "controlled deceleration", "tension management"],
+  "goodForFlaws": ["rushed_direction_change_corrections", "tension_lockout"],
+  "cautions": ["Do not push speed by sacrificing the majority of your correction accuracy"]
+}

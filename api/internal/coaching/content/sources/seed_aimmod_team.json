@@ -1,0 +1,9 @@
+{
+  "id": "seed-aimmod-team",
+  "kind": "internal_seed",
+  "title": "AimMod seed coaching knowledge",
+  "author": "AimMod",
+  "url": "",
+  "publishedAtIso": "2026-03-25T00:00:00Z",
+  "notes": "Hand-authored seed content used to establish the normalized coaching schema before transcript ingestion lands."
+}

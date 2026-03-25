@@ -1,0 +1,15 @@
+{
+  "id": "slow-consistent-corrections",
+  "title": "Slow, consistent corrections",
+  "summary": "When direction changes are readable, the player should first build accurate corrections at a slower pace and only add snap once those corrections land reliably.",
+  "cues": [
+    "Start slower on direction changes",
+    "Only speed up after the correction path is reliable",
+    "Let the target punish bad corrections instead of hiding them with more force"
+  ],
+  "failureModes": [
+    "Trying to brute-force speed before the correction path is accurate",
+    "Missing the majority of adjustments back to target"
+  ],
+  "relatedSignalKeys": ["control_foundation", "correction_load", "stable_response", "direction_change_correction"]
+}

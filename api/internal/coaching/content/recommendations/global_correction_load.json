@@ -1,0 +1,45 @@
+{
+  "id": "global-correction-load",
+  "flawId": "correction_load",
+  "title": "Reduce correction load before chasing more speed",
+  "summary": "High correction load usually means the player reaches the target area, then spends extra movement cleaning up overshoot or path instability before securing the hit.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["precision", "control", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["deceleration"],
+  "scenarioIds": ["deceleration-block", "precision-clicking-block"],
+  "why": [
+    "Correction-heavy runs lose score twice: first on the miss or imperfect acquire, then on the cleanup movement.",
+    "Trying to force more tempo while correction load is high often makes the movement chain noisier, not faster."
+  ],
+  "actions": [
+    "Run a short block where the goal is one clean arrive-and-fire pattern, even if tempo dips slightly.",
+    "Brake a little earlier and let the cursor finish on target instead of through target.",
+    "Use slightly easier target sizes first if needed, but keep the movement pattern strict."
+  ],
+  "avoid": [
+    "Do not treat every miss as a speed problem.",
+    "Avoid large difficulty jumps while correction load is still the main bottleneck."
+  ],
+  "drills": [
+    {
+      "label": "Deceleration block",
+      "query": "deceleration drill precision clicking",
+      "reason": "Earlier braking reduces cleanup movement and makes later speed gains stick."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Correction load should be lowered before tempo is pushed further.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "contrast-practice",
+  "title": "Contrast practice",
+  "summary": "A supporting family can broaden adaptation without replacing the main training theme.",
+  "cues": ["Keep one anchor family and one contrast family", "Run the contrast block consistently for a week"],
+  "failureModes": ["Going from over-specialized practice to fully random scenario selection"],
+  "relatedSignalKeys": ["family_balance", "transfer_bias", "cross_scenario_transfer"]
+}

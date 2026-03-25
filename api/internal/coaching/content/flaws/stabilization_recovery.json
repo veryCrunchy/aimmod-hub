@@ -1,0 +1,11 @@
+{
+  "id": "stabilization_recovery",
+  "title": "Stabilization and recovery are noisy",
+  "summary": "The initial error may be manageable, but the settle-after-correction phase is too slow or unstable.",
+  "signalKeys": ["recovery_time", "stabilization", "stable_response"],
+  "contextTags": [],
+  "mechanicIds": ["stabilization"],
+  "telltales": ["One correction leads to a second wobble", "Mistakes break rhythm longer than they should"],
+  "contraindications": ["Do not only analyze the first miss and ignore the recovery phase"],
+  "avoid": ["Holding too much tension during settle phases"]
+}

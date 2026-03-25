@@ -1,0 +1,10 @@
+{
+  "id": "dynamic-reading",
+  "name": "Dynamic clicking reading",
+  "aliases": ["viscose dynamic reading"],
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking"],
+  "summary": "Reading-focused click timing forces the player to understand harder-to-follow arcs or multi-target movement patterns before committing.",
+  "whatItTrains": ["arc reading", "macro reading", "multi-arc awareness"],
+  "goodForFlaws": ["weak_arc_reading", "poor_target_leading"],
+  "cautions": ["Do not reduce the task to only click speed when the real bottleneck is understanding the arc"]
+}

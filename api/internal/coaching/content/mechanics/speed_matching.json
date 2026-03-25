@@ -1,0 +1,8 @@
+{
+  "id": "speed-matching",
+  "title": "Speed matching",
+  "summary": "Tracking quality improves when the player matches target speed smoothly instead of chasing late.",
+  "cues": ["Escort the target", "Keep grip pressure low while maintaining contact"],
+  "failureModes": ["Aggressive chase behavior that creates overshoot bursts"],
+  "relatedSignalKeys": ["control_foundation", "stable_response"]
+}

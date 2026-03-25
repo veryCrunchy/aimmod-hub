@@ -1,0 +1,45 @@
+{
+  "id": "flick-technique-post-flick-stability",
+  "flawId": "stabilization_recovery",
+  "title": "Train what happens after the flick, not only the flick itself",
+  "summary": "Post-flick tasks are valuable because they force large flick speed, immediate stability, and tension control to coexist inside the same rep.",
+  "scenarioTypes": ["targetswitching", "dynamicclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "precision", "balanced"],
+  "challengePreferences": ["balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["tension-management", "stabilization"],
+  "scenarioIds": ["flick-post-flick"],
+  "why": [
+    "What happens immediately after the large flick is often the real scoring bottleneck.",
+    "The best post-flick players still flick quickly, but they release tension soon enough to stabilize or track immediately."
+  ],
+  "actions": [
+    "After each large flick, pay attention to whether you can settle or track immediately without an extra wobble.",
+    "Use post-flick tasks to practice releasing tension before the landing rather than after the miss happens.",
+    "Treat the follow-up stability as part of the flick skill, not a separate afterthought."
+  ],
+  "avoid": [
+    "Do not judge these tasks only by the initial flick speed.",
+    "Avoid staying tense through the landing and then trying to fix it with a second correction."
+  ],
+  "drills": [
+    {
+      "label": "Flick technique post flick",
+      "query": "viscose post flick",
+      "reason": "These tasks make the recovery and immediate stability after a wide flick impossible to ignore."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Post-flick tasks focus on what happens after the flick and are excellent for tension control mid-flick.",
+      "excerpt": "What I mean by it is flicking scenarios that focus on what happens after the flick.",
+      "startSec": 561,
+      "endSec": 591,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "flick-stability",
+  "name": "Flick technique stability",
+  "aliases": ["viscose flick stability"],
+  "scenarioTypes": ["staticclicking", "targetswitching"],
+  "summary": "Controlled, accurate flicks with enough speed to keep chaining efficient.",
+  "whatItTrains": ["flick stability", "accurate chaining", "controlled speed"],
+  "goodForFlaws": ["weak_chaining", "tension_lockout"],
+  "cautions": ["A slight slowdown is worth it if it protects the initial flick hit"]
+}

@@ -9,6 +9,7 @@
     "dev:api": "go run ./cmd/aimmod-hub",
     "dev:web": "pnpm --dir web dev",
     "build:api": "go build ./...",
+    "build:coachpack": "go run ./api/cmd/aimmod-coachpack -out-dir ./api/internal/coaching/published",
     "build:web": "pnpm --dir web build",
     "typecheck:api": "go build ./...",
     "typecheck:web": "pnpm --dir web typecheck",

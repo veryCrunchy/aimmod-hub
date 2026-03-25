@@ -1,0 +1,45 @@
+{
+  "id": "tracking-control-foundation",
+  "flawId": "tracking_control_foundation",
+  "title": "Prioritize smooth control over aggressive chase behavior",
+  "summary": "Tracking players with overshoot bursts or unstable contact usually need smoother matching and earlier deceleration rather than more reactive intensity.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "consistency", "precision"],
+  "challengePreferences": [],
+  "timePreferences": [],
+  "mechanicIds": ["speed-matching", "deceleration"],
+  "scenarioIds": ["smooth-tracking-block"],
+  "why": [
+    "In tracking, every overshoot burst creates recovery gaps where score leaks continuously.",
+    "Control improvements usually raise both contact quality and later pace ceiling."
+  ],
+  "actions": [
+    "Use a lighter grip and focus on matching target speed exactly instead of chasing late.",
+    "Start with larger or slower tracking variants if needed, but hold a strict smoothness standard.",
+    "If contact breaks repeatedly near direction changes, train braking and re-acceleration as one movement."
+  ],
+  "avoid": [
+    "Do not benchmark tracking quality only by peak speed if contact quality is unstable.",
+    "Avoid overgripping to force control; it usually creates more jitter."
+  ],
+  "drills": [
+    {
+      "label": "Smooth tracking block",
+      "query": "smooth tracking large target slow tracking",
+      "reason": "These reps reinforce stable contact and lower overshoot pressure."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Tracking overshoot is often better solved by smoothness and braking quality than by more reactive aggression.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

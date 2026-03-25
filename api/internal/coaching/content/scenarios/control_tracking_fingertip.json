@@ -1,0 +1,10 @@
+{
+  "id": "control-tracking-fingertip",
+  "name": "Control tracking fingertip",
+  "aliases": ["viscose control tracking fingertip"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "Fingertip-led control tracking tasks intended to sharpen fine control while still blending with larger wrist or arm support.",
+  "whatItTrains": ["fine control", "fingertip-driven corrections", "small-group initiation"],
+  "goodForFlaws": ["weak_muscle_group_blending"],
+  "cautions": ["The fingertip label refers to the primary driver, not the only group in use"]
+}

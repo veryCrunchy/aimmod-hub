@@ -1,0 +1,8 @@
+{
+  "id": "stabilization",
+  "title": "Post-correction stabilization",
+  "summary": "After a correction or reversal, the player should settle quickly without introducing a second wobble.",
+  "cues": ["Keep pressure low during the settle phase", "Judge recovery quality separately from the initial miss"],
+  "failureModes": ["One mistake becoming a full rhythm break because recovery stays noisy"],
+  "relatedSignalKeys": ["recovery_time", "stabilization", "stable_response"]
+}

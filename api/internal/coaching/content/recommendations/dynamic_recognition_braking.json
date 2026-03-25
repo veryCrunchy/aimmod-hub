@@ -1,0 +1,44 @@
+{
+  "id": "dynamic-recognition-braking",
+  "flawId": "recognition_braking_gap",
+  "title": "Start braking earlier after target recognition",
+  "summary": "When recognition clearly happens before slowdown, the player is seeing the new path in time but beginning deceleration too late.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking", "tracking"],
+  "scenarioNames": [],
+  "focusAreas": ["control", "speed", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": [],
+  "mechanicIds": ["recognition-braking-link"],
+  "scenarioIds": ["recognition-to-decel-block"],
+  "why": [
+    "This is often a movement-chain timing issue, not a perception issue.",
+    "Earlier braking reduces both overshoot and follow-up correction work."
+  ],
+  "actions": [
+    "Run one constraint block where the main goal is to start braking as soon as the new target path is recognized.",
+    "Treat recognition and slowdown as one linked skill instead of separate phases.",
+    "If braking starts late only at high tempo, lower tempo slightly until the timing relationship stabilizes."
+  ],
+  "avoid": [
+    "Do not interpret every late brake as slow reactions if the target was recognized in time."
+  ],
+  "drills": [
+    {
+      "label": "Recognition to decel drill",
+      "query": "reactive clicking braking recognition",
+      "reason": "These reps train the exact gap between seeing the answer and beginning the controlled movement."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Recognition timing and braking timing should be coached as a linked movement-chain skill.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

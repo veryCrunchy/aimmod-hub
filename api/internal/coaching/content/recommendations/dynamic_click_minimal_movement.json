@@ -1,0 +1,45 @@
+{
+  "id": "dynamic-click-minimal-movement",
+  "flawId": "excess_mouse_movement",
+  "title": "Move only as much as the target path actually demands",
+  "summary": "Precision click timing becomes much cleaner when you treat small, fast target motions as invitations to reduce displacement rather than to force bigger movement.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["precision", "control", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["minimal-displacement"],
+  "scenarioIds": ["dynamic-precision"],
+  "why": [
+    "Readable precision tasks reward cursor paths that stay near center mass and avoid unnecessary travel.",
+    "Extra movement makes small targets and short strafes much harder than they need to be."
+  ],
+  "actions": [
+    "On short, quick target motions, ask whether you can move less and still stay on a hittable line.",
+    "Bias toward center mass and simple cursor paths rather than chasing perfect-looking but oversized motions.",
+    "If precision tasks feel hectic, check whether your cursor is traveling farther than the target path requires."
+  ],
+  "avoid": [
+    "Do not add travel distance when the bot only moved a little.",
+    "Avoid turning compact motion into a full-sized flick out of habit."
+  ],
+  "drills": [
+    {
+      "label": "Dynamic clicking precision",
+      "query": "viscose dynamic precision",
+      "reason": "These tasks reward minimal displacement and expose oversized movement on small readable paths."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Precision click timing improves when the player moves the mouse only as much as needed.",
+      "excerpt": "I think trying to move your mouse only as much as you have to shines through here.",
+      "startSec": 645,
+      "endSec": 658,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

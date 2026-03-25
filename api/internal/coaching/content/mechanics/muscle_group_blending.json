@@ -1,0 +1,15 @@
+{
+  "id": "muscle-group-blending",
+  "title": "Muscle-group blending",
+  "summary": "Aim movements are driven by a primary muscle group but still rely on smooth support from the others, with smaller groups initiating and larger groups following through.",
+  "cues": [
+    "Let the smaller group start the movement and the larger group continue it",
+    "Blend transitions so there is no obvious delay between groups",
+    "Treat arm, wrist, and fingertips as cooperating layers, not isolated modes"
+  ],
+  "failureModes": [
+    "Trying to isolate one muscle group completely",
+    "Noticeable delay when switching from a smaller correction to a larger follow-through"
+  ],
+  "relatedSignalKeys": ["control_foundation", "execution_consistency", "muscle_group_blending"]
+}

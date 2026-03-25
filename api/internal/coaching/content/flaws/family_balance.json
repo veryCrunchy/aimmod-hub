@@ -1,0 +1,11 @@
+{
+  "id": "family_balance",
+  "title": "Family balance is too narrow",
+  "summary": "Practice over-specializes in one family, so gains stop transferring well to neighboring aim demands.",
+  "signalKeys": ["family_balance", "transfer_bias", "cross_scenario_transfer"],
+  "contextTags": [],
+  "mechanicIds": ["contrast-practice", "near-transfer-progression"],
+  "telltales": ["One family dominates volume while another stays weak for weeks", "Transfer scenarios collapse immediately despite strong anchor-family form"],
+  "contraindications": ["Do not replace all structure with random variety"],
+  "avoid": ["Treating equal time in every family as the goal"]
+}

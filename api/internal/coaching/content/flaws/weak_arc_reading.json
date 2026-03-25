@@ -1,0 +1,18 @@
+{
+  "id": "weak_arc_reading",
+  "title": "Arc reading is weak",
+  "summary": "The player struggles to identify what a moving target or set of targets is about to do, so shot timing and cursor placement both suffer.",
+  "signalKeys": ["recognition", "reaction_latency", "arc_reading"],
+  "contextTags": [],
+  "mechanicIds": ["arc-reading"],
+  "telltales": [
+    "Readable arcs still feel visually confusing",
+    "The player can follow the target sometimes, but not predict the next movement cleanly"
+  ],
+  "contraindications": [
+    "Do not reduce this to only flick speed or click speed"
+  ],
+  "avoid": [
+    "Treating a reading-heavy pattern like a simple static timing task"
+  ]
+}

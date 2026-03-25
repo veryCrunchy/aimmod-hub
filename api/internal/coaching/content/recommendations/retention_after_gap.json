@@ -1,0 +1,44 @@
+{
+  "id": "retention-after-gap",
+  "flawId": "retention_after_gap",
+  "title": "Rebuild retention with lighter re-entry sessions",
+  "summary": "If form drops hard after time away, the player may need a better re-entry structure instead of expecting immediate return to peak pace.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["consistency", "endurance", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["reentry-structure"],
+  "scenarioIds": ["reentry-block"],
+  "why": [
+    "Retention improves when the first session back rebuilds movement quality before score pressure.",
+    "Expecting peak pace immediately after a gap often turns the first session into noisy recalibration."
+  ],
+  "actions": [
+    "Make the first session back a re-entry session with slightly easier pacing and strict movement standards.",
+    "Use familiar scenarios first, then add one transfer scenario after quality stabilizes.",
+    "Judge the first session after a gap by regained feel, not peak score."
+  ],
+  "avoid": [
+    "Do not compare the first post-gap session directly to your hottest recent peak."
+  ],
+  "drills": [
+    {
+      "label": "Re-entry block",
+      "query": "return to aim training after break",
+      "reason": "A softer return preserves quality and improves next-day retention."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "The first session after a gap should rebuild feel before it chases peak scores.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "block_fade",
+  "title": "Late block fade",
+  "summary": "The player starts with a pace they cannot sustain cleanly into the back half of the run or block.",
+  "signalKeys": ["block_fade", "fatigue_pattern", "endurance_strength"],
+  "contextTags": ["pace_fade", "accuracy_drop", "closing"],
+  "mechanicIds": ["pacing-discipline"],
+  "telltales": ["Late-run pace falls without a real accuracy gain", "Back half of the block is mostly low-quality reps"],
+  "contraindications": ["Do not extend blocks while quality is already collapsing"],
+  "avoid": ["Judging endurance only by how long the block lasted"]
+}

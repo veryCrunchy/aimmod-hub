@@ -147,8 +147,10 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		}
 	})))
 	externalHandler := newExternalHandler(hub)
+	coachingHandler := newCoachingHandler()
 	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/lookup/", withCORS(cfg.AllowedWebOrigin, externalHandler))
+	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))

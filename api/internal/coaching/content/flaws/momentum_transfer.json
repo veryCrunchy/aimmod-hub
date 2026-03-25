@@ -1,0 +1,11 @@
+{
+  "id": "momentum_transfer",
+  "title": "Momentum is not being converted into transfer",
+  "summary": "Good current form is wasted because the next block is too unrelated or too large a jump away from the current strength.",
+  "signalKeys": ["momentum", "cross_scenario_transfer", "global_form_drop"],
+  "contextTags": [],
+  "mechanicIds": ["near-transfer-progression"],
+  "telltales": ["Strong form disappears after one unrelated block", "Transfer task jumps are too large to hold current quality"],
+  "contraindications": ["Do not mistake randomness for useful challenge"],
+  "avoid": ["Swapping into an unrelated hard task just because form feels good"]
+}

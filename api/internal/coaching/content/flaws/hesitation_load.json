@@ -1,0 +1,11 @@
+{
+  "id": "hesitation_load",
+  "title": "Hesitation load",
+  "summary": "The player delays commitment after the target is already mostly acquired.",
+  "signalKeys": ["hesitation_load", "precision_balance"],
+  "contextTags": [],
+  "mechanicIds": ["commit-timing"],
+  "telltales": ["Late click after acquire", "Double-checking after the aim is already good enough"],
+  "contraindications": ["Do not solve hesitation by panicking shots with no acquire standard"],
+  "avoid": ["Over-punishing misses inside commit drills"]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "dynamic-click-leading-and-placement",
+  "flawId": "poor_target_leading",
+  "title": "Place the crosshair where the target will be",
+  "summary": "The linear dynamic subcategory improves fastest when you reduce the physical gap between your crosshair and the target by leading its future path instead of reacting to its current position.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking"],
+  "scenarioNames": [],
+  "focusAreas": ["speed", "precision", "transfer"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["lead-placement"],
+  "scenarioIds": ["dynamic-linear"],
+  "why": [
+    "Large gains in dynamic clicking come from shrinking how far the mouse needs to move before the click.",
+    "Leading and then gradually reducing how much you lead builds both anticipation and timing quality."
+  ],
+  "actions": [
+    "Aim at the target's future position instead of its current position on linear dynamic tasks.",
+    "Actively practice reducing the distance you lead by as your timing improves.",
+    "If your cursor is always trailing the bot, treat that as a placement problem before a flick-speed problem."
+  ],
+  "avoid": [
+    "Do not always react to the target's present location.",
+    "Avoid over-leading so much that your timing becomes late in the opposite direction."
+  ],
+  "drills": [
+    {
+      "label": "Dynamic clicking linear",
+      "query": "viscose dynamic linear",
+      "reason": "These tasks isolate the placement skill by rewarding future-position aiming over reactive chasing."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "The main skill in linear dynamic clicking is placing the crosshair where the target will be instead of where it is.",
+      "excerpt": "Putting your crosshair where the target will be instead of where it is.",
+      "startSec": 618,
+      "endSec": 630,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

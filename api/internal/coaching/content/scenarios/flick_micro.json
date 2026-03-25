@@ -1,0 +1,10 @@
+{
+  "id": "flick-micro",
+  "name": "Flick technique micro",
+  "aliases": ["viscose flick micro"],
+  "scenarioTypes": ["staticclicking", "targetswitching"],
+  "summary": "Smaller, snapper flicks that shift the same speed-control principle down into smaller movement scales.",
+  "whatItTrains": ["micro-flicks", "small-group snap", "clean tiny landings"],
+  "goodForFlaws": ["weak_chaining", "excess_mouse_movement"],
+  "cautions": ["Snappiness still has to be paired with clean landings"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "dynamic-linear",
+  "name": "Dynamic clicking linear",
+  "aliases": ["viscose dynamic linear", "viscose dynamic leading", "viscose dynamic placement"],
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking"],
+  "summary": "Linear dynamic clicking emphasizes placing the crosshair where the target will be instead of chasing where it currently is.",
+  "whatItTrains": ["leading", "placement", "movement reduction"],
+  "goodForFlaws": ["poor_target_leading"],
+  "cautions": ["Leading too much is still a timing error, so reduce lead distance as the read improves"]
+}

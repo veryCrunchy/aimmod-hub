@@ -1,0 +1,10 @@
+{
+  "id": "interleaving-block",
+  "name": "Interleaving block",
+  "aliases": ["interleaved aim practice scenario switching"],
+  "scenarioTypes": ["tracking", "staticclicking", "dynamicclicking", "targetswitching"],
+  "summary": "A short switching structure that trains context reset and cleaner family transitions.",
+  "whatItTrains": ["context reset", "task adaptation"],
+  "goodForFlaws": ["switch_penalty"],
+  "cautions": ["Do not make the switches so fast that no real adaptation happens"]
+}

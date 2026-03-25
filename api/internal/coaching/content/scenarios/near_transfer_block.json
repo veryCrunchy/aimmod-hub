@@ -1,0 +1,10 @@
+{
+  "id": "near-transfer-block",
+  "name": "Near-transfer block",
+  "aliases": ["near transfer aim drill progression"],
+  "scenarioTypes": ["tracking", "staticclicking", "dynamicclicking", "targetswitching"],
+  "summary": "A follow-up block that asks for a slightly harder version of the current successful movement pattern.",
+  "whatItTrains": ["transfer progression", "form conversion"],
+  "goodForFlaws": ["momentum_transfer", "family_balance"],
+  "cautions": ["Keep the jump close enough that the current movement standard still applies"]
+}

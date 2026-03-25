@@ -1,0 +1,10 @@
+{
+  "id": "recognition-to-decel-block",
+  "name": "Recognition to decel block",
+  "aliases": ["reactive clicking braking recognition"],
+  "scenarioTypes": ["tracking", "dynamicclicking", "movingclicking", "reactiveclicking"],
+  "summary": "A reactive block that focuses on beginning slowdown as soon as the new path is recognized.",
+  "whatItTrains": ["recognition-to-braking timing", "controlled redirection"],
+  "goodForFlaws": ["recognition_braking_gap"],
+  "cautions": ["Lower tempo slightly if the player cannot preserve the timing link"]
+}

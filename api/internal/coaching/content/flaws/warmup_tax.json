@@ -1,0 +1,11 @@
+{
+  "id": "warmup_tax",
+  "title": "Warm-up tax",
+  "summary": "The player needs too many low-quality runs before reaching useful scoring form.",
+  "signalKeys": ["warmup_tax", "warmup_efficiency"],
+  "contextTags": [],
+  "mechanicIds": ["warmup-routine"],
+  "telltales": ["Early runs lag well behind the settled part of the session", "Short sessions lose too many reps to ramp-up time"],
+  "contraindications": ["Do not turn the warm-up into endless random grinding"],
+  "avoid": ["Changing the opener every day"]
+}

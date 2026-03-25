@@ -1,0 +1,44 @@
+{
+  "id": "tracking-late-block-fade",
+  "flawId": "block_fade",
+  "title": "Protect quality when tracking pace fades late",
+  "summary": "Late-block pace fade in tracking often signals control fatigue or over-aggressive early pace that the player cannot sustain cleanly.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["endurance", "consistency", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["pacing-discipline"],
+  "scenarioIds": ["endurance-tracking-block"],
+  "why": [
+    "If pace collapses late without a strong accuracy gain, the player is usually spending effort inefficiently earlier in the run.",
+    "Tracking endurance is partly mechanical and partly pacing discipline."
+  ],
+  "actions": [
+    "Treat the middle of the block as the scoring window and avoid overswinging the opening phase.",
+    "Shorten drill blocks temporarily if quality falls off before useful reps are finished.",
+    "Add one low-stress endurance block after the main work to build sustainable control."
+  ],
+  "avoid": [
+    "Do not keep extending block length if quality is already collapsing for most of the back half."
+  ],
+  "drills": [
+    {
+      "label": "Endurance tracking",
+      "query": "long tracking endurance smoothness",
+      "reason": "Lower-stress endurance reps help extend stable control without forcing chase behavior."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Late pace fade often points to pacing discipline problems rather than a simple willpower issue.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}

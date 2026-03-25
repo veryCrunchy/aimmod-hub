@@ -1,0 +1,18 @@
+{
+  "id": "rushed_direction_change_corrections",
+  "title": "Direction-change corrections are rushed",
+  "summary": "The player tries to snap back to target too aggressively before the correction path is stable, especially on readable but nonlinear strafes.",
+  "signalKeys": ["control_foundation", "correction_load", "stable_response", "direction_change_correction"],
+  "contextTags": ["pace_shift", "accuracy_drop"],
+  "mechanicIds": ["slow-consistent-corrections"],
+  "telltales": [
+    "Most corrections after direction changes miss or wobble",
+    "Corrections get faster before they get accurate"
+  ],
+  "contraindications": [
+    "Do not chase speed if the majority of corrections still fail"
+  ],
+  "avoid": [
+    "Using snappier corrections before consistency is built"
+  ]
+}

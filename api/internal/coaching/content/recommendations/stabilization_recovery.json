@@ -1,0 +1,44 @@
+{
+  "id": "stabilization-recovery",
+  "flawId": "stabilization_recovery",
+  "title": "Give the recovery phase a cleaner target",
+  "summary": "If recovery and stabilization are weak, the player may be handling the initial move well enough but failing to settle quickly after correction or direction change.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["control", "consistency", "precision"],
+  "challengePreferences": [],
+  "timePreferences": [],
+  "mechanicIds": ["stabilization"],
+  "scenarioIds": ["recovery-block"],
+  "why": [
+    "Recovery quality determines whether one mistake becomes a small delay or a full rhythm break.",
+    "Many players improve faster by cleaning recovery than by forcing a better first move."
+  ],
+  "actions": [
+    "Use short blocks that deliberately emphasize smooth settle-after-correction behavior.",
+    "Keep the mouse pressure low during the settle phase to avoid a second correction spike.",
+    "Review whether recovery failures happen more after misses, target switches, or fast reversals."
+  ],
+  "avoid": [
+    "Do not only analyze the first error; the recovery quality afterward matters just as much."
+  ],
+  "drills": [
+    {
+      "label": "Recovery block",
+      "query": "micro correction stabilization drill",
+      "reason": "Stabilization-focused reps make post-correction rhythm easier to clean up."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "seed-aimmod-team",
+      "claim": "Recovery quality is a separate and coachable part of the movement chain.",
+      "excerpt": "Hand-authored seed knowledge from the initial AimMod coaching model.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "seed",
+      "reviewStatus": "approved"
+    }
+  ]
+}
