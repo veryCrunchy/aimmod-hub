@@ -82,19 +82,20 @@ type MatchInfo struct {
 }
 
 type MatchedEntry struct {
-	ID            string    `json:"id"`
-	Title         string    `json:"title"`
-	Summary       string    `json:"summary"`
-	ScenarioTypes []string  `json:"scenarioTypes"`
-	ScenarioNames []string  `json:"scenarioNames"`
-	SignalKeys    []string  `json:"signalKeys"`
-	ContextTags   []string  `json:"contextTags"`
-	Why           []string  `json:"why"`
-	Actions       []string  `json:"actions"`
-	Drills        []Drill   `json:"drills"`
-	Avoid         []string  `json:"avoid"`
-	Priority      string    `json:"priority"`
-	Match         MatchInfo `json:"match"`
+	ID            string      `json:"id"`
+	Title         string      `json:"title"`
+	Summary       string      `json:"summary"`
+	ScenarioTypes []string    `json:"scenarioTypes"`
+	ScenarioNames []string    `json:"scenarioNames"`
+	SignalKeys    []string    `json:"signalKeys"`
+	ContextTags   []string    `json:"contextTags"`
+	Why           []string    `json:"why"`
+	Actions       []string    `json:"actions"`
+	Drills        []Drill     `json:"drills"`
+	Avoid         []string    `json:"avoid"`
+	Priority      string      `json:"priority"`
+	Sources       []SourceRef `json:"sources,omitempty"`
+	Match         MatchInfo   `json:"match"`
 }
 
 type Response struct {
@@ -363,6 +364,7 @@ func scoreEntry(entry Entry, query Query) (MatchedEntry, int) {
 		Drills:        entry.Drills,
 		Avoid:         entry.Avoid,
 		Priority:      entry.Priority,
+		Sources:       entry.Sources,
 		Match:         match,
 	}, score
 }
