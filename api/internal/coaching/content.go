@@ -78,6 +78,7 @@ type RecommendationDoc struct {
 	Summary              string        `json:"summary"`
 	ScenarioTypes        []string      `json:"scenarioTypes"`
 	ScenarioNames        []string      `json:"scenarioNames"`
+	ContextTags          []string      `json:"contextTags"`
 	FocusAreas           []string      `json:"focusAreas"`
 	ChallengePreferences []string      `json:"challengePreferences"`
 	TimePreferences      []string      `json:"timePreferences"`
@@ -316,7 +317,7 @@ func compileRecommendation(catalog Catalog, recommendation RecommendationDoc) (E
 		ScenarioTypes:        normalizeList(recommendation.ScenarioTypes),
 		ScenarioNames:        normalizeList(recommendation.ScenarioNames),
 		SignalKeys:           normalizeList(append(append([]string{}, flaw.SignalKeys...), collectMechanicSignals(mechanics)...)),
-		ContextTags:          normalizeList(append([]string{}, flaw.ContextTags...)),
+		ContextTags:          normalizeList(append(append([]string{}, flaw.ContextTags...), recommendation.ContextTags...)),
 		FocusAreas:           normalizeList(recommendation.FocusAreas),
 		ChallengePreferences: normalizeList(recommendation.ChallengePreferences),
 		TimePreferences:      normalizeList(recommendation.TimePreferences),
