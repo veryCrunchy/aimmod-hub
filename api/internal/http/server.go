@@ -44,21 +44,32 @@ type Config struct {
 	WebAppOrigin     string
 	// StaticDir, when set, makes the API server also serve the built frontend
 	// with server-side meta tag injection. Set AIMMOD_HUB_STATIC_DIR to enable.
-	StaticDir           string
-	DatabaseURL         string
-	DiscordClientID     string
-	DiscordClientSecret string
-	DiscordRedirectURI  string
-	AdminDiscordUserID  string
-	SessionCookieSecure bool
-	MediaDir            string
-	MediaBackend        string
-	S3Bucket            string
-	S3Region            string
-	S3Endpoint          string
-	S3AccessKeyID       string
-	S3SecretAccessKey   string
-	S3ForcePathStyle    bool
+	StaticDir                         string
+	DatabaseURL                       string
+	DiscordClientID                   string
+	DiscordClientSecret               string
+	DiscordRedirectURI                string
+	AdminDiscordUserID                string
+	SessionCookieSecure               bool
+	MediaDir                          string
+	LLMDir                            string
+	LLMManifestVersion                string
+	LLMRuntimeWindowsX64URL           string
+	LLMRuntimeWindowsX64SHA256        string
+	LLMRuntimeWindowsX64ArchiveType   string
+	LLMRuntimeWindowsArm64URL         string
+	LLMRuntimeWindowsArm64SHA256      string
+	LLMRuntimeWindowsArm64ArchiveType string
+	LLMModelURL                       string
+	LLMModelSHA256                    string
+	LLMModelFilename                  string
+	MediaBackend                      string
+	S3Bucket                          string
+	S3Region                          string
+	S3Endpoint                        string
+	S3AccessKeyID                     string
+	S3SecretAccessKey                 string
+	S3ForcePathStyle                  bool
 }
 
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
@@ -151,6 +162,12 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/lookup/", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))
+	if hasLLMManifest(cfg) {
+		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))
+	}
+	if strings.TrimSpace(cfg.LLMDir) != "" {
+		mux.Handle("/llm/", newLLMAssetHandler(cfg.LLMDir))
+	}
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))
@@ -203,25 +220,36 @@ func DefaultConfig() Config {
 	}
 
 	return Config{
-		Addr:                addr,
-		Version:             envOrDefault("AIMMOD_HUB_VERSION", "dev"),
-		AllowedWebOrigin:    envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
-		WebAppOrigin:        envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
-		DatabaseURL:         envOrDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/aimmod_hub?sslmode=disable"),
-		DiscordClientID:     os.Getenv("DISCORD_CLIENT_ID"),
-		DiscordClientSecret: os.Getenv("DISCORD_CLIENT_SECRET"),
-		DiscordRedirectURI:  os.Getenv("DISCORD_REDIRECT_URI"),
-		AdminDiscordUserID:  strings.TrimSpace(os.Getenv("AIMMOD_HUB_ADMIN_DISCORD_USER_ID")),
-		SessionCookieSecure: envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
-		StaticDir:           strings.TrimSpace(os.Getenv("AIMMOD_HUB_STATIC_DIR")),
-		MediaDir:            envOrDefault("AIMMOD_HUB_MEDIA_DIR", "./var/media"),
-		MediaBackend:        envOrDefault("AIMMOD_HUB_MEDIA_BACKEND", "local"),
-		S3Bucket:            strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_BUCKET")),
-		S3Region:            envOrDefault("AIMMOD_HUB_S3_REGION", "auto"),
-		S3Endpoint:          strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ENDPOINT")),
-		S3AccessKeyID:       strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ACCESS_KEY_ID")),
-		S3SecretAccessKey:   strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_SECRET_ACCESS_KEY")),
-		S3ForcePathStyle:    parseEnvBool("AIMMOD_HUB_S3_FORCE_PATH_STYLE", false),
+		Addr:                              addr,
+		Version:                           envOrDefault("AIMMOD_HUB_VERSION", "dev"),
+		AllowedWebOrigin:                  envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
+		WebAppOrigin:                      envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
+		DatabaseURL:                       envOrDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/aimmod_hub?sslmode=disable"),
+		DiscordClientID:                   os.Getenv("DISCORD_CLIENT_ID"),
+		DiscordClientSecret:               os.Getenv("DISCORD_CLIENT_SECRET"),
+		DiscordRedirectURI:                os.Getenv("DISCORD_REDIRECT_URI"),
+		AdminDiscordUserID:                strings.TrimSpace(os.Getenv("AIMMOD_HUB_ADMIN_DISCORD_USER_ID")),
+		SessionCookieSecure:               envOrDefault("SESSION_COOKIE_SECURE", "false") == "true",
+		StaticDir:                         strings.TrimSpace(os.Getenv("AIMMOD_HUB_STATIC_DIR")),
+		MediaDir:                          envOrDefault("AIMMOD_HUB_MEDIA_DIR", "./var/media"),
+		LLMDir:                            strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_DIR")),
+		LLMManifestVersion:                strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MANIFEST_VERSION")),
+		LLMRuntimeWindowsX64URL:           strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_URL")),
+		LLMRuntimeWindowsX64SHA256:        strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_SHA256")),
+		LLMRuntimeWindowsX64ArchiveType:   envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_ARCHIVE_TYPE", "zip"),
+		LLMRuntimeWindowsArm64URL:         strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_URL")),
+		LLMRuntimeWindowsArm64SHA256:      strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_SHA256")),
+		LLMRuntimeWindowsArm64ArchiveType: envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_ARCHIVE_TYPE", "zip"),
+		LLMModelURL:                       strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_URL")),
+		LLMModelSHA256:                    strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_SHA256")),
+		LLMModelFilename:                  strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_FILENAME")),
+		MediaBackend:                      envOrDefault("AIMMOD_HUB_MEDIA_BACKEND", "local"),
+		S3Bucket:                          strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_BUCKET")),
+		S3Region:                          envOrDefault("AIMMOD_HUB_S3_REGION", "auto"),
+		S3Endpoint:                        strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ENDPOINT")),
+		S3AccessKeyID:                     strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ACCESS_KEY_ID")),
+		S3SecretAccessKey:                 strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_SECRET_ACCESS_KEY")),
+		S3ForcePathStyle:                  parseEnvBool("AIMMOD_HUB_S3_FORCE_PATH_STYLE", false),
 	}
 }
 

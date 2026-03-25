@@ -38,6 +38,7 @@ AimMod Hub should own:
 - community-wide analytics
 - APIs that help AimMod learn from aggregate data
 - updateable coaching knowledge packs that local AimMod features can query
+- the stable `/llm/manifest.json` entrypoint for local-coach runtime and model downloads
 
 ## Current scaffold
 
@@ -120,6 +121,36 @@ The `AIMMOD_HUB_API_BASE_URL` env var controls which API URL the frontend uses a
 -e AIMMOD_HUB_API_BASE_URL=https://aimmod.app
 ```
 
+### Serving the local coach manifest
+
+The recommended production setup is:
+- AimMod Hub serves `https://aimmod.app/llm/manifest.json`
+- the manifest points at upstream-hosted assets on official sources like GitHub Releases or Hugging Face
+- the heavy runtime/model files do not need to live on your server
+
+Example:
+
+```bash
+docker run -p 8080:8080 \
+  -e DATABASE_URL=postgres://... \
+  -e AIMMOD_HUB_WEB_ORIGIN=https://aimmod.app \
+  -e AIMMOD_HUB_LLM_MANIFEST_VERSION=2026-03-25.v1 \
+  -e AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_URL=https://github.com/ggml-org/llama.cpp/releases/download/b5694/llama-b5694-bin-win-cpu-x64.zip \
+  -e AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_SHA256=<sha256> \
+  -e AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_ARCHIVE_TYPE=zip \
+  -e AIMMOD_HUB_LLM_MODEL_URL=https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf \
+  -e AIMMOD_HUB_LLM_MODEL_SHA256=<sha256> \
+  -e AIMMOD_HUB_LLM_MODEL_FILENAME=aimmod-coach.gguf \
+  aimmod-hub
+```
+
+With that configured, the desktop app downloads:
+- `https://aimmod.app/llm/manifest.json` from AimMod Hub
+- runtime ZIPs from the upstream `llama.cpp` release URLs in the manifest
+- the model from the upstream Hugging Face URL in the manifest
+
+If you ever do want Hub to serve local files directly, `AIMMOD_HUB_LLM_DIR` still mounts a directory under `/llm/` before the SPA fallback.
+
 ### Split deployment (API + Nginx, no SSR meta)
 
 The legacy `web/Dockerfile` builds a standalone Nginx image serving the SPA. Page titles and OG tags update client-side after the SPA boots — fine for Google, not for social previews.
@@ -169,6 +200,17 @@ API uses:
 - `AIMMOD_HUB_WEB_ORIGIN` — allowed CORS origin for the web frontend
 - `AIMMOD_HUB_API_BASE_URL` — public base URL used in runtime config and replay media URLs
 - `AIMMOD_HUB_STATIC_DIR` — (optional) path to built `web/dist`; enables Mode B single-server deployment with SSR meta injection
+- `AIMMOD_HUB_LLM_DIR` — (optional) path mounted at `/llm/` for directly served local-coach assets
+- `AIMMOD_HUB_LLM_MANIFEST_VERSION` — enables generated `/llm/manifest.json` output
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_URL`
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_SHA256`
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_ARCHIVE_TYPE`
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_URL`
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_SHA256`
+- `AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_ARCHIVE_TYPE`
+- `AIMMOD_HUB_LLM_MODEL_URL`
+- `AIMMOD_HUB_LLM_MODEL_SHA256`
+- `AIMMOD_HUB_LLM_MODEL_FILENAME`
 - `DISCORD_CLIENT_ID`
 - `DISCORD_CLIENT_SECRET`
 - `DISCORD_REDIRECT_URI`
