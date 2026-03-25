@@ -1,0 +1,58 @@
+{
+  "id": "valorant-small-flick-priority",
+  "flawId": "direct_stimulus_bias",
+  "title": "For Valorant, prioritize smaller flicks, switching, and click timing over flashy wide flicks",
+  "summary": "Tactical shooters reward small, clean flicks and stable finishes far more often than dramatic wide-angle flicks, so a Valorant routine should lean toward switching and click-timing work that teaches tension control and precise finishing.",
+  "scenarioTypes": ["targetswitching", "multihitclicking", "staticclicking", "dynamicclicking"],
+  "scenarioNames": [],
+  "contextTags": ["valorant", "tactical_shooter", "transfer"],
+  "focusAreas": ["transfer", "precision", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "why": [
+    "Viscose points out that smaller flick management matters heavily in Counter-Strike and Valorant, especially for tension control and clean target finish quality.",
+    "Click-timing and stability-oriented work often transfers better to tactical shooters because the player needs precise placement and controlled follow-through more than raw spectacle."
+  ],
+  "actions": [
+    "Make small-flick switching and click-timing precision the center of a Valorant playlist.",
+    "Favor drills that punish messy landings, extra micro-corrections, and unstable finish quality rather than only rewarding raw speed.",
+    "Use tracking as supplementary mouse-control support, not the main source of tactical-shooter improvement."
+  ],
+  "avoid": [
+    "Do not judge transfer quality only by how exciting or difficult a scenario looks.",
+    "Avoid over-indexing on wide flashy flick tasks if most of your misses are on small or medium adjustments."
+  ],
+  "drills": [
+    {
+      "label": "Small-flick switching",
+      "query": "Waldo TS BTS small flick switching",
+      "reason": "Viscose specifically calls out smaller-flick switching work as useful for Counter-Strike and Valorant."
+    },
+    {
+      "label": "Precision click timing",
+      "query": "precision click timing tactical shooter",
+      "reason": "Precision and stability-focused click-timing work maps well to tactical-shooter placement demands."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Waldo TS and BTS-style smaller flick scenarios are valuable for Counter-Strike and Valorant.",
+      "excerpt": "Scenarios like Waldo TS or BTS are great for Counter-Strike and Valerant because of how they teach you to better manage tension throughout smaller flicks.",
+      "startSec": 787,
+      "endSec": 804,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    },
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Click timing is especially useful for tactical shooters.",
+      "excerpt": "I do recommend it for everyone, but especially tack shooter players.",
+      "startSec": 804,
+      "endSec": 813,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 {
-  "version": "2026-03-25.v4",
+  "version": "2026-03-25.v5",
   "updatedAtIso": "2026-03-25T00:00:00Z",
   "cacheTtlSecs": 86400,
-  "entryCount": 35,
+  "entryCount": 37,
   "signalKeys": [
     "anticipation_latency",
     "arc_reading",
@@ -62,13 +62,18 @@
     "pace_fade",
     "pace_shift",
     "plateau",
+    "tactical_shooter",
+    "transfer",
+    "valorant",
     "variance"
   ],
   "scenarioTypes": [
     "clicking",
     "clicktiming",
+    "controltracking",
     "dynamicclicking",
     "movingclicking",
+    "multihitclicking",
     "oneshotclicking",
     "precisetracking",
     "puretracking",

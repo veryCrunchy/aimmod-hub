@@ -1,0 +1,57 @@
+{
+  "id": "valorant-tracking-is-supplementary",
+  "flawId": "direct_stimulus_bias",
+  "title": "For Valorant, use tracking as support work rather than the core of the routine",
+  "summary": "Tracking can still improve raw mouse control for tactical shooters, but if Valorant is the main game it should usually be supplementary work behind smaller flicks, target switching, and click-timing precision.",
+  "scenarioTypes": ["tracking", "puretracking", "precisetracking", "controltracking"],
+  "scenarioNames": [],
+  "contextTags": ["valorant", "tactical_shooter", "transfer"],
+  "focusAreas": ["transfer", "balanced", "precision"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["next_session", "this_week"],
+  "scenarioIds": ["reactive-control", "voltaic-s5-snaketrack", "voltaic-s5-raw-control"],
+  "why": [
+    "Viscose explicitly frames reactive tracking as generally useful, but says if Valorant is all you play your time may often be better spent elsewhere.",
+    "When tactical-shooter players do use tracking, the best value usually comes from manageable control or precise-tracking work that improves reading and correction quality rather than extreme reactive spam."
+  ],
+  "actions": [
+    "Keep tracking to a smaller support slot in a Valorant routine instead of making it the main block.",
+    "Favor precise or control-oriented tracking families such as Snake Track, Raw Control, or manageable reactive-control variants.",
+    "Use tracking to clean correction quality and reading, then spend the larger share of the routine on smaller flicks, switching, and click timing."
+  ],
+  "avoid": [
+    "Do not assume the hardest reactive tracking scenario is the best Valorant transfer just because it looks intense.",
+    "Avoid building a full Valorant playlist around tracking if your click timing and small-flick finish quality are still weaker."
+  ],
+  "drills": [
+    {
+      "label": "Precise tracking support block",
+      "query": "Snake Track precise tracking",
+      "reason": "Readable pace changes make it easier to build correction quality that can support tactical-shooter aim."
+    },
+    {
+      "label": "Control tracking support block",
+      "query": "Raw Control control tracking",
+      "reason": "Control-oriented tracking helps clean direction-change handling without turning the task into reactive panic."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "If Valorant is all you play, more reactive tracking may not be where most of your time should go.",
+      "excerpt": "If Valerant is all you play, for example, your time might be better spent elsewhere.",
+      "startSec": 758,
+      "endSec": 787,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    },
+    {
+      "sourceId": "voltaic-s5-kovaaks",
+      "claim": "Snake Track and Raw Control are useful tracking families because they keep readable pace changes and correction discipline in the task.",
+      "excerpt": "Voltaic describes Snake Track and Raw Control as precise/control tracking families centered on readable pace shifts and disciplined contact.",
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}
