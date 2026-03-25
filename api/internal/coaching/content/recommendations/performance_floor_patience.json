@@ -1,0 +1,44 @@
+{
+  "id": "performance-floor-patience",
+  "flawId": "hidden_progress_blindness",
+  "title": "Look for floor and confidence gains, not just dramatic ceiling jumps",
+  "summary": "After the beginner phase, aim training often improves the player's bad-run quality and confidence floor slowly enough that it is hard to feel without deliberate comparison.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["consistency", "balanced", "transfer"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["performance-floor-awareness", "process-oriented-review"],
+  "scenarioIds": [],
+  "why": [
+    "The first gains can feel dramatic, but later gains often show up as fewer terrible reps and more stable baseline execution.",
+    "Without tracking floor and consistency, the player may mistake subtle progress for no progress."
+  ],
+  "actions": [
+    "Track worst-run quality, consistency, and confidence, not only PBs or highlight runs.",
+    "When progress feels invisible, compare a block of sessions instead of trusting one day of feel.",
+    "If the floor rose but the ceiling feels flat, keep adjusting the routine rather than concluding the trainer stopped working."
+  ],
+  "avoid": [
+    "Do not quit only because improvement no longer feels dramatic from day to day."
+  ],
+  "drills": [
+    {
+      "label": "Consistency review block",
+      "query": "performance floor consistency review aim training",
+      "reason": "A consistency-focused review makes subtle progress visible enough to guide the next block."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "mattyow-motion-mapping-transcript",
+      "claim": "Aim trainers often work by slowly raising the performance floor and confidence window in ways that are not immediately obvious.",
+      "excerpt": "Aim training very slowly over time raises the floor and the ceiling.",
+      "startSec": 651,
+      "endSec": 717,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

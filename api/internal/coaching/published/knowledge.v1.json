@@ -1,8 +1,136 @@
 {
-  "version": "2026-03-25.v3",
+  "version": "2026-03-25.v4",
   "updatedAtIso": "2026-03-25T00:00:00Z",
   "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer.",
   "entries": [
+    {
+      "id": "benchmark-categories-to-game-weaknesses",
+      "title": "Map game weaknesses to benchmark categories instead of grinding generic game playlists",
+      "summary": "Benchmark categories become more useful when they are tied to a real in-game weakness like reading or acceleration handling, instead of being treated as abstract rank ladders or random game-tagged playlists.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "benchmark_dependency",
+        "cross_scenario_transfer",
+        "game_specific_transfer",
+        "motion_mapping",
+        "routine_structure"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "The benchmark category is useful when it points at a real game weakness, not when it is played for its own title or label alone.",
+        "This keeps scenario choice tied to a practical transfer goal instead of generic benchmark grinding."
+      ],
+      "actions": [
+        "Write the in-game weakness first, then map it to the benchmark category that trains that response.",
+        "If your game problem is reading or acceleration handling, choose the benchmark category for that problem instead of a generic game playlist.",
+        "Review whether each playlist scenario serves a defined weakness or is only there because it sounds game-specific."
+      ],
+      "drills": [
+        {
+          "label": "Weakness-to-category mapping",
+          "query": "reading category acceleration reading benchmark",
+          "reason": "Mapping a real weakness to a category makes benchmark use far more actionable."
+        }
+      ],
+      "avoid": [
+        "Treating assessment playlists as the whole improvement plan",
+        "Do not play a game-tagged benchmark playlist just because the game name matches your main title."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "benchmark_only_practice",
+        "title": "Benchmark-only practice",
+        "summary": "The player relies too heavily on benchmark tasks, so practice becomes narrow assessment repetition instead of focused skill-building.",
+        "signalKeys": [
+          "benchmark_dependency",
+          "cross_scenario_transfer",
+          "routine_structure"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Most practice volume is just rerunning benchmark scenarios",
+          "The player knows the weak category but has no separate block to address it"
+        ],
+        "contraindications": [
+          "Do not remove benchmarks completely because they still reveal useful gaps"
+        ],
+        "avoid": [
+          "Treating assessment playlists as the whole improvement plan"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "benchmark-assessment",
+          "title": "Benchmark as assessment, not full routine",
+          "summary": "Benchmark playlists are best used to reveal strengths and weaknesses, then paired with fundamentals and weakness-specific work instead of replacing them.",
+          "cues": [
+            "Use benchmarks to locate the gap before selecting training blocks",
+            "Retest after a block instead of mindlessly rerunning the same benchmark tasks",
+            "Separate assessment volume from improvement volume"
+          ],
+          "failureModes": [
+            "Grinding only benchmark tasks and calling it a full routine",
+            "Treating benchmark rank pushing as the same thing as broad aim improvement"
+          ],
+          "relatedSignalKeys": [
+            "benchmark_dependency",
+            "cross_scenario_transfer",
+            "routine_structure"
+          ]
+        },
+        {
+          "id": "motion-mapping",
+          "title": "Motion mapping",
+          "summary": "A good training scenario does not need to visually copy the game if it reproduces the same movement relationship and response pattern the player actually needs in-game.",
+          "cues": [
+            "Ask whether the scenario trains the same response pattern as the game situation",
+            "Prioritize movement relationship over cosmetic similarity",
+            "Choose scenarios that train the correct reaction, not just a familiar-looking stimulus"
+          ],
+          "failureModes": [
+            "Picking scenarios only because the title matches the game",
+            "Confusing surface-level movement resemblance with useful transfer"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "game_specific_transfer",
+            "motion_mapping"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "mattyow-motion-mapping-transcript",
+          "claim": "Benchmark categories should be selected by attaching them to a real game weakness rather than by generic game labeling.",
+          "excerpt": "Identify weaknesses in your game and attach them to one of the categories.",
+          "startSec": 421,
+          "endSec": 455,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "mattyow-motion-mapping-transcript",
+          "kind": "youtube_transcript",
+          "title": "Aim trainers work when you train the right thing and use the right mindset",
+          "author": "MattyOW",
+          "url": "https://www.youtube.com/watch?v=0E_C282erqA",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
     {
       "id": "benchmarks-support-routines",
       "title": "Use benchmarks to locate gaps, then train outside them",
@@ -1201,6 +1329,228 @@
       ]
     },
     {
+      "id": "easier-variants-before-direct-game-mimicry",
+      "title": "Use easier motion-mapped variants before extreme one-to-one mimic tasks",
+      "summary": "If the player's response pattern is weak, easier scenarios that teach the core movement cleanly will usually transfer better than jumping straight into the most game-like or most reactive variant.",
+      "scenarioTypes": [
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "cross_scenario_transfer",
+        "direction_change_correction",
+        "game_specific_transfer",
+        "motion_mapping",
+        "stable_response"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "pace_fade",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "consistency",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Direct stimulus mapping fails if the player still performs the wrong response to that stimulus.",
+        "Easier motion-mapped variants let the player build the right movement before the fully punishing version exposes every flaw."
+      ],
+      "actions": [
+        "If your game-specific task is very reactive, first find the easier scenario that trains the same movement relationship more cleanly.",
+        "Build the correction pattern and micro-adjustment angle first, then add harsher reactive variants later.",
+        "Use the harder one-to-one scenario as a later transfer check instead of as your starting point."
+      ],
+      "drills": [
+        {
+          "label": "Reactive control before reactive speed",
+          "query": "manageable reactive tracking control before speed",
+          "reason": "A manageable reactive variant helps establish the correct response pattern before pure difficulty takes over."
+        }
+      ],
+      "avoid": [
+        "Overgripping to force smoothness",
+        "Do not start with the harshest direct-game mimic scenario if the base movement is still wrong."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "tracking_control_foundation",
+        "title": "Tracking control foundation is unstable",
+        "summary": "Continuous target contact breaks down because the player chases late or over-corrects during direction changes.",
+        "signalKeys": [
+          "control_foundation",
+          "correction_load",
+          "stable_response"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "pace_fade",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Overshoot bursts during target direction changes",
+          "Contact quality collapses when pace rises"
+        ],
+        "contraindications": [
+          "Do not use peak speed as the only quality measure"
+        ],
+        "avoid": [
+          "Overgripping to force smoothness"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "motion-mapping",
+          "title": "Motion mapping",
+          "summary": "A good training scenario does not need to visually copy the game if it reproduces the same movement relationship and response pattern the player actually needs in-game.",
+          "cues": [
+            "Ask whether the scenario trains the same response pattern as the game situation",
+            "Prioritize movement relationship over cosmetic similarity",
+            "Choose scenarios that train the correct reaction, not just a familiar-looking stimulus"
+          ],
+          "failureModes": [
+            "Picking scenarios only because the title matches the game",
+            "Confusing surface-level movement resemblance with useful transfer"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "game_specific_transfer",
+            "motion_mapping"
+          ]
+        },
+        {
+          "id": "slow-consistent-corrections",
+          "title": "Slow, consistent corrections",
+          "summary": "When direction changes are readable, the player should first build accurate corrections at a slower pace and only add snap once those corrections land reliably.",
+          "cues": [
+            "Start slower on direction changes",
+            "Only speed up after the correction path is reliable",
+            "Let the target punish bad corrections instead of hiding them with more force"
+          ],
+          "failureModes": [
+            "Trying to brute-force speed before the correction path is accurate",
+            "Missing the majority of adjustments back to target"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "direction_change_correction",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "motion-mapping-overwatch-tracking",
+          "name": "Motion-mapped Overwatch tracking",
+          "aliases": [
+            "Aarangelic",
+            "Overwatch motion mapping tracking",
+            "air angelic"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "A motion-mapped tracking scenario for Overwatch can transfer better than harsher instant-acceleration tasks if it teaches the micro-adjustment angles, reaction speed, and strafe responses the player actually needs in-game.",
+          "whatItTrains": [
+            "motion mapping",
+            "tracking response pattern",
+            "micro-adjustment angle control"
+          ],
+          "goodForFlaws": [
+            "direct_stimulus_bias",
+            "tracking_control_foundation"
+          ],
+          "cautions": [
+            "Do not choose a scenario only because the bot movement superficially resembles the game",
+            "The useful part is the response pattern, not the cosmetic similarity"
+          ]
+        },
+        {
+          "id": "reactive-control",
+          "name": "Reactive tracking control",
+          "aliases": [
+            "viscose reactive control"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Manageable reactive tracking tasks where consistency and accuracy of adjustments matter more than extreme difficulty.",
+          "whatItTrains": [
+            "reactive correction quality",
+            "control at moderate speed",
+            "read-to-adjust consistency"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Slow down if most corrections back to target are still missing"
+          ]
+        },
+        {
+          "id": "reactive-speed",
+          "name": "Reactive tracking speed",
+          "aliases": [
+            "viscose reactive speed"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "Reactive tasks where higher adjustment speed is required, but only in a way that still preserves clean control and deceleration.",
+          "whatItTrains": [
+            "high-speed adjustments",
+            "controlled deceleration",
+            "tension management"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tension_lockout"
+          ],
+          "cautions": [
+            "Do not push speed by sacrificing the majority of your correction accuracy"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "mattyow-motion-mapping-transcript",
+          "claim": "Beginners should often start with easier variants that train the movement basics instead of the most direct one-to-one game-like reactive task.",
+          "excerpt": "You shouldn't be starting off with scenarios that provide a direct stimulus mapping, but easier variants that train the basics of the movements themselves.",
+          "startSec": 350,
+          "endSec": 391,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "mattyow-motion-mapping-transcript",
+          "kind": "youtube_transcript",
+          "title": "Aim trainers work when you train the right thing and use the right mindset",
+          "author": "MattyOW",
+          "url": "https://www.youtube.com/watch?v=0E_C282erqA",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
       "id": "family-balance-transfer",
       "title": "Balance family exposure so gains transfer better",
       "summary": "If practice is dominated by one family, the player may build narrow strength that does not hold up well in other aim demands.",
@@ -2301,6 +2651,449 @@
           "title": "AimMod seed coaching knowledge",
           "author": "AimMod",
           "url": "",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "motion-mapping-over-cosmetic-similarity",
+      "title": "Choose scenarios by the response they train, not just by the game tag",
+      "summary": "A scenario transfers best when it teaches the same movement relationship and reaction pattern the game demands, even if the target motion or map does not look one-to-one identical.",
+      "scenarioTypes": [
+        "dynamicclicking",
+        "puretracking",
+        "switching",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "cross_scenario_transfer",
+        "game_specific_transfer",
+        "motion_mapping"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Game-tagged scenarios can still train the wrong response if they reward a bad acquisition pattern or poor movement solution.",
+        "Motion mapping keeps the training anchored to what your hand actually needs to do in-game."
+      ],
+      "actions": [
+        "Before keeping a scenario in the playlist, name the in-game response pattern it is supposed to improve.",
+        "If you cannot explain the motion relationship to your game, replace the scenario with one that trains the needed response more directly.",
+        "Prefer scenarios that teach the right micro-adjustment angles, pacing, and reaction pattern even if they do not look like the game."
+      ],
+      "drills": [
+        {
+          "label": "Motion-mapped tracking drill",
+          "query": "Aarangelic Overwatch motion mapping",
+          "reason": "A motion-mapped drill helps transfer more than a superficially similar but mechanically wrong scenario."
+        }
+      ],
+      "avoid": [
+        "Assuming one-to-one stimulus matching is always the best training choice",
+        "Do not keep a scenario only because the title contains your game's name."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "direct_stimulus_bias",
+        "title": "Direct stimulus bias",
+        "summary": "The player overvalues scenarios that look like the game on the surface, even when they do not train the right response pattern for the goal.",
+        "signalKeys": [
+          "cross_scenario_transfer",
+          "game_specific_transfer",
+          "motion_mapping"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Scenarios are chosen because they are tagged with the main game rather than because they train the needed movement",
+          "The player equates visual similarity with transfer quality"
+        ],
+        "contraindications": [
+          "Do not overcorrect into choosing abstract tasks with no transfer logic at all"
+        ],
+        "avoid": [
+          "Assuming one-to-one stimulus matching is always the best training choice"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "motion-mapping",
+          "title": "Motion mapping",
+          "summary": "A good training scenario does not need to visually copy the game if it reproduces the same movement relationship and response pattern the player actually needs in-game.",
+          "cues": [
+            "Ask whether the scenario trains the same response pattern as the game situation",
+            "Prioritize movement relationship over cosmetic similarity",
+            "Choose scenarios that train the correct reaction, not just a familiar-looking stimulus"
+          ],
+          "failureModes": [
+            "Picking scenarios only because the title matches the game",
+            "Confusing surface-level movement resemblance with useful transfer"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "game_specific_transfer",
+            "motion_mapping"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "motion-mapping-overwatch-tracking",
+          "name": "Motion-mapped Overwatch tracking",
+          "aliases": [
+            "Aarangelic",
+            "Overwatch motion mapping tracking",
+            "air angelic"
+          ],
+          "scenarioTypes": [
+            "puretracking",
+            "tracking"
+          ],
+          "summary": "A motion-mapped tracking scenario for Overwatch can transfer better than harsher instant-acceleration tasks if it teaches the micro-adjustment angles, reaction speed, and strafe responses the player actually needs in-game.",
+          "whatItTrains": [
+            "motion mapping",
+            "tracking response pattern",
+            "micro-adjustment angle control"
+          ],
+          "goodForFlaws": [
+            "direct_stimulus_bias",
+            "tracking_control_foundation"
+          ],
+          "cautions": [
+            "Do not choose a scenario only because the bot movement superficially resembles the game",
+            "The useful part is the response pattern, not the cosmetic similarity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "mattyow-motion-mapping-transcript",
+          "claim": "Useful scenarios copy the movement relationship and required response, not only the surface stimulus or game appearance.",
+          "excerpt": "A good scenario copies the motion relationship and reflects the correct response to the stimulus in real games.",
+          "startSec": 220,
+          "endSec": 251,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "mattyow-motion-mapping-transcript",
+          "kind": "youtube_transcript",
+          "title": "Aim trainers work when you train the right thing and use the right mindset",
+          "author": "MattyOW",
+          "url": "https://www.youtube.com/watch?v=0E_C282erqA",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "movement-can-be-isolated-in-trainer",
+      "title": "Use movement-linked scenarios instead of treating movement as off-limits",
+      "summary": "Movement is inseparable from aim in FPS games, and aim trainers can still isolate useful movement-linked practice through strafe, dodge, and anti-movement scenario types.",
+      "scenarioTypes": [
+        "clicking",
+        "switching",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "context_adaptation",
+        "cross_scenario_transfer",
+        "movement_integration",
+        "readiness_debt"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Aim quality in games depends on responding while your own position is changing.",
+        "Trainer movement scenarios can isolate that adaptation even if they do not replace full live duel movement."
+      ],
+      "actions": [
+        "Add at least one strafe or dodge drill if your aim falls apart while moving.",
+        "Use anti-movement drills to get comfortable adjusting onto targets while your position shifts automatically.",
+        "Treat these drills as isolation work, then validate them in actual game fights later."
+      ],
+      "drills": [
+        {
+          "label": "Movement strafe / anti-movement block",
+          "query": "strafe dodge anti-movement aim trainer",
+          "reason": "These scenario types isolate aim while position is changing, which many routines undertrain."
+        }
+      ],
+      "avoid": [
+        "Treating movement as someone else's problem while trying to improve FPS aim",
+        "Do not assume movement can only be trained in real matches and nowhere else."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "movement_split",
+        "title": "Aim and movement are being trained as separate problems",
+        "summary": "The player treats mouse control and movement as unrelated, so transfer suffers whenever the in-game task requires aiming while repositioning.",
+        "signalKeys": [
+          "context_adaptation",
+          "cross_scenario_transfer",
+          "movement_integration"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Aim quality falls apart as soon as the player has to move during the task",
+          "The routine contains almost no aim-while-moving or anti-movement work"
+        ],
+        "contraindications": [
+          "Do not pretend movement drills fully replace learning actual player dodge patterns in game"
+        ],
+        "avoid": [
+          "Treating movement as someone else's problem while trying to improve FPS aim"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "movement-integration",
+          "title": "Movement integration",
+          "summary": "Aim and movement are inseparable in FPS games, and aim trainers can isolate useful movement-linked practice through dodge, strafe, and anti-movement scenario types.",
+          "cues": [
+            "Train aim while moving instead of treating mouse control and movement as separate universes",
+            "Use strafe or dodge scenarios for basic aim-while-moving adaptation",
+            "Use anti-movement scenarios to learn how shifting position changes the mouse response"
+          ],
+          "failureModes": [
+            "Assuming movement can never be trained at all inside an aim trainer",
+            "Expecting movement scenarios to fully replace real player-vs-player dodging"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "movement_integration",
+            "readiness_debt"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "movement-strafe-drill",
+          "name": "Movement strafe / dodge drill",
+          "aliases": [
+            "strafe scenario",
+            "dodge scenario",
+            "aim while moving drill"
+          ],
+          "scenarioTypes": [
+            "clicking",
+            "switching",
+            "tracking"
+          ],
+          "summary": "Strafe and dodge scenarios let the player practice aiming while moving around the map, which is especially useful for newer keyboard-and-mouse players.",
+          "whatItTrains": [
+            "aim while moving",
+            "basic movement integration",
+            "mirroring and anti-mirroring adaptation"
+          ],
+          "goodForFlaws": [
+            "movement_split"
+          ],
+          "cautions": [
+            "These drills help isolate aim-plus-movement basics, but they are not a full substitute for real player movement reads"
+          ]
+        },
+        {
+          "id": "anti-movement-drill",
+          "name": "Anti-movement drill",
+          "aliases": [
+            "anti-movement scenario",
+            "auto-movement scenario",
+            "possession scenario"
+          ],
+          "scenarioTypes": [
+            "clicking",
+            "switching",
+            "tracking"
+          ],
+          "summary": "Anti-movement scenarios shift the player position automatically so they must learn how moving through space changes the aim problem even when the movement is not self-generated.",
+          "whatItTrains": [
+            "position-shift adaptation",
+            "aim under forced movement",
+            "movement-linked response updates"
+          ],
+          "goodForFlaws": [
+            "movement_split"
+          ],
+          "cautions": [
+            "Anti-movement work builds adaptation to positional change, but still does not replace actual duel movement practice"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "mattyow-motion-mapping-transcript",
+          "claim": "Strafe, dodge, and anti-movement scenarios can provide viable isolated practice for aiming while moving.",
+          "excerpt": "Training movement in the aim trainer is in fact possible and viable.",
+          "startSec": 487,
+          "endSec": 584,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "mattyow-motion-mapping-transcript",
+          "kind": "youtube_transcript",
+          "title": "Aim trainers work when you train the right thing and use the right mindset",
+          "author": "MattyOW",
+          "url": "https://www.youtube.com/watch?v=0E_C282erqA",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "performance-floor-patience",
+      "title": "Look for floor and confidence gains, not just dramatic ceiling jumps",
+      "summary": "After the beginner phase, aim training often improves the player's bad-run quality and confidence floor slowly enough that it is hard to feel without deliberate comparison.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "execution_consistency",
+        "outcome_fixation",
+        "performance_floor",
+        "review_quality"
+      ],
+      "contextTags": [
+        "plateau",
+        "variance"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "The first gains can feel dramatic, but later gains often show up as fewer terrible reps and more stable baseline execution.",
+        "Without tracking floor and consistency, the player may mistake subtle progress for no progress."
+      ],
+      "actions": [
+        "Track worst-run quality, consistency, and confidence, not only PBs or highlight runs.",
+        "When progress feels invisible, compare a block of sessions instead of trusting one day of feel.",
+        "If the floor rose but the ceiling feels flat, keep adjusting the routine rather than concluding the trainer stopped working."
+      ],
+      "drills": [
+        {
+          "label": "Consistency review block",
+          "query": "performance floor consistency review aim training",
+          "reason": "A consistency-focused review makes subtle progress visible enough to guide the next block."
+        }
+      ],
+      "avoid": [
+        "Judging aim training only by whether today's in-game feel was obviously better",
+        "Do not quit only because improvement no longer feels dramatic from day to day."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "hidden_progress_blindness",
+        "title": "Hidden progress blindness",
+        "summary": "The player expects obvious immediate gains and misses the slower improvements to consistency, confidence, and bad-run quality that aim training often produces.",
+        "signalKeys": [
+          "execution_consistency",
+          "outcome_fixation",
+          "performance_floor"
+        ],
+        "contextTags": [
+          "plateau",
+          "variance"
+        ],
+        "telltales": [
+          "The player quits or panics because progress no longer feels dramatic",
+          "Only ceiling moments are used to judge whether training works"
+        ],
+        "contraindications": [
+          "Do not use subtle-progress language to ignore a real bad routine or wrong scenario choice"
+        ],
+        "avoid": [
+          "Judging aim training only by whether today's in-game feel was obviously better"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "performance-floor-awareness",
+          "title": "Performance floor awareness",
+          "summary": "Aim training often raises the player's performance floor and confidence gradually, even when the change is too subtle to feel immediately from day to day.",
+          "cues": [
+            "Track consistency and worst-case performance, not just peak moments",
+            "Expect subtle gains after the beginner phase",
+            "Use logs and repeated comparisons when the change is hard to feel"
+          ],
+          "failureModes": [
+            "Quitting because the improvement stopped feeling dramatic",
+            "Assuming no instant sensation means no real gain"
+          ],
+          "relatedSignalKeys": [
+            "execution_consistency",
+            "outcome_fixation",
+            "performance_floor"
+          ]
+        },
+        {
+          "id": "process-oriented-review",
+          "title": "Process-oriented review",
+          "summary": "Improvement accelerates when bad sessions are reviewed through controllable process errors instead of being reduced to rank, score, or self-judgment.",
+          "cues": [
+            "Ask why the error happened, what the repeated pattern is, and how to test one fix next session",
+            "Keep one process goal visible during the block",
+            "Judge the session by execution quality before judging the score"
+          ],
+          "failureModes": [
+            "Treating one bad score day as evidence of regression",
+            "Stacking too many process goals at once after a poor session"
+          ],
+          "relatedSignalKeys": [
+            "execution_consistency",
+            "outcome_fixation",
+            "review_quality"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "mattyow-motion-mapping-transcript",
+          "claim": "Aim trainers often work by slowly raising the performance floor and confidence window in ways that are not immediately obvious.",
+          "excerpt": "Aim training very slowly over time raises the floor and the ceiling.",
+          "startSec": 651,
+          "endSec": 717,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "mattyow-motion-mapping-transcript",
+          "kind": "youtube_transcript",
+          "title": "Aim trainers work when you train the right thing and use the right mindset",
+          "author": "MattyOW",
+          "url": "https://www.youtube.com/watch?v=0E_C282erqA",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]

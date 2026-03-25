@@ -1,0 +1,15 @@
+{
+  "id": "motion-mapping",
+  "title": "Motion mapping",
+  "summary": "A good training scenario does not need to visually copy the game if it reproduces the same movement relationship and response pattern the player actually needs in-game.",
+  "cues": [
+    "Ask whether the scenario trains the same response pattern as the game situation",
+    "Prioritize movement relationship over cosmetic similarity",
+    "Choose scenarios that train the correct reaction, not just a familiar-looking stimulus"
+  ],
+  "failureModes": [
+    "Picking scenarios only because the title matches the game",
+    "Confusing surface-level movement resemblance with useful transfer"
+  ],
+  "relatedSignalKeys": ["cross_scenario_transfer", "motion_mapping", "game_specific_transfer"]
+}

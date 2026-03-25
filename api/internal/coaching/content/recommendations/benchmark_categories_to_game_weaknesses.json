@@ -1,0 +1,44 @@
+{
+  "id": "benchmark-categories-to-game-weaknesses",
+  "flawId": "benchmark_only_practice",
+  "title": "Map game weaknesses to benchmark categories instead of grinding generic game playlists",
+  "summary": "Benchmark categories become more useful when they are tied to a real in-game weakness like reading or acceleration handling, instead of being treated as abstract rank ladders or random game-tagged playlists.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "balanced", "consistency"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["benchmark-assessment", "motion-mapping"],
+  "scenarioIds": [],
+  "why": [
+    "The benchmark category is useful when it points at a real game weakness, not when it is played for its own title or label alone.",
+    "This keeps scenario choice tied to a practical transfer goal instead of generic benchmark grinding."
+  ],
+  "actions": [
+    "Write the in-game weakness first, then map it to the benchmark category that trains that response.",
+    "If your game problem is reading or acceleration handling, choose the benchmark category for that problem instead of a generic game playlist.",
+    "Review whether each playlist scenario serves a defined weakness or is only there because it sounds game-specific."
+  ],
+  "avoid": [
+    "Do not play a game-tagged benchmark playlist just because the game name matches your main title."
+  ],
+  "drills": [
+    {
+      "label": "Weakness-to-category mapping",
+      "query": "reading category acceleration reading benchmark",
+      "reason": "Mapping a real weakness to a category makes benchmark use far more actionable."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "mattyow-motion-mapping-transcript",
+      "claim": "Benchmark categories should be selected by attaching them to a real game weakness rather than by generic game labeling.",
+      "excerpt": "Identify weaknesses in your game and attach them to one of the categories.",
+      "startSec": 421,
+      "endSec": 455,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

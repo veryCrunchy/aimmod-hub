@@ -1,0 +1,10 @@
+{
+  "id": "movement-strafe-drill",
+  "name": "Movement strafe / dodge drill",
+  "aliases": ["strafe scenario", "dodge scenario", "aim while moving drill"],
+  "scenarioTypes": ["tracking", "switching", "clicking"],
+  "summary": "Strafe and dodge scenarios let the player practice aiming while moving around the map, which is especially useful for newer keyboard-and-mouse players.",
+  "whatItTrains": ["aim while moving", "basic movement integration", "mirroring and anti-mirroring adaptation"],
+  "goodForFlaws": ["movement_split"],
+  "cautions": ["These drills help isolate aim-plus-movement basics, but they are not a full substitute for real player movement reads"]
+}

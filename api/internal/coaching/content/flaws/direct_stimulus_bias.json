@@ -1,0 +1,18 @@
+{
+  "id": "direct_stimulus_bias",
+  "title": "Direct stimulus bias",
+  "summary": "The player overvalues scenarios that look like the game on the surface, even when they do not train the right response pattern for the goal.",
+  "signalKeys": ["motion_mapping", "game_specific_transfer", "cross_scenario_transfer"],
+  "contextTags": [],
+  "mechanicIds": ["motion-mapping"],
+  "telltales": [
+    "Scenarios are chosen because they are tagged with the main game rather than because they train the needed movement",
+    "The player equates visual similarity with transfer quality"
+  ],
+  "contraindications": [
+    "Do not overcorrect into choosing abstract tasks with no transfer logic at all"
+  ],
+  "avoid": [
+    "Assuming one-to-one stimulus matching is always the best training choice"
+  ]
+}

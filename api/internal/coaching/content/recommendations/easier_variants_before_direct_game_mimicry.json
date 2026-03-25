@@ -1,0 +1,44 @@
+{
+  "id": "easier-variants-before-direct-game-mimicry",
+  "flawId": "tracking_control_foundation",
+  "title": "Use easier motion-mapped variants before extreme one-to-one mimic tasks",
+  "summary": "If the player's response pattern is weak, easier scenarios that teach the core movement cleanly will usually transfer better than jumping straight into the most game-like or most reactive variant.",
+  "scenarioTypes": ["tracking", "puretracking"],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "precision", "consistency"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["motion-mapping", "slow-consistent-corrections"],
+  "scenarioIds": ["motion-mapping-overwatch-tracking", "reactive-control", "reactive-speed"],
+  "why": [
+    "Direct stimulus mapping fails if the player still performs the wrong response to that stimulus.",
+    "Easier motion-mapped variants let the player build the right movement before the fully punishing version exposes every flaw."
+  ],
+  "actions": [
+    "If your game-specific task is very reactive, first find the easier scenario that trains the same movement relationship more cleanly.",
+    "Build the correction pattern and micro-adjustment angle first, then add harsher reactive variants later.",
+    "Use the harder one-to-one scenario as a later transfer check instead of as your starting point."
+  ],
+  "avoid": [
+    "Do not start with the harshest direct-game mimic scenario if the base movement is still wrong."
+  ],
+  "drills": [
+    {
+      "label": "Reactive control before reactive speed",
+      "query": "manageable reactive tracking control before speed",
+      "reason": "A manageable reactive variant helps establish the correct response pattern before pure difficulty takes over."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "mattyow-motion-mapping-transcript",
+      "claim": "Beginners should often start with easier variants that train the movement basics instead of the most direct one-to-one game-like reactive task.",
+      "excerpt": "You shouldn't be starting off with scenarios that provide a direct stimulus mapping, but easier variants that train the basics of the movements themselves.",
+      "startSec": 350,
+      "endSec": 391,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

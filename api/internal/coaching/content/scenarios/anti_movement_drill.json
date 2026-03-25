@@ -1,0 +1,10 @@
+{
+  "id": "anti-movement-drill",
+  "name": "Anti-movement drill",
+  "aliases": ["anti-movement scenario", "auto-movement scenario", "possession scenario"],
+  "scenarioTypes": ["tracking", "switching", "clicking"],
+  "summary": "Anti-movement scenarios shift the player position automatically so they must learn how moving through space changes the aim problem even when the movement is not self-generated.",
+  "whatItTrains": ["position-shift adaptation", "aim under forced movement", "movement-linked response updates"],
+  "goodForFlaws": ["movement_split"],
+  "cautions": ["Anti-movement work builds adaptation to positional change, but still does not replace actual duel movement practice"]
+}

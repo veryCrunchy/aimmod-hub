@@ -1,0 +1,18 @@
+{
+  "id": "movement_split",
+  "title": "Aim and movement are being trained as separate problems",
+  "summary": "The player treats mouse control and movement as unrelated, so transfer suffers whenever the in-game task requires aiming while repositioning.",
+  "signalKeys": ["movement_integration", "cross_scenario_transfer", "context_adaptation"],
+  "contextTags": [],
+  "mechanicIds": ["movement-integration"],
+  "telltales": [
+    "Aim quality falls apart as soon as the player has to move during the task",
+    "The routine contains almost no aim-while-moving or anti-movement work"
+  ],
+  "contraindications": [
+    "Do not pretend movement drills fully replace learning actual player dodge patterns in game"
+  ],
+  "avoid": [
+    "Treating movement as someone else's problem while trying to improve FPS aim"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "performance-floor-awareness",
+  "title": "Performance floor awareness",
+  "summary": "Aim training often raises the player's performance floor and confidence gradually, even when the change is too subtle to feel immediately from day to day.",
+  "cues": [
+    "Track consistency and worst-case performance, not just peak moments",
+    "Expect subtle gains after the beginner phase",
+    "Use logs and repeated comparisons when the change is hard to feel"
+  ],
+  "failureModes": [
+    "Quitting because the improvement stopped feeling dramatic",
+    "Assuming no instant sensation means no real gain"
+  ],
+  "relatedSignalKeys": ["performance_floor", "execution_consistency", "outcome_fixation"]
+}

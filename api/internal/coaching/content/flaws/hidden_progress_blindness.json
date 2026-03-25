@@ -1,0 +1,18 @@
+{
+  "id": "hidden_progress_blindness",
+  "title": "Hidden progress blindness",
+  "summary": "The player expects obvious immediate gains and misses the slower improvements to consistency, confidence, and bad-run quality that aim training often produces.",
+  "signalKeys": ["performance_floor", "outcome_fixation", "execution_consistency"],
+  "contextTags": ["plateau", "variance"],
+  "mechanicIds": ["performance-floor-awareness", "process-oriented-review"],
+  "telltales": [
+    "The player quits or panics because progress no longer feels dramatic",
+    "Only ceiling moments are used to judge whether training works"
+  ],
+  "contraindications": [
+    "Do not use subtle-progress language to ignore a real bad routine or wrong scenario choice"
+  ],
+  "avoid": [
+    "Judging aim training only by whether today's in-game feel was obviously better"
+  ]
+}

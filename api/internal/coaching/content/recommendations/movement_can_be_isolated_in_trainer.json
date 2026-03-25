@@ -1,0 +1,44 @@
+{
+  "id": "movement-can-be-isolated-in-trainer",
+  "flawId": "movement_split",
+  "title": "Use movement-linked scenarios instead of treating movement as off-limits",
+  "summary": "Movement is inseparable from aim in FPS games, and aim trainers can still isolate useful movement-linked practice through strafe, dodge, and anti-movement scenario types.",
+  "scenarioTypes": ["tracking", "switching", "clicking"],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "balanced", "consistency"],
+  "challengePreferences": [],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["movement-integration"],
+  "scenarioIds": ["movement-strafe-drill", "anti-movement-drill"],
+  "why": [
+    "Aim quality in games depends on responding while your own position is changing.",
+    "Trainer movement scenarios can isolate that adaptation even if they do not replace full live duel movement."
+  ],
+  "actions": [
+    "Add at least one strafe or dodge drill if your aim falls apart while moving.",
+    "Use anti-movement drills to get comfortable adjusting onto targets while your position shifts automatically.",
+    "Treat these drills as isolation work, then validate them in actual game fights later."
+  ],
+  "avoid": [
+    "Do not assume movement can only be trained in real matches and nowhere else."
+  ],
+  "drills": [
+    {
+      "label": "Movement strafe / anti-movement block",
+      "query": "strafe dodge anti-movement aim trainer",
+      "reason": "These scenario types isolate aim while position is changing, which many routines undertrain."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "mattyow-motion-mapping-transcript",
+      "claim": "Strafe, dodge, and anti-movement scenarios can provide viable isolated practice for aiming while moving.",
+      "excerpt": "Training movement in the aim trainer is in fact possible and viable.",
+      "startSec": 487,
+      "endSec": 584,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

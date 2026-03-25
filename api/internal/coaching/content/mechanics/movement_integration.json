@@ -1,0 +1,15 @@
+{
+  "id": "movement-integration",
+  "title": "Movement integration",
+  "summary": "Aim and movement are inseparable in FPS games, and aim trainers can isolate useful movement-linked practice through dodge, strafe, and anti-movement scenario types.",
+  "cues": [
+    "Train aim while moving instead of treating mouse control and movement as separate universes",
+    "Use strafe or dodge scenarios for basic aim-while-moving adaptation",
+    "Use anti-movement scenarios to learn how shifting position changes the mouse response"
+  ],
+  "failureModes": [
+    "Assuming movement can never be trained at all inside an aim trainer",
+    "Expecting movement scenarios to fully replace real player-vs-player dodging"
+  ],
+  "relatedSignalKeys": ["movement_integration", "cross_scenario_transfer", "readiness_debt"]
+}

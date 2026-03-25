@@ -1,0 +1,44 @@
+{
+  "id": "motion-mapping-over-cosmetic-similarity",
+  "flawId": "direct_stimulus_bias",
+  "title": "Choose scenarios by the response they train, not just by the game tag",
+  "summary": "A scenario transfers best when it teaches the same movement relationship and reaction pattern the game demands, even if the target motion or map does not look one-to-one identical.",
+  "scenarioTypes": ["tracking", "puretracking", "dynamicclicking", "switching"],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "balanced", "precision"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["motion-mapping"],
+  "scenarioIds": ["motion-mapping-overwatch-tracking"],
+  "why": [
+    "Game-tagged scenarios can still train the wrong response if they reward a bad acquisition pattern or poor movement solution.",
+    "Motion mapping keeps the training anchored to what your hand actually needs to do in-game."
+  ],
+  "actions": [
+    "Before keeping a scenario in the playlist, name the in-game response pattern it is supposed to improve.",
+    "If you cannot explain the motion relationship to your game, replace the scenario with one that trains the needed response more directly.",
+    "Prefer scenarios that teach the right micro-adjustment angles, pacing, and reaction pattern even if they do not look like the game."
+  ],
+  "avoid": [
+    "Do not keep a scenario only because the title contains your game's name."
+  ],
+  "drills": [
+    {
+      "label": "Motion-mapped tracking drill",
+      "query": "Aarangelic Overwatch motion mapping",
+      "reason": "A motion-mapped drill helps transfer more than a superficially similar but mechanically wrong scenario."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "mattyow-motion-mapping-transcript",
+      "claim": "Useful scenarios copy the movement relationship and required response, not only the surface stimulus or game appearance.",
+      "excerpt": "A good scenario copies the motion relationship and reflects the correct response to the stimulus in real games.",
+      "startSec": 220,
+      "endSec": 251,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

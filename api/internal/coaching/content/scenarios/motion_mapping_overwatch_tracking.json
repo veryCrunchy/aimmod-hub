@@ -1,0 +1,10 @@
+{
+  "id": "motion-mapping-overwatch-tracking",
+  "name": "Motion-mapped Overwatch tracking",
+  "aliases": ["Aarangelic", "Overwatch motion mapping tracking", "air angelic"],
+  "scenarioTypes": ["tracking", "puretracking"],
+  "summary": "A motion-mapped tracking scenario for Overwatch can transfer better than harsher instant-acceleration tasks if it teaches the micro-adjustment angles, reaction speed, and strafe responses the player actually needs in-game.",
+  "whatItTrains": ["motion mapping", "tracking response pattern", "micro-adjustment angle control"],
+  "goodForFlaws": ["direct_stimulus_bias", "tracking_control_foundation"],
+  "cautions": ["Do not choose a scenario only because the bot movement superficially resembles the game", "The useful part is the response pattern, not the cosmetic similarity"]
+}
