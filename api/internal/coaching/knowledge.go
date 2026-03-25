@@ -58,6 +58,11 @@ type Query struct {
 	TimePreference      string   `json:"timePreference"`
 	Question            string   `json:"question"`
 	Limit               int      `json:"limit"`
+	// General bypasses scenario-compatibility filtering so entries that don't
+	// match the current scenario type/name are still returned. Use this for
+	// questions about general aim training, authors, or topics that aren't
+	// specific to the scenario the player is currently practising.
+	General bool `json:"general"`
 }
 
 type QueryEcho struct {
@@ -70,6 +75,7 @@ type QueryEcho struct {
 	TimePreference      string   `json:"timePreference"`
 	Question            string   `json:"question"`
 	Limit               int      `json:"limit"`
+	General             bool     `json:"general"`
 }
 
 type MatchInfo struct {
@@ -233,6 +239,7 @@ func QueryKnowledge(input Query) (Response, error) {
 			TimePreference:      query.TimePreference,
 			Question:            query.Question,
 			Limit:               limit,
+			General:             query.General,
 		},
 		Items: items,
 	}, nil
@@ -275,7 +282,11 @@ func normalizeQuery(query Query) Query {
 	questionLower := strings.ToLower(strings.TrimSpace(query.Question))
 	query.ScenarioName = normalizeToken(query.ScenarioName)
 	query.ScenarioType = normalizeToken(query.ScenarioType)
-	if isBroadRecommendationQuestion(questionLower) {
+	if query.General {
+		// General mode: ignore scenario context entirely so all entries are eligible.
+		query.ScenarioName = ""
+		query.ScenarioType = ""
+	} else if isBroadRecommendationQuestion(questionLower) {
 		query.ScenarioName = ""
 		if derived := deriveScenarioTypeFromQuestion(questionLower); derived != "" {
 			query.ScenarioType = derived
@@ -370,6 +381,9 @@ func scoreEntry(entry Entry, query Query) (MatchedEntry, int) {
 }
 
 func isCompatible(entry Entry, query Query) bool {
+	if query.General {
+		return true
+	}
 	if query.ScenarioName != "" && len(entry.ScenarioNames) > 0 && !contains(entry.ScenarioNames, query.ScenarioName) {
 		return false
 	}
