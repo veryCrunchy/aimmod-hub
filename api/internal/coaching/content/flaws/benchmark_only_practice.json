@@ -1,0 +1,18 @@
+{
+  "id": "benchmark_only_practice",
+  "title": "Benchmark-only practice",
+  "summary": "The player relies too heavily on benchmark tasks, so practice becomes narrow assessment repetition instead of focused skill-building.",
+  "signalKeys": ["benchmark_dependency", "routine_structure", "cross_scenario_transfer"],
+  "contextTags": [],
+  "mechanicIds": ["benchmark-assessment"],
+  "telltales": [
+    "Most practice volume is just rerunning benchmark scenarios",
+    "The player knows the weak category but has no separate block to address it"
+  ],
+  "contraindications": [
+    "Do not remove benchmarks completely because they still reveal useful gaps"
+  ],
+  "avoid": [
+    "Treating assessment playlists as the whole improvement plan"
+  ]
+}

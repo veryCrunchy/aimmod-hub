@@ -1,0 +1,18 @@
+{
+  "id": "outcome_fixation",
+  "title": "Outcome fixation",
+  "summary": "The player overweights score, rank, or one bad run and under-reviews the repeatable execution errors that actually need fixing.",
+  "signalKeys": ["outcome_fixation", "review_quality", "execution_consistency"],
+  "contextTags": [],
+  "mechanicIds": ["process-oriented-review"],
+  "telltales": [
+    "Session reflection stays at the level of score emotion instead of movement pattern review",
+    "One poor benchmark attempt changes the player's entire judgment of progress"
+  ],
+  "contraindications": [
+    "Do not pretend outcome never matters at all, because benchmarks still help track change"
+  ],
+  "avoid": [
+    "Reviewing a session with only PBs, ranks, and frustration"
+  ]
+}

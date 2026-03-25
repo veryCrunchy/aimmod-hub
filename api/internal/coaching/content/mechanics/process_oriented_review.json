@@ -1,0 +1,15 @@
+{
+  "id": "process-oriented-review",
+  "title": "Process-oriented review",
+  "summary": "Improvement accelerates when bad sessions are reviewed through controllable process errors instead of being reduced to rank, score, or self-judgment.",
+  "cues": [
+    "Ask why the error happened, what the repeated pattern is, and how to test one fix next session",
+    "Keep one process goal visible during the block",
+    "Judge the session by execution quality before judging the score"
+  ],
+  "failureModes": [
+    "Treating one bad score day as evidence of regression",
+    "Stacking too many process goals at once after a poor session"
+  ],
+  "relatedSignalKeys": ["outcome_fixation", "review_quality", "execution_consistency"]
+}

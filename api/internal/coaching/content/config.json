@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-25.v2",
+  "version": "2026-03-25.v3",
   "updatedAtIso": "2026-03-25T00:00:00Z",
   "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer."
 }

@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-1wxts",
+  "name": "Voltaic S5 1wXTS small static",
+  "aliases": ["VT S5 1wXTS", "Voltaic 1wXTS"],
+  "scenarioTypes": ["staticclicking", "clicking"],
+  "summary": "Small static clicking tasks emphasize arrival quality, micro-adjustment discipline, and misses being expensive rather than wide brute-force speed.",
+  "whatItTrains": ["static accuracy", "arrival quality", "micro-adjustment control"],
+  "goodForFlaws": ["correction_load", "hesitation_load"],
+  "cautions": ["Do not force more tempo while misses are still climbing", "Tiny targets can turn into hesitation if the commit standard is unclear"]
+}

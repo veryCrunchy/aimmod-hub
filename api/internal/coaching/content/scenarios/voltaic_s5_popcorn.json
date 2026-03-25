@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-popcorn",
+  "name": "Voltaic S5 Popcorn dynamic",
+  "aliases": ["VT S5 popcorn", "Voltaic popcorn"],
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "clicktiming"],
+  "summary": "Popcorn-style dynamic clicking uses readable arcs and jumps that reward arc reading and placement more than panic flicking.",
+  "whatItTrains": ["arc reading", "future placement", "timed clicks on moving arcs"],
+  "goodForFlaws": ["weak_arc_reading", "poor_target_leading"],
+  "cautions": ["Do not flatten popcorn into a pure static flicking task", "Center placement still matters because side bounces can punish sloppy reads"]
+}

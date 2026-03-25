@@ -1,0 +1,44 @@
+{
+  "id": "static-arrival-quality-before-tempo",
+  "flawId": "correction_load",
+  "title": "Prioritize arrival quality before pushing tiny static speed",
+  "summary": "On small static tasks like 1wXTS, score improves more reliably when the first arrive-and-click is clean than when raw tempo rises while misses keep multiplying.",
+  "scenarioTypes": ["staticclicking", "clicking"],
+  "scenarioNames": ["1wxts"],
+  "focusAreas": ["precision", "speed", "consistency"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["deceleration", "commit-timing"],
+  "scenarioIds": ["voltaic-s5-1wxts"],
+  "why": [
+    "Tiny static tasks punish misses heavily, so extra cleanup motion and overshoot destroy chaining value fast.",
+    "The player usually gains more by cleaning the first arrival than by forcing faster but sloppier target exits."
+  ],
+  "actions": [
+    "Arrive under control on the first motion and click as soon as the acquire standard is met.",
+    "If the run is filling with rescue micro-adjustments, lower tempo slightly until the first landings clean up.",
+    "Track how often you need extra correction after the initial move instead of only tracking raw cadence."
+  ],
+  "avoid": [
+    "Do not force more speed while the first landing is still unstable."
+  ],
+  "drills": [
+    {
+      "label": "Voltaic S5 1wXTS small static",
+      "query": "voltaic s5 1wxts",
+      "reason": "Small static targets expose whether first-arrival quality is good enough before speed gets pushed."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "voltaic-s5-kovaaks",
+      "claim": "Small static clicking heavily punishes misses, making arrival quality and micro-adjustment discipline more important than brute-force tempo.",
+      "excerpt": "Voltaic describes 1wXTS as a tiny-target static family where misses are expensive.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

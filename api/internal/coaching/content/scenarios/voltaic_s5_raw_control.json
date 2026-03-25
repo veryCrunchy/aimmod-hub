@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-raw-control",
+  "name": "Voltaic S5 Raw Control",
+  "aliases": ["VT S5 Raw Control", "Raw Control"],
+  "scenarioTypes": ["controltracking", "tracking"],
+  "summary": "Raw Control uses smoother XYZ motion to expose whether the player can stay disciplined through direction changes without turning the task into reactive panic.",
+  "whatItTrains": ["control tracking", "XYZ reading", "gradual corrections"],
+  "goodForFlaws": ["tracking_control_foundation", "rushed_direction_change_corrections"],
+  "cautions": ["Do not convert control tracking into brute reactive snapping"]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "snaketrack-precision-foundation",
+  "flawId": "tracking_control_foundation",
+  "title": "Use precise tracking to clean readable corrections first",
+  "summary": "Snake Track-style precise tracking is valuable because it keeps readable acceleration and deceleration in the task, forcing the player to stabilize contact and pacing before speed becomes the focus.",
+  "scenarioTypes": ["precisetracking", "tracking"],
+  "scenarioNames": ["snake track"],
+  "focusAreas": ["precision", "consistency", "transfer"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["slow-consistent-corrections", "speed-matching"],
+  "scenarioIds": ["voltaic-s5-snaketrack"],
+  "why": [
+    "Readable long strafes make it obvious when the player is still rushing corrections instead of matching target behavior cleanly.",
+    "Precise tracking builds contact quality that carries into both control and reactive work later."
+  ],
+  "actions": [
+    "Match the target's pace through the readable strafe before trying to make the correction snappier.",
+    "Treat each direction change as a chance to land a clean stable response, not a chance to prove max speed.",
+    "If contact quality collapses whenever pace rises, stay at the speed where the majority of corrections still connect."
+  ],
+  "avoid": [
+    "Do not turn precise tracking into a reactive panic test."
+  ],
+  "drills": [
+    {
+      "label": "Voltaic S5 Snake Track",
+      "query": "voltaic s5 snake track",
+      "reason": "Snake Track keeps acceleration and deceleration readable, which is ideal for building correction quality."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "voltaic-s5-kovaaks",
+      "claim": "Snake Track-style precise tracking uses readable long strafes with acceleration and deceleration to train controlled contact instead of autopilot centering.",
+      "excerpt": "Voltaic positions Snake Track as a precise tracking family with readable pace changes.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

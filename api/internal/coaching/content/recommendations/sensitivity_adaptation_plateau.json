@@ -1,0 +1,45 @@
+{
+  "id": "sensitivity-adaptation-plateau",
+  "flawId": "sensitivity_rigidity",
+  "title": "Use sensitivity changes as a tool, not a threat",
+  "summary": "If the player is plateaued and overly attached to one sensitivity, a deliberate alternate-sensitivity block can challenge stale movement patterns without erasing skill.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["transfer", "balanced", "precision"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["sensitivity-adaptation"],
+  "scenarioIds": [],
+  "why": [
+    "Aim improvement depends on adaptable mouse control more than preserving one exact setting forever.",
+    "A controlled sensitivity change can reveal whether the player is truly reading and controlling motion or just repeating one comfortable pattern."
+  ],
+  "actions": [
+    "Run a short time-boxed block on a deliberately different sensitivity and compare control quality, not just comfort.",
+    "Keep notes on whether the alternate sensitivity exposes different arm, wrist, or finger weaknesses.",
+    "Return to the main sensitivity after the block and keep the useful movement cues that carried over."
+  ],
+  "avoid": [
+    "Do not randomize sensitivity every session with no learning goal.",
+    "Avoid treating any temporary awkwardness as proof that the change was harmful."
+  ],
+  "drills": [
+    {
+      "label": "Alternate sensitivity control block",
+      "query": "precision tracking control tracking alternate sensitivity",
+      "reason": "Stable control tasks make it easier to notice whether the new sensitivity changes correction quality."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "voltaic-muscle-memory",
+      "claim": "Sensitivity changes do not inherently destroy aim and can be used to improve adaptable mouse control.",
+      "excerpt": "Voltaic argues that mouse control matters more than preserving one sacred sensitivity value.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

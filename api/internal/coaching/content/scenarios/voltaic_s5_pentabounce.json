@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-pentabounce",
+  "name": "Voltaic S5 PentabounceTS",
+  "aliases": ["VT S5 PentabounceTS", "PentabounceTS"],
+  "scenarioTypes": ["targetswitching", "switching"],
+  "summary": "PentabounceTS uses predictable bounce lines to train smooth switching rhythm and controlled tracked finishes instead of evasive chaos.",
+  "whatItTrains": ["stability switching", "predictable bounce reading", "smooth switching rhythm"],
+  "goodForFlaws": ["weak_chaining", "switch_penalty"],
+  "cautions": ["Do not let predictable lines turn into lazy transitions with poor finish quality"]
+}

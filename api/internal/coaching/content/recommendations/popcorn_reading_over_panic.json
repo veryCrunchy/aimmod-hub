@@ -1,0 +1,45 @@
+{
+  "id": "popcorn-reading-over-panic",
+  "flawId": "weak_arc_reading",
+  "title": "Read the arc before forcing the click",
+  "summary": "Popcorn-style dynamic clicking improves when the player reads the target arc and places ahead of it instead of rushing each click like a panic static flick.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "clicktiming"],
+  "scenarioNames": ["popcorn"],
+  "focusAreas": ["precision", "speed", "transfer"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["arc-reading", "lead-placement"],
+  "scenarioIds": ["voltaic-s5-popcorn"],
+  "why": [
+    "Popcorn exposes whether the player can identify the next part of the arc instead of reacting late to where the target just was.",
+    "Better reads reduce both panic clicks and excessive lead distance."
+  ],
+  "actions": [
+    "Track the whole arc for a moment before committing instead of flicking only to the current target location.",
+    "Place slightly ahead of the arc, then reduce how much you lead as timing improves.",
+    "If you keep getting surprised by side bounces, slow the click rate until the read is cleaner."
+  ],
+  "avoid": [
+    "Do not treat popcorn like a pure static clicking benchmark.",
+    "Avoid panic clicking just because the target changed height or direction."
+  ],
+  "drills": [
+    {
+      "label": "Voltaic S5 Popcorn dynamic",
+      "query": "voltaic s5 popcorn",
+      "reason": "Popcorn-style tasks isolate arc reading and future placement under dynamic clicking pressure."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "voltaic-s5-kovaaks",
+      "claim": "Popcorn-style tasks emphasize reaction and arc reading rather than simple static-style flicking.",
+      "excerpt": "Voltaic describes Popcorn as a dynamic clicking family where reading arcs and movement timing matter.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

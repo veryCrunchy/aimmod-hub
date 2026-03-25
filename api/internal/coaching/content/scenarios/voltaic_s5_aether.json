@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-aether",
+  "name": "Voltaic S5 Aether reactive",
+  "aliases": ["VT S5 Aether", "Aether reactive"],
+  "scenarioTypes": ["reactivetracking", "tracking"],
+  "summary": "Aether-style reactive tracking adds stronger vertical and horizontal variation so the player must read and answer aerial reactive motion cleanly.",
+  "whatItTrains": ["reactive tracking", "acceleration reading", "aerial reactivity"],
+  "goodForFlaws": ["tracking_control_foundation", "rushed_direction_change_corrections"],
+  "cautions": ["Do not jump straight into pure speed chasing before the correction pattern is stable"]
+}

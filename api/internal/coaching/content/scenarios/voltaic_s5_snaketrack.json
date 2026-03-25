@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-snaketrack",
+  "name": "Voltaic S5 Snake Track",
+  "aliases": ["VT S5 Snake Track", "Snake Track"],
+  "scenarioTypes": ["precisetracking", "tracking"],
+  "summary": "Snake Track uses long readable strafes with acceleration and deceleration so precise tracking stays about controlled contact rather than autopilot centering.",
+  "whatItTrains": ["precision tracking", "speed matching", "correction pacing"],
+  "goodForFlaws": ["tracking_control_foundation", "rushed_direction_change_corrections"],
+  "cautions": ["Do not treat the task like a pure speed test", "Late over-corrections get exposed quickly because the strafes are readable"]
+}

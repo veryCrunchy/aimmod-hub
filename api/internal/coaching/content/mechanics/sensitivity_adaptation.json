@@ -1,0 +1,15 @@
+{
+  "id": "sensitivity-adaptation",
+  "title": "Sensitivity adaptation",
+  "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+  "cues": [
+    "Treat sensitivity as a tool, not an identity",
+    "Use a time-boxed alternate sensitivity block to challenge a plateau",
+    "Track whether the change improves control quality, not just comfort"
+  ],
+  "failureModes": [
+    "Assuming any sensitivity change destroys progress",
+    "Changing sensitivity randomly every session with no purpose"
+  ],
+  "relatedSignalKeys": ["sensitivity_rigidity", "plateau", "mouse_control_adaptation"]
+}

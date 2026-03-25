@@ -1,0 +1,9 @@
+{
+  "id": "voltaic-s5-kovaaks",
+  "kind": "benchmark_article",
+  "title": "Announcing the Voltaic Season 5 Aiming Benchmarks BETA for Kovaaks",
+  "author": "Voltaic",
+  "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
+  "publishedAtIso": "2024-12-25T00:21:58Z",
+  "notes": "Voltaic Season 5 benchmark explainer with scenario-family semantics for static clicking, dynamic clicking, precise/reactive/control tracking, and target switching."
+}

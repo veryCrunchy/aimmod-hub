@@ -1,0 +1,18 @@
+{
+  "id": "sensitivity_rigidity",
+  "title": "Sensitivity rigidity",
+  "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+  "signalKeys": ["sensitivity_rigidity", "plateau", "mouse_control_adaptation"],
+  "contextTags": [],
+  "mechanicIds": ["sensitivity-adaptation"],
+  "telltales": [
+    "Sensitivity changes are treated as dangerous even when the player is plateaued",
+    "The player explains every issue through preserving muscle memory"
+  ],
+  "contraindications": [
+    "Do not replace stable training with constant random sensitivity changes"
+  ],
+  "avoid": [
+    "Assuming progress only exists on one untouchable sensitivity"
+  ]
+}

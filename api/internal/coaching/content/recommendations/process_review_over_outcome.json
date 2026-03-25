@@ -1,0 +1,44 @@
+{
+  "id": "process-review-over-outcome",
+  "flawId": "outcome_fixation",
+  "title": "Review the pattern, not just the score",
+  "summary": "When a session goes badly, improvement usually comes from identifying one repeatable execution pattern to test next session instead of reacting only to the score outcome.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["balanced", "consistency", "transfer"],
+  "challengePreferences": [],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["process-oriented-review"],
+  "scenarioIds": [],
+  "why": [
+    "Outcome-only review turns bad sessions into emotion without producing a useful testable change.",
+    "Process review converts frustration into one concrete adjustment the player can try immediately."
+  ],
+  "actions": [
+    "After the block, write one sentence for why the misses happened, one sentence for the repeated pattern, and one sentence for what you will test next session.",
+    "Pick one process goal for the next session instead of trying to fix every flaw at once.",
+    "Judge progress by whether the repeated execution error appears less often, not only by whether the PB moved."
+  ],
+  "avoid": [
+    "Do not treat one bad benchmark day as proof that all progress disappeared."
+  ],
+  "drills": [
+    {
+      "label": "One-goal review loop",
+      "query": "process goal session review aim training",
+      "reason": "A simple review loop keeps the next session actionable instead of emotional."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "voltaic-mentality",
+      "claim": "Improvement comes from process-based reflection and appropriately difficult practice, not only from staring at the outcome.",
+      "excerpt": "The Voltaic mentality article emphasizes review through controllable process changes.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

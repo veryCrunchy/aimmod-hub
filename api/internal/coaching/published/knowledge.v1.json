@@ -1,8 +1,115 @@
 {
-  "version": "2026-03-25.v2",
+  "version": "2026-03-25.v3",
   "updatedAtIso": "2026-03-25T00:00:00Z",
   "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer.",
   "entries": [
+    {
+      "id": "benchmarks-support-routines",
+      "title": "Use benchmarks to locate gaps, then train outside them",
+      "summary": "Benchmark playlists are strongest as assessment tools. Once they reveal the weak category, most improvement volume should move into fundamentals and weakness-specific training blocks.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "benchmark_dependency",
+        "cross_scenario_transfer",
+        "routine_structure"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Benchmarks tell you where the hole is, but repeating the same assessment tasks is usually not enough to fill it.",
+        "Training tends to transfer better when the benchmark result leads to a separate improvement block."
+      ],
+      "actions": [
+        "Keep benchmark runs for measurement, then spend the main block on fundamentals or weakness-specific tasks.",
+        "After a benchmark exposes a weak category, choose one supporting routine for that category and run it consistently for several sessions.",
+        "Retest the benchmark after the block instead of checking progress every few runs."
+      ],
+      "drills": [
+        {
+          "label": "Weakness block after benchmark",
+          "query": "voltaic fundamentals weakness-specific routine",
+          "reason": "A dedicated follow-up block turns benchmark feedback into training instead of endless retesting."
+        }
+      ],
+      "avoid": [
+        "Treating assessment playlists as the whole improvement plan",
+        "Do not let benchmark reruns consume most of your improvement time."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "benchmark_only_practice",
+        "title": "Benchmark-only practice",
+        "summary": "The player relies too heavily on benchmark tasks, so practice becomes narrow assessment repetition instead of focused skill-building.",
+        "signalKeys": [
+          "benchmark_dependency",
+          "cross_scenario_transfer",
+          "routine_structure"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Most practice volume is just rerunning benchmark scenarios",
+          "The player knows the weak category but has no separate block to address it"
+        ],
+        "contraindications": [
+          "Do not remove benchmarks completely because they still reveal useful gaps"
+        ],
+        "avoid": [
+          "Treating assessment playlists as the whole improvement plan"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "benchmark-assessment",
+          "title": "Benchmark as assessment, not full routine",
+          "summary": "Benchmark playlists are best used to reveal strengths and weaknesses, then paired with fundamentals and weakness-specific work instead of replacing them.",
+          "cues": [
+            "Use benchmarks to locate the gap before selecting training blocks",
+            "Retest after a block instead of mindlessly rerunning the same benchmark tasks",
+            "Separate assessment volume from improvement volume"
+          ],
+          "failureModes": [
+            "Grinding only benchmark tasks and calling it a full routine",
+            "Treating benchmark rank pushing as the same thing as broad aim improvement"
+          ],
+          "relatedSignalKeys": [
+            "benchmark_dependency",
+            "cross_scenario_transfer",
+            "routine_structure"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-getting-started",
+          "claim": "Benchmarks should point the player toward fundamentals and targeted routines instead of acting as the full routine by themselves.",
+          "excerpt": "Voltaic frames benchmarks as a starting point for finding weaknesses and then selecting routines.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-getting-started",
+          "kind": "guide_article",
+          "title": "Getting started with Voltaic",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/getting-started-with-voltaic/",
+          "publishedAtIso": "2023-10-20T09:37:19Z"
+        }
+      ]
+    },
     {
       "id": "clicking-precision-balance",
       "title": "Move the speed-accuracy balance back toward clean arrivals",
@@ -328,7 +435,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -523,7 +630,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -666,7 +773,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -806,7 +913,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -947,7 +1054,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -1486,7 +1593,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -1645,7 +1752,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -2199,6 +2306,280 @@
       ]
     },
     {
+      "id": "popcorn-reading-over-panic",
+      "title": "Read the arc before forcing the click",
+      "summary": "Popcorn-style dynamic clicking improves when the player reads the target arc and places ahead of it instead of rushing each click like a panic static flick.",
+      "scenarioTypes": [
+        "clicktiming",
+        "dynamicclicking",
+        "movingclicking"
+      ],
+      "scenarioNames": [
+        "popcorn"
+      ],
+      "signalKeys": [
+        "anticipation_latency",
+        "arc_reading",
+        "reaction_latency",
+        "recognition",
+        "target_leading"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "precision",
+        "speed",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Popcorn exposes whether the player can identify the next part of the arc instead of reacting late to where the target just was.",
+        "Better reads reduce both panic clicks and excessive lead distance."
+      ],
+      "actions": [
+        "Track the whole arc for a moment before committing instead of flicking only to the current target location.",
+        "Place slightly ahead of the arc, then reduce how much you lead as timing improves.",
+        "If you keep getting surprised by side bounces, slow the click rate until the read is cleaner."
+      ],
+      "drills": [
+        {
+          "label": "Voltaic S5 Popcorn dynamic",
+          "query": "voltaic s5 popcorn",
+          "reason": "Popcorn-style tasks isolate arc reading and future placement under dynamic clicking pressure."
+        }
+      ],
+      "avoid": [
+        "Treating a reading-heavy pattern like a simple static timing task",
+        "Do not treat popcorn like a pure static clicking benchmark.",
+        "Avoid panic clicking just because the target changed height or direction."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "weak_arc_reading",
+        "title": "Arc reading is weak",
+        "summary": "The player struggles to identify what a moving target or set of targets is about to do, so shot timing and cursor placement both suffer.",
+        "signalKeys": [
+          "arc_reading",
+          "reaction_latency",
+          "recognition"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Readable arcs still feel visually confusing",
+          "The player can follow the target sometimes, but not predict the next movement cleanly"
+        ],
+        "contraindications": [
+          "Do not reduce this to only flick speed or click speed"
+        ],
+        "avoid": [
+          "Treating a reading-heavy pattern like a simple static timing task"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "arc-reading",
+          "title": "Arc reading",
+          "summary": "Reading-heavy click timing is partly about hitting the target and partly about correctly understanding the arc or acceleration pattern before committing.",
+          "cues": [
+            "Read the movement before trying to force the shot",
+            "Track both the local arc and the larger map pattern",
+            "Use peripheral awareness when multiple arcs are active"
+          ],
+          "failureModes": [
+            "Treating every target as if the path were obvious",
+            "Losing the larger pattern when several arcs are active at once"
+          ],
+          "relatedSignalKeys": [
+            "arc_reading",
+            "reaction_latency",
+            "recognition"
+          ]
+        },
+        {
+          "id": "lead-placement",
+          "title": "Lead placement",
+          "summary": "In dynamic clicking, the crosshair should be placed where the target will be rather than where it currently is, shrinking the physical gap the mouse must close.",
+          "cues": [
+            "Place the crosshair ahead of the target path",
+            "Reduce the physical gap between crosshair and target",
+            "As the read improves, lead less while still staying ahead of the motion"
+          ],
+          "failureModes": [
+            "Flicking to the target's current position every time",
+            "Leading too far because the shot timing is not yet calibrated"
+          ],
+          "relatedSignalKeys": [
+            "anticipation_latency",
+            "recognition",
+            "target_leading"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "voltaic-s5-popcorn",
+          "name": "Voltaic S5 Popcorn dynamic",
+          "aliases": [
+            "VT S5 popcorn",
+            "Voltaic popcorn"
+          ],
+          "scenarioTypes": [
+            "clicktiming",
+            "dynamicclicking",
+            "movingclicking"
+          ],
+          "summary": "Popcorn-style dynamic clicking uses readable arcs and jumps that reward arc reading and placement more than panic flicking.",
+          "whatItTrains": [
+            "arc reading",
+            "future placement",
+            "timed clicks on moving arcs"
+          ],
+          "goodForFlaws": [
+            "poor_target_leading",
+            "weak_arc_reading"
+          ],
+          "cautions": [
+            "Do not flatten popcorn into a pure static flicking task",
+            "Center placement still matters because side bounces can punish sloppy reads"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-s5-kovaaks",
+          "claim": "Popcorn-style tasks emphasize reaction and arc reading rather than simple static-style flicking.",
+          "excerpt": "Voltaic describes Popcorn as a dynamic clicking family where reading arcs and movement timing matter.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-s5-kovaaks",
+          "kind": "benchmark_article",
+          "title": "Announcing the Voltaic Season 5 Aiming Benchmarks BETA for Kovaaks",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
+          "publishedAtIso": "2024-12-25T00:21:58Z"
+        }
+      ]
+    },
+    {
+      "id": "process-review-over-outcome",
+      "title": "Review the pattern, not just the score",
+      "summary": "When a session goes badly, improvement usually comes from identifying one repeatable execution pattern to test next session instead of reacting only to the score outcome.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "execution_consistency",
+        "outcome_fixation",
+        "review_quality"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "transfer"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Outcome-only review turns bad sessions into emotion without producing a useful testable change.",
+        "Process review converts frustration into one concrete adjustment the player can try immediately."
+      ],
+      "actions": [
+        "After the block, write one sentence for why the misses happened, one sentence for the repeated pattern, and one sentence for what you will test next session.",
+        "Pick one process goal for the next session instead of trying to fix every flaw at once.",
+        "Judge progress by whether the repeated execution error appears less often, not only by whether the PB moved."
+      ],
+      "drills": [
+        {
+          "label": "One-goal review loop",
+          "query": "process goal session review aim training",
+          "reason": "A simple review loop keeps the next session actionable instead of emotional."
+        }
+      ],
+      "avoid": [
+        "Reviewing a session with only PBs, ranks, and frustration",
+        "Do not treat one bad benchmark day as proof that all progress disappeared."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "outcome_fixation",
+        "title": "Outcome fixation",
+        "summary": "The player overweights score, rank, or one bad run and under-reviews the repeatable execution errors that actually need fixing.",
+        "signalKeys": [
+          "execution_consistency",
+          "outcome_fixation",
+          "review_quality"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Session reflection stays at the level of score emotion instead of movement pattern review",
+          "One poor benchmark attempt changes the player's entire judgment of progress"
+        ],
+        "contraindications": [
+          "Do not pretend outcome never matters at all, because benchmarks still help track change"
+        ],
+        "avoid": [
+          "Reviewing a session with only PBs, ranks, and frustration"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "process-oriented-review",
+          "title": "Process-oriented review",
+          "summary": "Improvement accelerates when bad sessions are reviewed through controllable process errors instead of being reduced to rank, score, or self-judgment.",
+          "cues": [
+            "Ask why the error happened, what the repeated pattern is, and how to test one fix next session",
+            "Keep one process goal visible during the block",
+            "Judge the session by execution quality before judging the score"
+          ],
+          "failureModes": [
+            "Treating one bad score day as evidence of regression",
+            "Stacking too many process goals at once after a poor session"
+          ],
+          "relatedSignalKeys": [
+            "execution_consistency",
+            "outcome_fixation",
+            "review_quality"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-mentality",
+          "claim": "Improvement comes from process-based reflection and appropriately difficult practice, not only from staring at the outcome.",
+          "excerpt": "The Voltaic mentality article emphasizes review through controllable process changes.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-mentality",
+          "kind": "guide_article",
+          "title": "Constructing an Improvement-Based Mentality",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/constructing-an-improvement-based-mentality/",
+          "publishedAtIso": "2023-10-20T08:48:27Z"
+        }
+      ]
+    },
+    {
       "id": "reactive-tracking-consistency-before-speed",
       "title": "In reactive tracking, land the correction before you push the pace",
       "summary": "Manageable reactive tasks improve in-game aim best when you use them to make accurate repeated corrections, not to brute-force extreme reactivity.",
@@ -2390,7 +2771,7 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
@@ -2539,8 +2920,121 @@
           "kind": "youtube_transcript",
           "title": "Viscose benchmarks explanation transcript",
           "author": "Viscose",
-          "url": "",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
           "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "readiness-foundation-consistency",
+      "title": "Treat low-readiness days as part of the training picture",
+      "summary": "If reaction quality and consistency collapse across many task types in the same session, the player may need a readiness fix before adding more scenario volume.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "reaction_quality",
+        "readiness_debt",
+        "variance"
+      ],
+      "contextTags": [
+        "pace_fade",
+        "variance"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency",
+        "endurance"
+      ],
+      "challengePreferences": null,
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Sleep, movement, and recovery affect visual processing, focus, and stable execution more than players often admit.",
+        "A low-readiness session can look like a mechanical regression even when the real issue is recovery."
+      ],
+      "actions": [
+        "If the whole block feels unusually slow or inconsistent, shorten the volume and protect quality instead of forcing a normal full session.",
+        "Build one pre-session reset habit such as a short walk, hydration, or light movement before the hard block.",
+        "Track whether poor sleep and poor consistency line up before assuming the scenario plan is the only problem."
+      ],
+      "drills": [
+        {
+          "label": "Short quality block",
+          "query": "short quality session consistency aim training",
+          "reason": "On low-readiness days, protecting execution quality beats forcing normal volume."
+        }
+      ],
+      "avoid": [
+        "Solving every bad consistency day with more volume",
+        "Do not interpret every low-readiness day as proof that the routine stopped working."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "readiness_debt",
+        "title": "Readiness debt",
+        "summary": "Recovery, sleep, or general readiness is low enough that consistency and reaction quality are being taxed before the practice block even starts.",
+        "signalKeys": [
+          "reaction_quality",
+          "readiness_debt",
+          "variance"
+        ],
+        "contextTags": [
+          "pace_fade",
+          "variance"
+        ],
+        "telltales": [
+          "Visual reading feels slower across many task types in the same session",
+          "Practice quality swings harder on low-recovery days than the scenario choice alone explains"
+        ],
+        "contraindications": [
+          "Do not use lifestyle advice to dismiss real mechanical flaws"
+        ],
+        "avoid": [
+          "Solving every bad consistency day with more volume"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "readiness-foundation",
+          "title": "Readiness foundation",
+          "summary": "Sleep, physical movement, and general recovery support the focus, consistency, and reaction quality that aiming practice depends on.",
+          "cues": [
+            "Treat consistency problems partly as readiness problems when recovery is poor",
+            "Use short movement and reset habits before hard blocks",
+            "Protect sleep before expecting stable reaction quality"
+          ],
+          "failureModes": [
+            "Trying to solve every variance problem with more scenario volume",
+            "Ignoring fatigue while expecting normal reading speed and control"
+          ],
+          "relatedSignalKeys": [
+            "reaction_quality",
+            "readiness_debt",
+            "variance"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-lifestyle",
+          "claim": "Lifestyle and recovery factors materially affect reaction time, focus, and consistency in FPS performance.",
+          "excerpt": "The Voltaic lifestyle article links sleep and health habits to practical aiming performance.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-lifestyle",
+          "kind": "guide_article",
+          "title": "The importance of a healthy lifestyle for performance in (FPS) games",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/lifestyle/",
+          "publishedAtIso": "2023-10-20T08:46:58Z"
         }
       ]
     },
@@ -2675,6 +3169,286 @@
       ]
     },
     {
+      "id": "sensitivity-adaptation-plateau",
+      "title": "Use sensitivity changes as a tool, not a threat",
+      "summary": "If the player is plateaued and overly attached to one sensitivity, a deliberate alternate-sensitivity block can challenge stale movement patterns without erasing skill.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Aim improvement depends on adaptable mouse control more than preserving one exact setting forever.",
+        "A controlled sensitivity change can reveal whether the player is truly reading and controlling motion or just repeating one comfortable pattern."
+      ],
+      "actions": [
+        "Run a short time-boxed block on a deliberately different sensitivity and compare control quality, not just comfort.",
+        "Keep notes on whether the alternate sensitivity exposes different arm, wrist, or finger weaknesses.",
+        "Return to the main sensitivity after the block and keep the useful movement cues that carried over."
+      ],
+      "drills": [
+        {
+          "label": "Alternate sensitivity control block",
+          "query": "precision tracking control tracking alternate sensitivity",
+          "reason": "Stable control tasks make it easier to notice whether the new sensitivity changes correction quality."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not randomize sensitivity every session with no learning goal.",
+        "Avoid treating any temporary awkwardness as proof that the change was harmful."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-muscle-memory",
+          "claim": "Sensitivity changes do not inherently destroy aim and can be used to improve adaptable mouse control.",
+          "excerpt": "Voltaic argues that mouse control matters more than preserving one sacred sensitivity value.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-muscle-memory",
+          "kind": "guide_article",
+          "title": "Why 'muscle memory' is seen as a meme in aiming",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/muscle-memory/",
+          "publishedAtIso": "2023-10-20T06:58:07Z"
+        }
+      ]
+    },
+    {
+      "id": "snaketrack-precision-foundation",
+      "title": "Use precise tracking to clean readable corrections first",
+      "summary": "Snake Track-style precise tracking is valuable because it keeps readable acceleration and deceleration in the task, forcing the player to stabilize contact and pacing before speed becomes the focus.",
+      "scenarioTypes": [
+        "precisetracking",
+        "tracking"
+      ],
+      "scenarioNames": [
+        "snake track"
+      ],
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "direction_change_correction",
+        "stable_response"
+      ],
+      "contextTags": [
+        "accuracy_drop",
+        "pace_fade",
+        "pace_shift"
+      ],
+      "focusAreas": [
+        "consistency",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Readable long strafes make it obvious when the player is still rushing corrections instead of matching target behavior cleanly.",
+        "Precise tracking builds contact quality that carries into both control and reactive work later."
+      ],
+      "actions": [
+        "Match the target's pace through the readable strafe before trying to make the correction snappier.",
+        "Treat each direction change as a chance to land a clean stable response, not a chance to prove max speed.",
+        "If contact quality collapses whenever pace rises, stay at the speed where the majority of corrections still connect."
+      ],
+      "drills": [
+        {
+          "label": "Voltaic S5 Snake Track",
+          "query": "voltaic s5 snake track",
+          "reason": "Snake Track keeps acceleration and deceleration readable, which is ideal for building correction quality."
+        }
+      ],
+      "avoid": [
+        "Overgripping to force smoothness",
+        "Do not turn precise tracking into a reactive panic test."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "tracking_control_foundation",
+        "title": "Tracking control foundation is unstable",
+        "summary": "Continuous target contact breaks down because the player chases late or over-corrects during direction changes.",
+        "signalKeys": [
+          "control_foundation",
+          "correction_load",
+          "stable_response"
+        ],
+        "contextTags": [
+          "accuracy_drop",
+          "pace_fade",
+          "pace_shift"
+        ],
+        "telltales": [
+          "Overshoot bursts during target direction changes",
+          "Contact quality collapses when pace rises"
+        ],
+        "contraindications": [
+          "Do not use peak speed as the only quality measure"
+        ],
+        "avoid": [
+          "Overgripping to force smoothness"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "slow-consistent-corrections",
+          "title": "Slow, consistent corrections",
+          "summary": "When direction changes are readable, the player should first build accurate corrections at a slower pace and only add snap once those corrections land reliably.",
+          "cues": [
+            "Start slower on direction changes",
+            "Only speed up after the correction path is reliable",
+            "Let the target punish bad corrections instead of hiding them with more force"
+          ],
+          "failureModes": [
+            "Trying to brute-force speed before the correction path is accurate",
+            "Missing the majority of adjustments back to target"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "direction_change_correction",
+            "stable_response"
+          ]
+        },
+        {
+          "id": "speed-matching",
+          "title": "Speed matching",
+          "summary": "Tracking quality improves when the player matches target speed smoothly instead of chasing late.",
+          "cues": [
+            "Escort the target",
+            "Keep grip pressure low while maintaining contact"
+          ],
+          "failureModes": [
+            "Aggressive chase behavior that creates overshoot bursts"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "stable_response"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "voltaic-s5-snaketrack",
+          "name": "Voltaic S5 Snake Track",
+          "aliases": [
+            "VT S5 Snake Track",
+            "Snake Track"
+          ],
+          "scenarioTypes": [
+            "precisetracking",
+            "tracking"
+          ],
+          "summary": "Snake Track uses long readable strafes with acceleration and deceleration so precise tracking stays about controlled contact rather than autopilot centering.",
+          "whatItTrains": [
+            "precision tracking",
+            "speed matching",
+            "correction pacing"
+          ],
+          "goodForFlaws": [
+            "rushed_direction_change_corrections",
+            "tracking_control_foundation"
+          ],
+          "cautions": [
+            "Do not treat the task like a pure speed test",
+            "Late over-corrections get exposed quickly because the strafes are readable"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-s5-kovaaks",
+          "claim": "Snake Track-style precise tracking uses readable long strafes with acceleration and deceleration to train controlled contact instead of autopilot centering.",
+          "excerpt": "Voltaic positions Snake Track as a precise tracking family with readable pace changes.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-s5-kovaaks",
+          "kind": "benchmark_article",
+          "title": "Announcing the Voltaic Season 5 Aiming Benchmarks BETA for Kovaaks",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
+          "publishedAtIso": "2024-12-25T00:21:58Z"
+        }
+      ]
+    },
+    {
       "id": "stabilization-recovery",
       "title": "Give the recovery phase a cleaner target",
       "summary": "If recovery and stabilization are weak, the player may be handling the initial move well enough but failing to settle quickly after correction or direction change.",
@@ -2798,6 +3572,163 @@
           "author": "AimMod",
           "url": "",
           "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "static-arrival-quality-before-tempo",
+      "title": "Prioritize arrival quality before pushing tiny static speed",
+      "summary": "On small static tasks like 1wXTS, score improves more reliably when the first arrive-and-click is clean than when raw tempo rises while misses keep multiplying.",
+      "scenarioTypes": [
+        "clicking",
+        "staticclicking"
+      ],
+      "scenarioNames": [
+        "1wxts"
+      ],
+      "signalKeys": [
+        "control_foundation",
+        "correction_load",
+        "hesitation_load",
+        "precision_balance"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "consistency",
+        "precision",
+        "speed"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Tiny static tasks punish misses heavily, so extra cleanup motion and overshoot destroy chaining value fast.",
+        "The player usually gains more by cleaning the first arrival than by forcing faster but sloppier target exits."
+      ],
+      "actions": [
+        "Arrive under control on the first motion and click as soon as the acquire standard is met.",
+        "If the run is filling with rescue micro-adjustments, lower tempo slightly until the first landings clean up.",
+        "Track how often you need extra correction after the initial move instead of only tracking raw cadence."
+      ],
+      "drills": [
+        {
+          "label": "Voltaic S5 1wXTS small static",
+          "query": "voltaic s5 1wxts",
+          "reason": "Small static targets expose whether first-arrival quality is good enough before speed gets pushed."
+        }
+      ],
+      "avoid": [
+        "Forcing more tempo before arrival quality is stable",
+        "Do not force more speed while the first landing is still unstable."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "correction_load",
+        "title": "High correction load",
+        "summary": "The player reaches the target area but spends too much extra motion cleaning up the hit.",
+        "signalKeys": [
+          "correction_load",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Extra cleanup shots after otherwise decent acquires",
+          "Visible overshoot before secure hits"
+        ],
+        "contraindications": [
+          "Do not assume every miss is a speed problem"
+        ],
+        "avoid": [
+          "Forcing more tempo before arrival quality is stable"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "deceleration",
+          "title": "Deceleration and clean arrival",
+          "summary": "Braking early enough that the cursor finishes on target instead of through target.",
+          "cues": [
+            "Brake sooner",
+            "Let the cursor arrive on target cleanly"
+          ],
+          "failureModes": [
+            "Overshooting and fixing it with extra cleanup movement"
+          ],
+          "relatedSignalKeys": [
+            "control_foundation",
+            "correction_load",
+            "precision_balance"
+          ]
+        },
+        {
+          "id": "commit-timing",
+          "title": "Commit timing",
+          "summary": "The transition from acquire to fire should be early and consistent once the target is actually confirmed.",
+          "cues": [
+            "Use a simple acquire -\u003e commit -\u003e fire rhythm",
+            "Reduce double-checking before clicking"
+          ],
+          "failureModes": [
+            "Delayed commit after the target is already hittable"
+          ],
+          "relatedSignalKeys": [
+            "hesitation_load",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "voltaic-s5-1wxts",
+          "name": "Voltaic S5 1wXTS small static",
+          "aliases": [
+            "VT S5 1wXTS",
+            "Voltaic 1wXTS"
+          ],
+          "scenarioTypes": [
+            "clicking",
+            "staticclicking"
+          ],
+          "summary": "Small static clicking tasks emphasize arrival quality, micro-adjustment discipline, and misses being expensive rather than wide brute-force speed.",
+          "whatItTrains": [
+            "static accuracy",
+            "arrival quality",
+            "micro-adjustment control"
+          ],
+          "goodForFlaws": [
+            "correction_load",
+            "hesitation_load"
+          ],
+          "cautions": [
+            "Do not force more tempo while misses are still climbing",
+            "Tiny targets can turn into hesitation if the commit standard is unclear"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-s5-kovaaks",
+          "claim": "Small static clicking heavily punishes misses, making arrival quality and micro-adjustment discipline more important than brute-force tempo.",
+          "excerpt": "Voltaic describes 1wXTS as a tiny-target static family where misses are expensive.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-s5-kovaaks",
+          "kind": "benchmark_article",
+          "title": "Announcing the Voltaic Season 5 Aiming Benchmarks BETA for Kovaaks",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
+          "publishedAtIso": "2024-12-25T00:21:58Z"
         }
       ]
     },
@@ -2929,6 +3860,221 @@
           "author": "AimMod",
           "url": "",
           "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "switching-continuous-finish-quality",
+      "title": "Switch cleanly through the target instead of stab-clicking every rep",
+      "summary": "Speed and evasive switching families like DOTTS and DriftTS reward a smooth switch plus stable finish, not just a sharp first snap on every target.",
+      "scenarioTypes": [
+        "switching",
+        "targetswitching"
+      ],
+      "scenarioNames": [
+        "dotts",
+        "driftts",
+        "pentabouncets"
+      ],
+      "signalKeys": [
+        "chaining",
+        "execution_consistency",
+        "precision_balance",
+        "switch_penalty"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "consistency",
+        "precision",
+        "speed"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "next_session",
+        "this_week"
+      ],
+      "why": [
+        "Switching score is often lost in the finish and exit, not only in the first snap.",
+        "Hold-fire and continuous-acquisition tasks punish stop-start switching patterns that look fast for one instant but break the chain."
+      ],
+      "actions": [
+        "Flow into the target and stabilize the finish instead of hard resetting every switch.",
+        "Judge the whole kill chain, including exit quality, rather than only how fast the cursor first arrived.",
+        "If the snap is fast but the finish is messy, slow the switch slightly until the continuous finish is cleaner."
+      ],
+      "drills": [
+        {
+          "label": "Voltaic S5 DOTTS / DriftTS",
+          "query": "voltaic s5 dotts driftts",
+          "reason": "These switching families expose whether the player can keep chaining quality through the finish of each acquisition."
+        }
+      ],
+      "avoid": [
+        "Trading away first-shot accuracy for a bit more raw speed",
+        "Do not reduce hold-fire switching to repeated stab-click behavior.",
+        "Avoid trading finish quality away for one flashy initial snap."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "weak_chaining",
+        "title": "Chaining is weaker than raw flick speed",
+        "summary": "The player may have fast single flicks, but the full kill sequence breaks because of misses, extra micro-adjustments, or poor exits.",
+        "signalKeys": [
+          "chaining",
+          "execution_consistency",
+          "precision_balance"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Fast flicks do not produce equally fast kill strings",
+          "The run loses time between kills rather than only during the flick"
+        ],
+        "contraindications": [
+          "Do not judge flick quality only by one isolated fast movement"
+        ],
+        "avoid": [
+          "Trading away first-shot accuracy for a bit more raw speed"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "continuous-fire-discipline",
+          "title": "Continuous-fire discipline",
+          "summary": "Some target switching tasks reward smooth continuous acquisition and micro-correction while holding fire instead of discrete stab-click behavior on every target.",
+          "cues": [
+            "Flow through the switch instead of hard resetting every target",
+            "Let micro-corrections happen under control while the shot stays active",
+            "Judge the full transition, not just the first snap"
+          ],
+          "failureModes": [
+            "Turning hold-fire switching into repeated stop-start clicks",
+            "Overvaluing raw snap speed while the tracked finish is unstable"
+          ],
+          "relatedSignalKeys": [
+            "chaining",
+            "execution_consistency",
+            "switch_penalty"
+          ]
+        },
+        {
+          "id": "chaining",
+          "title": "Chaining",
+          "summary": "A good flicking run is not just individual flick speed. It is how cleanly the player moves from kill to kill without missing, over-microing, or leaving targets slowly.",
+          "cues": [
+            "Judge time-to-kill across multiple kills, not only single flick speed",
+            "Protect initial flick accuracy even if raw speed dips slightly",
+            "Leave each target in a way that sets up the next kill cleanly"
+          ],
+          "failureModes": [
+            "Fast flicks paired with misses and extra micro-adjustment",
+            "Slow target exits after each kill"
+          ],
+          "relatedSignalKeys": [
+            "chaining",
+            "execution_consistency",
+            "precision_balance"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "voltaic-s5-dotts",
+          "name": "Voltaic S5 DOTTS",
+          "aliases": [
+            "VT S5 DOTTS",
+            "DOTTS"
+          ],
+          "scenarioTypes": [
+            "switching",
+            "targetswitching"
+          ],
+          "summary": "DOTTS-style speed switching rewards smooth switch entries and tracked finishes while holding fire, not just isolated snap speed.",
+          "whatItTrains": [
+            "speed switching",
+            "continuous acquisition",
+            "switch chaining"
+          ],
+          "goodForFlaws": [
+            "switch_penalty",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "Do not reduce hold-fire tasks to repeated stop-start clicks"
+          ]
+        },
+        {
+          "id": "voltaic-s5-driftts",
+          "name": "Voltaic S5 DriftTS",
+          "aliases": [
+            "VT S5 DriftTS",
+            "DriftTS"
+          ],
+          "scenarioTypes": [
+            "switching",
+            "targetswitching"
+          ],
+          "summary": "DriftTS-style evasive switching stresses post-acquisition micro-correction and a clean finish after the main switch.",
+          "whatItTrains": [
+            "evasive switching",
+            "post-acquire stabilization",
+            "micro-correction under motion"
+          ],
+          "goodForFlaws": [
+            "switch_penalty",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "Do not overvalue the first snap if the finish is unstable"
+          ]
+        },
+        {
+          "id": "voltaic-s5-pentabounce",
+          "name": "Voltaic S5 PentabounceTS",
+          "aliases": [
+            "VT S5 PentabounceTS",
+            "PentabounceTS"
+          ],
+          "scenarioTypes": [
+            "switching",
+            "targetswitching"
+          ],
+          "summary": "PentabounceTS uses predictable bounce lines to train smooth switching rhythm and controlled tracked finishes instead of evasive chaos.",
+          "whatItTrains": [
+            "stability switching",
+            "predictable bounce reading",
+            "smooth switching rhythm"
+          ],
+          "goodForFlaws": [
+            "switch_penalty",
+            "weak_chaining"
+          ],
+          "cautions": [
+            "Do not let predictable lines turn into lazy transitions with poor finish quality"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-s5-kovaaks",
+          "claim": "DOTTS and DriftTS-style switching reward smooth entry, micro-correction, and finish quality rather than only raw first-snap speed.",
+          "excerpt": "Voltaic describes DOTTS, DriftTS, and PentabounceTS as switching families with distinct emphasis on finish quality and control.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-s5-kovaaks",
+          "kind": "benchmark_article",
+          "title": "Announcing the Voltaic Season 5 Aiming Benchmarks BETA for Kovaaks",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
+          "publishedAtIso": "2024-12-25T00:21:58Z"
         }
       ]
     },
@@ -3225,6 +4371,184 @@
           "author": "AimMod",
           "url": "",
           "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "weakness-specific-layering",
+      "title": "Layer weakness-specific work on top of fundamentals",
+      "summary": "A solid routine usually keeps a broad fundamentals base while adding a smaller block aimed at the current weak family or subskill.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "cross_scenario_transfer",
+        "family_balance",
+        "global_form_drop",
+        "momentum",
+        "transfer_bias"
+      ],
+      "contextTags": null,
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "A fundamentals base keeps general mouse control moving forward.",
+        "A smaller weakness-specific overlay lets the player attack the current bottleneck without making the routine too narrow."
+      ],
+      "actions": [
+        "Keep a stable fundamentals block, then add one weakness-specific block that targets the current lowest family or subskill.",
+        "Use the overlay for a week or more before deciding whether it is helping.",
+        "If the routine feels chaotic, remove extra side goals until one weakness overlay remains."
+      ],
+      "drills": [
+        {
+          "label": "Contrast family block",
+          "query": "contrast practice tracking clicking switching",
+          "reason": "A contrast block widens transfer while still keeping the current weakness in focus."
+        }
+      ],
+      "avoid": [
+        "Treating equal time in every family as the goal",
+        "Do not rebuild the whole routine every session around whatever felt bad that day."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "family_balance",
+        "title": "Family balance is too narrow",
+        "summary": "Practice over-specializes in one family, so gains stop transferring well to neighboring aim demands.",
+        "signalKeys": [
+          "cross_scenario_transfer",
+          "family_balance",
+          "transfer_bias"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "One family dominates volume while another stays weak for weeks",
+          "Transfer scenarios collapse immediately despite strong anchor-family form"
+        ],
+        "contraindications": [
+          "Do not replace all structure with random variety"
+        ],
+        "avoid": [
+          "Treating equal time in every family as the goal"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "contrast-practice",
+          "title": "Contrast practice",
+          "summary": "A supporting family can broaden adaptation without replacing the main training theme.",
+          "cues": [
+            "Keep one anchor family and one contrast family",
+            "Run the contrast block consistently for a week"
+          ],
+          "failureModes": [
+            "Going from over-specialized practice to fully random scenario selection"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "family_balance",
+            "transfer_bias"
+          ]
+        },
+        {
+          "id": "near-transfer-progression",
+          "title": "Near-transfer progression",
+          "summary": "Expand from current form with nearby task demands rather than huge unrelated difficulty jumps.",
+          "cues": [
+            "Use one nearby transfer block after strong form",
+            "Keep the movement standard mostly the same"
+          ],
+          "failureModes": [
+            "Wasting good momentum on an unrelated or overly large jump"
+          ],
+          "relatedSignalKeys": [
+            "cross_scenario_transfer",
+            "global_form_drop",
+            "momentum"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "contrast-family-block",
+          "name": "Contrast family block",
+          "aliases": [
+            "contrast aim training tracking clicking target switching"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A supporting family block that broadens adaptation without replacing the anchor family.",
+          "whatItTrains": [
+            "transfer range",
+            "contrast adaptation"
+          ],
+          "goodForFlaws": [
+            "family_balance"
+          ],
+          "cautions": [
+            "Keep the contrast block targeted instead of fully random"
+          ]
+        },
+        {
+          "id": "near-transfer-block",
+          "name": "Near-transfer block",
+          "aliases": [
+            "near transfer aim drill progression"
+          ],
+          "scenarioTypes": [
+            "dynamicclicking",
+            "staticclicking",
+            "targetswitching",
+            "tracking"
+          ],
+          "summary": "A follow-up block that asks for a slightly harder version of the current successful movement pattern.",
+          "whatItTrains": [
+            "transfer progression",
+            "form conversion"
+          ],
+          "goodForFlaws": [
+            "family_balance",
+            "momentum_transfer"
+          ],
+          "cautions": [
+            "Keep the jump close enough that the current movement standard still applies"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "voltaic-getting-started",
+          "claim": "Fundamentals plus weakness-specific routines are more effective than replacing broad training with whatever benchmark felt worst that day.",
+          "excerpt": "The Voltaic getting-started guide separates fundamentals from weakness-specific work.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_article"
+        }
+      ],
+      "sources": [
+        {
+          "id": "voltaic-getting-started",
+          "kind": "guide_article",
+          "title": "Getting started with Voltaic",
+          "author": "Voltaic",
+          "url": "https://blog.voltaic.gg/getting-started-with-voltaic/",
+          "publishedAtIso": "2023-10-20T09:37:19Z"
         }
       ]
     }

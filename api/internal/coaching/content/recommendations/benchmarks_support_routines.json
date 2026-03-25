@@ -1,0 +1,44 @@
+{
+  "id": "benchmarks-support-routines",
+  "flawId": "benchmark_only_practice",
+  "title": "Use benchmarks to locate gaps, then train outside them",
+  "summary": "Benchmark playlists are strongest as assessment tools. Once they reveal the weak category, most improvement volume should move into fundamentals and weakness-specific training blocks.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["balanced", "transfer", "consistency"],
+  "challengePreferences": [],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["benchmark-assessment"],
+  "scenarioIds": [],
+  "why": [
+    "Benchmarks tell you where the hole is, but repeating the same assessment tasks is usually not enough to fill it.",
+    "Training tends to transfer better when the benchmark result leads to a separate improvement block."
+  ],
+  "actions": [
+    "Keep benchmark runs for measurement, then spend the main block on fundamentals or weakness-specific tasks.",
+    "After a benchmark exposes a weak category, choose one supporting routine for that category and run it consistently for several sessions.",
+    "Retest the benchmark after the block instead of checking progress every few runs."
+  ],
+  "avoid": [
+    "Do not let benchmark reruns consume most of your improvement time."
+  ],
+  "drills": [
+    {
+      "label": "Weakness block after benchmark",
+      "query": "voltaic fundamentals weakness-specific routine",
+      "reason": "A dedicated follow-up block turns benchmark feedback into training instead of endless retesting."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "voltaic-getting-started",
+      "claim": "Benchmarks should point the player toward fundamentals and targeted routines instead of acting as the full routine by themselves.",
+      "excerpt": "Voltaic frames benchmarks as a starting point for finding weaknesses and then selecting routines.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

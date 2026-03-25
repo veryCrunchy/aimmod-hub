@@ -1,0 +1,18 @@
+{
+  "id": "readiness_debt",
+  "title": "Readiness debt",
+  "summary": "Recovery, sleep, or general readiness is low enough that consistency and reaction quality are being taxed before the practice block even starts.",
+  "signalKeys": ["readiness_debt", "variance", "reaction_quality"],
+  "contextTags": ["variance", "pace_fade"],
+  "mechanicIds": ["readiness-foundation"],
+  "telltales": [
+    "Visual reading feels slower across many task types in the same session",
+    "Practice quality swings harder on low-recovery days than the scenario choice alone explains"
+  ],
+  "contraindications": [
+    "Do not use lifestyle advice to dismiss real mechanical flaws"
+  ],
+  "avoid": [
+    "Solving every bad consistency day with more volume"
+  ]
+}

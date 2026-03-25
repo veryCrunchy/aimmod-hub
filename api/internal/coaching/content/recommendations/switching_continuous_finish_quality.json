@@ -1,0 +1,45 @@
+{
+  "id": "switching-continuous-finish-quality",
+  "flawId": "weak_chaining",
+  "title": "Switch cleanly through the target instead of stab-clicking every rep",
+  "summary": "Speed and evasive switching families like DOTTS and DriftTS reward a smooth switch plus stable finish, not just a sharp first snap on every target.",
+  "scenarioTypes": ["targetswitching", "switching"],
+  "scenarioNames": ["dotts", "driftts", "pentabouncets"],
+  "focusAreas": ["speed", "precision", "consistency"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["continuous-fire-discipline", "chaining"],
+  "scenarioIds": ["voltaic-s5-dotts", "voltaic-s5-driftts", "voltaic-s5-pentabounce"],
+  "why": [
+    "Switching score is often lost in the finish and exit, not only in the first snap.",
+    "Hold-fire and continuous-acquisition tasks punish stop-start switching patterns that look fast for one instant but break the chain."
+  ],
+  "actions": [
+    "Flow into the target and stabilize the finish instead of hard resetting every switch.",
+    "Judge the whole kill chain, including exit quality, rather than only how fast the cursor first arrived.",
+    "If the snap is fast but the finish is messy, slow the switch slightly until the continuous finish is cleaner."
+  ],
+  "avoid": [
+    "Do not reduce hold-fire switching to repeated stab-click behavior.",
+    "Avoid trading finish quality away for one flashy initial snap."
+  ],
+  "drills": [
+    {
+      "label": "Voltaic S5 DOTTS / DriftTS",
+      "query": "voltaic s5 dotts driftts",
+      "reason": "These switching families expose whether the player can keep chaining quality through the finish of each acquisition."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "voltaic-s5-kovaaks",
+      "claim": "DOTTS and DriftTS-style switching reward smooth entry, micro-correction, and finish quality rather than only raw first-snap speed.",
+      "excerpt": "Voltaic describes DOTTS, DriftTS, and PentabounceTS as switching families with distinct emphasis on finish quality and control.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

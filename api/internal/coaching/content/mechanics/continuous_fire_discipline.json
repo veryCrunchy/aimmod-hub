@@ -1,0 +1,15 @@
+{
+  "id": "continuous-fire-discipline",
+  "title": "Continuous-fire discipline",
+  "summary": "Some target switching tasks reward smooth continuous acquisition and micro-correction while holding fire instead of discrete stab-click behavior on every target.",
+  "cues": [
+    "Flow through the switch instead of hard resetting every target",
+    "Let micro-corrections happen under control while the shot stays active",
+    "Judge the full transition, not just the first snap"
+  ],
+  "failureModes": [
+    "Turning hold-fire switching into repeated stop-start clicks",
+    "Overvaluing raw snap speed while the tracked finish is unstable"
+  ],
+  "relatedSignalKeys": ["chaining", "switch_penalty", "execution_consistency"]
+}

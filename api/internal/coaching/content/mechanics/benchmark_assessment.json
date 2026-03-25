@@ -1,0 +1,15 @@
+{
+  "id": "benchmark-assessment",
+  "title": "Benchmark as assessment, not full routine",
+  "summary": "Benchmark playlists are best used to reveal strengths and weaknesses, then paired with fundamentals and weakness-specific work instead of replacing them.",
+  "cues": [
+    "Use benchmarks to locate the gap before selecting training blocks",
+    "Retest after a block instead of mindlessly rerunning the same benchmark tasks",
+    "Separate assessment volume from improvement volume"
+  ],
+  "failureModes": [
+    "Grinding only benchmark tasks and calling it a full routine",
+    "Treating benchmark rank pushing as the same thing as broad aim improvement"
+  ],
+  "relatedSignalKeys": ["benchmark_dependency", "routine_structure", "cross_scenario_transfer"]
+}

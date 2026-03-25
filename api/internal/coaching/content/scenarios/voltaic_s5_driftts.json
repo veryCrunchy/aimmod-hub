@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-driftts",
+  "name": "Voltaic S5 DriftTS",
+  "aliases": ["VT S5 DriftTS", "DriftTS"],
+  "scenarioTypes": ["targetswitching", "switching"],
+  "summary": "DriftTS-style evasive switching stresses post-acquisition micro-correction and a clean finish after the main switch.",
+  "whatItTrains": ["evasive switching", "post-acquire stabilization", "micro-correction under motion"],
+  "goodForFlaws": ["weak_chaining", "switch_penalty"],
+  "cautions": ["Do not overvalue the first snap if the finish is unstable"]
+}

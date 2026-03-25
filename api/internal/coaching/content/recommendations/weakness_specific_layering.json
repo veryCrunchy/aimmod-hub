@@ -1,0 +1,44 @@
+{
+  "id": "weakness-specific-layering",
+  "flawId": "family_balance",
+  "title": "Layer weakness-specific work on top of fundamentals",
+  "summary": "A solid routine usually keeps a broad fundamentals base while adding a smaller block aimed at the current weak family or subskill.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["balanced", "transfer", "precision"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["contrast-practice", "near-transfer-progression"],
+  "scenarioIds": ["contrast-family-block", "near-transfer-block"],
+  "why": [
+    "A fundamentals base keeps general mouse control moving forward.",
+    "A smaller weakness-specific overlay lets the player attack the current bottleneck without making the routine too narrow."
+  ],
+  "actions": [
+    "Keep a stable fundamentals block, then add one weakness-specific block that targets the current lowest family or subskill.",
+    "Use the overlay for a week or more before deciding whether it is helping.",
+    "If the routine feels chaotic, remove extra side goals until one weakness overlay remains."
+  ],
+  "avoid": [
+    "Do not rebuild the whole routine every session around whatever felt bad that day."
+  ],
+  "drills": [
+    {
+      "label": "Contrast family block",
+      "query": "contrast practice tracking clicking switching",
+      "reason": "A contrast block widens transfer while still keeping the current weakness in focus."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "voltaic-getting-started",
+      "claim": "Fundamentals plus weakness-specific routines are more effective than replacing broad training with whatever benchmark felt worst that day.",
+      "excerpt": "The Voltaic getting-started guide separates fundamentals from weakness-specific work.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

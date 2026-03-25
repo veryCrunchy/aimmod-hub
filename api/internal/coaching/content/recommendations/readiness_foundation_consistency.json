@@ -1,0 +1,44 @@
+{
+  "id": "readiness-foundation-consistency",
+  "flawId": "readiness_debt",
+  "title": "Treat low-readiness days as part of the training picture",
+  "summary": "If reaction quality and consistency collapse across many task types in the same session, the player may need a readiness fix before adding more scenario volume.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "focusAreas": ["consistency", "endurance", "balanced"],
+  "challengePreferences": [],
+  "timePreferences": ["next_session", "this_week"],
+  "mechanicIds": ["readiness-foundation"],
+  "scenarioIds": [],
+  "why": [
+    "Sleep, movement, and recovery affect visual processing, focus, and stable execution more than players often admit.",
+    "A low-readiness session can look like a mechanical regression even when the real issue is recovery."
+  ],
+  "actions": [
+    "If the whole block feels unusually slow or inconsistent, shorten the volume and protect quality instead of forcing a normal full session.",
+    "Build one pre-session reset habit such as a short walk, hydration, or light movement before the hard block.",
+    "Track whether poor sleep and poor consistency line up before assuming the scenario plan is the only problem."
+  ],
+  "avoid": [
+    "Do not interpret every low-readiness day as proof that the routine stopped working."
+  ],
+  "drills": [
+    {
+      "label": "Short quality block",
+      "query": "short quality session consistency aim training",
+      "reason": "On low-readiness days, protecting execution quality beats forcing normal volume."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "voltaic-lifestyle",
+      "claim": "Lifestyle and recovery factors materially affect reaction time, focus, and consistency in FPS performance.",
+      "excerpt": "The Voltaic lifestyle article links sleep and health habits to practical aiming performance.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_article"
+    }
+  ]
+}

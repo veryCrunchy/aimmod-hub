@@ -1,0 +1,15 @@
+{
+  "id": "readiness-foundation",
+  "title": "Readiness foundation",
+  "summary": "Sleep, physical movement, and general recovery support the focus, consistency, and reaction quality that aiming practice depends on.",
+  "cues": [
+    "Treat consistency problems partly as readiness problems when recovery is poor",
+    "Use short movement and reset habits before hard blocks",
+    "Protect sleep before expecting stable reaction quality"
+  ],
+  "failureModes": [
+    "Trying to solve every variance problem with more scenario volume",
+    "Ignoring fatigue while expecting normal reading speed and control"
+  ],
+  "relatedSignalKeys": ["readiness_debt", "variance", "reaction_quality"]
+}

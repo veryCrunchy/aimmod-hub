@@ -1,0 +1,10 @@
+{
+  "id": "voltaic-s5-dotts",
+  "name": "Voltaic S5 DOTTS",
+  "aliases": ["VT S5 DOTTS", "DOTTS"],
+  "scenarioTypes": ["targetswitching", "switching"],
+  "summary": "DOTTS-style speed switching rewards smooth switch entries and tracked finishes while holding fire, not just isolated snap speed.",
+  "whatItTrains": ["speed switching", "continuous acquisition", "switch chaining"],
+  "goodForFlaws": ["weak_chaining", "switch_penalty"],
+  "cautions": ["Do not reduce hold-fire tasks to repeated stop-start clicks"]
+}
