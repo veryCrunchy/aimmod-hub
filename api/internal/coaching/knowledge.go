@@ -271,10 +271,21 @@ func normalizeEntry(entry *Entry) {
 }
 
 func normalizeQuery(query Query) Query {
+	questionLower := strings.ToLower(strings.TrimSpace(query.Question))
 	query.ScenarioName = normalizeToken(query.ScenarioName)
 	query.ScenarioType = normalizeToken(query.ScenarioType)
-	query.SignalKeys = normalizeList(query.SignalKeys)
-	query.ContextTags = normalizeList(query.ContextTags)
+	if isBroadRecommendationQuestion(questionLower) {
+		query.ScenarioName = ""
+		if derived := deriveScenarioTypeFromQuestion(questionLower); derived != "" {
+			query.ScenarioType = derived
+		} else {
+			query.ScenarioType = ""
+		}
+	} else if derived := deriveScenarioTypeFromQuestion(questionLower); derived != "" {
+		query.ScenarioType = derived
+	}
+	query.SignalKeys = normalizeList(append(query.SignalKeys, deriveSignalKeysFromQuestion(questionLower)...))
+	query.ContextTags = normalizeList(append(query.ContextTags, deriveContextTagsFromQuestion(questionLower)...))
 	query.FocusArea = normalizeToken(query.FocusArea)
 	query.ChallengePreference = normalizeToken(query.ChallengePreference)
 	query.TimePreference = normalizeToken(query.TimePreference)
@@ -370,21 +381,18 @@ func matchedQuestionTerms(entry Entry, question string) []string {
 	if strings.TrimSpace(question) == "" {
 		return nil
 	}
-	haystack := strings.ToLower(strings.Join(append(append([]string{
-		entry.Title,
-		entry.Summary,
-	}, entry.Why...), entry.Actions...), " "))
+	queryTokens := expandedSearchTokens(question)
+	if len(queryTokens) == 0 {
+		return nil
+	}
+	entryTokens := entrySearchTokenSet(entry)
 	seen := map[string]struct{}{}
 	terms := []string{}
-	for _, token := range strings.Fields(strings.ToLower(question)) {
-		token = strings.Trim(token, " ,.!?;:()[]{}\"'")
-		if len(token) < 4 {
-			continue
-		}
+	for _, token := range queryTokens {
 		if _, ok := seen[token]; ok {
 			continue
 		}
-		if strings.Contains(haystack, token) {
+		if _, ok := entryTokens[token]; ok {
 			seen[token] = struct{}{}
 			terms = append(terms, token)
 		}
@@ -395,6 +403,259 @@ func matchedQuestionTerms(entry Entry, question string) []string {
 
 func normalizeToken(value string) string {
 	return strings.ToLower(strings.TrimSpace(value))
+}
+
+func tokenizeSearchText(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	value = strings.ToLower(value)
+	tokens := make([]string, 0, 16)
+	var current strings.Builder
+	flush := func() {
+		if current.Len() == 0 {
+			return
+		}
+		token := current.String()
+		current.Reset()
+		if len(token) < 3 {
+			return
+		}
+		tokens = append(tokens, token)
+	}
+	for _, r := range value {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			current.WriteRune(r)
+			continue
+		}
+		flush()
+	}
+	flush()
+	return tokens
+}
+
+func expandedSearchTokens(value string) []string {
+	raw := tokenizeSearchText(value)
+	if len(raw) == 0 {
+		return nil
+	}
+	seen := map[string]struct{}{}
+	result := make([]string, 0, len(raw)*2)
+	for _, token := range raw {
+		for _, variant := range expandSearchToken(token) {
+			if len(variant) < 3 {
+				continue
+			}
+			if _, ok := seen[variant]; ok {
+				continue
+			}
+			seen[variant] = struct{}{}
+			result = append(result, variant)
+		}
+	}
+	sort.Strings(result)
+	return result
+}
+
+func expandSearchToken(token string) []string {
+	variants := []string{token}
+	switch token {
+	case "valorant", "valerant":
+		variants = append(variants, "tactical", "shooter", "tacticalshooter")
+	case "cs2":
+		variants = append(variants, "counter", "strike", "counterstrike", "tactical", "shooter", "tacticalshooter")
+	case "counter":
+		variants = append(variants, "counterstrike")
+	case "strike":
+		variants = append(variants, "counterstrike")
+	case "tracking":
+		variants = append(variants, "track", "reactive", "control", "precision")
+	case "switching":
+		variants = append(variants, "switch", "targetswitching")
+	case "clicking":
+		variants = append(variants, "click", "timing")
+	case "flicks", "flick":
+		variants = append(variants, "switching", "clicking")
+	case "scenario", "scenarios":
+		variants = append(variants, "drill", "drills", "playlist")
+	}
+	if strings.HasSuffix(token, "ies") && len(token) > 4 {
+		variants = append(variants, strings.TrimSuffix(token, "ies")+"y")
+	}
+	if strings.HasSuffix(token, "ing") && len(token) > 5 {
+		variants = append(variants, strings.TrimSuffix(token, "ing"))
+	}
+	if strings.HasSuffix(token, "ed") && len(token) > 4 {
+		variants = append(variants, strings.TrimSuffix(token, "ed"))
+	}
+	if strings.HasSuffix(token, "s") && len(token) > 4 && !strings.HasSuffix(token, "ss") {
+		variants = append(variants, strings.TrimSuffix(token, "s"))
+	}
+	return variants
+}
+
+func entrySearchTokenSet(entry Entry) map[string]struct{} {
+	parts := []string{
+		entry.Title,
+		entry.Summary,
+		strings.Join(entry.ScenarioTypes, " "),
+		strings.Join(entry.ScenarioNames, " "),
+		strings.Join(entry.SignalKeys, " "),
+		strings.Join(entry.ContextTags, " "),
+		strings.Join(entry.FocusAreas, " "),
+		strings.Join(entry.ChallengePreferences, " "),
+		strings.Join(entry.TimePreferences, " "),
+		strings.Join(entry.Why, " "),
+		strings.Join(entry.Actions, " "),
+		strings.Join(entry.Avoid, " "),
+	}
+	for _, drill := range entry.Drills {
+		parts = append(parts, drill.Label, drill.Query, drill.Reason)
+	}
+	if entry.Flaw != nil {
+		parts = append(
+			parts,
+			entry.Flaw.Title,
+			entry.Flaw.Summary,
+			strings.Join(entry.Flaw.SignalKeys, " "),
+			strings.Join(entry.Flaw.ContextTags, " "),
+			strings.Join(entry.Flaw.Telltales, " "),
+			strings.Join(entry.Flaw.Contraindications, " "),
+			strings.Join(entry.Flaw.Avoid, " "),
+		)
+	}
+	for _, mechanic := range entry.Mechanics {
+		parts = append(
+			parts,
+			mechanic.Title,
+			mechanic.Summary,
+			strings.Join(mechanic.Cues, " "),
+			strings.Join(mechanic.FailureModes, " "),
+			strings.Join(mechanic.RelatedSignalKeys, " "),
+		)
+	}
+	for _, scenario := range entry.Scenarios {
+		parts = append(
+			parts,
+			scenario.Name,
+			scenario.Summary,
+			strings.Join(scenario.Aliases, " "),
+			strings.Join(scenario.ScenarioTypes, " "),
+			strings.Join(scenario.WhatItTrains, " "),
+			strings.Join(scenario.GoodForFlaws, " "),
+			strings.Join(scenario.Cautions, " "),
+		)
+	}
+	for _, evidence := range entry.Evidence {
+		parts = append(parts, evidence.Claim, evidence.Excerpt, evidence.Confidence, evidence.ReviewStatus)
+	}
+	for _, source := range entry.Sources {
+		parts = append(parts, source.Title, source.Author, source.Kind)
+	}
+
+	set := map[string]struct{}{}
+	for _, part := range parts {
+		for _, token := range expandedSearchTokens(part) {
+			set[token] = struct{}{}
+		}
+	}
+	return set
+}
+
+func isBroadRecommendationQuestion(question string) bool {
+	asksForScenarios := containsAny(question,
+		"what scenarios",
+		"which scenarios",
+		"good scenarios",
+		"best scenarios",
+		"playlist",
+		"routine",
+		"practice",
+		"good for",
+	)
+	mentionsGame := containsAny(question,
+		"valorant",
+		"valerant",
+		"cs2",
+		"counter-strike",
+		"counter strike",
+		"overwatch",
+		"apex",
+		"battlefield",
+		"cod",
+		"call of duty",
+	)
+	return asksForScenarios || mentionsGame
+}
+
+func deriveScenarioTypeFromQuestion(question string) string {
+	switch {
+	case containsAny(question, "target switching", "switching"):
+		return "targetswitching"
+	case containsAny(question, "static", "one shot", "oneshot"):
+		return "staticclicking"
+	case containsAny(question, "dynamic", "click timing", "moving clicking"):
+		return "dynamicclicking"
+	case strings.Contains(question, "reactive tracking"):
+		return "reactivetracking"
+	case containsAny(question, "precise tracking", "precision tracking"):
+		return "precisetracking"
+	case strings.Contains(question, "control tracking"):
+		return "controltracking"
+	case strings.Contains(question, "tracking"):
+		return "tracking"
+	default:
+		return ""
+	}
+}
+
+func deriveSignalKeysFromQuestion(question string) []string {
+	values := make([]string, 0, 4)
+	if strings.Contains(question, "tracking") {
+		values = append(values, "tracking")
+	}
+	if strings.Contains(question, "switching") {
+		values = append(values, "switching")
+	}
+	if strings.Contains(question, "click") {
+		values = append(values, "clicking")
+	}
+	if containsAny(question, "motion mapping", "transfer") {
+		values = append(values, "transfer")
+	}
+	return values
+}
+
+func deriveContextTagsFromQuestion(question string) []string {
+	values := make([]string, 0, 6)
+	if containsAny(question, "valorant", "valerant") {
+		values = append(values, "valorant", "tactical_shooter")
+	}
+	if containsAny(question, "cs2", "counter-strike", "counter strike") {
+		values = append(values, "counter_strike", "tactical_shooter")
+	}
+	if strings.Contains(question, "overwatch") {
+		values = append(values, "overwatch")
+	}
+	if strings.Contains(question, "apex") {
+		values = append(values, "apex")
+	}
+	if containsAny(question, "battlefield", "cod", "call of duty") {
+		values = append(values, "arcade_fps")
+	}
+	if containsAny(question, "transfer", "good for") {
+		values = append(values, "transfer")
+	}
+	return values
+}
+
+func containsAny(value string, needles ...string) bool {
+	for _, needle := range needles {
+		if strings.Contains(value, needle) {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizeList(values []string) []string {
