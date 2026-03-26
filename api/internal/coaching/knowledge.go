@@ -1,6 +1,7 @@
 package coaching
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -49,15 +50,16 @@ type Base struct {
 }
 
 type Query struct {
-	ScenarioName        string   `json:"scenarioName"`
-	ScenarioType        string   `json:"scenarioType"`
-	SignalKeys          []string `json:"signalKeys"`
-	ContextTags         []string `json:"contextTags"`
-	FocusArea           string   `json:"focusArea"`
-	ChallengePreference string   `json:"challengePreference"`
-	TimePreference      string   `json:"timePreference"`
-	Question            string   `json:"question"`
-	Limit               int      `json:"limit"`
+	ScenarioName        string      `json:"scenarioName"`
+	ScenarioType        string      `json:"scenarioType"`
+	SignalKeys          []string    `json:"signalKeys"`
+	ContextTags         []string    `json:"contextTags"`
+	FocusArea           string      `json:"focusArea"`
+	ChallengePreference string      `json:"challengePreference"`
+	TimePreference      string      `json:"timePreference"`
+	Question            string      `json:"question"`
+	Limit               int         `json:"limit"`
+	CoachFacts          []CoachFact `json:"coachFacts,omitempty"`
 	// General bypasses scenario-compatibility filtering so entries that don't
 	// match the current scenario type/name are still returned. Use this for
 	// questions about general aim training, authors, or topics that aren't
@@ -65,17 +67,28 @@ type Query struct {
 	General bool `json:"general"`
 }
 
+type CoachFact struct {
+	Key          string   `json:"key"`
+	Label        string   `json:"label"`
+	ValueText    string   `json:"valueText"`
+	NumericValue *float64 `json:"numericValue,omitempty"`
+	BoolValue    *bool    `json:"boolValue,omitempty"`
+	Direction    string   `json:"direction"`
+	Confidence   string   `json:"confidence"`
+}
+
 type QueryEcho struct {
-	ScenarioName        string   `json:"scenarioName"`
-	ScenarioType        string   `json:"scenarioType"`
-	SignalKeys          []string `json:"signalKeys"`
-	ContextTags         []string `json:"contextTags"`
-	FocusArea           string   `json:"focusArea"`
-	ChallengePreference string   `json:"challengePreference"`
-	TimePreference      string   `json:"timePreference"`
-	Question            string   `json:"question"`
-	Limit               int      `json:"limit"`
-	General             bool     `json:"general"`
+	ScenarioName        string      `json:"scenarioName"`
+	ScenarioType        string      `json:"scenarioType"`
+	SignalKeys          []string    `json:"signalKeys"`
+	ContextTags         []string    `json:"contextTags"`
+	FocusArea           string      `json:"focusArea"`
+	ChallengePreference string      `json:"challengePreference"`
+	TimePreference      string      `json:"timePreference"`
+	Question            string      `json:"question"`
+	Limit               int         `json:"limit"`
+	CoachFacts          []CoachFact `json:"coachFacts,omitempty"`
+	General             bool        `json:"general"`
 }
 
 type MatchInfo struct {
@@ -104,12 +117,22 @@ type MatchedEntry struct {
 	Match         MatchInfo   `json:"match"`
 }
 
+type AnswerPlan struct {
+	Intent             string   `json:"intent"`
+	ResponseShape      string   `json:"responseShape"`
+	MustAnswerDirectly bool     `json:"mustAnswerDirectly"`
+	PrimaryFindings    []string `json:"primaryFindings"`
+	SuggestedActions   []string `json:"suggestedActions"`
+	ClarifyingQuestion string   `json:"clarifyingQuestion"`
+}
+
 type Response struct {
 	Version         string         `json:"version"`
 	UpdatedAtISO    string         `json:"updatedAtIso"`
 	CacheTTLSecs    int            `json:"cacheTtlSecs"`
 	ToolInstruction string         `json:"toolInstruction"`
 	Query           QueryEcho      `json:"query"`
+	AnswerPlan      AnswerPlan     `json:"answerPlan"`
 	Items           []MatchedEntry `json:"items"`
 }
 
@@ -239,9 +262,11 @@ func QueryKnowledge(input Query) (Response, error) {
 			TimePreference:      query.TimePreference,
 			Question:            query.Question,
 			Limit:               limit,
+			CoachFacts:          query.CoachFacts,
 			General:             query.General,
 		},
-		Items: items,
+		AnswerPlan: buildAnswerPlan(query, items),
+		Items:      items,
 	}, nil
 }
 
@@ -302,7 +327,329 @@ func normalizeQuery(query Query) Query {
 	query.ChallengePreference = normalizeToken(query.ChallengePreference)
 	query.TimePreference = normalizeToken(query.TimePreference)
 	query.Question = strings.TrimSpace(query.Question)
+	for idx := range query.CoachFacts {
+		query.CoachFacts[idx].Key = normalizeToken(query.CoachFacts[idx].Key)
+		query.CoachFacts[idx].Label = strings.TrimSpace(query.CoachFacts[idx].Label)
+		query.CoachFacts[idx].ValueText = strings.TrimSpace(query.CoachFacts[idx].ValueText)
+		query.CoachFacts[idx].Direction = normalizeToken(query.CoachFacts[idx].Direction)
+		query.CoachFacts[idx].Confidence = normalizeToken(query.CoachFacts[idx].Confidence)
+	}
 	return query
+}
+
+func buildAnswerPlan(query Query, items []MatchedEntry) AnswerPlan {
+	intent := classifyQuestionIntent(query.Question)
+	plan := AnswerPlan{
+		Intent:             intent,
+		ResponseShape:      responseShapeForIntent(intent),
+		MustAnswerDirectly: mustAnswerDirectly(intent),
+		PrimaryFindings:    buildPrimaryFindings(query, intent, items),
+		SuggestedActions:   buildSuggestedActions(query, intent, items),
+	}
+	if (intent == "setup" || intent == "scenario_recommendation" || intent == "proactive_summary") && len(items) > 0 {
+		for _, item := range items[:min(2, len(items))] {
+			if strings.TrimSpace(item.Summary) != "" {
+				plan.PrimaryFindings = append(plan.PrimaryFindings, item.Summary)
+			}
+		}
+		plan.PrimaryFindings = dedupeStrings(plan.PrimaryFindings)
+	}
+	if len(items) == 0 && len(plan.PrimaryFindings) == 0 {
+		plan.ClarifyingQuestion = clarifyingQuestionForIntent(intent)
+	}
+	return plan
+}
+
+func classifyQuestionIntent(question string) string {
+	normalized := strings.ToLower(strings.TrimSpace(question))
+	switch {
+	case normalized == "":
+		return "proactive_summary"
+	case containsAny(normalized, "summary", "overview", "how am i doing", "what stands out", "main takeaway"):
+		return "proactive_summary"
+	case containsAny(normalized, " sens", "sens ", "sensitivity", "cm/360", "cm360", " dpi", "edpi", "polling rate", "mousepad", "mouse pad", "mouse "):
+		return "setup"
+	case strings.HasPrefix(normalized, "who is ") || strings.HasPrefix(normalized, "who's "):
+		return "identity"
+	case containsAny(normalized, "context of", "about this scenario", "what is the context", "what does this scenario train", "what is this scenario"):
+		return "scenario_context"
+	case containsAny(normalized, "what scenarios", "which scenarios", "best scenarios", "good scenarios", "playlist", "routine", "what should i play"):
+		return "scenario_recommendation"
+	case containsAny(normalized, "plateau", "trend", "variance", "slope", "why am i", "what should i work on", "how do i improve", "break a plateau"):
+		return "performance_analysis"
+	default:
+		return "general_coaching"
+	}
+}
+
+func responseShapeForIntent(intent string) string {
+	switch intent {
+	case "setup", "identity", "scenario_context", "scenario_recommendation":
+		return "direct_answer"
+	case "proactive_summary", "performance_analysis":
+		return "diagnosis_why_next"
+	default:
+		return "direct_answer_with_context"
+	}
+}
+
+func mustAnswerDirectly(intent string) bool {
+	switch intent {
+	case "setup", "identity", "scenario_context", "scenario_recommendation":
+		return true
+	default:
+		return false
+	}
+}
+
+func clarifyingQuestionForIntent(intent string) string {
+	switch intent {
+	case "setup":
+		return "What is your current cm/360 and what feels wrong right now?"
+	case "scenario_recommendation":
+		return "Which game or aiming weakness do you want the scenarios to target?"
+	case "performance_analysis", "proactive_summary":
+		return "Do you want the biggest current issue or the best next drill block?"
+	default:
+		return ""
+	}
+}
+
+func buildPrimaryFindings(query Query, intent string, items []MatchedEntry) []string {
+	findings := []string{}
+	switch intent {
+	case "scenario_recommendation":
+		findings = append(findings, buildScenarioRecommendationFindings(query, items)...)
+	case "proactive_summary":
+		findings = append(findings, buildProactiveSummaryFindings(query, items)...)
+	}
+	if plateau, ok := boolFact(query.CoachFacts, "plateau_detected"); ok && plateau {
+		findings = append(findings, "A recent plateau is currently detected in this scenario.")
+	}
+	if warmupDrop, ok := numericFact(query.CoachFacts, "warmup_drop_pct"); ok && warmupDrop >= 5 {
+		findings = append(findings, fmt.Sprintf("Opening runs are landing about %.0f%% below settled-in runs, so readiness is part of the current picture.", warmupDrop))
+	}
+	if scoreCV, ok := numericFact(query.CoachFacts, "score_cv_pct"); ok {
+		switch {
+		case scoreCV >= 12:
+			findings = append(findings, fmt.Sprintf("Recent score variance is elevated at about %.1f%%, which points to unstable execution rather than a clean ceiling.", scoreCV))
+		case scoreCV > 0 && scoreCV <= 6:
+			findings = append(findings, fmt.Sprintf("Recent score variance is low at about %.1f%%, so performance is relatively stable right now.", scoreCV))
+		}
+	}
+	if slope, ok := numericFact(query.CoachFacts, "score_slope_pts_per_run"); ok {
+		switch {
+		case slope >= 8:
+			findings = append(findings, fmt.Sprintf("The current score slope is positive at about +%.0f pts/run, so progress is still trending upward.", slope))
+		case slope <= -5:
+			findings = append(findings, fmt.Sprintf("The current score slope is negative at about %.0f pts/run, so form is drifting downward instead of consolidating.", slope))
+		case slope > -3 && slope < 3:
+			findings = append(findings, fmt.Sprintf("The current score slope is nearly flat at about %.0f pts/run, so score movement is limited right now.", slope))
+		}
+	}
+	if recentAvg, ok := numericFact(query.CoachFacts, "recent_avg_score"); ok {
+		if best, ok := numericFact(query.CoachFacts, "all_time_best_score"); ok && best > 0 {
+			findings = append(findings, fmt.Sprintf("Recent average score is around %.0f compared with an all-time best of %.0f, which helps frame how much of the gap is consistency versus peak ability.", recentAvg, best))
+		}
+	}
+	return dedupeStrings(findings)
+}
+
+func buildSuggestedActions(query Query, intent string, items []MatchedEntry) []string {
+	actions := []string{}
+	switch intent {
+	case "scenario_recommendation":
+		actions = append(actions, buildScenarioRecommendationActions(query, items)...)
+	case "proactive_summary":
+		actions = append(actions, buildProactiveSummaryActions(query, items)...)
+	}
+	if warmupDrop, ok := numericFact(query.CoachFacts, "warmup_drop_pct"); ok && warmupDrop >= 5 {
+		actions = append(actions, "Address warm-up readiness before judging whether the scenario itself needs to change.")
+	}
+	if plateau, ok := boolFact(query.CoachFacts, "plateau_detected"); ok && plateau {
+		actions = append(actions, "Use a short change in drill emphasis or scenario difficulty instead of grinding the same block unchanged.")
+	}
+	if variance, ok := numericFact(query.CoachFacts, "score_cv_pct"); ok && variance >= 12 {
+		actions = append(actions, "Prioritize repeatable execution quality first, because high variance usually means the floor is not settled yet.")
+	}
+	for _, item := range items {
+		for _, action := range item.Actions {
+			trimmed := strings.TrimSpace(action)
+			if trimmed != "" {
+				actions = append(actions, trimmed)
+			}
+			if len(actions) >= 4 {
+				return dedupeStrings(actions)
+			}
+		}
+	}
+	return dedupeStrings(actions)
+}
+
+func buildScenarioRecommendationFindings(query Query, items []MatchedEntry) []string {
+	findings := []string{}
+	if game := primaryGameTag(query.ContextTags); game != "" {
+		findings = append(findings, fmt.Sprintf("This looks like a %s recommendation question, so transfer to that game matters more than generic benchmark grinding.", game))
+	}
+	if query.ScenarioType != "" {
+		findings = append(findings, fmt.Sprintf("The current request is anchored to the **%s** family, but the hub can still recommend adjacent categories if transfer looks better.", query.ScenarioType))
+	}
+	for _, item := range items {
+		if strings.TrimSpace(item.Summary) == "" {
+			continue
+		}
+		findings = append(findings, item.Summary)
+		if len(findings) >= 4 {
+			break
+		}
+	}
+	return dedupeStrings(findings)
+}
+
+func buildProactiveSummaryFindings(query Query, items []MatchedEntry) []string {
+	findings := []string{}
+	if query.ScenarioName != "" {
+		findings = append(findings, fmt.Sprintf("Current summary is anchored to **%s**.", query.ScenarioName))
+	}
+	if query.ScenarioType != "" {
+		findings = append(findings, proactiveScenarioTypeFinding(query.ScenarioType))
+	}
+	for _, item := range items {
+		if strings.TrimSpace(item.Summary) == "" {
+			continue
+		}
+		findings = append(findings, item.Summary)
+		if len(findings) >= 4 {
+			break
+		}
+	}
+	return dedupeStrings(findings)
+}
+
+func buildScenarioRecommendationActions(query Query, items []MatchedEntry) []string {
+	actions := []string{}
+	for _, item := range items {
+		for _, drill := range item.Drills {
+			label := strings.TrimSpace(drill.Label)
+			reason := strings.TrimSpace(drill.Reason)
+			queryText := strings.TrimSpace(drill.Query)
+			switch {
+			case label != "" && reason != "":
+				actions = append(actions, fmt.Sprintf("Play **%s** first — %s", label, reason))
+			case label != "":
+				actions = append(actions, fmt.Sprintf("Play **%s** first.", label))
+			case queryText != "":
+				actions = append(actions, fmt.Sprintf("Try a drill matching **%s**.", queryText))
+			}
+			if len(actions) >= 3 {
+				return dedupeStrings(actions)
+			}
+		}
+	}
+	for _, item := range items {
+		for _, action := range item.Actions {
+			trimmed := strings.TrimSpace(action)
+			if trimmed != "" {
+				actions = append(actions, trimmed)
+			}
+			if len(actions) >= 4 {
+				return dedupeStrings(actions)
+			}
+		}
+	}
+	if len(actions) == 0 && query.ScenarioType != "" {
+		actions = append(actions, fmt.Sprintf("Build the next block around one or two %s drills that clearly target the weakness you care about.", query.ScenarioType))
+	}
+	return dedupeStrings(actions)
+}
+
+func buildProactiveSummaryActions(query Query, items []MatchedEntry) []string {
+	actions := []string{}
+	for _, item := range items {
+		for _, action := range item.Actions {
+			trimmed := strings.TrimSpace(action)
+			if trimmed != "" {
+				actions = append(actions, trimmed)
+			}
+			if len(actions) >= 3 {
+				return dedupeStrings(actions)
+			}
+		}
+	}
+	if len(actions) == 0 && query.ScenarioType != "" {
+		actions = append(actions, fmt.Sprintf("Keep the next block focused on one clear %s priority instead of mixing too many aims at once.", query.ScenarioType))
+	}
+	return dedupeStrings(actions)
+}
+
+func primaryGameTag(tags []string) string {
+	for _, tag := range tags {
+		switch normalizeToken(tag) {
+		case "valorant":
+			return "Valorant"
+		case "counter_strike":
+			return "Counter-Strike"
+		case "overwatch":
+			return "Overwatch"
+		case "apex":
+			return "Apex"
+		case "arcade_fps":
+			return "arcade FPS"
+		}
+	}
+	return ""
+}
+
+func proactiveScenarioTypeFinding(scenarioType string) string {
+	switch normalizeToken(scenarioType) {
+	case "tracking", "puretracking", "controltracking", "precisetracking", "reactivetracking":
+		return "Because this is a tracking-focused context, contact quality, correction timing, and pacing matter more than chasing raw headline speed."
+	case "targetswitching", "switching", "multihitclicking":
+		return "Because this is a switching-focused context, the key issue is usually finish quality and chaining rather than only the first snap."
+	case "staticclicking", "oneshotclicking", "clicking":
+		return "Because this is a static-clicking context, arrival quality and minimizing extra correction usually matter more than raw tempo."
+	case "dynamicclicking", "movingclicking", "reactiveclicking", "clicktiming":
+		return "Because this is a dynamic-clicking context, placement, reading, and minimal unnecessary movement matter more than panic speed."
+	default:
+		return "The current summary should stay anchored to the main mechanic this scenario family is trying to train."
+	}
+}
+
+func numericFact(facts []CoachFact, key string) (float64, bool) {
+	target := normalizeToken(key)
+	for _, fact := range facts {
+		if fact.Key == target && fact.NumericValue != nil {
+			return *fact.NumericValue, true
+		}
+	}
+	return 0, false
+}
+
+func boolFact(facts []CoachFact, key string) (bool, bool) {
+	target := normalizeToken(key)
+	for _, fact := range facts {
+		if fact.Key == target && fact.BoolValue != nil {
+			return *fact.BoolValue, true
+		}
+	}
+	return false, false
+}
+
+func dedupeStrings(values []string) []string {
+	seen := map[string]struct{}{}
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			continue
+		}
+		if _, ok := seen[trimmed]; ok {
+			continue
+		}
+		seen[trimmed] = struct{}{}
+		result = append(result, trimmed)
+	}
+	return result
 }
 
 func scoreEntry(entry Entry, query Query) (MatchedEntry, int) {
@@ -476,6 +823,12 @@ func expandedSearchTokens(value string) []string {
 func expandSearchToken(token string) []string {
 	variants := []string{token}
 	switch token {
+	case "sens":
+		variants = append(variants, "sensitivity", "setup")
+	case "cm360", "cm":
+		variants = append(variants, "sensitivity")
+	case "dpi", "edpi", "polling":
+		variants = append(variants, "setup", "sensitivity")
 	case "valorant", "valerant":
 		variants = append(variants, "tactical", "shooter", "tacticalshooter")
 	case "cs2":
@@ -627,6 +980,9 @@ func deriveScenarioTypeFromQuestion(question string) string {
 
 func deriveSignalKeysFromQuestion(question string) []string {
 	values := make([]string, 0, 4)
+	if containsAny(question, " sens", "sens ", "sensitivity", "cm/360", "cm360", " dpi", "edpi", "polling rate") {
+		values = append(values, "mouse_control_adaptation")
+	}
 	if strings.Contains(question, "tracking") {
 		values = append(values, "tracking")
 	}
@@ -644,6 +1000,9 @@ func deriveSignalKeysFromQuestion(question string) []string {
 
 func deriveContextTagsFromQuestion(question string) []string {
 	values := make([]string, 0, 6)
+	if containsAny(question, " sens", "sens ", "sensitivity", "cm/360", "cm360", " dpi", "edpi", "polling rate", "mousepad", "mouse pad", "mouse ") {
+		values = append(values, "sensitivity", "setup")
+	}
 	if containsAny(question, "valorant", "valerant") {
 		values = append(values, "valorant", "tactical_shooter")
 	}

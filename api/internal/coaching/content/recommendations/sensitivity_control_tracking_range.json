@@ -1,0 +1,46 @@
+{
+  "id": "sensitivity-control-tracking-range",
+  "flawId": "sensitivity_rigidity",
+  "title": "Control tracking sensitivity starting range",
+  "summary": "For control tracking, a good starting range is about 35-45 cm/360, with slower bias for steadier readable corrections and slightly faster bias if width changes feel too heavy.",
+  "scenarioTypes": ["tracking", "puretracking", "controltracking", "precisetracking"],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup"],
+  "focusAreas": ["control", "precision", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation"],
+  "scenarioIds": [],
+  "why": [
+    "Viscose recommends roughly 30-50 cm/360 for most control-tracking subcategories, with slower bias helping steadier integration and precision.",
+    "Readable control tracking rewards clean, gradual corrections more than frantic reaction speed, so a slightly steadier sensitivity often fits the task."
+  ],
+  "actions": [
+    "Start around 40 cm/360 and adjust slower if your path wobbles through readable strafes.",
+    "If you can read the width changes but the mouse feels too heavy to keep up, test a slightly faster step inside the same range.",
+    "Judge the setting by correction path quality first, not by whether the first few runs feel familiar."
+  ],
+  "avoid": [
+    "Do not force an ultra-fast setup if the task is exposing readable correction errors.",
+    "Avoid assuming one universal number works for every control-tracking width and muscle-group emphasis."
+  ],
+  "drills": [
+    {
+      "label": "Control tracking sens check",
+      "query": "control tracking sensitivity check",
+      "reason": "Readable control tasks make correction quality differences between nearby sensitivities easier to spot."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Most control-tracking subcategories work well around 30-50 cm/360, with some slower or faster exceptions depending on the muscle-group goal.",
+      "excerpt": "For the other subcategories, I recommend anything between 30 to 50 cm.",
+      "startSec": 251,
+      "endSec": 279,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

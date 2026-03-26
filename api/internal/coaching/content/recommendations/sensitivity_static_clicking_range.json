@@ -1,0 +1,46 @@
+{
+  "id": "sensitivity-static-clicking-range",
+  "flawId": "sensitivity_rigidity",
+  "title": "Static clicking sensitivity starting range",
+  "summary": "For static clicking, a practical starting range is about 35-55 cm/360, usually leaning slower when tiny-target landing stability is the main goal.",
+  "scenarioTypes": ["staticclicking", "oneshotclicking", "clicking"],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup"],
+  "focusAreas": ["precision", "balanced"],
+  "challengePreferences": ["steady", "balanced"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation", "stabilization"],
+  "scenarioIds": [],
+  "why": [
+    "Static clicking rewards precise landings and small cleanup demand, so players often benefit from a somewhat steadier range than fast reactive work.",
+    "A slower setup can make tiny-target placement and finish quality easier to control as long as the scenario does not become physically cumbersome."
+  ],
+  "actions": [
+    "Start around 43 cm/360 and slow down slightly if tiny targets expose overflicks and shaky landings.",
+    "If every target change feels physically heavy even when your path is good, test a modestly faster step.",
+    "Evaluate time-to-kill and first-landing quality together, not flick speed in isolation."
+  ],
+  "avoid": [
+    "Do not chase stability so far that wide target spreads become physically awkward.",
+    "Avoid treating one exact static sens as sacred across every clicking task."
+  ],
+  "drills": [
+    {
+      "label": "Static landing quality check",
+      "query": "static clicking landing quality sensitivity",
+      "reason": "Static tasks make overflicks and shaky cleanup very visible when the sensitivity is slightly off."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+      "claim": "Lower sensitivities can offer more precision for small movements, but should still be chosen as a tool for the task rather than preserved blindly.",
+      "excerpt": "Using a lower sensitivity makes it easier to make smaller movements more accurately.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

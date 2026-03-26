@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-26.v6",
+  "version": "2026-03-26.v7",
   "updatedAtIso": "2026-03-26T00:00:00Z",
   "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer.",
   "entries": [
@@ -4461,6 +4461,683 @@
           "author": "Voltaic",
           "url": "https://blog.voltaic.gg/muscle-memory/",
           "publishedAtIso": "2023-10-20T06:58:07Z"
+        }
+      ]
+    },
+    {
+      "id": "sensitivity-control-tracking-range",
+      "title": "Control tracking sensitivity starting range",
+      "summary": "For control tracking, a good starting range is about 35-45 cm/360, with slower bias for steadier readable corrections and slightly faster bias if width changes feel too heavy.",
+      "scenarioTypes": [
+        "controltracking",
+        "precisetracking",
+        "puretracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": [
+        "sensitivity",
+        "setup"
+      ],
+      "focusAreas": [
+        "balanced",
+        "control",
+        "precision"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Viscose recommends roughly 30-50 cm/360 for most control-tracking subcategories, with slower bias helping steadier integration and precision.",
+        "Readable control tracking rewards clean, gradual corrections more than frantic reaction speed, so a slightly steadier sensitivity often fits the task."
+      ],
+      "actions": [
+        "Start around 40 cm/360 and adjust slower if your path wobbles through readable strafes.",
+        "If you can read the width changes but the mouse feels too heavy to keep up, test a slightly faster step inside the same range.",
+        "Judge the setting by correction path quality first, not by whether the first few runs feel familiar."
+      ],
+      "drills": [
+        {
+          "label": "Control tracking sens check",
+          "query": "control tracking sensitivity check",
+          "reason": "Readable control tasks make correction quality differences between nearby sensitivities easier to spot."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not force an ultra-fast setup if the task is exposing readable correction errors.",
+        "Avoid assuming one universal number works for every control-tracking width and muscle-group emphasis."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Most control-tracking subcategories work well around 30-50 cm/360, with some slower or faster exceptions depending on the muscle-group goal.",
+          "excerpt": "For the other subcategories, I recommend anything between 30 to 50 cm.",
+          "startSec": 251,
+          "endSec": 279,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sensitivity-dynamic-clicking-range",
+      "title": "Dynamic clicking sensitivity starting range",
+      "summary": "For dynamic clicking, a practical starting range is about 30-45 cm/360 so you can balance anticipatory placement with quick path corrections.",
+      "scenarioTypes": [
+        "clicktiming",
+        "dynamicclicking",
+        "movingclicking",
+        "reactiveclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "anticipation_latency",
+        "mouse_control_adaptation",
+        "plateau",
+        "recognition",
+        "sensitivity_rigidity",
+        "target_leading"
+      ],
+      "contextTags": [
+        "sensitivity",
+        "setup"
+      ],
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "balanced"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Dynamic clicking sits between stable placement and moving-target correction, so it usually benefits from a middle-ground range instead of extreme speed or extreme stability.",
+        "The best setting is the one that lets you lead paths cleanly without chasing with large extra movement."
+      ],
+      "actions": [
+        "Start around 37 cm/360 and slow down slightly if you keep chasing the path with large corrective movement.",
+        "If you are late to every path change even when your reads are correct, test a slightly faster step.",
+        "Watch where your crosshair is placed before the click, not just whether the shot landed."
+      ],
+      "drills": [
+        {
+          "label": "Dynamic placement check",
+          "query": "dynamic clicking lead placement sensitivity",
+          "reason": "Dynamic clicking shows quickly whether the chosen sens supports anticipatory placement or late chase behavior."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not choose a setting that forces constant late chases on moving targets.",
+        "Avoid judging the setup only by single-shot speed if your placement gets worse."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "lead-placement",
+          "title": "Lead placement",
+          "summary": "In dynamic clicking, the crosshair should be placed where the target will be rather than where it currently is, shrinking the physical gap the mouse must close.",
+          "cues": [
+            "Place the crosshair ahead of the target path",
+            "Reduce the physical gap between crosshair and target",
+            "As the read improves, lead less while still staying ahead of the motion"
+          ],
+          "failureModes": [
+            "Flicking to the target's current position every time",
+            "Leading too far because the shot timing is not yet calibrated"
+          ],
+          "relatedSignalKeys": [
+            "anticipation_latency",
+            "recognition",
+            "target_leading"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Dynamic clicking emphasizes anticipatory placement and precision on moving targets, which supports using a balanced middle range.",
+          "excerpt": "Putting your crosshair where the target will be instead of where it is is the single most important skill in this subcategory.",
+          "startSec": 619,
+          "endSec": 645,
+          "confidence": "medium",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sensitivity-reactive-tracking-range",
+      "title": "Reactive tracking sensitivity starting range",
+      "summary": "For reactive tracking, a good starting range is about 28-35 cm/360 because the category often benefits from faster answer speed while still demanding controlled finishes.",
+      "scenarioTypes": [
+        "puretracking",
+        "reactivetracking",
+        "tracking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "block_fade",
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity",
+        "stabilization",
+        "stable_response",
+        "tension_management"
+      ],
+      "contextTags": [
+        "sensitivity",
+        "setup"
+      ],
+      "focusAreas": [
+        "balanced",
+        "reactivity"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Viscose explicitly describes playing reactive tracking in a higher range, usually around 28-35 cm/360.",
+        "Reactive tasks need you to physically answer fast strafes quickly enough, but still decelerate into a controlled track."
+      ],
+      "actions": [
+        "Start around 32 cm/360 and test a little faster if you can read the strafe but cannot answer in time.",
+        "If your corrections are noisy or you keep overshooting the finish, slow down slightly inside the range.",
+        "Track whether the new sensitivity changes your tension or lockout more than your raw score."
+      ],
+      "drills": [
+        {
+          "label": "Reactive tracking sens sweep",
+          "query": "reactive tracking sensitivity comparison",
+          "reason": "Reactive tasks make it easier to feel the tradeoff between answer speed and correction noise."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not choose speed alone if the finish quality becomes unstable.",
+        "Avoid using the fastest possible setting just because the scenario is reactive."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "tension-management",
+          "title": "Tension management",
+          "summary": "Snappier movement only helps if the player can release tension early enough to avoid lockout and recover into controlled follow-throughs or micro-adjustments.",
+          "cues": [
+            "Release tension early in the flick",
+            "Monitor wrist lockout when higher-speed adjustments are needed",
+            "Let speed increases happen in sync with better control"
+          ],
+          "failureModes": [
+            "Holding tension too long through the follow-through",
+            "Locking the wrist when trying to go faster"
+          ],
+          "relatedSignalKeys": [
+            "block_fade",
+            "stabilization",
+            "stable_response",
+            "tension_management"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Reactive tracking is usually played around 28 to 35 cm/360, sometimes a bit faster.",
+          "excerpt": "I tend to play these scenarios at a higher sensitivity compared to control tracking. Anywhere from 28 to 35 cm per 360.",
+          "startSec": 421,
+          "endSec": 428,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sensitivity-static-clicking-range",
+      "title": "Static clicking sensitivity starting range",
+      "summary": "For static clicking, a practical starting range is about 35-55 cm/360, usually leaning slower when tiny-target landing stability is the main goal.",
+      "scenarioTypes": [
+        "clicking",
+        "oneshotclicking",
+        "staticclicking"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "mouse_control_adaptation",
+        "plateau",
+        "recovery_time",
+        "sensitivity_rigidity",
+        "stabilization",
+        "stable_response"
+      ],
+      "contextTags": [
+        "sensitivity",
+        "setup"
+      ],
+      "focusAreas": [
+        "balanced",
+        "precision"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "steady"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Static clicking rewards precise landings and small cleanup demand, so players often benefit from a somewhat steadier range than fast reactive work.",
+        "A slower setup can make tiny-target placement and finish quality easier to control as long as the scenario does not become physically cumbersome."
+      ],
+      "actions": [
+        "Start around 43 cm/360 and slow down slightly if tiny targets expose overflicks and shaky landings.",
+        "If every target change feels physically heavy even when your path is good, test a modestly faster step.",
+        "Evaluate time-to-kill and first-landing quality together, not flick speed in isolation."
+      ],
+      "drills": [
+        {
+          "label": "Static landing quality check",
+          "query": "static clicking landing quality sensitivity",
+          "reason": "Static tasks make overflicks and shaky cleanup very visible when the sensitivity is slightly off."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not chase stability so far that wide target spreads become physically awkward.",
+        "Avoid treating one exact static sens as sacred across every clicking task."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "stabilization",
+          "title": "Post-correction stabilization",
+          "summary": "After a correction or reversal, the player should settle quickly without introducing a second wobble.",
+          "cues": [
+            "Keep pressure low during the settle phase",
+            "Judge recovery quality separately from the initial miss"
+          ],
+          "failureModes": [
+            "One mistake becoming a full rhythm break because recovery stays noisy"
+          ],
+          "relatedSignalKeys": [
+            "recovery_time",
+            "stabilization",
+            "stable_response"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+          "claim": "Lower sensitivities can offer more precision for small movements, but should still be chosen as a tool for the task rather than preserved blindly.",
+          "excerpt": "Using a lower sensitivity makes it easier to make smaller movements more accurately.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "medium",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-sensitivity-muscle-memory-transcript",
+          "kind": "youtube_transcript",
+          "title": "Muscle memory is a myth in aiming and sensitivity is a tool",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=uPkYc84GrSc",
+          "publishedAtIso": "2026-03-26T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sensitivity-target-switching-range",
+      "title": "Target switching sensitivity starting range",
+      "summary": "For target switching, a practical starting range is about 28-40 cm/360 because the task needs fast entries but still punishes unstable finishes and excess cleanup.",
+      "scenarioTypes": [
+        "multihitclicking",
+        "switching",
+        "targetswitching"
+      ],
+      "scenarioNames": null,
+      "signalKeys": [
+        "chaining",
+        "execution_consistency",
+        "mouse_control_adaptation",
+        "plateau",
+        "precision_balance",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": [
+        "sensitivity",
+        "setup"
+      ],
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "speed"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Target switching needs a balance between quick acquisition and controlled finish quality rather than pure flick speed.",
+        "A middle-to-faster range is usually easier for chaining fast entries together without making the finish unnecessarily messy."
+      ],
+      "actions": [
+        "Start around 33 cm/360 and slow down slightly if the first snap is fast but your finish quality is messy.",
+        "If every switch feels heavy and you are late to the next target, test a modestly faster step.",
+        "Judge the setting by chaining and finish quality across multiple targets, not by one flashy snap."
+      ],
+      "drills": [
+        {
+          "label": "Switching finish-quality check",
+          "query": "target switching chaining finish quality sensitivity",
+          "reason": "Switching tasks reveal quickly whether the setup supports both entry speed and stable finishes."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not choose speed so aggressively that every switch needs extra cleanup.",
+        "Avoid overfitting the setup to one switching task if other switching widths feel completely wrong."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "chaining",
+          "title": "Chaining",
+          "summary": "A good flicking run is not just individual flick speed. It is how cleanly the player moves from kill to kill without missing, over-microing, or leaving targets slowly.",
+          "cues": [
+            "Judge time-to-kill across multiple kills, not only single flick speed",
+            "Protect initial flick accuracy even if raw speed dips slightly",
+            "Leave each target in a way that sets up the next kill cleanly"
+          ],
+          "failureModes": [
+            "Fast flicks paired with misses and extra micro-adjustment",
+            "Slow target exits after each kill"
+          ],
+          "relatedSignalKeys": [
+            "chaining",
+            "execution_consistency",
+            "precision_balance"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-benchmarks-transcript",
+          "claim": "Flick and switching work should value controlled entries and finish quality rather than brute-force speed alone.",
+          "excerpt": "All of these scenarios need controlled flicks, not just fast ones.",
+          "startSec": 450,
+          "endSec": 481,
+          "confidence": "medium",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-benchmarks-transcript",
+          "kind": "youtube_transcript",
+          "title": "Viscose benchmarks explanation transcript",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=fQ4nR8vfSLI",
+          "publishedAtIso": "2026-03-25T00:00:00Z"
         }
       ]
     },

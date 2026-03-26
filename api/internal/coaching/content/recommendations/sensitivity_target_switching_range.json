@@ -1,0 +1,46 @@
+{
+  "id": "sensitivity-target-switching-range",
+  "flawId": "sensitivity_rigidity",
+  "title": "Target switching sensitivity starting range",
+  "summary": "For target switching, a practical starting range is about 28-40 cm/360 because the task needs fast entries but still punishes unstable finishes and excess cleanup.",
+  "scenarioTypes": ["targetswitching", "switching", "multihitclicking"],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup"],
+  "focusAreas": ["speed", "balanced", "precision"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation", "chaining"],
+  "scenarioIds": [],
+  "why": [
+    "Target switching needs a balance between quick acquisition and controlled finish quality rather than pure flick speed.",
+    "A middle-to-faster range is usually easier for chaining fast entries together without making the finish unnecessarily messy."
+  ],
+  "actions": [
+    "Start around 33 cm/360 and slow down slightly if the first snap is fast but your finish quality is messy.",
+    "If every switch feels heavy and you are late to the next target, test a modestly faster step.",
+    "Judge the setting by chaining and finish quality across multiple targets, not by one flashy snap."
+  ],
+  "avoid": [
+    "Do not choose speed so aggressively that every switch needs extra cleanup.",
+    "Avoid overfitting the setup to one switching task if other switching widths feel completely wrong."
+  ],
+  "drills": [
+    {
+      "label": "Switching finish-quality check",
+      "query": "target switching chaining finish quality sensitivity",
+      "reason": "Switching tasks reveal quickly whether the setup supports both entry speed and stable finishes."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Flick and switching work should value controlled entries and finish quality rather than brute-force speed alone.",
+      "excerpt": "All of these scenarios need controlled flicks, not just fast ones.",
+      "startSec": 450,
+      "endSec": 481,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

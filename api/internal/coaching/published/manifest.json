@@ -1,8 +1,8 @@
 {
-  "version": "2026-03-26.v6",
+  "version": "2026-03-26.v7",
   "updatedAtIso": "2026-03-26T00:00:00Z",
   "cacheTtlSecs": 86400,
-  "entryCount": 41,
+  "entryCount": 46,
   "signalKeys": [
     "anticipation_latency",
     "arc_reading",
@@ -94,6 +94,7 @@
     "precisetracking",
     "puretracking",
     "reactiveclicking",
+    "reactivetracking",
     "staticclicking",
     "switching",
     "targetswitching",

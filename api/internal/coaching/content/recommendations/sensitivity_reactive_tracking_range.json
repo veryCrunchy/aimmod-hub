@@ -1,0 +1,46 @@
+{
+  "id": "sensitivity-reactive-tracking-range",
+  "flawId": "sensitivity_rigidity",
+  "title": "Reactive tracking sensitivity starting range",
+  "summary": "For reactive tracking, a good starting range is about 28-35 cm/360 because the category often benefits from faster answer speed while still demanding controlled finishes.",
+  "scenarioTypes": ["tracking", "puretracking", "reactivetracking"],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup"],
+  "focusAreas": ["reactivity", "balanced"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation", "tension-management"],
+  "scenarioIds": [],
+  "why": [
+    "Viscose explicitly describes playing reactive tracking in a higher range, usually around 28-35 cm/360.",
+    "Reactive tasks need you to physically answer fast strafes quickly enough, but still decelerate into a controlled track."
+  ],
+  "actions": [
+    "Start around 32 cm/360 and test a little faster if you can read the strafe but cannot answer in time.",
+    "If your corrections are noisy or you keep overshooting the finish, slow down slightly inside the range.",
+    "Track whether the new sensitivity changes your tension or lockout more than your raw score."
+  ],
+  "avoid": [
+    "Do not choose speed alone if the finish quality becomes unstable.",
+    "Avoid using the fastest possible setting just because the scenario is reactive."
+  ],
+  "drills": [
+    {
+      "label": "Reactive tracking sens sweep",
+      "query": "reactive tracking sensitivity comparison",
+      "reason": "Reactive tasks make it easier to feel the tradeoff between answer speed and correction noise."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Reactive tracking is usually played around 28 to 35 cm/360, sometimes a bit faster.",
+      "excerpt": "I tend to play these scenarios at a higher sensitivity compared to control tracking. Anywhere from 28 to 35 cm per 360.",
+      "startSec": 421,
+      "endSec": 428,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

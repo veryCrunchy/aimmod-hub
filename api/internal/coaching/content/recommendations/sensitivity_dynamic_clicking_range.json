@@ -1,0 +1,46 @@
+{
+  "id": "sensitivity-dynamic-clicking-range",
+  "flawId": "sensitivity_rigidity",
+  "title": "Dynamic clicking sensitivity starting range",
+  "summary": "For dynamic clicking, a practical starting range is about 30-45 cm/360 so you can balance anticipatory placement with quick path corrections.",
+  "scenarioTypes": ["dynamicclicking", "movingclicking", "reactiveclicking", "clicktiming"],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup"],
+  "focusAreas": ["precision", "balanced", "transfer"],
+  "challengePreferences": ["balanced"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation", "lead-placement"],
+  "scenarioIds": [],
+  "why": [
+    "Dynamic clicking sits between stable placement and moving-target correction, so it usually benefits from a middle-ground range instead of extreme speed or extreme stability.",
+    "The best setting is the one that lets you lead paths cleanly without chasing with large extra movement."
+  ],
+  "actions": [
+    "Start around 37 cm/360 and slow down slightly if you keep chasing the path with large corrective movement.",
+    "If you are late to every path change even when your reads are correct, test a slightly faster step.",
+    "Watch where your crosshair is placed before the click, not just whether the shot landed."
+  ],
+  "avoid": [
+    "Do not choose a setting that forces constant late chases on moving targets.",
+    "Avoid judging the setup only by single-shot speed if your placement gets worse."
+  ],
+  "drills": [
+    {
+      "label": "Dynamic placement check",
+      "query": "dynamic clicking lead placement sensitivity",
+      "reason": "Dynamic clicking shows quickly whether the chosen sens supports anticipatory placement or late chase behavior."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-benchmarks-transcript",
+      "claim": "Dynamic clicking emphasizes anticipatory placement and precision on moving targets, which supports using a balanced middle range.",
+      "excerpt": "Putting your crosshair where the target will be instead of where it is is the single most important skill in this subcategory.",
+      "startSec": 619,
+      "endSec": 645,
+      "confidence": "medium",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}
