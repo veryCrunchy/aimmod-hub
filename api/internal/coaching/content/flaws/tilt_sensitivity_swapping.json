@@ -1,0 +1,18 @@
+{
+  "id": "tilt_sensitivity_swapping",
+  "title": "Tilt sensitivity swapping",
+  "summary": "The player changes sensitivity reactively during matches or right after mistakes, shifting focus away from gameplay and toward whether the setup feels wrong.",
+  "signalKeys": ["sensitivity_instability", "tilt_response", "match_focus"],
+  "contextTags": ["matchplay", "competition"],
+  "mechanicIds": ["training-match-sensitivity-separation"],
+  "telltales": [
+    "Sensitivity is changed right after dying, missing, or tilting",
+    "The player spends more attention on whether the sens feels off than on the game state"
+  ],
+  "contraindications": [
+    "Do not forbid all sensitivity experimentation during training"
+  ],
+  "avoid": [
+    "Using mid-match sens swaps as a substitute for concentrated practice on the real weakness"
+  ]
+}

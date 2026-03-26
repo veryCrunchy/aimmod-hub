@@ -1,0 +1,15 @@
+{
+  "id": "training-match-sensitivity-separation",
+  "title": "Training and match sensitivity separation",
+  "summary": "Sensitivity can be changed deliberately during practice to target weaknesses, but match play should usually keep it stable so attention stays on the game instead of the setup.",
+  "cues": [
+    "Use sensitivity changes with a clear training goal",
+    "Keep competitive matches focused on decision-making and execution, not setup doubt",
+    "Separate deliberate practice experiments from emotional mid-match changes"
+  ],
+  "failureModes": [
+    "Tilt-changing sensitivity after deaths or bad rounds",
+    "Confusing a training tool with a match-time fix"
+  ],
+  "relatedSignalKeys": ["sensitivity_instability", "tilt_response", "match_focus", "setup_experimentation"]
+}

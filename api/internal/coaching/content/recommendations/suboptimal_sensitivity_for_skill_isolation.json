@@ -1,0 +1,51 @@
+{
+  "id": "suboptimal-sensitivity-for-skill-isolation",
+  "flawId": "sensitivity_rigidity",
+  "title": "Use suboptimal sensitivities to expose weak mechanics in training",
+  "summary": "A deliberately suboptimal sensitivity can make hidden movement weaknesses more visible, helping isolate arm speed, wrist fine control, or fingertip precision during training.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "training_method", "plateau", "mouse_control"],
+  "focusAreas": ["precision", "reactivity", "transfer"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["sensitivity-adaptation", "hand-eye-mouse-control"],
+  "scenarioIds": [],
+  "why": [
+    "Using an unusual sensitivity can make a neglected muscle group or coordination pattern impossible to hide behind a comfortable default.",
+    "A very slow sens highlights arm speed and range demands, while a very fast sens makes fine wrist or fingertip control more visible."
+  ],
+  "actions": [
+    "Use a slower-than-normal block on long-flick or wide-angle work if you want to stress arm speed and follow-through.",
+    "Use a faster-than-normal block on precision work if you want to expose fine wrist and fingertip control issues.",
+    "Keep these blocks intentional and time-boxed, then carry the cleaned-up movement back to your main sensitivity."
+  ],
+  "avoid": [
+    "Do not turn every session into random sensitivity roulette.",
+    "Avoid judging the training block only by score if the real goal is isolating a mechanical weakness."
+  ],
+  "drills": [
+    {
+      "label": "Low sens arm-speed block",
+      "query": "wide flick target switching long distance slower sensitivity",
+      "reason": "A slower setting exposes whether the arm can cover long distances quickly and cleanly."
+    },
+    {
+      "label": "High sens fine-control block",
+      "query": "precision tracking dynamic clicking faster sensitivity",
+      "reason": "A faster setting makes fine wrist and fingertip control errors much easier to notice."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+      "claim": "Deliberately mismatching sensitivity to the task can be used as a training tool to isolate different mechanical weaknesses.",
+      "excerpt": "Suboptimal sensitivities can highlight arm speed, wrist control, and other movement limitations more clearly than the normal setting.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

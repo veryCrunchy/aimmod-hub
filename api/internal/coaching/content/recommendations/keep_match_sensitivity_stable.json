@@ -1,0 +1,46 @@
+{
+  "id": "keep-match-sensitivity-stable",
+  "flawId": "tilt_sensitivity_swapping",
+  "title": "Experiment in training, not right after dying",
+  "summary": "Sensitivity changes can be useful during deliberate practice, but changing it reactively during matches usually steals attention from the game and hides the real weakness.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "matchplay", "competition", "tilt"],
+  "focusAreas": ["balanced", "consistency"],
+  "challengePreferences": ["conservative", "balanced"],
+  "timePreferences": ["today", "this_week"],
+  "mechanicIds": ["training-match-sensitivity-separation"],
+  "scenarioIds": [],
+  "why": [
+    "Reactive mid-match setup changes often shift focus onto whether the sensitivity feels wrong instead of onto the actual game problem.",
+    "If the sensitivity feels off in matches, that often points to a real weakness that needs isolated practice rather than emotional setup hopping."
+  ],
+  "actions": [
+    "Keep the match sensitivity stable during actual games so attention stays on decisions, clearing, and execution.",
+    "Write down the specific weakness you felt instead of changing sens on the spot.",
+    "Test alternate sensitivities later in deliberate practice blocks where you can isolate the issue calmly."
+  ],
+  "avoid": [
+    "Do not tilt-change sensitivity right after deaths, missed shots, or bad rounds.",
+    "Avoid treating a sens swap as a substitute for targeted practice."
+  ],
+  "drills": [
+    {
+      "label": "Post-match weakness audit",
+      "query": "review plateau sensitivity weakness audit",
+      "reason": "A short review after matches preserves the useful signal without turning the game itself into setup experimentation."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+      "claim": "Sensitivity should be changed often in training with purpose, but kept stable during real matches to preserve focus on the game itself.",
+      "excerpt": "The recommended split is deliberate experimentation in training and setup stability in actual matches.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

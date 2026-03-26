@@ -1,0 +1,46 @@
+{
+  "id": "mouse-control-over-muscle-memory",
+  "flawId": "sensitivity_rigidity",
+  "title": "Mouse control matters more than memorized distance",
+  "summary": "Changing sensitivity or peripherals does not erase aim skill. Strong aim comes from adaptable hand-eye coordination and fine motor control, not preserving one exact force-distance memory forever.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "setup", "mouse_control", "transfer"],
+  "focusAreas": ["transfer", "balanced", "precision"],
+  "challengePreferences": ["balanced", "aggressive"],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["hand-eye-mouse-control", "sensitivity-adaptation"],
+  "scenarioIds": [],
+  "why": [
+    "Even on one constant sensitivity, pad wear, skates, humidity, and friction change the force needed from day to day.",
+    "If aiming really depended on memorizing one exact force for one exact distance, consistent high-level aim would already be impossible under normal setup variance."
+  ],
+  "actions": [
+    "Treat sensitivity as an adjustable tool rather than proof of identity or progress.",
+    "When testing a new setup, judge crosshair control after a short reacclimation period instead of panicking over the first few minutes.",
+    "Use skill transfer and control quality as the standard, not whether the new setup feels identical instantly."
+  ],
+  "avoid": [
+    "Do not assume every setup change destroys progress.",
+    "Avoid using the muscle-memory myth as the default explanation for every slump."
+  ],
+  "drills": [
+    {
+      "label": "Short adaptation check",
+      "query": "control tracking precision tracking alternate sensitivity short block",
+      "reason": "A short, controlled block makes it easier to evaluate adaptability without overreacting to first-impression discomfort."
+    }
+  ],
+  "priority": "high",
+  "evidence": [
+    {
+      "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+      "claim": "Aiming skill is better explained by adaptable mouse control and hand-eye coordination than by memorizing one exact sensitivity distance relationship.",
+      "excerpt": "Good aim is about developing the motor control to move the crosshair where you want it even with unfamiliar settings or peripherals.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

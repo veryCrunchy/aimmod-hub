@@ -1,0 +1,46 @@
+{
+  "id": "game-and-role-specific-sensitivity",
+  "flawId": "sensitivity_rigidity",
+  "title": "Choose sensitivity for the game's movement demands",
+  "summary": "Sensitivity should be chosen around the movement and aiming demands of the game or role. Faster, wider-angle games often reward faster settings than angle-holding tac shooters.",
+  "scenarioTypes": [],
+  "scenarioNames": [],
+  "contextTags": ["sensitivity", "apex", "valorant", "overwatch", "counter_strike", "game_specific_transfer"],
+  "focusAreas": ["transfer", "balanced"],
+  "challengePreferences": ["balanced"],
+  "timePreferences": ["this_week", "long_term"],
+  "mechanicIds": ["sensitivity-adaptation", "hand-eye-mouse-control"],
+  "scenarioIds": [],
+  "why": [
+    "Apex-style wide-angle, faster-movement aiming usually pushes toward faster sensitivities than Valorant-style angle holding.",
+    "Even inside one game, different roles or situations can reward different balances of stability, quick angle clearing, arm range, and wrist speed."
+  ],
+  "actions": [
+    "Pick a main match sensitivity that fits the game's most common movement and angle demands.",
+    "When swapping games or roles, expect the optimal sensitivity balance to shift with them instead of forcing one universal number.",
+    "If a slower setting helps hold angles but makes quick clears too heavy, adjust until both tasks are reasonably covered."
+  ],
+  "avoid": [
+    "Do not keep one slow tactical sens in every game out of habit alone.",
+    "Avoid copying another game's sensitivity logic without checking the movement style first."
+  ],
+  "drills": [
+    {
+      "label": "Cross-game sens comparison",
+      "query": "tracking switching clicking compare two sensitivities movement demands",
+      "reason": "Comparing two purposeful settings makes it easier to notice which game demands each one actually serves."
+    }
+  ],
+  "priority": "medium",
+  "evidence": [
+    {
+      "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+      "claim": "Different games and roles can justify different sensitivities because the movement patterns and aiming demands are not the same.",
+      "excerpt": "Apex tends to reward faster settings than Valorant, and even roles inside games can push the optimal balance in different directions.",
+      "startSec": 0,
+      "endSec": 0,
+      "confidence": "high",
+      "reviewStatus": "curated_from_transcript"
+    }
+  ]
+}

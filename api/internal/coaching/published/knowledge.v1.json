@@ -1,6 +1,6 @@
 {
-  "version": "2026-03-25.v5",
-  "updatedAtIso": "2026-03-25T00:00:00Z",
+  "version": "2026-03-26.v6",
+  "updatedAtIso": "2026-03-26T00:00:00Z",
   "toolInstruction": "Use these entries as structured coaching knowledge. Keep final advice grounded in the player's real telemetry, preferences, and recent run context. Prefer concrete next-session actions over generic motivation, and avoid claiming a flaw is present unless the local analytics already suggest it. Treat the linked flaw, mechanics, scenarios, and evidence as support material for the final answer.",
   "entries": [
     {
@@ -2108,6 +2108,142 @@
       ]
     },
     {
+      "id": "game-and-role-specific-sensitivity",
+      "title": "Choose sensitivity for the game's movement demands",
+      "summary": "Sensitivity should be chosen around the movement and aiming demands of the game or role. Faster, wider-angle games often reward faster settings than angle-holding tac shooters.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "hand_eye_coordination",
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": [
+        "apex",
+        "counter_strike",
+        "game_specific_transfer",
+        "overwatch",
+        "sensitivity",
+        "valorant"
+      ],
+      "focusAreas": [
+        "balanced",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "balanced"
+      ],
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Apex-style wide-angle, faster-movement aiming usually pushes toward faster sensitivities than Valorant-style angle holding.",
+        "Even inside one game, different roles or situations can reward different balances of stability, quick angle clearing, arm range, and wrist speed."
+      ],
+      "actions": [
+        "Pick a main match sensitivity that fits the game's most common movement and angle demands.",
+        "When swapping games or roles, expect the optimal sensitivity balance to shift with them instead of forcing one universal number.",
+        "If a slower setting helps hold angles but makes quick clears too heavy, adjust until both tasks are reasonably covered."
+      ],
+      "drills": [
+        {
+          "label": "Cross-game sens comparison",
+          "query": "tracking switching clicking compare two sensitivities movement demands",
+          "reason": "Comparing two purposeful settings makes it easier to notice which game demands each one actually serves."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not keep one slow tactical sens in every game out of habit alone.",
+        "Avoid copying another game's sensitivity logic without checking the movement style first."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "hand-eye-mouse-control",
+          "title": "Hand-eye mouse control",
+          "summary": "Good aim is driven by visual feedback, fine motor control, and adaptable mouse control rather than memorizing one exact force-distance pairing forever.",
+          "cues": [
+            "Treat the mouse like an extension of the hand guided by visual feedback",
+            "Judge aiming skill by how well the crosshair is placed, not by preserving one sacred setup",
+            "Expect skilled players to adapt quickly to small setup and sensitivity changes"
+          ],
+          "failureModes": [
+            "Explaining every performance dip as broken muscle memory",
+            "Ignoring how pad wear, skates, humidity, and friction already force constant adaptation"
+          ],
+          "relatedSignalKeys": [
+            "hand_eye_coordination",
+            "mouse_control_adaptation",
+            "sensitivity_rigidity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+          "claim": "Different games and roles can justify different sensitivities because the movement patterns and aiming demands are not the same.",
+          "excerpt": "Apex tends to reward faster settings than Valorant, and even roles inside games can push the optimal balance in different directions.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-sensitivity-muscle-memory-transcript",
+          "kind": "youtube_transcript",
+          "title": "Muscle memory is a myth in aiming and sensitivity is a tool",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=uPkYc84GrSc",
+          "publishedAtIso": "2026-03-26T00:00:00Z"
+        }
+      ]
+    },
+    {
       "id": "global-correction-load",
       "title": "Reduce correction load before chasing more speed",
       "summary": "High correction load usually means the player reaches the target area, then spends extra movement cleaning up overshoot or path instability before securing the hit.",
@@ -2521,6 +2657,126 @@
       ]
     },
     {
+      "id": "keep-match-sensitivity-stable",
+      "title": "Experiment in training, not right after dying",
+      "summary": "Sensitivity changes can be useful during deliberate practice, but changing it reactively during matches usually steals attention from the game and hides the real weakness.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "match_focus",
+        "sensitivity_instability",
+        "setup_experimentation",
+        "tilt_response"
+      ],
+      "contextTags": [
+        "competition",
+        "matchplay",
+        "sensitivity",
+        "tilt"
+      ],
+      "focusAreas": [
+        "balanced",
+        "consistency"
+      ],
+      "challengePreferences": [
+        "balanced",
+        "conservative"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Reactive mid-match setup changes often shift focus onto whether the sensitivity feels wrong instead of onto the actual game problem.",
+        "If the sensitivity feels off in matches, that often points to a real weakness that needs isolated practice rather than emotional setup hopping."
+      ],
+      "actions": [
+        "Keep the match sensitivity stable during actual games so attention stays on decisions, clearing, and execution.",
+        "Write down the specific weakness you felt instead of changing sens on the spot.",
+        "Test alternate sensitivities later in deliberate practice blocks where you can isolate the issue calmly."
+      ],
+      "drills": [
+        {
+          "label": "Post-match weakness audit",
+          "query": "review plateau sensitivity weakness audit",
+          "reason": "A short review after matches preserves the useful signal without turning the game itself into setup experimentation."
+        }
+      ],
+      "avoid": [
+        "Using mid-match sens swaps as a substitute for concentrated practice on the real weakness",
+        "Do not tilt-change sensitivity right after deaths, missed shots, or bad rounds.",
+        "Avoid treating a sens swap as a substitute for targeted practice."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "tilt_sensitivity_swapping",
+        "title": "Tilt sensitivity swapping",
+        "summary": "The player changes sensitivity reactively during matches or right after mistakes, shifting focus away from gameplay and toward whether the setup feels wrong.",
+        "signalKeys": [
+          "match_focus",
+          "sensitivity_instability",
+          "tilt_response"
+        ],
+        "contextTags": [
+          "competition",
+          "matchplay"
+        ],
+        "telltales": [
+          "Sensitivity is changed right after dying, missing, or tilting",
+          "The player spends more attention on whether the sens feels off than on the game state"
+        ],
+        "contraindications": [
+          "Do not forbid all sensitivity experimentation during training"
+        ],
+        "avoid": [
+          "Using mid-match sens swaps as a substitute for concentrated practice on the real weakness"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "training-match-sensitivity-separation",
+          "title": "Training and match sensitivity separation",
+          "summary": "Sensitivity can be changed deliberately during practice to target weaknesses, but match play should usually keep it stable so attention stays on the game instead of the setup.",
+          "cues": [
+            "Use sensitivity changes with a clear training goal",
+            "Keep competitive matches focused on decision-making and execution, not setup doubt",
+            "Separate deliberate practice experiments from emotional mid-match changes"
+          ],
+          "failureModes": [
+            "Tilt-changing sensitivity after deaths or bad rounds",
+            "Confusing a training tool with a match-time fix"
+          ],
+          "relatedSignalKeys": [
+            "match_focus",
+            "sensitivity_instability",
+            "setup_experimentation",
+            "tilt_response"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+          "claim": "Sensitivity should be changed often in training with purpose, but kept stable during real matches to preserve focus on the game itself.",
+          "excerpt": "The recommended split is deliberate experimentation in training and setup stability in actual matches.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-sensitivity-muscle-memory-transcript",
+          "kind": "youtube_transcript",
+          "title": "Muscle memory is a myth in aiming and sensitivity is a tool",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=uPkYc84GrSc",
+          "publishedAtIso": "2026-03-26T00:00:00Z"
+        }
+      ]
+    },
+    {
       "id": "momentum-transfer",
       "title": "Exploit current momentum with nearby transfer work",
       "summary": "When momentum is positive, the best move is often to expand slightly from the current strength rather than making a huge jump away from it.",
@@ -2796,6 +3052,142 @@
           "author": "MattyOW",
           "url": "https://www.youtube.com/watch?v=0E_C282erqA",
           "publishedAtIso": "2026-03-25T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "mouse-control-over-muscle-memory",
+      "title": "Mouse control matters more than memorized distance",
+      "summary": "Changing sensitivity or peripherals does not erase aim skill. Strong aim comes from adaptable hand-eye coordination and fine motor control, not preserving one exact force-distance memory forever.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "hand_eye_coordination",
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": [
+        "mouse_control",
+        "sensitivity",
+        "setup",
+        "transfer"
+      ],
+      "focusAreas": [
+        "balanced",
+        "precision",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "long_term",
+        "this_week"
+      ],
+      "why": [
+        "Even on one constant sensitivity, pad wear, skates, humidity, and friction change the force needed from day to day.",
+        "If aiming really depended on memorizing one exact force for one exact distance, consistent high-level aim would already be impossible under normal setup variance."
+      ],
+      "actions": [
+        "Treat sensitivity as an adjustable tool rather than proof of identity or progress.",
+        "When testing a new setup, judge crosshair control after a short reacclimation period instead of panicking over the first few minutes.",
+        "Use skill transfer and control quality as the standard, not whether the new setup feels identical instantly."
+      ],
+      "drills": [
+        {
+          "label": "Short adaptation check",
+          "query": "control tracking precision tracking alternate sensitivity short block",
+          "reason": "A short, controlled block makes it easier to evaluate adaptability without overreacting to first-impression discomfort."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not assume every setup change destroys progress.",
+        "Avoid using the muscle-memory myth as the default explanation for every slump."
+      ],
+      "priority": "high",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "hand-eye-mouse-control",
+          "title": "Hand-eye mouse control",
+          "summary": "Good aim is driven by visual feedback, fine motor control, and adaptable mouse control rather than memorizing one exact force-distance pairing forever.",
+          "cues": [
+            "Treat the mouse like an extension of the hand guided by visual feedback",
+            "Judge aiming skill by how well the crosshair is placed, not by preserving one sacred setup",
+            "Expect skilled players to adapt quickly to small setup and sensitivity changes"
+          ],
+          "failureModes": [
+            "Explaining every performance dip as broken muscle memory",
+            "Ignoring how pad wear, skates, humidity, and friction already force constant adaptation"
+          ],
+          "relatedSignalKeys": [
+            "hand_eye_coordination",
+            "mouse_control_adaptation",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+          "claim": "Aiming skill is better explained by adaptable mouse control and hand-eye coordination than by memorizing one exact sensitivity distance relationship.",
+          "excerpt": "Good aim is about developing the motor control to move the crosshair where you want it even with unfamiliar settings or peripherals.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-sensitivity-muscle-memory-transcript",
+          "kind": "youtube_transcript",
+          "title": "Muscle memory is a myth in aiming and sensitivity is a tool",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=uPkYc84GrSc",
+          "publishedAtIso": "2026-03-26T00:00:00Z"
         }
       ]
     },
@@ -4522,6 +4914,147 @@
           "author": "Voltaic",
           "url": "https://blog.voltaic.gg/announcing-the-voltaic-season-5-aiming-benchmarks-beta-for-kovaaks/",
           "publishedAtIso": "2024-12-25T00:21:58Z"
+        }
+      ]
+    },
+    {
+      "id": "suboptimal-sensitivity-for-skill-isolation",
+      "title": "Use suboptimal sensitivities to expose weak mechanics in training",
+      "summary": "A deliberately suboptimal sensitivity can make hidden movement weaknesses more visible, helping isolate arm speed, wrist fine control, or fingertip precision during training.",
+      "scenarioTypes": null,
+      "scenarioNames": null,
+      "signalKeys": [
+        "hand_eye_coordination",
+        "mouse_control_adaptation",
+        "plateau",
+        "sensitivity_rigidity"
+      ],
+      "contextTags": [
+        "mouse_control",
+        "plateau",
+        "sensitivity",
+        "training_method"
+      ],
+      "focusAreas": [
+        "precision",
+        "reactivity",
+        "transfer"
+      ],
+      "challengePreferences": [
+        "aggressive",
+        "balanced"
+      ],
+      "timePreferences": [
+        "this_week",
+        "today"
+      ],
+      "why": [
+        "Using an unusual sensitivity can make a neglected muscle group or coordination pattern impossible to hide behind a comfortable default.",
+        "A very slow sens highlights arm speed and range demands, while a very fast sens makes fine wrist or fingertip control more visible."
+      ],
+      "actions": [
+        "Use a slower-than-normal block on long-flick or wide-angle work if you want to stress arm speed and follow-through.",
+        "Use a faster-than-normal block on precision work if you want to expose fine wrist and fingertip control issues.",
+        "Keep these blocks intentional and time-boxed, then carry the cleaned-up movement back to your main sensitivity."
+      ],
+      "drills": [
+        {
+          "label": "Low sens arm-speed block",
+          "query": "wide flick target switching long distance slower sensitivity",
+          "reason": "A slower setting exposes whether the arm can cover long distances quickly and cleanly."
+        },
+        {
+          "label": "High sens fine-control block",
+          "query": "precision tracking dynamic clicking faster sensitivity",
+          "reason": "A faster setting makes fine wrist and fingertip control errors much easier to notice."
+        }
+      ],
+      "avoid": [
+        "Assuming progress only exists on one untouchable sensitivity",
+        "Do not turn every session into random sensitivity roulette.",
+        "Avoid judging the training block only by score if the real goal is isolating a mechanical weakness."
+      ],
+      "priority": "medium",
+      "flaw": {
+        "id": "sensitivity_rigidity",
+        "title": "Sensitivity rigidity",
+        "summary": "The player avoids any sensitivity exploration because they think one setting must be preserved at all costs, limiting adaptation and experimentation.",
+        "signalKeys": [
+          "mouse_control_adaptation",
+          "plateau",
+          "sensitivity_rigidity"
+        ],
+        "contextTags": null,
+        "telltales": [
+          "Sensitivity changes are treated as dangerous even when the player is plateaued",
+          "The player explains every issue through preserving muscle memory"
+        ],
+        "contraindications": [
+          "Do not replace stable training with constant random sensitivity changes"
+        ],
+        "avoid": [
+          "Assuming progress only exists on one untouchable sensitivity"
+        ]
+      },
+      "mechanics": [
+        {
+          "id": "sensitivity-adaptation",
+          "title": "Sensitivity adaptation",
+          "summary": "Aim skill is built on adaptable mouse control rather than one untouchable sensitivity, so controlled sensitivity changes can expose weak coordination patterns and broaden movement options.",
+          "cues": [
+            "Treat sensitivity as a tool, not an identity",
+            "Use a time-boxed alternate sensitivity block to challenge a plateau",
+            "Track whether the change improves control quality, not just comfort"
+          ],
+          "failureModes": [
+            "Assuming any sensitivity change destroys progress",
+            "Changing sensitivity randomly every session with no purpose"
+          ],
+          "relatedSignalKeys": [
+            "mouse_control_adaptation",
+            "plateau",
+            "sensitivity_rigidity"
+          ]
+        },
+        {
+          "id": "hand-eye-mouse-control",
+          "title": "Hand-eye mouse control",
+          "summary": "Good aim is driven by visual feedback, fine motor control, and adaptable mouse control rather than memorizing one exact force-distance pairing forever.",
+          "cues": [
+            "Treat the mouse like an extension of the hand guided by visual feedback",
+            "Judge aiming skill by how well the crosshair is placed, not by preserving one sacred setup",
+            "Expect skilled players to adapt quickly to small setup and sensitivity changes"
+          ],
+          "failureModes": [
+            "Explaining every performance dip as broken muscle memory",
+            "Ignoring how pad wear, skates, humidity, and friction already force constant adaptation"
+          ],
+          "relatedSignalKeys": [
+            "hand_eye_coordination",
+            "mouse_control_adaptation",
+            "sensitivity_rigidity"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "sourceId": "viscose-sensitivity-muscle-memory-transcript",
+          "claim": "Deliberately mismatching sensitivity to the task can be used as a training tool to isolate different mechanical weaknesses.",
+          "excerpt": "Suboptimal sensitivities can highlight arm speed, wrist control, and other movement limitations more clearly than the normal setting.",
+          "startSec": 0,
+          "endSec": 0,
+          "confidence": "high",
+          "reviewStatus": "curated_from_transcript"
+        }
+      ],
+      "sources": [
+        {
+          "id": "viscose-sensitivity-muscle-memory-transcript",
+          "kind": "youtube_transcript",
+          "title": "Muscle memory is a myth in aiming and sensitivity is a tool",
+          "author": "Viscose",
+          "url": "https://www.youtube.com/watch?v=uPkYc84GrSc",
+          "publishedAtIso": "2026-03-26T00:00:00Z"
         }
       ]
     },

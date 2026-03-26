@@ -1,0 +1,15 @@
+{
+  "id": "hand-eye-mouse-control",
+  "title": "Hand-eye mouse control",
+  "summary": "Good aim is driven by visual feedback, fine motor control, and adaptable mouse control rather than memorizing one exact force-distance pairing forever.",
+  "cues": [
+    "Treat the mouse like an extension of the hand guided by visual feedback",
+    "Judge aiming skill by how well the crosshair is placed, not by preserving one sacred setup",
+    "Expect skilled players to adapt quickly to small setup and sensitivity changes"
+  ],
+  "failureModes": [
+    "Explaining every performance dip as broken muscle memory",
+    "Ignoring how pad wear, skates, humidity, and friction already force constant adaptation"
+  ],
+  "relatedSignalKeys": ["mouse_control_adaptation", "hand_eye_coordination", "sensitivity_rigidity"]
+}
