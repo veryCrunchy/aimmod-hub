@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && tsx scripts/prerender-learning.tsx",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
@@ -31,6 +31,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
     "tailwindcss": "^4.2.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }

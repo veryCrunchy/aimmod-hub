@@ -162,6 +162,8 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/api/lookup", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/lookup/", withCORS(cfg.AllowedWebOrigin, externalHandler))
 	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))
+	mux.Handle("/robots.txt", newRobotsHandler(cfg.WebAppOrigin))
+	mux.Handle("/sitemap.xml", newSitemapHandler(cfg.WebAppOrigin))
 	if hasLLMManifest(cfg) {
 		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))
 	}

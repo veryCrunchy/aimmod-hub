@@ -80,6 +80,15 @@ const (
 	// HubServiceGetBenchmarkLeaderboardProcedure is the fully-qualified name of the HubService's
 	// GetBenchmarkLeaderboard RPC.
 	HubServiceGetBenchmarkLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetBenchmarkLeaderboard"
+	// HubServiceGetLearningIndexProcedure is the fully-qualified name of the HubService's
+	// GetLearningIndex RPC.
+	HubServiceGetLearningIndexProcedure = "/aimmod.hub.v1.HubService/GetLearningIndex"
+	// HubServiceGetLearningEntryProcedure is the fully-qualified name of the HubService's
+	// GetLearningEntry RPC.
+	HubServiceGetLearningEntryProcedure = "/aimmod.hub.v1.HubService/GetLearningEntry"
+	// HubServiceGetLearningTopicProcedure is the fully-qualified name of the HubService's
+	// GetLearningTopic RPC.
+	HubServiceGetLearningTopicProcedure = "/aimmod.hub.v1.HubService/GetLearningTopic"
 )
 
 // HubServiceClient is a client for the aimmod.hub.v1.HubService service.
@@ -102,6 +111,9 @@ type HubServiceClient interface {
 	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
 	ListBenchmarks(context.Context, *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error)
 	GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error)
+	GetLearningIndex(context.Context, *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error)
+	GetLearningEntry(context.Context, *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error)
+	GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error)
 }
 
 // NewHubServiceClient constructs a client for the aimmod.hub.v1.HubService service. By default, it
@@ -223,6 +235,24 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkLeaderboard")),
 			connect.WithClientOptions(opts...),
 		),
+		getLearningIndex: connect.NewClient[v1.GetLearningIndexRequest, v1.GetLearningIndexResponse](
+			httpClient,
+			baseURL+HubServiceGetLearningIndexProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetLearningIndex")),
+			connect.WithClientOptions(opts...),
+		),
+		getLearningEntry: connect.NewClient[v1.GetLearningEntryRequest, v1.GetLearningEntryResponse](
+			httpClient,
+			baseURL+HubServiceGetLearningEntryProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetLearningEntry")),
+			connect.WithClientOptions(opts...),
+		),
+		getLearningTopic: connect.NewClient[v1.GetLearningTopicRequest, v1.GetLearningTopicResponse](
+			httpClient,
+			baseURL+HubServiceGetLearningTopicProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetLearningTopic")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -246,6 +276,9 @@ type hubServiceClient struct {
 	getAimFingerprint        *connect.Client[v1.GetAimFingerprintRequest, v1.GetAimFingerprintResponse]
 	listBenchmarks           *connect.Client[v1.ListBenchmarksRequest, v1.ListBenchmarksResponse]
 	getBenchmarkLeaderboard  *connect.Client[v1.GetBenchmarkLeaderboardRequest, v1.GetBenchmarkLeaderboardResponse]
+	getLearningIndex         *connect.Client[v1.GetLearningIndexRequest, v1.GetLearningIndexResponse]
+	getLearningEntry         *connect.Client[v1.GetLearningEntryRequest, v1.GetLearningEntryResponse]
+	getLearningTopic         *connect.Client[v1.GetLearningTopicRequest, v1.GetLearningTopicResponse]
 }
 
 // GetHealth calls aimmod.hub.v1.HubService.GetHealth.
@@ -338,6 +371,21 @@ func (c *hubServiceClient) GetBenchmarkLeaderboard(ctx context.Context, req *con
 	return c.getBenchmarkLeaderboard.CallUnary(ctx, req)
 }
 
+// GetLearningIndex calls aimmod.hub.v1.HubService.GetLearningIndex.
+func (c *hubServiceClient) GetLearningIndex(ctx context.Context, req *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error) {
+	return c.getLearningIndex.CallUnary(ctx, req)
+}
+
+// GetLearningEntry calls aimmod.hub.v1.HubService.GetLearningEntry.
+func (c *hubServiceClient) GetLearningEntry(ctx context.Context, req *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error) {
+	return c.getLearningEntry.CallUnary(ctx, req)
+}
+
+// GetLearningTopic calls aimmod.hub.v1.HubService.GetLearningTopic.
+func (c *hubServiceClient) GetLearningTopic(ctx context.Context, req *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error) {
+	return c.getLearningTopic.CallUnary(ctx, req)
+}
+
 // HubServiceHandler is an implementation of the aimmod.hub.v1.HubService service.
 type HubServiceHandler interface {
 	GetHealth(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
@@ -358,6 +406,9 @@ type HubServiceHandler interface {
 	GetAimFingerprint(context.Context, *connect.Request[v1.GetAimFingerprintRequest]) (*connect.Response[v1.GetAimFingerprintResponse], error)
 	ListBenchmarks(context.Context, *connect.Request[v1.ListBenchmarksRequest]) (*connect.Response[v1.ListBenchmarksResponse], error)
 	GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error)
+	GetLearningIndex(context.Context, *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error)
+	GetLearningEntry(context.Context, *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error)
+	GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error)
 }
 
 // NewHubServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -475,6 +526,24 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("GetBenchmarkLeaderboard")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceGetLearningIndexHandler := connect.NewUnaryHandler(
+		HubServiceGetLearningIndexProcedure,
+		svc.GetLearningIndex,
+		connect.WithSchema(hubServiceMethods.ByName("GetLearningIndex")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetLearningEntryHandler := connect.NewUnaryHandler(
+		HubServiceGetLearningEntryProcedure,
+		svc.GetLearningEntry,
+		connect.WithSchema(hubServiceMethods.ByName("GetLearningEntry")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetLearningTopicHandler := connect.NewUnaryHandler(
+		HubServiceGetLearningTopicProcedure,
+		svc.GetLearningTopic,
+		connect.WithSchema(hubServiceMethods.ByName("GetLearningTopic")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/aimmod.hub.v1.HubService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case HubServiceGetHealthProcedure:
@@ -513,6 +582,12 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceListBenchmarksHandler.ServeHTTP(w, r)
 		case HubServiceGetBenchmarkLeaderboardProcedure:
 			hubServiceGetBenchmarkLeaderboardHandler.ServeHTTP(w, r)
+		case HubServiceGetLearningIndexProcedure:
+			hubServiceGetLearningIndexHandler.ServeHTTP(w, r)
+		case HubServiceGetLearningEntryProcedure:
+			hubServiceGetLearningEntryHandler.ServeHTTP(w, r)
+		case HubServiceGetLearningTopicProcedure:
+			hubServiceGetLearningTopicHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -592,4 +667,16 @@ func (UnimplementedHubServiceHandler) ListBenchmarks(context.Context, *connect.R
 
 func (UnimplementedHubServiceHandler) GetBenchmarkLeaderboard(context.Context, *connect.Request[v1.GetBenchmarkLeaderboardRequest]) (*connect.Response[v1.GetBenchmarkLeaderboardResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetBenchmarkLeaderboard is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetLearningIndex(context.Context, *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetLearningIndex is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetLearningEntry(context.Context, *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetLearningEntry is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetLearningTopic is not implemented"))
 }

@@ -6,6 +6,7 @@ import { ScenarioTypeBadge } from "./ScenarioTypeBadge";
 
 const quickNavItems = [
   { to: "/community", label: "Browse scenarios & players", sub: "All uploaded data, sorted by activity" },
+  { to: "/learn", label: "Aim training guides", sub: "KB-backed pages on mechanics, flaws, sensitivity, and transfer" },
   { to: "/leaderboard", label: "Global leaderboard", sub: "All-time records and top 100 scores" },
   { to: "/replays", label: "Replay library", sub: "Watch replays and mouse paths" },
   { to: "/app", label: "Download AimMod", sub: "Get the desktop app to start uploading" },

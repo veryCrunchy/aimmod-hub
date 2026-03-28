@@ -2,7 +2,9 @@ package httpserver
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
@@ -14,6 +16,39 @@ type coachingErrorResponse struct {
 
 func newCoachingHandler(st *store.Store) http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/api/coaching/learn", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		response, err := coaching.GetLearnIndex()
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, coachingErrorResponse{Error: err.Error()})
+			return
+		}
+		w.Header().Set("Cache-Control", "public, max-age=300")
+		w.Header().Set("X-Coaching-Knowledge-Version", response.Version)
+		writeJSON(w, http.StatusOK, response)
+	})
+	mux.HandleFunc("/api/coaching/learn/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		id := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, "/api/coaching/learn/"))
+		response, err := coaching.GetLearnEntry(id)
+		if err != nil {
+			status := http.StatusInternalServerError
+			if errors.Is(err, coaching.ErrLearnEntryNotFound) {
+				status = http.StatusNotFound
+			}
+			writeJSON(w, status, coachingErrorResponse{Error: err.Error()})
+			return
+		}
+		w.Header().Set("Cache-Control", "public, max-age=300")
+		w.Header().Set("X-Coaching-Knowledge-Version", response.Version)
+		writeJSON(w, http.StatusOK, response)
+	})
 	mux.HandleFunc("/api/coaching/manifest", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)

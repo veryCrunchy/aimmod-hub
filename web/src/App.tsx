@@ -1,7 +1,10 @@
-import { Suspense, lazy } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Suspense, lazy, type ComponentType, type PropsWithChildren } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AuthProvider } from "./lib/AuthContext";
+import { LearningHubPage } from "./pages/LearningHubPage";
+import LearningPage from "./pages/LearningPage";
+import LearningTopicPage from "./pages/LearningTopicPage";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
@@ -30,40 +33,56 @@ function RouteLoading() {
   return <div className="rounded-[18px] border border-line bg-white/2 px-6 py-10 text-sm text-muted">Loading page...</div>;
 }
 
-export function App() {
+type RouterProps = PropsWithChildren<Record<string, unknown>>;
+
+type AppProps = {
+  RouterComponent: ComponentType<RouterProps>;
+  routerProps?: Record<string, unknown>;
+};
+
+function AppRoutes() {
+  return (
+    <AppShell>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/app" element={<AimModPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/learn" element={<LearningHubPage />} />
+          <Route path="/learn/topics/:topic" element={<LearningTopicPage />} />
+          <Route path="/learn/:entryId" element={<LearningPage />} />
+          <Route path="/live" element={<LivePage />} />
+          <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
+          <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
+          <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />
+          <Route path="/profiles/:handle/benchmarks" element={<BenchmarksPage />} />
+          <Route path="/replays" element={<ReplayHubPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/coaching" element={<AdminCoachingPage />} />
+          <Route path="/link-device" element={<DeviceLinkPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/profiles/:handle" element={<ProfilePage />} />
+          <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
+          <Route path="/scenarios/:slug" element={<ScenarioPage />} />
+          <Route path="/runs/:runId" element={<RunPage />} />
+          <Route path="/u/:steamId" element={<ExternalProfilePage />} />
+          <Route path="/u/:steamId/benchmarks/:benchmarkId" element={<ExternalBenchmarkPage />} />
+          <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </AppShell>
+  );
+}
+
+export function App({ RouterComponent, routerProps }: AppProps) {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppShell>
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/app" element={<AimModPage />} />
-              <Route path="/community" element={<CommunityPage />} />
-              <Route path="/live" element={<LivePage />} />
-              <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
-              <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
-              <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />
-              <Route path="/profiles/:handle/benchmarks" element={<BenchmarksPage />} />
-              <Route path="/replays" element={<ReplayHubPage />} />
-              <Route path="/account" element={<AccountPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin/coaching" element={<AdminCoachingPage />} />
-              <Route path="/link-device" element={<DeviceLinkPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profiles/:handle" element={<ProfilePage />} />
-              <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
-              <Route path="/scenarios/:slug" element={<ScenarioPage />} />
-              <Route path="/runs/:runId" element={<RunPage />} />
-              <Route path="/u/:steamId" element={<ExternalProfilePage />} />
-              <Route path="/u/:steamId/benchmarks/:benchmarkId" element={<ExternalBenchmarkPage />} />
-              <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </AppShell>
-      </BrowserRouter>
+      <RouterComponent {...routerProps}>
+        <AppRoutes />
+      </RouterComponent>
     </AuthProvider>
   );
 }

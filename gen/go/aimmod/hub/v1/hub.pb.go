@@ -4579,6 +4579,1262 @@ func (x *GetBenchmarkLeaderboardResponse) GetEntries() []*BenchmarkLeaderboardEn
 	return nil
 }
 
+type LearnEntryPreview struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Summary       string                 `protobuf:"bytes,3,opt,name=summary,proto3" json:"summary,omitempty"`
+	Priority      string                 `protobuf:"bytes,4,opt,name=priority,proto3" json:"priority,omitempty"`
+	ScenarioTypes []string               `protobuf:"bytes,5,rep,name=scenario_types,json=scenarioTypes,proto3" json:"scenario_types,omitempty"`
+	ContextTags   []string               `protobuf:"bytes,6,rep,name=context_tags,json=contextTags,proto3" json:"context_tags,omitempty"`
+	SignalKeys    []string               `protobuf:"bytes,7,rep,name=signal_keys,json=signalKeys,proto3" json:"signal_keys,omitempty"`
+	FocusAreas    []string               `protobuf:"bytes,8,rep,name=focus_areas,json=focusAreas,proto3" json:"focus_areas,omitempty"`
+	SourceCount   uint32                 `protobuf:"varint,9,opt,name=source_count,json=sourceCount,proto3" json:"source_count,omitempty"`
+	DrillCount    uint32                 `protobuf:"varint,10,opt,name=drill_count,json=drillCount,proto3" json:"drill_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LearnEntryPreview) Reset() {
+	*x = LearnEntryPreview{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnEntryPreview) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnEntryPreview) ProtoMessage() {}
+
+func (x *LearnEntryPreview) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnEntryPreview.ProtoReflect.Descriptor instead.
+func (*LearnEntryPreview) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *LearnEntryPreview) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnEntryPreview) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *LearnEntryPreview) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *LearnEntryPreview) GetPriority() string {
+	if x != nil {
+		return x.Priority
+	}
+	return ""
+}
+
+func (x *LearnEntryPreview) GetScenarioTypes() []string {
+	if x != nil {
+		return x.ScenarioTypes
+	}
+	return nil
+}
+
+func (x *LearnEntryPreview) GetContextTags() []string {
+	if x != nil {
+		return x.ContextTags
+	}
+	return nil
+}
+
+func (x *LearnEntryPreview) GetSignalKeys() []string {
+	if x != nil {
+		return x.SignalKeys
+	}
+	return nil
+}
+
+func (x *LearnEntryPreview) GetFocusAreas() []string {
+	if x != nil {
+		return x.FocusAreas
+	}
+	return nil
+}
+
+func (x *LearnEntryPreview) GetSourceCount() uint32 {
+	if x != nil {
+		return x.SourceCount
+	}
+	return 0
+}
+
+func (x *LearnEntryPreview) GetDrillCount() uint32 {
+	if x != nil {
+		return x.DrillCount
+	}
+	return 0
+}
+
+type LearnFlaw struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title             string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Summary           string                 `protobuf:"bytes,3,opt,name=summary,proto3" json:"summary,omitempty"`
+	SignalKeys        []string               `protobuf:"bytes,4,rep,name=signal_keys,json=signalKeys,proto3" json:"signal_keys,omitempty"`
+	ContextTags       []string               `protobuf:"bytes,5,rep,name=context_tags,json=contextTags,proto3" json:"context_tags,omitempty"`
+	Telltales         []string               `protobuf:"bytes,6,rep,name=telltales,proto3" json:"telltales,omitempty"`
+	Contraindications []string               `protobuf:"bytes,7,rep,name=contraindications,proto3" json:"contraindications,omitempty"`
+	Avoid             []string               `protobuf:"bytes,8,rep,name=avoid,proto3" json:"avoid,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *LearnFlaw) Reset() {
+	*x = LearnFlaw{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[59]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnFlaw) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnFlaw) ProtoMessage() {}
+
+func (x *LearnFlaw) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[59]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnFlaw.ProtoReflect.Descriptor instead.
+func (*LearnFlaw) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{59}
+}
+
+func (x *LearnFlaw) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnFlaw) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *LearnFlaw) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *LearnFlaw) GetSignalKeys() []string {
+	if x != nil {
+		return x.SignalKeys
+	}
+	return nil
+}
+
+func (x *LearnFlaw) GetContextTags() []string {
+	if x != nil {
+		return x.ContextTags
+	}
+	return nil
+}
+
+func (x *LearnFlaw) GetTelltales() []string {
+	if x != nil {
+		return x.Telltales
+	}
+	return nil
+}
+
+func (x *LearnFlaw) GetContraindications() []string {
+	if x != nil {
+		return x.Contraindications
+	}
+	return nil
+}
+
+func (x *LearnFlaw) GetAvoid() []string {
+	if x != nil {
+		return x.Avoid
+	}
+	return nil
+}
+
+type LearnMechanic struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title             string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Summary           string                 `protobuf:"bytes,3,opt,name=summary,proto3" json:"summary,omitempty"`
+	Cues              []string               `protobuf:"bytes,4,rep,name=cues,proto3" json:"cues,omitempty"`
+	FailureModes      []string               `protobuf:"bytes,5,rep,name=failure_modes,json=failureModes,proto3" json:"failure_modes,omitempty"`
+	RelatedSignalKeys []string               `protobuf:"bytes,6,rep,name=related_signal_keys,json=relatedSignalKeys,proto3" json:"related_signal_keys,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *LearnMechanic) Reset() {
+	*x = LearnMechanic{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[60]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnMechanic) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnMechanic) ProtoMessage() {}
+
+func (x *LearnMechanic) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[60]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnMechanic.ProtoReflect.Descriptor instead.
+func (*LearnMechanic) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *LearnMechanic) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnMechanic) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *LearnMechanic) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *LearnMechanic) GetCues() []string {
+	if x != nil {
+		return x.Cues
+	}
+	return nil
+}
+
+func (x *LearnMechanic) GetFailureModes() []string {
+	if x != nil {
+		return x.FailureModes
+	}
+	return nil
+}
+
+func (x *LearnMechanic) GetRelatedSignalKeys() []string {
+	if x != nil {
+		return x.RelatedSignalKeys
+	}
+	return nil
+}
+
+type LearnScenario struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Aliases       []string               `protobuf:"bytes,3,rep,name=aliases,proto3" json:"aliases,omitempty"`
+	ScenarioTypes []string               `protobuf:"bytes,4,rep,name=scenario_types,json=scenarioTypes,proto3" json:"scenario_types,omitempty"`
+	Summary       string                 `protobuf:"bytes,5,opt,name=summary,proto3" json:"summary,omitempty"`
+	WhatItTrains  []string               `protobuf:"bytes,6,rep,name=what_it_trains,json=whatItTrains,proto3" json:"what_it_trains,omitempty"`
+	GoodForFlaws  []string               `protobuf:"bytes,7,rep,name=good_for_flaws,json=goodForFlaws,proto3" json:"good_for_flaws,omitempty"`
+	Cautions      []string               `protobuf:"bytes,8,rep,name=cautions,proto3" json:"cautions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LearnScenario) Reset() {
+	*x = LearnScenario{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnScenario) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnScenario) ProtoMessage() {}
+
+func (x *LearnScenario) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnScenario.ProtoReflect.Descriptor instead.
+func (*LearnScenario) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *LearnScenario) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnScenario) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *LearnScenario) GetAliases() []string {
+	if x != nil {
+		return x.Aliases
+	}
+	return nil
+}
+
+func (x *LearnScenario) GetScenarioTypes() []string {
+	if x != nil {
+		return x.ScenarioTypes
+	}
+	return nil
+}
+
+func (x *LearnScenario) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *LearnScenario) GetWhatItTrains() []string {
+	if x != nil {
+		return x.WhatItTrains
+	}
+	return nil
+}
+
+func (x *LearnScenario) GetGoodForFlaws() []string {
+	if x != nil {
+		return x.GoodForFlaws
+	}
+	return nil
+}
+
+func (x *LearnScenario) GetCautions() []string {
+	if x != nil {
+		return x.Cautions
+	}
+	return nil
+}
+
+type LearnSource struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind           string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Title          string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Author         string                 `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
+	Url            string                 `protobuf:"bytes,5,opt,name=url,proto3" json:"url,omitempty"`
+	PublishedAtIso string                 `protobuf:"bytes,6,opt,name=published_at_iso,json=publishedAtIso,proto3" json:"published_at_iso,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *LearnSource) Reset() {
+	*x = LearnSource{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnSource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnSource) ProtoMessage() {}
+
+func (x *LearnSource) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnSource.ProtoReflect.Descriptor instead.
+func (*LearnSource) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *LearnSource) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnSource) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *LearnSource) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *LearnSource) GetAuthor() string {
+	if x != nil {
+		return x.Author
+	}
+	return ""
+}
+
+func (x *LearnSource) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *LearnSource) GetPublishedAtIso() string {
+	if x != nil {
+		return x.PublishedAtIso
+	}
+	return ""
+}
+
+type LearnEvidence struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceId      string                 `protobuf:"bytes,1,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	Claim         string                 `protobuf:"bytes,2,opt,name=claim,proto3" json:"claim,omitempty"`
+	Excerpt       string                 `protobuf:"bytes,3,opt,name=excerpt,proto3" json:"excerpt,omitempty"`
+	StartSec      float64                `protobuf:"fixed64,4,opt,name=start_sec,json=startSec,proto3" json:"start_sec,omitempty"`
+	EndSec        float64                `protobuf:"fixed64,5,opt,name=end_sec,json=endSec,proto3" json:"end_sec,omitempty"`
+	Confidence    string                 `protobuf:"bytes,6,opt,name=confidence,proto3" json:"confidence,omitempty"`
+	ReviewStatus  string                 `protobuf:"bytes,7,opt,name=review_status,json=reviewStatus,proto3" json:"review_status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LearnEvidence) Reset() {
+	*x = LearnEvidence{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnEvidence) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnEvidence) ProtoMessage() {}
+
+func (x *LearnEvidence) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnEvidence.ProtoReflect.Descriptor instead.
+func (*LearnEvidence) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *LearnEvidence) GetSourceId() string {
+	if x != nil {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (x *LearnEvidence) GetClaim() string {
+	if x != nil {
+		return x.Claim
+	}
+	return ""
+}
+
+func (x *LearnEvidence) GetExcerpt() string {
+	if x != nil {
+		return x.Excerpt
+	}
+	return ""
+}
+
+func (x *LearnEvidence) GetStartSec() float64 {
+	if x != nil {
+		return x.StartSec
+	}
+	return 0
+}
+
+func (x *LearnEvidence) GetEndSec() float64 {
+	if x != nil {
+		return x.EndSec
+	}
+	return 0
+}
+
+func (x *LearnEvidence) GetConfidence() string {
+	if x != nil {
+		return x.Confidence
+	}
+	return ""
+}
+
+func (x *LearnEvidence) GetReviewStatus() string {
+	if x != nil {
+		return x.ReviewStatus
+	}
+	return ""
+}
+
+type LearnDrill struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LearnDrill) Reset() {
+	*x = LearnDrill{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnDrill) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnDrill) ProtoMessage() {}
+
+func (x *LearnDrill) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnDrill.ProtoReflect.Descriptor instead.
+func (*LearnDrill) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *LearnDrill) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *LearnDrill) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *LearnDrill) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type LearnEntry struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Id                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title                string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Summary              string                 `protobuf:"bytes,3,opt,name=summary,proto3" json:"summary,omitempty"`
+	ScenarioTypes        []string               `protobuf:"bytes,4,rep,name=scenario_types,json=scenarioTypes,proto3" json:"scenario_types,omitempty"`
+	ScenarioNames        []string               `protobuf:"bytes,5,rep,name=scenario_names,json=scenarioNames,proto3" json:"scenario_names,omitempty"`
+	SignalKeys           []string               `protobuf:"bytes,6,rep,name=signal_keys,json=signalKeys,proto3" json:"signal_keys,omitempty"`
+	ContextTags          []string               `protobuf:"bytes,7,rep,name=context_tags,json=contextTags,proto3" json:"context_tags,omitempty"`
+	FocusAreas           []string               `protobuf:"bytes,8,rep,name=focus_areas,json=focusAreas,proto3" json:"focus_areas,omitempty"`
+	ChallengePreferences []string               `protobuf:"bytes,9,rep,name=challenge_preferences,json=challengePreferences,proto3" json:"challenge_preferences,omitempty"`
+	TimePreferences      []string               `protobuf:"bytes,10,rep,name=time_preferences,json=timePreferences,proto3" json:"time_preferences,omitempty"`
+	Why                  []string               `protobuf:"bytes,11,rep,name=why,proto3" json:"why,omitempty"`
+	Actions              []string               `protobuf:"bytes,12,rep,name=actions,proto3" json:"actions,omitempty"`
+	Drills               []*LearnDrill          `protobuf:"bytes,13,rep,name=drills,proto3" json:"drills,omitempty"`
+	Avoid                []string               `protobuf:"bytes,14,rep,name=avoid,proto3" json:"avoid,omitempty"`
+	Priority             string                 `protobuf:"bytes,15,opt,name=priority,proto3" json:"priority,omitempty"`
+	Flaw                 *LearnFlaw             `protobuf:"bytes,16,opt,name=flaw,proto3" json:"flaw,omitempty"`
+	Mechanics            []*LearnMechanic       `protobuf:"bytes,17,rep,name=mechanics,proto3" json:"mechanics,omitempty"`
+	Scenarios            []*LearnScenario       `protobuf:"bytes,18,rep,name=scenarios,proto3" json:"scenarios,omitempty"`
+	Evidence             []*LearnEvidence       `protobuf:"bytes,19,rep,name=evidence,proto3" json:"evidence,omitempty"`
+	Sources              []*LearnSource         `protobuf:"bytes,20,rep,name=sources,proto3" json:"sources,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *LearnEntry) Reset() {
+	*x = LearnEntry{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LearnEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LearnEntry) ProtoMessage() {}
+
+func (x *LearnEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LearnEntry.ProtoReflect.Descriptor instead.
+func (*LearnEntry) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *LearnEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LearnEntry) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *LearnEntry) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *LearnEntry) GetScenarioTypes() []string {
+	if x != nil {
+		return x.ScenarioTypes
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetScenarioNames() []string {
+	if x != nil {
+		return x.ScenarioNames
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetSignalKeys() []string {
+	if x != nil {
+		return x.SignalKeys
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetContextTags() []string {
+	if x != nil {
+		return x.ContextTags
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetFocusAreas() []string {
+	if x != nil {
+		return x.FocusAreas
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetChallengePreferences() []string {
+	if x != nil {
+		return x.ChallengePreferences
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetTimePreferences() []string {
+	if x != nil {
+		return x.TimePreferences
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetWhy() []string {
+	if x != nil {
+		return x.Why
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetActions() []string {
+	if x != nil {
+		return x.Actions
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetDrills() []*LearnDrill {
+	if x != nil {
+		return x.Drills
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetAvoid() []string {
+	if x != nil {
+		return x.Avoid
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetPriority() string {
+	if x != nil {
+		return x.Priority
+	}
+	return ""
+}
+
+func (x *LearnEntry) GetFlaw() *LearnFlaw {
+	if x != nil {
+		return x.Flaw
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetMechanics() []*LearnMechanic {
+	if x != nil {
+		return x.Mechanics
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetScenarios() []*LearnScenario {
+	if x != nil {
+		return x.Scenarios
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetEvidence() []*LearnEvidence {
+	if x != nil {
+		return x.Evidence
+	}
+	return nil
+}
+
+func (x *LearnEntry) GetSources() []*LearnSource {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+type GetLearningIndexRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLearningIndexRequest) Reset() {
+	*x = GetLearningIndexRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[66]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningIndexRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningIndexRequest) ProtoMessage() {}
+
+func (x *GetLearningIndexRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[66]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningIndexRequest.ProtoReflect.Descriptor instead.
+func (*GetLearningIndexRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{66}
+}
+
+type GetLearningIndexResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Version           string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	UpdatedAtIso      string                 `protobuf:"bytes,2,opt,name=updated_at_iso,json=updatedAtIso,proto3" json:"updated_at_iso,omitempty"`
+	EntryCount        uint32                 `protobuf:"varint,3,opt,name=entry_count,json=entryCount,proto3" json:"entry_count,omitempty"`
+	SourceCount       uint32                 `protobuf:"varint,4,opt,name=source_count,json=sourceCount,proto3" json:"source_count,omitempty"`
+	SignalKeyCount    uint32                 `protobuf:"varint,5,opt,name=signal_key_count,json=signalKeyCount,proto3" json:"signal_key_count,omitempty"`
+	ScenarioTypeCount uint32                 `protobuf:"varint,6,opt,name=scenario_type_count,json=scenarioTypeCount,proto3" json:"scenario_type_count,omitempty"`
+	ContextTagCount   uint32                 `protobuf:"varint,7,opt,name=context_tag_count,json=contextTagCount,proto3" json:"context_tag_count,omitempty"`
+	FeaturedEntries   []*LearnEntryPreview   `protobuf:"bytes,8,rep,name=featured_entries,json=featuredEntries,proto3" json:"featured_entries,omitempty"`
+	Entries           []*LearnEntryPreview   `protobuf:"bytes,9,rep,name=entries,proto3" json:"entries,omitempty"`
+	TopContextTags    []string               `protobuf:"bytes,10,rep,name=top_context_tags,json=topContextTags,proto3" json:"top_context_tags,omitempty"`
+	TopScenarioTypes  []string               `protobuf:"bytes,11,rep,name=top_scenario_types,json=topScenarioTypes,proto3" json:"top_scenario_types,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetLearningIndexResponse) Reset() {
+	*x = GetLearningIndexResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningIndexResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningIndexResponse) ProtoMessage() {}
+
+func (x *GetLearningIndexResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningIndexResponse.ProtoReflect.Descriptor instead.
+func (*GetLearningIndexResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *GetLearningIndexResponse) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *GetLearningIndexResponse) GetUpdatedAtIso() string {
+	if x != nil {
+		return x.UpdatedAtIso
+	}
+	return ""
+}
+
+func (x *GetLearningIndexResponse) GetEntryCount() uint32 {
+	if x != nil {
+		return x.EntryCount
+	}
+	return 0
+}
+
+func (x *GetLearningIndexResponse) GetSourceCount() uint32 {
+	if x != nil {
+		return x.SourceCount
+	}
+	return 0
+}
+
+func (x *GetLearningIndexResponse) GetSignalKeyCount() uint32 {
+	if x != nil {
+		return x.SignalKeyCount
+	}
+	return 0
+}
+
+func (x *GetLearningIndexResponse) GetScenarioTypeCount() uint32 {
+	if x != nil {
+		return x.ScenarioTypeCount
+	}
+	return 0
+}
+
+func (x *GetLearningIndexResponse) GetContextTagCount() uint32 {
+	if x != nil {
+		return x.ContextTagCount
+	}
+	return 0
+}
+
+func (x *GetLearningIndexResponse) GetFeaturedEntries() []*LearnEntryPreview {
+	if x != nil {
+		return x.FeaturedEntries
+	}
+	return nil
+}
+
+func (x *GetLearningIndexResponse) GetEntries() []*LearnEntryPreview {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *GetLearningIndexResponse) GetTopContextTags() []string {
+	if x != nil {
+		return x.TopContextTags
+	}
+	return nil
+}
+
+func (x *GetLearningIndexResponse) GetTopScenarioTypes() []string {
+	if x != nil {
+		return x.TopScenarioTypes
+	}
+	return nil
+}
+
+type GetLearningEntryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntryId       string                 `protobuf:"bytes,1,opt,name=entry_id,json=entryId,proto3" json:"entry_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLearningEntryRequest) Reset() {
+	*x = GetLearningEntryRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningEntryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningEntryRequest) ProtoMessage() {}
+
+func (x *GetLearningEntryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningEntryRequest.ProtoReflect.Descriptor instead.
+func (*GetLearningEntryRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *GetLearningEntryRequest) GetEntryId() string {
+	if x != nil {
+		return x.EntryId
+	}
+	return ""
+}
+
+type GetLearningEntryResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Version        string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	UpdatedAtIso   string                 `protobuf:"bytes,2,opt,name=updated_at_iso,json=updatedAtIso,proto3" json:"updated_at_iso,omitempty"`
+	Entry          *LearnEntry            `protobuf:"bytes,3,opt,name=entry,proto3" json:"entry,omitempty"`
+	RelatedEntries []*LearnEntryPreview   `protobuf:"bytes,4,rep,name=related_entries,json=relatedEntries,proto3" json:"related_entries,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetLearningEntryResponse) Reset() {
+	*x = GetLearningEntryResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningEntryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningEntryResponse) ProtoMessage() {}
+
+func (x *GetLearningEntryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningEntryResponse.ProtoReflect.Descriptor instead.
+func (*GetLearningEntryResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *GetLearningEntryResponse) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *GetLearningEntryResponse) GetUpdatedAtIso() string {
+	if x != nil {
+		return x.UpdatedAtIso
+	}
+	return ""
+}
+
+func (x *GetLearningEntryResponse) GetEntry() *LearnEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
+func (x *GetLearningEntryResponse) GetRelatedEntries() []*LearnEntryPreview {
+	if x != nil {
+		return x.RelatedEntries
+	}
+	return nil
+}
+
+type GetLearningTopicRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLearningTopicRequest) Reset() {
+	*x = GetLearningTopicRequest{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningTopicRequest) ProtoMessage() {}
+
+func (x *GetLearningTopicRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningTopicRequest.ProtoReflect.Descriptor instead.
+func (*GetLearningTopicRequest) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *GetLearningTopicRequest) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+type GetLearningTopicResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Version         string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	UpdatedAtIso    string                 `protobuf:"bytes,2,opt,name=updated_at_iso,json=updatedAtIso,proto3" json:"updated_at_iso,omitempty"`
+	Topic           string                 `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`
+	Title           string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	EntryCount      uint32                 `protobuf:"varint,6,opt,name=entry_count,json=entryCount,proto3" json:"entry_count,omitempty"`
+	FeaturedEntries []*LearnEntryPreview   `protobuf:"bytes,7,rep,name=featured_entries,json=featuredEntries,proto3" json:"featured_entries,omitempty"`
+	Entries         []*LearnEntryPreview   `protobuf:"bytes,8,rep,name=entries,proto3" json:"entries,omitempty"`
+	RelatedTopics   []string               `protobuf:"bytes,9,rep,name=related_topics,json=relatedTopics,proto3" json:"related_topics,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetLearningTopicResponse) Reset() {
+	*x = GetLearningTopicResponse{}
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningTopicResponse) ProtoMessage() {}
+
+func (x *GetLearningTopicResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_hub_v1_hub_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningTopicResponse.ProtoReflect.Descriptor instead.
+func (*GetLearningTopicResponse) Descriptor() ([]byte, []int) {
+	return file_aimmod_hub_v1_hub_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *GetLearningTopicResponse) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *GetLearningTopicResponse) GetUpdatedAtIso() string {
+	if x != nil {
+		return x.UpdatedAtIso
+	}
+	return ""
+}
+
+func (x *GetLearningTopicResponse) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *GetLearningTopicResponse) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *GetLearningTopicResponse) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *GetLearningTopicResponse) GetEntryCount() uint32 {
+	if x != nil {
+		return x.EntryCount
+	}
+	return 0
+}
+
+func (x *GetLearningTopicResponse) GetFeaturedEntries() []*LearnEntryPreview {
+	if x != nil {
+		return x.FeaturedEntries
+	}
+	return nil
+}
+
+func (x *GetLearningTopicResponse) GetEntries() []*LearnEntryPreview {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *GetLearningTopicResponse) GetRelatedTopics() []string {
+	if x != nil {
+		return x.RelatedTopics
+	}
+	return nil
+}
+
 var File_aimmod_hub_v1_hub_proto protoreflect.FileDescriptor
 
 const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
@@ -5032,7 +6288,130 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\fbenchmark_id\x18\x01 \x01(\rR\vbenchmarkId\x12%\n" +
 	"\x0ebenchmark_name\x18\x02 \x01(\tR\rbenchmarkName\x12,\n" +
 	"\x12benchmark_icon_url\x18\x03 \x01(\tR\x10benchmarkIconUrl\x12B\n" +
-	"\aentries\x18\x04 \x03(\v2(.aimmod.hub.v1.BenchmarkLeaderboardEntryR\aentries2\xa2\r\n" +
+	"\aentries\x18\x04 \x03(\v2(.aimmod.hub.v1.BenchmarkLeaderboardEntryR\aentries\"\xbf\x02\n" +
+	"\x11LearnEntryPreview\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\asummary\x18\x03 \x01(\tR\asummary\x12\x1a\n" +
+	"\bpriority\x18\x04 \x01(\tR\bpriority\x12%\n" +
+	"\x0escenario_types\x18\x05 \x03(\tR\rscenarioTypes\x12!\n" +
+	"\fcontext_tags\x18\x06 \x03(\tR\vcontextTags\x12\x1f\n" +
+	"\vsignal_keys\x18\a \x03(\tR\n" +
+	"signalKeys\x12\x1f\n" +
+	"\vfocus_areas\x18\b \x03(\tR\n" +
+	"focusAreas\x12!\n" +
+	"\fsource_count\x18\t \x01(\rR\vsourceCount\x12\x1f\n" +
+	"\vdrill_count\x18\n" +
+	" \x01(\rR\n" +
+	"drillCount\"\xf1\x01\n" +
+	"\tLearnFlaw\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\asummary\x18\x03 \x01(\tR\asummary\x12\x1f\n" +
+	"\vsignal_keys\x18\x04 \x03(\tR\n" +
+	"signalKeys\x12!\n" +
+	"\fcontext_tags\x18\x05 \x03(\tR\vcontextTags\x12\x1c\n" +
+	"\ttelltales\x18\x06 \x03(\tR\ttelltales\x12,\n" +
+	"\x11contraindications\x18\a \x03(\tR\x11contraindications\x12\x14\n" +
+	"\x05avoid\x18\b \x03(\tR\x05avoid\"\xb8\x01\n" +
+	"\rLearnMechanic\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\asummary\x18\x03 \x01(\tR\asummary\x12\x12\n" +
+	"\x04cues\x18\x04 \x03(\tR\x04cues\x12#\n" +
+	"\rfailure_modes\x18\x05 \x03(\tR\ffailureModes\x12.\n" +
+	"\x13related_signal_keys\x18\x06 \x03(\tR\x11relatedSignalKeys\"\xf6\x01\n" +
+	"\rLearnScenario\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
+	"\aaliases\x18\x03 \x03(\tR\aaliases\x12%\n" +
+	"\x0escenario_types\x18\x04 \x03(\tR\rscenarioTypes\x12\x18\n" +
+	"\asummary\x18\x05 \x01(\tR\asummary\x12$\n" +
+	"\x0ewhat_it_trains\x18\x06 \x03(\tR\fwhatItTrains\x12$\n" +
+	"\x0egood_for_flaws\x18\a \x03(\tR\fgoodForFlaws\x12\x1a\n" +
+	"\bcautions\x18\b \x03(\tR\bcautions\"\x9b\x01\n" +
+	"\vLearnSource\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
+	"\x06author\x18\x04 \x01(\tR\x06author\x12\x10\n" +
+	"\x03url\x18\x05 \x01(\tR\x03url\x12(\n" +
+	"\x10published_at_iso\x18\x06 \x01(\tR\x0epublishedAtIso\"\xd7\x01\n" +
+	"\rLearnEvidence\x12\x1b\n" +
+	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x14\n" +
+	"\x05claim\x18\x02 \x01(\tR\x05claim\x12\x18\n" +
+	"\aexcerpt\x18\x03 \x01(\tR\aexcerpt\x12\x1b\n" +
+	"\tstart_sec\x18\x04 \x01(\x01R\bstartSec\x12\x17\n" +
+	"\aend_sec\x18\x05 \x01(\x01R\x06endSec\x12\x1e\n" +
+	"\n" +
+	"confidence\x18\x06 \x01(\tR\n" +
+	"confidence\x12#\n" +
+	"\rreview_status\x18\a \x01(\tR\freviewStatus\"P\n" +
+	"\n" +
+	"LearnDrill\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x14\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\"\x86\x06\n" +
+	"\n" +
+	"LearnEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\asummary\x18\x03 \x01(\tR\asummary\x12%\n" +
+	"\x0escenario_types\x18\x04 \x03(\tR\rscenarioTypes\x12%\n" +
+	"\x0escenario_names\x18\x05 \x03(\tR\rscenarioNames\x12\x1f\n" +
+	"\vsignal_keys\x18\x06 \x03(\tR\n" +
+	"signalKeys\x12!\n" +
+	"\fcontext_tags\x18\a \x03(\tR\vcontextTags\x12\x1f\n" +
+	"\vfocus_areas\x18\b \x03(\tR\n" +
+	"focusAreas\x123\n" +
+	"\x15challenge_preferences\x18\t \x03(\tR\x14challengePreferences\x12)\n" +
+	"\x10time_preferences\x18\n" +
+	" \x03(\tR\x0ftimePreferences\x12\x10\n" +
+	"\x03why\x18\v \x03(\tR\x03why\x12\x18\n" +
+	"\aactions\x18\f \x03(\tR\aactions\x121\n" +
+	"\x06drills\x18\r \x03(\v2\x19.aimmod.hub.v1.LearnDrillR\x06drills\x12\x14\n" +
+	"\x05avoid\x18\x0e \x03(\tR\x05avoid\x12\x1a\n" +
+	"\bpriority\x18\x0f \x01(\tR\bpriority\x12,\n" +
+	"\x04flaw\x18\x10 \x01(\v2\x18.aimmod.hub.v1.LearnFlawR\x04flaw\x12:\n" +
+	"\tmechanics\x18\x11 \x03(\v2\x1c.aimmod.hub.v1.LearnMechanicR\tmechanics\x12:\n" +
+	"\tscenarios\x18\x12 \x03(\v2\x1c.aimmod.hub.v1.LearnScenarioR\tscenarios\x128\n" +
+	"\bevidence\x18\x13 \x03(\v2\x1c.aimmod.hub.v1.LearnEvidenceR\bevidence\x124\n" +
+	"\asources\x18\x14 \x03(\v2\x1a.aimmod.hub.v1.LearnSourceR\asources\"\x19\n" +
+	"\x17GetLearningIndexRequest\"\x85\x04\n" +
+	"\x18GetLearningIndexResponse\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x12$\n" +
+	"\x0eupdated_at_iso\x18\x02 \x01(\tR\fupdatedAtIso\x12\x1f\n" +
+	"\ventry_count\x18\x03 \x01(\rR\n" +
+	"entryCount\x12!\n" +
+	"\fsource_count\x18\x04 \x01(\rR\vsourceCount\x12(\n" +
+	"\x10signal_key_count\x18\x05 \x01(\rR\x0esignalKeyCount\x12.\n" +
+	"\x13scenario_type_count\x18\x06 \x01(\rR\x11scenarioTypeCount\x12*\n" +
+	"\x11context_tag_count\x18\a \x01(\rR\x0fcontextTagCount\x12K\n" +
+	"\x10featured_entries\x18\b \x03(\v2 .aimmod.hub.v1.LearnEntryPreviewR\x0ffeaturedEntries\x12:\n" +
+	"\aentries\x18\t \x03(\v2 .aimmod.hub.v1.LearnEntryPreviewR\aentries\x12(\n" +
+	"\x10top_context_tags\x18\n" +
+	" \x03(\tR\x0etopContextTags\x12,\n" +
+	"\x12top_scenario_types\x18\v \x03(\tR\x10topScenarioTypes\"4\n" +
+	"\x17GetLearningEntryRequest\x12\x19\n" +
+	"\bentry_id\x18\x01 \x01(\tR\aentryId\"\xd6\x01\n" +
+	"\x18GetLearningEntryResponse\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x12$\n" +
+	"\x0eupdated_at_iso\x18\x02 \x01(\tR\fupdatedAtIso\x12/\n" +
+	"\x05entry\x18\x03 \x01(\v2\x19.aimmod.hub.v1.LearnEntryR\x05entry\x12I\n" +
+	"\x0frelated_entries\x18\x04 \x03(\v2 .aimmod.hub.v1.LearnEntryPreviewR\x0erelatedEntries\"/\n" +
+	"\x17GetLearningTopicRequest\x12\x14\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\"\xf9\x02\n" +
+	"\x18GetLearningTopicResponse\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x12$\n" +
+	"\x0eupdated_at_iso\x18\x02 \x01(\tR\fupdatedAtIso\x12\x14\n" +
+	"\x05topic\x18\x03 \x01(\tR\x05topic\x12\x14\n" +
+	"\x05title\x18\x04 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1f\n" +
+	"\ventry_count\x18\x06 \x01(\rR\n" +
+	"entryCount\x12K\n" +
+	"\x10featured_entries\x18\a \x03(\v2 .aimmod.hub.v1.LearnEntryPreviewR\x0ffeaturedEntries\x12:\n" +
+	"\aentries\x18\b \x03(\v2 .aimmod.hub.v1.LearnEntryPreviewR\aentries\x12%\n" +
+	"\x0erelated_topics\x18\t \x03(\tR\rrelatedTopics2\xd1\x0f\n" +
 	"\n" +
 	"HubService\x12H\n" +
 	"\tGetHealth\x12\x1c.aimmod.hub.v1.HealthRequest\x1a\x1d.aimmod.hub.v1.HealthResponse\x12Z\n" +
@@ -5053,7 +6432,10 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\rGetAimProfile\x12#.aimmod.hub.v1.GetAimProfileRequest\x1a$.aimmod.hub.v1.GetAimProfileResponse\x12f\n" +
 	"\x11GetAimFingerprint\x12'.aimmod.hub.v1.GetAimFingerprintRequest\x1a(.aimmod.hub.v1.GetAimFingerprintResponse\x12]\n" +
 	"\x0eListBenchmarks\x12$.aimmod.hub.v1.ListBenchmarksRequest\x1a%.aimmod.hub.v1.ListBenchmarksResponse\x12x\n" +
-	"\x17GetBenchmarkLeaderboard\x12-.aimmod.hub.v1.GetBenchmarkLeaderboardRequest\x1a..aimmod.hub.v1.GetBenchmarkLeaderboardResponseB>Z<github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1;hubv1b\x06proto3"
+	"\x17GetBenchmarkLeaderboard\x12-.aimmod.hub.v1.GetBenchmarkLeaderboardRequest\x1a..aimmod.hub.v1.GetBenchmarkLeaderboardResponse\x12c\n" +
+	"\x10GetLearningIndex\x12&.aimmod.hub.v1.GetLearningIndexRequest\x1a'.aimmod.hub.v1.GetLearningIndexResponse\x12c\n" +
+	"\x10GetLearningEntry\x12&.aimmod.hub.v1.GetLearningEntryRequest\x1a'.aimmod.hub.v1.GetLearningEntryResponse\x12c\n" +
+	"\x10GetLearningTopic\x12&.aimmod.hub.v1.GetLearningTopicRequest\x1a'.aimmod.hub.v1.GetLearningTopicResponseB>Z<github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1;hubv1b\x06proto3"
 
 var (
 	file_aimmod_hub_v1_hub_proto_rawDescOnce sync.Once
@@ -5067,7 +6449,7 @@ func file_aimmod_hub_v1_hub_proto_rawDescGZIP() []byte {
 	return file_aimmod_hub_v1_hub_proto_rawDescData
 }
 
-var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
+var file_aimmod_hub_v1_hub_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
 var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*HealthRequest)(nil),                    // 0: aimmod.hub.v1.HealthRequest
 	(*HealthResponse)(nil),                   // 1: aimmod.hub.v1.HealthResponse
@@ -5127,23 +6509,37 @@ var file_aimmod_hub_v1_hub_proto_goTypes = []any{
 	(*GetBenchmarkLeaderboardRequest)(nil),   // 55: aimmod.hub.v1.GetBenchmarkLeaderboardRequest
 	(*BenchmarkLeaderboardEntry)(nil),        // 56: aimmod.hub.v1.BenchmarkLeaderboardEntry
 	(*GetBenchmarkLeaderboardResponse)(nil),  // 57: aimmod.hub.v1.GetBenchmarkLeaderboardResponse
-	nil,                                      // 58: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	nil,                                      // 59: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	nil,                                      // 60: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
-	nil,                                      // 61: aimmod.hub.v1.GetRunResponse.SummaryEntry
-	nil,                                      // 62: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	(*LearnEntryPreview)(nil),                // 58: aimmod.hub.v1.LearnEntryPreview
+	(*LearnFlaw)(nil),                        // 59: aimmod.hub.v1.LearnFlaw
+	(*LearnMechanic)(nil),                    // 60: aimmod.hub.v1.LearnMechanic
+	(*LearnScenario)(nil),                    // 61: aimmod.hub.v1.LearnScenario
+	(*LearnSource)(nil),                      // 62: aimmod.hub.v1.LearnSource
+	(*LearnEvidence)(nil),                    // 63: aimmod.hub.v1.LearnEvidence
+	(*LearnDrill)(nil),                       // 64: aimmod.hub.v1.LearnDrill
+	(*LearnEntry)(nil),                       // 65: aimmod.hub.v1.LearnEntry
+	(*GetLearningIndexRequest)(nil),          // 66: aimmod.hub.v1.GetLearningIndexRequest
+	(*GetLearningIndexResponse)(nil),         // 67: aimmod.hub.v1.GetLearningIndexResponse
+	(*GetLearningEntryRequest)(nil),          // 68: aimmod.hub.v1.GetLearningEntryRequest
+	(*GetLearningEntryResponse)(nil),         // 69: aimmod.hub.v1.GetLearningEntryResponse
+	(*GetLearningTopicRequest)(nil),          // 70: aimmod.hub.v1.GetLearningTopicRequest
+	(*GetLearningTopicResponse)(nil),         // 71: aimmod.hub.v1.GetLearningTopicResponse
+	nil,                                      // 72: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	nil,                                      // 73: aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	nil,                                      // 74: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	nil,                                      // 75: aimmod.hub.v1.GetRunResponse.SummaryEntry
+	nil,                                      // 76: aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 }
 var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
-	58, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
-	59, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
-	60, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
+	72, // 0: aimmod.hub.v1.ContextWindow.feature_summary:type_name -> aimmod.hub.v1.ContextWindow.FeatureSummaryEntry
+	73, // 1: aimmod.hub.v1.IngestSessionRequest.summary:type_name -> aimmod.hub.v1.IngestSessionRequest.SummaryEntry
+	74, // 2: aimmod.hub.v1.IngestSessionRequest.feature_set:type_name -> aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry
 	3,  // 3: aimmod.hub.v1.IngestSessionRequest.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 4: aimmod.hub.v1.IngestSessionRequest.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 5: aimmod.hub.v1.GetOverviewResponse.recent_runs:type_name -> aimmod.hub.v1.RunPreview
 	11, // 6: aimmod.hub.v1.GetOverviewResponse.top_scenarios:type_name -> aimmod.hub.v1.TopScenario
 	12, // 7: aimmod.hub.v1.GetOverviewResponse.active_profiles:type_name -> aimmod.hub.v1.CommunityProfilePreview
-	61, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
-	62, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
+	75, // 8: aimmod.hub.v1.GetRunResponse.summary:type_name -> aimmod.hub.v1.GetRunResponse.SummaryEntry
+	76, // 9: aimmod.hub.v1.GetRunResponse.feature_set:type_name -> aimmod.hub.v1.GetRunResponse.FeatureSetEntry
 	3,  // 10: aimmod.hub.v1.GetRunResponse.timeline_seconds:type_name -> aimmod.hub.v1.TimelineSecond
 	4,  // 11: aimmod.hub.v1.GetRunResponse.context_windows:type_name -> aimmod.hub.v1.ContextWindow
 	10, // 12: aimmod.hub.v1.GetRunResponse.scenario_runs:type_name -> aimmod.hub.v1.RunPreview
@@ -5178,52 +6574,70 @@ var file_aimmod_hub_v1_hub_proto_depIdxs = []int32{
 	49, // 41: aimmod.hub.v1.GetAimFingerprintResponse.overall:type_name -> aimmod.hub.v1.AimFingerprint
 	53, // 42: aimmod.hub.v1.ListBenchmarksResponse.benchmarks:type_name -> aimmod.hub.v1.BenchmarkListItem
 	56, // 43: aimmod.hub.v1.GetBenchmarkLeaderboardResponse.entries:type_name -> aimmod.hub.v1.BenchmarkLeaderboardEntry
-	2,  // 44: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 45: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 46: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 47: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	2,  // 48: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
-	0,  // 49: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
-	6,  // 50: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
-	8,  // 51: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
-	13, // 52: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
-	15, // 53: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
-	17, // 54: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
-	19, // 55: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
-	21, // 56: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
-	26, // 57: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
-	28, // 58: aimmod.hub.v1.HubService.GetReplayMedia:input_type -> aimmod.hub.v1.GetReplayMediaRequest
-	31, // 59: aimmod.hub.v1.HubService.GetMousePath:input_type -> aimmod.hub.v1.GetMousePathRequest
-	33, // 60: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
-	35, // 61: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
-	43, // 62: aimmod.hub.v1.HubService.GetBenchmarkPage:input_type -> aimmod.hub.v1.GetBenchmarkPageRequest
-	46, // 63: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
-	50, // 64: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
-	52, // 65: aimmod.hub.v1.HubService.ListBenchmarks:input_type -> aimmod.hub.v1.ListBenchmarksRequest
-	55, // 66: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:input_type -> aimmod.hub.v1.GetBenchmarkLeaderboardRequest
-	1,  // 67: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
-	7,  // 68: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
-	9,  // 69: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
-	14, // 70: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
-	16, // 71: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
-	18, // 72: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
-	20, // 73: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
-	25, // 74: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
-	27, // 75: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
-	29, // 76: aimmod.hub.v1.HubService.GetReplayMedia:output_type -> aimmod.hub.v1.GetReplayMediaResponse
-	32, // 77: aimmod.hub.v1.HubService.GetMousePath:output_type -> aimmod.hub.v1.GetMousePathResponse
-	34, // 78: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
-	36, // 79: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
-	44, // 80: aimmod.hub.v1.HubService.GetBenchmarkPage:output_type -> aimmod.hub.v1.GetBenchmarkPageResponse
-	47, // 81: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
-	51, // 82: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
-	54, // 83: aimmod.hub.v1.HubService.ListBenchmarks:output_type -> aimmod.hub.v1.ListBenchmarksResponse
-	57, // 84: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:output_type -> aimmod.hub.v1.GetBenchmarkLeaderboardResponse
-	67, // [67:85] is the sub-list for method output_type
-	49, // [49:67] is the sub-list for method input_type
-	49, // [49:49] is the sub-list for extension type_name
-	49, // [49:49] is the sub-list for extension extendee
-	0,  // [0:49] is the sub-list for field type_name
+	64, // 44: aimmod.hub.v1.LearnEntry.drills:type_name -> aimmod.hub.v1.LearnDrill
+	59, // 45: aimmod.hub.v1.LearnEntry.flaw:type_name -> aimmod.hub.v1.LearnFlaw
+	60, // 46: aimmod.hub.v1.LearnEntry.mechanics:type_name -> aimmod.hub.v1.LearnMechanic
+	61, // 47: aimmod.hub.v1.LearnEntry.scenarios:type_name -> aimmod.hub.v1.LearnScenario
+	63, // 48: aimmod.hub.v1.LearnEntry.evidence:type_name -> aimmod.hub.v1.LearnEvidence
+	62, // 49: aimmod.hub.v1.LearnEntry.sources:type_name -> aimmod.hub.v1.LearnSource
+	58, // 50: aimmod.hub.v1.GetLearningIndexResponse.featured_entries:type_name -> aimmod.hub.v1.LearnEntryPreview
+	58, // 51: aimmod.hub.v1.GetLearningIndexResponse.entries:type_name -> aimmod.hub.v1.LearnEntryPreview
+	65, // 52: aimmod.hub.v1.GetLearningEntryResponse.entry:type_name -> aimmod.hub.v1.LearnEntry
+	58, // 53: aimmod.hub.v1.GetLearningEntryResponse.related_entries:type_name -> aimmod.hub.v1.LearnEntryPreview
+	58, // 54: aimmod.hub.v1.GetLearningTopicResponse.featured_entries:type_name -> aimmod.hub.v1.LearnEntryPreview
+	58, // 55: aimmod.hub.v1.GetLearningTopicResponse.entries:type_name -> aimmod.hub.v1.LearnEntryPreview
+	2,  // 56: aimmod.hub.v1.ContextWindow.FeatureSummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 57: aimmod.hub.v1.IngestSessionRequest.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 58: aimmod.hub.v1.IngestSessionRequest.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 59: aimmod.hub.v1.GetRunResponse.SummaryEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	2,  // 60: aimmod.hub.v1.GetRunResponse.FeatureSetEntry.value:type_name -> aimmod.hub.v1.SessionSummaryValue
+	0,  // 61: aimmod.hub.v1.HubService.GetHealth:input_type -> aimmod.hub.v1.HealthRequest
+	6,  // 62: aimmod.hub.v1.HubService.IngestSession:input_type -> aimmod.hub.v1.IngestSessionRequest
+	8,  // 63: aimmod.hub.v1.HubService.LinkDiscordAccount:input_type -> aimmod.hub.v1.LinkDiscordAccountRequest
+	13, // 64: aimmod.hub.v1.HubService.GetOverview:input_type -> aimmod.hub.v1.GetOverviewRequest
+	15, // 65: aimmod.hub.v1.HubService.GetRun:input_type -> aimmod.hub.v1.GetRunRequest
+	17, // 66: aimmod.hub.v1.HubService.GetScenarioPage:input_type -> aimmod.hub.v1.GetScenarioPageRequest
+	19, // 67: aimmod.hub.v1.HubService.GetProfile:input_type -> aimmod.hub.v1.GetProfileRequest
+	21, // 68: aimmod.hub.v1.HubService.Search:input_type -> aimmod.hub.v1.SearchRequest
+	26, // 69: aimmod.hub.v1.HubService.ListReplays:input_type -> aimmod.hub.v1.ListReplaysRequest
+	28, // 70: aimmod.hub.v1.HubService.GetReplayMedia:input_type -> aimmod.hub.v1.GetReplayMediaRequest
+	31, // 71: aimmod.hub.v1.HubService.GetMousePath:input_type -> aimmod.hub.v1.GetMousePathRequest
+	33, // 72: aimmod.hub.v1.HubService.GetLeaderboard:input_type -> aimmod.hub.v1.GetLeaderboardRequest
+	35, // 73: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:input_type -> aimmod.hub.v1.GetPlayerScenarioHistoryRequest
+	43, // 74: aimmod.hub.v1.HubService.GetBenchmarkPage:input_type -> aimmod.hub.v1.GetBenchmarkPageRequest
+	46, // 75: aimmod.hub.v1.HubService.GetAimProfile:input_type -> aimmod.hub.v1.GetAimProfileRequest
+	50, // 76: aimmod.hub.v1.HubService.GetAimFingerprint:input_type -> aimmod.hub.v1.GetAimFingerprintRequest
+	52, // 77: aimmod.hub.v1.HubService.ListBenchmarks:input_type -> aimmod.hub.v1.ListBenchmarksRequest
+	55, // 78: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:input_type -> aimmod.hub.v1.GetBenchmarkLeaderboardRequest
+	66, // 79: aimmod.hub.v1.HubService.GetLearningIndex:input_type -> aimmod.hub.v1.GetLearningIndexRequest
+	68, // 80: aimmod.hub.v1.HubService.GetLearningEntry:input_type -> aimmod.hub.v1.GetLearningEntryRequest
+	70, // 81: aimmod.hub.v1.HubService.GetLearningTopic:input_type -> aimmod.hub.v1.GetLearningTopicRequest
+	1,  // 82: aimmod.hub.v1.HubService.GetHealth:output_type -> aimmod.hub.v1.HealthResponse
+	7,  // 83: aimmod.hub.v1.HubService.IngestSession:output_type -> aimmod.hub.v1.IngestSessionResponse
+	9,  // 84: aimmod.hub.v1.HubService.LinkDiscordAccount:output_type -> aimmod.hub.v1.LinkDiscordAccountResponse
+	14, // 85: aimmod.hub.v1.HubService.GetOverview:output_type -> aimmod.hub.v1.GetOverviewResponse
+	16, // 86: aimmod.hub.v1.HubService.GetRun:output_type -> aimmod.hub.v1.GetRunResponse
+	18, // 87: aimmod.hub.v1.HubService.GetScenarioPage:output_type -> aimmod.hub.v1.GetScenarioPageResponse
+	20, // 88: aimmod.hub.v1.HubService.GetProfile:output_type -> aimmod.hub.v1.GetProfileResponse
+	25, // 89: aimmod.hub.v1.HubService.Search:output_type -> aimmod.hub.v1.SearchResponse
+	27, // 90: aimmod.hub.v1.HubService.ListReplays:output_type -> aimmod.hub.v1.ListReplaysResponse
+	29, // 91: aimmod.hub.v1.HubService.GetReplayMedia:output_type -> aimmod.hub.v1.GetReplayMediaResponse
+	32, // 92: aimmod.hub.v1.HubService.GetMousePath:output_type -> aimmod.hub.v1.GetMousePathResponse
+	34, // 93: aimmod.hub.v1.HubService.GetLeaderboard:output_type -> aimmod.hub.v1.GetLeaderboardResponse
+	36, // 94: aimmod.hub.v1.HubService.GetPlayerScenarioHistory:output_type -> aimmod.hub.v1.GetPlayerScenarioHistoryResponse
+	44, // 95: aimmod.hub.v1.HubService.GetBenchmarkPage:output_type -> aimmod.hub.v1.GetBenchmarkPageResponse
+	47, // 96: aimmod.hub.v1.HubService.GetAimProfile:output_type -> aimmod.hub.v1.GetAimProfileResponse
+	51, // 97: aimmod.hub.v1.HubService.GetAimFingerprint:output_type -> aimmod.hub.v1.GetAimFingerprintResponse
+	54, // 98: aimmod.hub.v1.HubService.ListBenchmarks:output_type -> aimmod.hub.v1.ListBenchmarksResponse
+	57, // 99: aimmod.hub.v1.HubService.GetBenchmarkLeaderboard:output_type -> aimmod.hub.v1.GetBenchmarkLeaderboardResponse
+	67, // 100: aimmod.hub.v1.HubService.GetLearningIndex:output_type -> aimmod.hub.v1.GetLearningIndexResponse
+	69, // 101: aimmod.hub.v1.HubService.GetLearningEntry:output_type -> aimmod.hub.v1.GetLearningEntryResponse
+	71, // 102: aimmod.hub.v1.HubService.GetLearningTopic:output_type -> aimmod.hub.v1.GetLearningTopicResponse
+	82, // [82:103] is the sub-list for method output_type
+	61, // [61:82] is the sub-list for method input_type
+	61, // [61:61] is the sub-list for extension type_name
+	61, // [61:61] is the sub-list for extension extendee
+	0,  // [0:61] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_hub_v1_hub_proto_init() }
@@ -5242,7 +6656,7 @@ func file_aimmod_hub_v1_hub_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aimmod_hub_v1_hub_proto_rawDesc), len(file_aimmod_hub_v1_hub_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   63,
+			NumMessages:   77,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

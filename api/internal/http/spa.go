@@ -9,9 +9,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 
+	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
 
@@ -19,6 +21,8 @@ var (
 	reProfile  = regexp.MustCompile(`^/profiles/([^/]+)`)
 	reScenario = regexp.MustCompile(`^/scenarios/([^/]+)$`)
 	reRun      = regexp.MustCompile(`^/runs/([^/]+)$`)
+	reLearn    = regexp.MustCompile(`^/learn/([^/]+)$`)
+	reLearnTopic = regexp.MustCompile(`^/learn/topics/([^/]+)$`)
 )
 
 type pageMeta struct {
@@ -104,6 +108,42 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 		}
 	}
 
+	if m := reLearn.FindStringSubmatch(path); m != nil {
+		entry, err := coaching.GetLearnEntry(m[1])
+		if err != nil {
+			return pageMeta{
+				Title:       "Aim Training Guide · AimMod Hub",
+				Description: fallback.Description,
+				OGType:      "article",
+				Canonical:   canonical,
+			}
+		}
+		return pageMeta{
+			Title:       fmt.Sprintf("%s · AimMod Learn", entry.Entry.Title),
+			Description: entry.Entry.Summary,
+			OGType:      "article",
+			Canonical:   canonical,
+		}
+	}
+
+	if m := reLearnTopic.FindStringSubmatch(path); m != nil {
+		topic, err := coaching.GetLearnTopic(m[1])
+		if err != nil {
+			return pageMeta{
+				Title:       "Aim Training Topic · AimMod Hub",
+				Description: fallback.Description,
+				OGType:      "website",
+				Canonical:   canonical,
+			}
+		}
+		return pageMeta{
+			Title:       fmt.Sprintf("%s Aim Training Guides · AimMod Learn", topic.Title),
+			Description: topic.Description,
+			OGType:      "website",
+			Canonical:   canonical,
+		}
+	}
+
 	switch path {
 	case "/app", "/app/":
 		return pageMeta{
@@ -133,6 +173,13 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 			OGType:      "website",
 			Canonical:   canonical,
 		}
+	case "/learn", "/learn/":
+		return pageMeta{
+			Title:       "Aim Training Learning Pages · AimMod Hub",
+			Description: "Browse AimMod's coaching knowledge as learning pages covering aim flaws, mechanics, scenarios, sensitivity, and improvement methods.",
+			OGType:      "website",
+			Canonical:   canonical,
+		}
 	}
 
 	return fallback
@@ -153,7 +200,25 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 
 		// Serve static assets that exist on disk directly.
 		if p != "" {
-			_, err := fs.Stat(fsys, p)
+			indexPath := path.Join(p, "index.html")
+			_, err := fs.Stat(fsys, indexPath)
+			if err == nil {
+				rawRouteHTML, readErr := fs.ReadFile(fsys, indexPath)
+				if readErr != nil {
+					http.Error(w, "internal error", http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.Header().Set("Cache-Control", "no-store")
+				_, _ = w.Write(rawRouteHTML)
+				return
+			}
+			if !errors.Is(err, fs.ErrNotExist) {
+				http.Error(w, "internal error", http.StatusInternalServerError)
+				return
+			}
+
+			_, err = fs.Stat(fsys, p)
 			if err == nil {
 				fileServer.ServeHTTP(w, r)
 				return

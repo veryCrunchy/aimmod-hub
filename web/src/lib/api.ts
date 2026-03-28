@@ -3,6 +3,12 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 import { API_BASE_URL } from "./config";
 import {
   GetBenchmarkLeaderboardRequest,
+  GetLearningEntryRequest,
+  GetLearningEntryResponse as ProtoGetLearningEntryResponse,
+  GetLearningIndexRequest,
+  GetLearningIndexResponse as ProtoGetLearningIndexResponse,
+  GetLearningTopicRequest,
+  GetLearningTopicResponse as ProtoGetLearningTopicResponse,
   GetBenchmarkPageRequest,
   GetMousePathRequest,
   GetOverviewRequest,
@@ -14,6 +20,13 @@ import {
   ListReplaysRequest,
   SearchRequest,
   SessionSummaryValue,
+  LearnEntry as ProtoLearnEntry,
+  LearnEntryPreview as ProtoLearnEntryPreview,
+  LearnEvidence as ProtoLearnEvidence,
+  LearnFlaw as ProtoLearnFlaw,
+  LearnMechanic as ProtoLearnMechanic,
+  LearnScenario as ProtoLearnScenario,
+  LearnSource as ProtoLearnSource,
 } from "../gen/aimmod/hub/v1/hub_pb";
 import { HubService } from "../gen/aimmod/hub/v1/hub_connect";
 
@@ -22,6 +35,25 @@ const transport = createConnectTransport({
 });
 
 export const hubClient = createClient(HubService, transport);
+
+async function fetchRestJSON<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const data = await response.json() as { error?: string };
+      detail = data.error ? ` ${data.error}` : "";
+    } catch {
+      // ignore JSON parse failures here; a status line is still useful.
+    }
+    throw new Error(`Request failed (${response.status}).${detail}`.trim());
+  }
+  return response.json() as Promise<T>;
+}
 
 export function summaryValueToString(value?: SessionSummaryValue) {
   if (!value?.kind) return null;
@@ -218,6 +250,29 @@ export type ReplayMediaMeta = {
   byteSize?: number;
   mediaUrl?: string;
 };
+
+export type LearnEntryPreview = ProtoLearnEntryPreview;
+export type LearnFlaw = ProtoLearnFlaw;
+export type LearnMechanic = ProtoLearnMechanic;
+export type LearnScenario = ProtoLearnScenario;
+export type LearnEvidence = ProtoLearnEvidence;
+export type LearnSource = ProtoLearnSource;
+export type LearnEntry = ProtoLearnEntry;
+export type LearnIndexResponse = ProtoGetLearningIndexResponse;
+export type LearnEntryResponse = ProtoGetLearningEntryResponse;
+export type LearnTopicResponse = ProtoGetLearningTopicResponse;
+
+export async function fetchLearningIndex(): Promise<LearnIndexResponse> {
+  return hubClient.getLearningIndex(new GetLearningIndexRequest());
+}
+
+export async function fetchLearningEntry(id: string): Promise<LearnEntryResponse> {
+  return hubClient.getLearningEntry(new GetLearningEntryRequest({ entryId: id }));
+}
+
+export async function fetchLearningTopic(topic: string): Promise<LearnTopicResponse> {
+  return hubClient.getLearningTopic(new GetLearningTopicRequest({ topic }));
+}
 
 export type MousePathPoint = {
   x: number;

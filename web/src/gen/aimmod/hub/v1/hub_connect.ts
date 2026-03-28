@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetBenchmarkLeaderboardRequest, GetBenchmarkLeaderboardResponse, GetBenchmarkPageRequest, GetBenchmarkPageResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListBenchmarksRequest, ListBenchmarksResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
+import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetBenchmarkLeaderboardRequest, GetBenchmarkLeaderboardResponse, GetBenchmarkPageRequest, GetBenchmarkPageResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetLearningEntryRequest, GetLearningEntryResponse, GetLearningIndexRequest, GetLearningIndexResponse, GetLearningTopicRequest, GetLearningTopicResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListBenchmarksRequest, ListBenchmarksResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -172,6 +172,33 @@ export const HubService = {
       name: "GetBenchmarkLeaderboard",
       I: GetBenchmarkLeaderboardRequest,
       O: GetBenchmarkLeaderboardResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetLearningIndex
+     */
+    getLearningIndex: {
+      name: "GetLearningIndex",
+      I: GetLearningIndexRequest,
+      O: GetLearningIndexResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetLearningEntry
+     */
+    getLearningEntry: {
+      name: "GetLearningEntry",
+      I: GetLearningEntryRequest,
+      O: GetLearningEntryResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetLearningTopic
+     */
+    getLearningTopic: {
+      name: "GetLearningTopic",
+      I: GetLearningTopicRequest,
+      O: GetLearningTopicResponse,
       kind: MethodKind.Unary,
     },
   }

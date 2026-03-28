@@ -481,6 +481,141 @@ message GetBenchmarkLeaderboardResponse {
   repeated BenchmarkLeaderboardEntry entries = 4;
 }
 
+message LearnEntryPreview {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  string priority = 4;
+  repeated string scenario_types = 5;
+  repeated string context_tags = 6;
+  repeated string signal_keys = 7;
+  repeated string focus_areas = 8;
+  uint32 source_count = 9;
+  uint32 drill_count = 10;
+}
+
+message LearnFlaw {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  repeated string signal_keys = 4;
+  repeated string context_tags = 5;
+  repeated string telltales = 6;
+  repeated string contraindications = 7;
+  repeated string avoid = 8;
+}
+
+message LearnMechanic {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  repeated string cues = 4;
+  repeated string failure_modes = 5;
+  repeated string related_signal_keys = 6;
+}
+
+message LearnScenario {
+  string id = 1;
+  string name = 2;
+  repeated string aliases = 3;
+  repeated string scenario_types = 4;
+  string summary = 5;
+  repeated string what_it_trains = 6;
+  repeated string good_for_flaws = 7;
+  repeated string cautions = 8;
+}
+
+message LearnSource {
+  string id = 1;
+  string kind = 2;
+  string title = 3;
+  string author = 4;
+  string url = 5;
+  string published_at_iso = 6;
+}
+
+message LearnEvidence {
+  string source_id = 1;
+  string claim = 2;
+  string excerpt = 3;
+  double start_sec = 4;
+  double end_sec = 5;
+  string confidence = 6;
+  string review_status = 7;
+}
+
+message LearnDrill {
+  string label = 1;
+  string query = 2;
+  string reason = 3;
+}
+
+message LearnEntry {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  repeated string scenario_types = 4;
+  repeated string scenario_names = 5;
+  repeated string signal_keys = 6;
+  repeated string context_tags = 7;
+  repeated string focus_areas = 8;
+  repeated string challenge_preferences = 9;
+  repeated string time_preferences = 10;
+  repeated string why = 11;
+  repeated string actions = 12;
+  repeated LearnDrill drills = 13;
+  repeated string avoid = 14;
+  string priority = 15;
+  LearnFlaw flaw = 16;
+  repeated LearnMechanic mechanics = 17;
+  repeated LearnScenario scenarios = 18;
+  repeated LearnEvidence evidence = 19;
+  repeated LearnSource sources = 20;
+}
+
+message GetLearningIndexRequest {}
+
+message GetLearningIndexResponse {
+  string version = 1;
+  string updated_at_iso = 2;
+  uint32 entry_count = 3;
+  uint32 source_count = 4;
+  uint32 signal_key_count = 5;
+  uint32 scenario_type_count = 6;
+  uint32 context_tag_count = 7;
+  repeated LearnEntryPreview featured_entries = 8;
+  repeated LearnEntryPreview entries = 9;
+  repeated string top_context_tags = 10;
+  repeated string top_scenario_types = 11;
+}
+
+message GetLearningEntryRequest {
+  string entry_id = 1;
+}
+
+message GetLearningEntryResponse {
+  string version = 1;
+  string updated_at_iso = 2;
+  LearnEntry entry = 3;
+  repeated LearnEntryPreview related_entries = 4;
+}
+
+message GetLearningTopicRequest {
+  string topic = 1;
+}
+
+message GetLearningTopicResponse {
+  string version = 1;
+  string updated_at_iso = 2;
+  string topic = 3;
+  string title = 4;
+  string description = 5;
+  uint32 entry_count = 6;
+  repeated LearnEntryPreview featured_entries = 7;
+  repeated LearnEntryPreview entries = 8;
+  repeated string related_topics = 9;
+}
+
 service HubService {
   rpc GetHealth(HealthRequest) returns (HealthResponse);
   rpc IngestSession(IngestSessionRequest) returns (IngestSessionResponse);
@@ -500,4 +635,7 @@ service HubService {
   rpc GetAimFingerprint(GetAimFingerprintRequest) returns (GetAimFingerprintResponse);
   rpc ListBenchmarks(ListBenchmarksRequest) returns (ListBenchmarksResponse);
   rpc GetBenchmarkLeaderboard(GetBenchmarkLeaderboardRequest) returns (GetBenchmarkLeaderboardResponse);
+  rpc GetLearningIndex(GetLearningIndexRequest) returns (GetLearningIndexResponse);
+  rpc GetLearningEntry(GetLearningEntryRequest) returns (GetLearningEntryResponse);
+  rpc GetLearningTopic(GetLearningTopicRequest) returns (GetLearningTopicResponse);
 }

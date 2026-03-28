@@ -1,0 +1,79 @@
+package httpserver
+
+import (
+	"encoding/xml"
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
+)
+
+type sitemapURLSet struct {
+	XMLName xml.Name     `xml:"urlset"`
+	Xmlns   string       `xml:"xmlns,attr"`
+	URLs    []sitemapURL `xml:"url"`
+}
+
+type sitemapURL struct {
+	Loc     string `xml:"loc"`
+	LastMod string `xml:"lastmod,omitempty"`
+}
+
+func newRobotsHandler(origin string) http.Handler {
+	origin = strings.TrimRight(strings.TrimSpace(origin), "/")
+	if origin == "" {
+		origin = "https://aimmod.app"
+	}
+	body := fmt.Sprintf("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n", origin)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("Cache-Control", "public, max-age=3600")
+		_, _ = w.Write([]byte(body))
+	})
+}
+
+func newSitemapHandler(origin string) http.Handler {
+	origin = strings.TrimRight(strings.TrimSpace(origin), "/")
+	if origin == "" {
+		origin = "https://aimmod.app"
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		index, err := coaching.GetLearnIndex()
+		if err != nil {
+			http.Error(w, "could not build sitemap", http.StatusInternalServerError)
+			return
+		}
+		topics, err := coaching.GetLearnTopics()
+		if err != nil {
+			http.Error(w, "could not build sitemap", http.StatusInternalServerError)
+			return
+		}
+
+		urls := []sitemapURL{
+			{Loc: origin + "/", LastMod: index.UpdatedAtISO},
+			{Loc: origin + "/app", LastMod: index.UpdatedAtISO},
+			{Loc: origin + "/community", LastMod: index.UpdatedAtISO},
+			{Loc: origin + "/learn", LastMod: index.UpdatedAtISO},
+		}
+		for _, entry := range index.Entries {
+			urls = append(urls, sitemapURL{
+				Loc:     origin + "/learn/" + entry.ID,
+				LastMod: index.UpdatedAtISO,
+			})
+		}
+		for _, topic := range topics {
+			urls = append(urls, sitemapURL{
+				Loc:     origin + "/learn/topics/" + topic,
+				LastMod: index.UpdatedAtISO,
+			})
+		}
+
+		w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+		w.Header().Set("Cache-Control", "public, max-age=3600")
+		_ = xml.NewEncoder(w).Encode(sitemapURLSet{
+			Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
+			URLs:  urls,
+		})
+	})
+}

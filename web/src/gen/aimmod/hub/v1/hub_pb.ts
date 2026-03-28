@@ -3636,3 +3636,1001 @@ export class GetBenchmarkLeaderboardResponse extends Message<GetBenchmarkLeaderb
   }
 }
 
+/**
+ * @generated from message aimmod.hub.v1.LearnEntryPreview
+ */
+export class LearnEntryPreview extends Message<LearnEntryPreview> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string summary = 3;
+   */
+  summary = "";
+
+  /**
+   * @generated from field: string priority = 4;
+   */
+  priority = "";
+
+  /**
+   * @generated from field: repeated string scenario_types = 5;
+   */
+  scenarioTypes: string[] = [];
+
+  /**
+   * @generated from field: repeated string context_tags = 6;
+   */
+  contextTags: string[] = [];
+
+  /**
+   * @generated from field: repeated string signal_keys = 7;
+   */
+  signalKeys: string[] = [];
+
+  /**
+   * @generated from field: repeated string focus_areas = 8;
+   */
+  focusAreas: string[] = [];
+
+  /**
+   * @generated from field: uint32 source_count = 9;
+   */
+  sourceCount = 0;
+
+  /**
+   * @generated from field: uint32 drill_count = 10;
+   */
+  drillCount = 0;
+
+  constructor(data?: PartialMessage<LearnEntryPreview>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnEntryPreview";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "priority", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "scenario_types", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "context_tags", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "signal_keys", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 8, name: "focus_areas", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 9, name: "source_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 10, name: "drill_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnEntryPreview {
+    return new LearnEntryPreview().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnEntryPreview {
+    return new LearnEntryPreview().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnEntryPreview {
+    return new LearnEntryPreview().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnEntryPreview | PlainMessage<LearnEntryPreview> | undefined, b: LearnEntryPreview | PlainMessage<LearnEntryPreview> | undefined): boolean {
+    return proto3.util.equals(LearnEntryPreview, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnFlaw
+ */
+export class LearnFlaw extends Message<LearnFlaw> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string summary = 3;
+   */
+  summary = "";
+
+  /**
+   * @generated from field: repeated string signal_keys = 4;
+   */
+  signalKeys: string[] = [];
+
+  /**
+   * @generated from field: repeated string context_tags = 5;
+   */
+  contextTags: string[] = [];
+
+  /**
+   * @generated from field: repeated string telltales = 6;
+   */
+  telltales: string[] = [];
+
+  /**
+   * @generated from field: repeated string contraindications = 7;
+   */
+  contraindications: string[] = [];
+
+  /**
+   * @generated from field: repeated string avoid = 8;
+   */
+  avoid: string[] = [];
+
+  constructor(data?: PartialMessage<LearnFlaw>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnFlaw";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "signal_keys", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "context_tags", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "telltales", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "contraindications", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 8, name: "avoid", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnFlaw {
+    return new LearnFlaw().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnFlaw {
+    return new LearnFlaw().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnFlaw {
+    return new LearnFlaw().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnFlaw | PlainMessage<LearnFlaw> | undefined, b: LearnFlaw | PlainMessage<LearnFlaw> | undefined): boolean {
+    return proto3.util.equals(LearnFlaw, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnMechanic
+ */
+export class LearnMechanic extends Message<LearnMechanic> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string summary = 3;
+   */
+  summary = "";
+
+  /**
+   * @generated from field: repeated string cues = 4;
+   */
+  cues: string[] = [];
+
+  /**
+   * @generated from field: repeated string failure_modes = 5;
+   */
+  failureModes: string[] = [];
+
+  /**
+   * @generated from field: repeated string related_signal_keys = 6;
+   */
+  relatedSignalKeys: string[] = [];
+
+  constructor(data?: PartialMessage<LearnMechanic>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnMechanic";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "cues", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "failure_modes", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "related_signal_keys", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnMechanic {
+    return new LearnMechanic().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnMechanic {
+    return new LearnMechanic().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnMechanic {
+    return new LearnMechanic().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnMechanic | PlainMessage<LearnMechanic> | undefined, b: LearnMechanic | PlainMessage<LearnMechanic> | undefined): boolean {
+    return proto3.util.equals(LearnMechanic, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnScenario
+ */
+export class LearnScenario extends Message<LearnScenario> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name = "";
+
+  /**
+   * @generated from field: repeated string aliases = 3;
+   */
+  aliases: string[] = [];
+
+  /**
+   * @generated from field: repeated string scenario_types = 4;
+   */
+  scenarioTypes: string[] = [];
+
+  /**
+   * @generated from field: string summary = 5;
+   */
+  summary = "";
+
+  /**
+   * @generated from field: repeated string what_it_trains = 6;
+   */
+  whatItTrains: string[] = [];
+
+  /**
+   * @generated from field: repeated string good_for_flaws = 7;
+   */
+  goodForFlaws: string[] = [];
+
+  /**
+   * @generated from field: repeated string cautions = 8;
+   */
+  cautions: string[] = [];
+
+  constructor(data?: PartialMessage<LearnScenario>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnScenario";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "aliases", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "scenario_types", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "what_it_trains", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "good_for_flaws", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 8, name: "cautions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnScenario {
+    return new LearnScenario().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnScenario {
+    return new LearnScenario().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnScenario {
+    return new LearnScenario().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnScenario | PlainMessage<LearnScenario> | undefined, b: LearnScenario | PlainMessage<LearnScenario> | undefined): boolean {
+    return proto3.util.equals(LearnScenario, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnSource
+ */
+export class LearnSource extends Message<LearnSource> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string kind = 2;
+   */
+  kind = "";
+
+  /**
+   * @generated from field: string title = 3;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string author = 4;
+   */
+  author = "";
+
+  /**
+   * @generated from field: string url = 5;
+   */
+  url = "";
+
+  /**
+   * @generated from field: string published_at_iso = 6;
+   */
+  publishedAtIso = "";
+
+  constructor(data?: PartialMessage<LearnSource>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnSource";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "kind", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "published_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnSource {
+    return new LearnSource().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnSource {
+    return new LearnSource().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnSource {
+    return new LearnSource().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnSource | PlainMessage<LearnSource> | undefined, b: LearnSource | PlainMessage<LearnSource> | undefined): boolean {
+    return proto3.util.equals(LearnSource, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnEvidence
+ */
+export class LearnEvidence extends Message<LearnEvidence> {
+  /**
+   * @generated from field: string source_id = 1;
+   */
+  sourceId = "";
+
+  /**
+   * @generated from field: string claim = 2;
+   */
+  claim = "";
+
+  /**
+   * @generated from field: string excerpt = 3;
+   */
+  excerpt = "";
+
+  /**
+   * @generated from field: double start_sec = 4;
+   */
+  startSec = 0;
+
+  /**
+   * @generated from field: double end_sec = 5;
+   */
+  endSec = 0;
+
+  /**
+   * @generated from field: string confidence = 6;
+   */
+  confidence = "";
+
+  /**
+   * @generated from field: string review_status = 7;
+   */
+  reviewStatus = "";
+
+  constructor(data?: PartialMessage<LearnEvidence>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnEvidence";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "source_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "claim", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "excerpt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "start_sec", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "end_sec", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "confidence", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "review_status", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnEvidence {
+    return new LearnEvidence().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnEvidence {
+    return new LearnEvidence().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnEvidence {
+    return new LearnEvidence().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnEvidence | PlainMessage<LearnEvidence> | undefined, b: LearnEvidence | PlainMessage<LearnEvidence> | undefined): boolean {
+    return proto3.util.equals(LearnEvidence, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnDrill
+ */
+export class LearnDrill extends Message<LearnDrill> {
+  /**
+   * @generated from field: string label = 1;
+   */
+  label = "";
+
+  /**
+   * @generated from field: string query = 2;
+   */
+  query = "";
+
+  /**
+   * @generated from field: string reason = 3;
+   */
+  reason = "";
+
+  constructor(data?: PartialMessage<LearnDrill>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnDrill";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "label", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnDrill {
+    return new LearnDrill().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnDrill {
+    return new LearnDrill().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnDrill {
+    return new LearnDrill().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnDrill | PlainMessage<LearnDrill> | undefined, b: LearnDrill | PlainMessage<LearnDrill> | undefined): boolean {
+    return proto3.util.equals(LearnDrill, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.LearnEntry
+ */
+export class LearnEntry extends Message<LearnEntry> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string summary = 3;
+   */
+  summary = "";
+
+  /**
+   * @generated from field: repeated string scenario_types = 4;
+   */
+  scenarioTypes: string[] = [];
+
+  /**
+   * @generated from field: repeated string scenario_names = 5;
+   */
+  scenarioNames: string[] = [];
+
+  /**
+   * @generated from field: repeated string signal_keys = 6;
+   */
+  signalKeys: string[] = [];
+
+  /**
+   * @generated from field: repeated string context_tags = 7;
+   */
+  contextTags: string[] = [];
+
+  /**
+   * @generated from field: repeated string focus_areas = 8;
+   */
+  focusAreas: string[] = [];
+
+  /**
+   * @generated from field: repeated string challenge_preferences = 9;
+   */
+  challengePreferences: string[] = [];
+
+  /**
+   * @generated from field: repeated string time_preferences = 10;
+   */
+  timePreferences: string[] = [];
+
+  /**
+   * @generated from field: repeated string why = 11;
+   */
+  why: string[] = [];
+
+  /**
+   * @generated from field: repeated string actions = 12;
+   */
+  actions: string[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnDrill drills = 13;
+   */
+  drills: LearnDrill[] = [];
+
+  /**
+   * @generated from field: repeated string avoid = 14;
+   */
+  avoid: string[] = [];
+
+  /**
+   * @generated from field: string priority = 15;
+   */
+  priority = "";
+
+  /**
+   * @generated from field: aimmod.hub.v1.LearnFlaw flaw = 16;
+   */
+  flaw?: LearnFlaw;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnMechanic mechanics = 17;
+   */
+  mechanics: LearnMechanic[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnScenario scenarios = 18;
+   */
+  scenarios: LearnScenario[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEvidence evidence = 19;
+   */
+  evidence: LearnEvidence[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnSource sources = 20;
+   */
+  sources: LearnSource[] = [];
+
+  constructor(data?: PartialMessage<LearnEntry>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.LearnEntry";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "scenario_types", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "scenario_names", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "signal_keys", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "context_tags", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 8, name: "focus_areas", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 9, name: "challenge_preferences", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 10, name: "time_preferences", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 11, name: "why", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 12, name: "actions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 13, name: "drills", kind: "message", T: LearnDrill, repeated: true },
+    { no: 14, name: "avoid", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 15, name: "priority", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 16, name: "flaw", kind: "message", T: LearnFlaw },
+    { no: 17, name: "mechanics", kind: "message", T: LearnMechanic, repeated: true },
+    { no: 18, name: "scenarios", kind: "message", T: LearnScenario, repeated: true },
+    { no: 19, name: "evidence", kind: "message", T: LearnEvidence, repeated: true },
+    { no: 20, name: "sources", kind: "message", T: LearnSource, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LearnEntry {
+    return new LearnEntry().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LearnEntry {
+    return new LearnEntry().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LearnEntry {
+    return new LearnEntry().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LearnEntry | PlainMessage<LearnEntry> | undefined, b: LearnEntry | PlainMessage<LearnEntry> | undefined): boolean {
+    return proto3.util.equals(LearnEntry, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningIndexRequest
+ */
+export class GetLearningIndexRequest extends Message<GetLearningIndexRequest> {
+  constructor(data?: PartialMessage<GetLearningIndexRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningIndexRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningIndexRequest {
+    return new GetLearningIndexRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningIndexRequest {
+    return new GetLearningIndexRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningIndexRequest {
+    return new GetLearningIndexRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningIndexRequest | PlainMessage<GetLearningIndexRequest> | undefined, b: GetLearningIndexRequest | PlainMessage<GetLearningIndexRequest> | undefined): boolean {
+    return proto3.util.equals(GetLearningIndexRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningIndexResponse
+ */
+export class GetLearningIndexResponse extends Message<GetLearningIndexResponse> {
+  /**
+   * @generated from field: string version = 1;
+   */
+  version = "";
+
+  /**
+   * @generated from field: string updated_at_iso = 2;
+   */
+  updatedAtIso = "";
+
+  /**
+   * @generated from field: uint32 entry_count = 3;
+   */
+  entryCount = 0;
+
+  /**
+   * @generated from field: uint32 source_count = 4;
+   */
+  sourceCount = 0;
+
+  /**
+   * @generated from field: uint32 signal_key_count = 5;
+   */
+  signalKeyCount = 0;
+
+  /**
+   * @generated from field: uint32 scenario_type_count = 6;
+   */
+  scenarioTypeCount = 0;
+
+  /**
+   * @generated from field: uint32 context_tag_count = 7;
+   */
+  contextTagCount = 0;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEntryPreview featured_entries = 8;
+   */
+  featuredEntries: LearnEntryPreview[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEntryPreview entries = 9;
+   */
+  entries: LearnEntryPreview[] = [];
+
+  /**
+   * @generated from field: repeated string top_context_tags = 10;
+   */
+  topContextTags: string[] = [];
+
+  /**
+   * @generated from field: repeated string top_scenario_types = 11;
+   */
+  topScenarioTypes: string[] = [];
+
+  constructor(data?: PartialMessage<GetLearningIndexResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningIndexResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "updated_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "entry_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "source_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 5, name: "signal_key_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "scenario_type_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "context_tag_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "featured_entries", kind: "message", T: LearnEntryPreview, repeated: true },
+    { no: 9, name: "entries", kind: "message", T: LearnEntryPreview, repeated: true },
+    { no: 10, name: "top_context_tags", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 11, name: "top_scenario_types", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningIndexResponse {
+    return new GetLearningIndexResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningIndexResponse {
+    return new GetLearningIndexResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningIndexResponse {
+    return new GetLearningIndexResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningIndexResponse | PlainMessage<GetLearningIndexResponse> | undefined, b: GetLearningIndexResponse | PlainMessage<GetLearningIndexResponse> | undefined): boolean {
+    return proto3.util.equals(GetLearningIndexResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningEntryRequest
+ */
+export class GetLearningEntryRequest extends Message<GetLearningEntryRequest> {
+  /**
+   * @generated from field: string entry_id = 1;
+   */
+  entryId = "";
+
+  constructor(data?: PartialMessage<GetLearningEntryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningEntryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "entry_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningEntryRequest {
+    return new GetLearningEntryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningEntryRequest {
+    return new GetLearningEntryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningEntryRequest {
+    return new GetLearningEntryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningEntryRequest | PlainMessage<GetLearningEntryRequest> | undefined, b: GetLearningEntryRequest | PlainMessage<GetLearningEntryRequest> | undefined): boolean {
+    return proto3.util.equals(GetLearningEntryRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningEntryResponse
+ */
+export class GetLearningEntryResponse extends Message<GetLearningEntryResponse> {
+  /**
+   * @generated from field: string version = 1;
+   */
+  version = "";
+
+  /**
+   * @generated from field: string updated_at_iso = 2;
+   */
+  updatedAtIso = "";
+
+  /**
+   * @generated from field: aimmod.hub.v1.LearnEntry entry = 3;
+   */
+  entry?: LearnEntry;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEntryPreview related_entries = 4;
+   */
+  relatedEntries: LearnEntryPreview[] = [];
+
+  constructor(data?: PartialMessage<GetLearningEntryResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningEntryResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "updated_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "entry", kind: "message", T: LearnEntry },
+    { no: 4, name: "related_entries", kind: "message", T: LearnEntryPreview, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningEntryResponse {
+    return new GetLearningEntryResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningEntryResponse {
+    return new GetLearningEntryResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningEntryResponse {
+    return new GetLearningEntryResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningEntryResponse | PlainMessage<GetLearningEntryResponse> | undefined, b: GetLearningEntryResponse | PlainMessage<GetLearningEntryResponse> | undefined): boolean {
+    return proto3.util.equals(GetLearningEntryResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningTopicRequest
+ */
+export class GetLearningTopicRequest extends Message<GetLearningTopicRequest> {
+  /**
+   * @generated from field: string topic = 1;
+   */
+  topic = "";
+
+  constructor(data?: PartialMessage<GetLearningTopicRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningTopicRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "topic", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningTopicRequest {
+    return new GetLearningTopicRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningTopicRequest {
+    return new GetLearningTopicRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningTopicRequest {
+    return new GetLearningTopicRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningTopicRequest | PlainMessage<GetLearningTopicRequest> | undefined, b: GetLearningTopicRequest | PlainMessage<GetLearningTopicRequest> | undefined): boolean {
+    return proto3.util.equals(GetLearningTopicRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetLearningTopicResponse
+ */
+export class GetLearningTopicResponse extends Message<GetLearningTopicResponse> {
+  /**
+   * @generated from field: string version = 1;
+   */
+  version = "";
+
+  /**
+   * @generated from field: string updated_at_iso = 2;
+   */
+  updatedAtIso = "";
+
+  /**
+   * @generated from field: string topic = 3;
+   */
+  topic = "";
+
+  /**
+   * @generated from field: string title = 4;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string description = 5;
+   */
+  description = "";
+
+  /**
+   * @generated from field: uint32 entry_count = 6;
+   */
+  entryCount = 0;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEntryPreview featured_entries = 7;
+   */
+  featuredEntries: LearnEntryPreview[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.LearnEntryPreview entries = 8;
+   */
+  entries: LearnEntryPreview[] = [];
+
+  /**
+   * @generated from field: repeated string related_topics = 9;
+   */
+  relatedTopics: string[] = [];
+
+  constructor(data?: PartialMessage<GetLearningTopicResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetLearningTopicResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "updated_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "topic", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "entry_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "featured_entries", kind: "message", T: LearnEntryPreview, repeated: true },
+    { no: 8, name: "entries", kind: "message", T: LearnEntryPreview, repeated: true },
+    { no: 9, name: "related_topics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetLearningTopicResponse {
+    return new GetLearningTopicResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetLearningTopicResponse {
+    return new GetLearningTopicResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetLearningTopicResponse {
+    return new GetLearningTopicResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetLearningTopicResponse | PlainMessage<GetLearningTopicResponse> | undefined, b: GetLearningTopicResponse | PlainMessage<GetLearningTopicResponse> | undefined): boolean {
+    return proto3.util.equals(GetLearningTopicResponse, a, b);
+  }
+}
+
