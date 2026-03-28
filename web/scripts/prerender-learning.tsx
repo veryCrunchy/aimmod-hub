@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { HelmetProvider, type FilledContext } from "react-helmet-async";
-import { StaticRouter } from "react-router-dom/server";
+import { MemoryRouter } from "react-router-dom";
 import { App } from "../src/App";
 import { serializePrerenderPayload, type PrerenderPayload } from "../src/lib/prerender";
 
@@ -360,7 +360,7 @@ async function renderRoute(baseHtml: string, routePath: string, payload: Prerend
 
   const appHtml = renderToString(
     <HelmetProvider context={helmetContext}>
-      <App RouterComponent={StaticRouter} routerProps={{ location: routePath }} />
+      <App RouterComponent={MemoryRouter} routerProps={{ initialEntries: [routePath] }} />
     </HelmetProvider>,
   );
 
