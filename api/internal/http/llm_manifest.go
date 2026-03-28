@@ -16,6 +16,13 @@ type llmRuntimeTarget struct {
 	URL         string `json:"url"`
 	SHA256      string `json:"sha256"`
 	ArchiveType string `json:"archiveType"`
+	Extras      []llmRuntimeTargetExtra `json:"extras,omitempty"`
+}
+
+type llmRuntimeTargetExtra struct {
+	URL         string `json:"url"`
+	SHA256      string `json:"sha256"`
+	ArchiveType string `json:"archiveType"`
 }
 
 type llmModelTarget struct {
@@ -76,11 +83,23 @@ func buildLLMManifest(cfg Config) llmManifest {
 		cfg.LLMRuntimeWindowsX64SHA256,
 		cfg.LLMRuntimeWindowsX64ArchiveType,
 	) {
-		manifest.Runtime["windows-x64"] = llmRuntimeTarget{
+		runtime := llmRuntimeTarget{
 			URL:         cfg.LLMRuntimeWindowsX64URL,
 			SHA256:      cfg.LLMRuntimeWindowsX64SHA256,
 			ArchiveType: cfg.LLMRuntimeWindowsX64ArchiveType,
 		}
+		if runtimeConfigured(
+			cfg.LLMRuntimeWindowsX64ExtraURL,
+			cfg.LLMRuntimeWindowsX64ExtraSHA256,
+			cfg.LLMRuntimeWindowsX64ExtraArchiveType,
+		) {
+			runtime.Extras = append(runtime.Extras, llmRuntimeTargetExtra{
+				URL:         cfg.LLMRuntimeWindowsX64ExtraURL,
+				SHA256:      cfg.LLMRuntimeWindowsX64ExtraSHA256,
+				ArchiveType: cfg.LLMRuntimeWindowsX64ExtraArchiveType,
+			})
+		}
+		manifest.Runtime["windows-x64"] = runtime
 	}
 
 	if runtimeConfigured(
@@ -88,11 +107,23 @@ func buildLLMManifest(cfg Config) llmManifest {
 		cfg.LLMRuntimeWindowsArm64SHA256,
 		cfg.LLMRuntimeWindowsArm64ArchiveType,
 	) {
-		manifest.Runtime["windows-arm64"] = llmRuntimeTarget{
+		runtime := llmRuntimeTarget{
 			URL:         cfg.LLMRuntimeWindowsArm64URL,
 			SHA256:      cfg.LLMRuntimeWindowsArm64SHA256,
 			ArchiveType: cfg.LLMRuntimeWindowsArm64ArchiveType,
 		}
+		if runtimeConfigured(
+			cfg.LLMRuntimeWindowsArm64ExtraURL,
+			cfg.LLMRuntimeWindowsArm64ExtraSHA256,
+			cfg.LLMRuntimeWindowsArm64ExtraArchiveType,
+		) {
+			runtime.Extras = append(runtime.Extras, llmRuntimeTargetExtra{
+				URL:         cfg.LLMRuntimeWindowsArm64ExtraURL,
+				SHA256:      cfg.LLMRuntimeWindowsArm64ExtraSHA256,
+				ArchiveType: cfg.LLMRuntimeWindowsArm64ExtraArchiveType,
+			})
+		}
+		manifest.Runtime["windows-arm64"] = runtime
 	}
 
 	return manifest

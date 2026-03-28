@@ -57,9 +57,15 @@ type Config struct {
 	LLMRuntimeWindowsX64URL           string
 	LLMRuntimeWindowsX64SHA256        string
 	LLMRuntimeWindowsX64ArchiveType   string
+	LLMRuntimeWindowsX64ExtraURL      string
+	LLMRuntimeWindowsX64ExtraSHA256   string
+	LLMRuntimeWindowsX64ExtraArchiveType string
 	LLMRuntimeWindowsArm64URL         string
 	LLMRuntimeWindowsArm64SHA256      string
 	LLMRuntimeWindowsArm64ArchiveType string
+	LLMRuntimeWindowsArm64ExtraURL      string
+	LLMRuntimeWindowsArm64ExtraSHA256   string
+	LLMRuntimeWindowsArm64ExtraArchiveType string
 	LLMModelURL                       string
 	LLMModelSHA256                    string
 	LLMModelFilename                  string
@@ -239,9 +245,15 @@ func DefaultConfig() Config {
 		LLMRuntimeWindowsX64URL:           strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_URL")),
 		LLMRuntimeWindowsX64SHA256:        strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_SHA256")),
 		LLMRuntimeWindowsX64ArchiveType:   envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_ARCHIVE_TYPE", "zip"),
+		LLMRuntimeWindowsX64ExtraURL:      strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_EXTRA_URL")),
+		LLMRuntimeWindowsX64ExtraSHA256:   strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_EXTRA_SHA256")),
+		LLMRuntimeWindowsX64ExtraArchiveType: envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_X64_EXTRA_ARCHIVE_TYPE", "zip"),
 		LLMRuntimeWindowsArm64URL:         strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_URL")),
 		LLMRuntimeWindowsArm64SHA256:      strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_SHA256")),
 		LLMRuntimeWindowsArm64ArchiveType: envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_ARCHIVE_TYPE", "zip"),
+		LLMRuntimeWindowsArm64ExtraURL:      strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_EXTRA_URL")),
+		LLMRuntimeWindowsArm64ExtraSHA256:   strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_EXTRA_SHA256")),
+		LLMRuntimeWindowsArm64ExtraArchiveType: envOrDefault("AIMMOD_HUB_LLM_RUNTIME_WINDOWS_ARM64_EXTRA_ARCHIVE_TYPE", "zip"),
 		LLMModelURL:                       strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_URL")),
 		LLMModelSHA256:                    strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_SHA256")),
 		LLMModelFilename:                  strings.TrimSpace(os.Getenv("AIMMOD_HUB_LLM_MODEL_FILENAME")),
