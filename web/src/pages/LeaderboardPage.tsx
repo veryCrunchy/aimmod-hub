@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link } from "react-router-dom";
 import type { GetLeaderboardResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";

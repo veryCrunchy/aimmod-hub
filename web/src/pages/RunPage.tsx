@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link, useParams } from "react-router-dom";
 import type { GetRunResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { Skeleton } from "../components/ui/Skeleton";

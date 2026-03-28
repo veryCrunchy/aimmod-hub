@@ -1,6 +1,6 @@
 import React from "react";
 import { hydrateRoot, createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider } from "./lib/helmet";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./styles.css";

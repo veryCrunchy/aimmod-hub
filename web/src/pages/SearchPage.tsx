@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ReplayResultCard } from "../components/ReplayResultCard";

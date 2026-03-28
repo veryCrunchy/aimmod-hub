@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { useSearchParams } from "react-router-dom";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { SectionHeader } from "../components/SectionHeader";

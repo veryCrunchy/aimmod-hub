@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link, NavLink } from "react-router-dom";
 import { PlayerLookup } from "../components/PlayerLookup";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";

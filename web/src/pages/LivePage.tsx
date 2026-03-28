@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link } from "react-router-dom";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Link, useParams } from "react-router-dom";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { Card } from "../components/ui/Card";

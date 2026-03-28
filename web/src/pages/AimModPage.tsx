@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { Button } from "../components/ui/Button";
 import { PageSection } from "../components/ui/PageSection";
 import { Grid, PageStack } from "../components/ui/Stack";
