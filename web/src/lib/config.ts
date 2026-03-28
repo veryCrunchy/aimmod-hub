@@ -7,6 +7,11 @@ type ImportMetaEnvLike = {
   VITE_API_BASE_URL?: string;
 };
 
+type ProcessEnvLike = {
+  VITE_API_BASE_URL?: string;
+  NODE_ENV?: string;
+};
+
 type RuntimeWindow = Window & {
   __AIMMOD_HUB__?: RuntimeConfig;
 };
@@ -15,22 +20,27 @@ function getImportMetaEnv(): ImportMetaEnvLike | undefined {
   return (import.meta as ImportMeta & { env?: ImportMetaEnvLike }).env;
 }
 
+function getProcessEnv(): ProcessEnvLike | undefined {
+  return (globalThis as typeof globalThis & {
+    process?: { env?: ProcessEnvLike };
+  }).process?.env;
+}
+
 function getEnvApiBaseUrl(): string | undefined {
   const viteValue = getImportMetaEnv()?.VITE_API_BASE_URL?.trim();
   if (viteValue) return viteValue;
 
-  if (typeof process !== "undefined") {
-    const processValue = process.env.VITE_API_BASE_URL?.trim();
-    if (processValue) return processValue;
-  }
+  const processValue = getProcessEnv()?.VITE_API_BASE_URL?.trim();
+  if (processValue) return processValue;
 
   return undefined;
 }
 
 function isDevEnvironment(): boolean {
   if (getImportMetaEnv()?.DEV) return true;
-  if (typeof process !== "undefined") {
-    return process.env.NODE_ENV !== "production";
+  const nodeEnv = getProcessEnv()?.NODE_ENV;
+  if (nodeEnv !== undefined) {
+    return nodeEnv !== "production";
   }
   return false;
 }
