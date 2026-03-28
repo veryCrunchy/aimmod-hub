@@ -167,9 +167,7 @@ export function BenchmarksPage() {
   }
 
   const ranked = profile.benchmarks.filter((b) => hasRank(b.overallRank?.rankName));
-  const unranked = profile.benchmarks.filter((b) => !hasRank(b.overallRank?.rankName));
   const rankedGroups = groupBenchmarks(ranked);
-  const unrankedGroups = groupBenchmarks(unranked);
 
   function renderGroup(group: BenchmarkGroupSummary) {
     if (group.variants.length === 1) {
@@ -226,17 +224,6 @@ export function BenchmarksPage() {
             title="No ranked benchmarks"
             body={`@${profile.userHandle} hasn't ranked in any benchmarks yet.`}
           />
-        </PageSection>
-      )}
-
-      {unrankedGroups.length > 0 && (
-        <PageSection>
-          <p className="mb-4 text-[10px] uppercase tracking-widest text-muted/50">
-            Unranked — {unranked.length}
-          </p>
-          <Grid className="grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
-            {unrankedGroups.map(renderGroup)}
-          </Grid>
         </PageSection>
       )}
     </PageStack>

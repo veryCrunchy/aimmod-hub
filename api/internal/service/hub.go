@@ -379,6 +379,19 @@ func benchmarkSummaryWithRank(
 	}
 }
 
+func benchmarkSummaryFromListItem(item *hubv1.BenchmarkListItem) kovaaksbenchmarks.ProfileBenchmarkSummary {
+	if item == nil {
+		return kovaaksbenchmarks.ProfileBenchmarkSummary{}
+	}
+	return kovaaksbenchmarks.ProfileBenchmarkSummary{
+		BenchmarkID:      item.BenchmarkId,
+		BenchmarkName:    item.BenchmarkName,
+		BenchmarkIconURL: item.BenchmarkIconUrl,
+		BenchmarkAuthor:  item.BenchmarkAuthor,
+		BenchmarkType:    item.BenchmarkType,
+	}
+}
+
 func scenarioBenchmarkRank(rank kovaaksbenchmarks.ScenarioBenchmarkRank) *hubv1.ScenarioBenchmarkRank {
 	return &hubv1.ScenarioBenchmarkRank{
 		BenchmarkId:      rank.BenchmarkID,
@@ -458,61 +471,6 @@ func mergeBenchmarkMetadata(
 	return current
 }
 
-func (s *HubServer) buildBenchmarkCatalog(ctx context.Context) (map[uint32]kovaaksbenchmarks.ProfileBenchmarkSummary, error) {
-	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	type listResult struct {
-		items []kovaaksbenchmarks.ProfileBenchmarkSummary
-	}
-
-	results := make(chan listResult, len(users))
-	sem := make(chan struct{}, 8)
-	var wg sync.WaitGroup
-
-	for _, u := range users {
-		wg.Add(1)
-		go func(u store.BenchmarkUserIdentity) {
-			defer wg.Done()
-			select {
-			case sem <- struct{}{}:
-			case <-ctx.Done():
-				return
-			}
-			defer func() { <-sem }()
-
-			items, err := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
-			if err != nil {
-				return
-			}
-			results <- listResult{items: items}
-		}(u)
-	}
-
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	catalog := make(map[uint32]kovaaksbenchmarks.ProfileBenchmarkSummary)
-	for result := range results {
-		for _, item := range result.items {
-			if item.BenchmarkID == 0 {
-				continue
-			}
-			if existing, ok := catalog[item.BenchmarkID]; ok {
-				catalog[item.BenchmarkID] = mergeBenchmarkMetadata(existing, item)
-				continue
-			}
-			catalog[item.BenchmarkID] = item
-		}
-	}
-
-	return catalog, nil
-}
-
 func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) ([]*hubv1.BenchmarkSummary, []kovaaksbenchmarks.ProfileBenchmarkSummary, error) {
 	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
 	if err != nil {
@@ -538,14 +496,19 @@ func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) (
 		candidates[item.BenchmarkID] = item
 	}
 
-	catalog, err := s.buildBenchmarkCatalog(ctx)
+	globalBenchmarks, err := s.buildBenchmarkList(ctx)
 	if err == nil {
-		for id, item := range catalog {
-			if existing, ok := candidates[id]; ok {
-				candidates[id] = mergeBenchmarkMetadata(existing, item)
+		for _, item := range globalBenchmarks {
+			summary := benchmarkSummaryFromListItem(item)
+			id := summary.BenchmarkID
+			if id == 0 {
 				continue
 			}
-			candidates[id] = item
+			if existing, ok := candidates[id]; ok {
+				candidates[id] = mergeBenchmarkMetadata(existing, summary)
+				continue
+			}
+			candidates[id] = summary
 		}
 	} else if listErr != nil {
 		return nil, nil, listErr
