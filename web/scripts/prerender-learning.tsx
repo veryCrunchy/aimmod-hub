@@ -163,9 +163,11 @@ function humanizeToken(value: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function sharedCount(a: string[] = [], b: string[] = []): number {
-  const set = new Set(b.map(normalizeToken).filter(Boolean));
-  return a.reduce((count, value) => (set.has(normalizeToken(value)) ? count + 1 : count), 0);
+function sharedCount(a?: string[] | null, b?: string[] | null): number {
+  const left = a ?? [];
+  const right = b ?? [];
+  const set = new Set(right.map(normalizeToken).filter(Boolean));
+  return left.reduce((count, value) => (set.has(normalizeToken(value)) ? count + 1 : count), 0);
 }
 
 function priorityRank(priority: string | undefined): number {
