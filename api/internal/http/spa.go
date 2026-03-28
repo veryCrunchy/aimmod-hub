@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	reProfile  = regexp.MustCompile(`^/profiles/([^/]+)`)
-	reScenario = regexp.MustCompile(`^/scenarios/([^/]+)$`)
-	reRun      = regexp.MustCompile(`^/runs/([^/]+)$`)
-	reLearn    = regexp.MustCompile(`^/learn/([^/]+)$`)
+	reProfile    = regexp.MustCompile(`^/profiles/([^/]+)`)
+	reScenario   = regexp.MustCompile(`^/scenarios/([^/]+)$`)
+	reRun        = regexp.MustCompile(`^/runs/([^/]+)$`)
+	reLearn      = regexp.MustCompile(`^/learn/([^/]+)$`)
 	reLearnTopic = regexp.MustCompile(`^/learn/topics/([^/]+)$`)
 )
 
@@ -51,6 +51,24 @@ func (m pageMeta) inject(indexHTML string) string {
 		t, d, c, t, d, m.OGType, c, t, d,
 	)
 	return strings.Replace(indexHTML, "<title>AimMod Hub</title>", block, 1)
+}
+
+func isStaticAssetPath(p string) bool {
+	if p == "" {
+		return false
+	}
+	if strings.HasPrefix(p, "assets/") {
+		return true
+	}
+	if path.Ext(p) != "" {
+		return true
+	}
+	switch p {
+	case "runtime-config.js", "favicon.ico", "robots.txt", "manifest.json":
+		return true
+	default:
+		return false
+	}
 }
 
 func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Store) pageMeta {
@@ -198,32 +216,23 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p := strings.TrimPrefix(r.URL.Path, "/")
 
-		// Serve static assets that exist on disk directly.
+		// Serve hashed assets and other real files directly without preflight
+		// fs.Stat() checks so asset requests can't fail closed with a 500.
+		if isStaticAssetPath(p) {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
 		if p != "" {
 			indexPath := path.Join(p, "index.html")
-			_, err := fs.Stat(fsys, indexPath)
-			if err == nil {
-				rawRouteHTML, readErr := fs.ReadFile(fsys, indexPath)
-				if readErr != nil {
-					http.Error(w, "internal error", http.StatusInternalServerError)
-					return
-				}
+			rawRouteHTML, readErr := fs.ReadFile(fsys, indexPath)
+			if readErr == nil {
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.Header().Set("Cache-Control", "no-store")
 				_, _ = w.Write(rawRouteHTML)
 				return
 			}
-			if !errors.Is(err, fs.ErrNotExist) {
-				http.Error(w, "internal error", http.StatusInternalServerError)
-				return
-			}
-
-			_, err = fs.Stat(fsys, p)
-			if err == nil {
-				fileServer.ServeHTTP(w, r)
-				return
-			}
-			if !errors.Is(err, fs.ErrNotExist) {
+			if !errors.Is(readErr, fs.ErrNotExist) {
 				http.Error(w, "internal error", http.StatusInternalServerError)
 				return
 			}
