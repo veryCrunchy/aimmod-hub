@@ -1456,6 +1456,7 @@
           "id": "motion-mapping-overwatch-tracking",
           "name": "Motion-mapped Overwatch tracking",
           "aliases": [
+            "Air Angelic",
             "Aarangelic",
             "Overwatch motion mapping tracking",
             "air angelic"
@@ -2953,7 +2954,7 @@
       "drills": [
         {
           "label": "Motion-mapped tracking drill",
-          "query": "Aarangelic Overwatch motion mapping",
+          "query": "Air Angelic Overwatch motion mapping",
           "reason": "A motion-mapped drill helps transfer more than a superficially similar but mechanically wrong scenario."
         }
       ],
@@ -3009,6 +3010,7 @@
           "id": "motion-mapping-overwatch-tracking",
           "name": "Motion-mapped Overwatch tracking",
           "aliases": [
+            "Air Angelic",
             "Aarangelic",
             "Overwatch motion mapping tracking",
             "air angelic"
@@ -6463,7 +6465,7 @@
         {
           "sourceId": "viscose-benchmarks-transcript",
           "claim": "Waldo TS and BTS-style smaller flick scenarios are valuable for Counter-Strike and Valorant.",
-          "excerpt": "Scenarios like Waldo TS or BTS are great for Counter-Strike and Valerant because of how they teach you to better manage tension throughout smaller flicks.",
+          "excerpt": "Scenarios like Waldo TS or BTS are great for Counter-Strike and Valorant because of how they teach you to better manage tension throughout smaller flicks.",
           "startSec": 787,
           "endSec": 804,
           "confidence": "medium",
@@ -6472,7 +6474,7 @@
         {
           "sourceId": "viscose-benchmarks-transcript",
           "claim": "Click timing is especially useful for tactical shooters.",
-          "excerpt": "I do recommend it for everyone, but especially tack shooter players.",
+          "excerpt": "I do recommend it for everyone, but especially tac shooter players.",
           "startSec": 804,
           "endSec": 813,
           "confidence": "medium",
@@ -6653,7 +6655,7 @@
         {
           "sourceId": "viscose-benchmarks-transcript",
           "claim": "If Valorant is all you play, more reactive tracking may not be where most of your time should go.",
-          "excerpt": "If Valerant is all you play, for example, your time might be better spent elsewhere.",
+          "excerpt": "If Valorant is all you play, for example, your time might be better spent elsewhere.",
           "startSec": 758,
           "endSec": 787,
           "confidence": "medium",

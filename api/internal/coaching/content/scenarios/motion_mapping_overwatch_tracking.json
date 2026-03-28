@@ -1,7 +1,7 @@
 {
   "id": "motion-mapping-overwatch-tracking",
   "name": "Motion-mapped Overwatch tracking",
-  "aliases": ["Aarangelic", "Overwatch motion mapping tracking", "air angelic"],
+  "aliases": ["Air Angelic", "Aarangelic", "Overwatch motion mapping tracking", "air angelic"],
   "scenarioTypes": ["tracking", "puretracking"],
   "summary": "A motion-mapped tracking scenario for Overwatch can transfer better than harsher instant-acceleration tasks if it teaches the micro-adjustment angles, reaction speed, and strafe responses the player actually needs in-game.",
   "whatItTrains": ["motion mapping", "tracking response pattern", "micro-adjustment angle control"],
