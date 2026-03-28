@@ -261,6 +261,7 @@ export function LearningPage() {
     entryId ? getPrerenderLearningEntry(entryId) : null,
   );
   const [error, setError] = useState<string | null>(null);
+  const entry = data?.entry;
 
   useEffect(() => {
     const initial = entryId ? getPrerenderLearningEntry(entryId) : null;
@@ -286,18 +287,31 @@ export function LearningPage() {
     };
   }, [entryId]);
 
-  const metaTitle = data ? `${data.entry.title} · AimMod Learn` : "Aim Training Guide · AimMod Hub";
-  const metaDescription = data?.entry.summary || "Aim training guides from AimMod covering mechanics, flaws, scenarios, and sensitivity.";
+  const metaTitle = entry ? `${entry.title} · AimMod Learn` : "Aim Training Guide · AimMod Hub";
+  const metaDescription = entry?.summary || "Aim training guides from AimMod covering mechanics, flaws, scenarios, and sensitivity.";
 
   const sourceLine = useMemo(() => {
-    if (!data?.entry.sources.length) return null;
-    return data.entry.sources
+    if (!entry?.sources.length) return null;
+    return entry.sources
       .map((source) => source.author || source.title)
       .filter(Boolean)
       .join(" · ");
-  }, [data]);
+  }, [entry]);
 
   if (!data && !error) return <PageSkeleton />;
+  if (data && !entry) {
+    return (
+      <PageStack>
+        <Helmet>
+          <title>Aim Training Guide · AimMod Hub</title>
+        </Helmet>
+        <PageSection>
+          <SectionHeader eyebrow="Learn" title="Could not load this guide" body="The learning entry payload was missing required content." />
+          <Button to="/learn">Back to learning pages</Button>
+        </PageSection>
+      </PageStack>
+    );
+  }
 
   return (
     <PageStack>
@@ -315,27 +329,27 @@ export function LearningPage() {
         </PageSection>
       ) : null}
 
-      {data ? (
+      {entry ? (
         <>
           <PageSection className="relative overflow-hidden border-cyan/18 bg-[radial-gradient(circle_at_top_left,rgba(94,233,255,0.10),transparent_22%),radial-gradient(circle_at_78%_18%,rgba(255,214,102,0.08),transparent_18%),linear-gradient(135deg,rgba(8,18,20,0.98),rgba(6,12,16,0.96)_52%,rgba(5,8,11,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-            <Breadcrumb crumbs={[{ label: "Learn", to: "/learn" }, { label: data.entry.title }]} />
+            <Breadcrumb crumbs={[{ label: "Learn", to: "/learn" }, { label: entry.title }]} />
             <div className="mt-3 max-w-[920px]">
               <h1 className="text-[clamp(26px,4.4vw,52px)] leading-[0.95] tracking-[-0.05em] text-text">
-                {data.entry.title}
+                {entry.title}
               </h1>
-              <p className="mt-3 max-w-[720px] text-[15px] leading-7 text-[#cbe4d7]">{data.entry.summary}</p>
+              <p className="mt-3 max-w-[720px] text-[15px] leading-7 text-[#cbe4d7]">{entry.summary}</p>
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className={`rounded-full border px-3 py-1 text-[12px] ${priorityTone(data.entry.priority)}`}>
-                  {humanizeToken(data.entry.priority || "reference")}
+                <span className={`rounded-full border px-3 py-1 text-[12px] ${priorityTone(entry.priority)}`}>
+                  {humanizeToken(entry.priority || "reference")}
                 </span>
-                {data.entry.drills.length > 0 && (
+                {entry.drills.length > 0 && (
                   <span className="rounded-full border border-line bg-white/[0.03] px-3 py-1 text-[12px] text-muted">
-                    {data.entry.drills.length} drill{data.entry.drills.length !== 1 ? "s" : ""}
+                    {entry.drills.length} drill{entry.drills.length !== 1 ? "s" : ""}
                   </span>
                 )}
-                {data.entry.sources.length > 0 && (
+                {entry.sources.length > 0 && (
                   <span className="rounded-full border border-line bg-white/[0.03] px-3 py-1 text-[12px] text-muted">
-                    {data.entry.sources.length} source{data.entry.sources.length !== 1 ? "s" : ""}
+                    {entry.sources.length} source{entry.sources.length !== 1 ? "s" : ""}
                   </span>
                 )}
                 {sourceLine ? (
@@ -351,22 +365,22 @@ export function LearningPage() {
             <PageSection>
               <SectionHeader eyebrow="At a glance" title="Topic & context" />
               <div className="grid gap-4">
-                <BadgeRow title="Scenario families" values={data.entry.scenarioTypes} tone="cyan" />
-                <BadgeRow title="Context tags" values={data.entry.contextTags} />
-                <BadgeRow title="Signal keys" values={data.entry.signalKeys} />
-                <BadgeRow title="Focus areas" values={data.entry.focusAreas} />
-                {data.entry.flaw ? (
+                <BadgeRow title="Scenario families" values={entry.scenarioTypes} tone="cyan" />
+                <BadgeRow title="Context tags" values={entry.contextTags} />
+                <BadgeRow title="Signal keys" values={entry.signalKeys} />
+                <BadgeRow title="Focus areas" values={entry.focusAreas} />
+                {entry.flaw ? (
                   <div className="rounded-[14px] border border-gold/20 bg-gold/[0.025] p-4">
                     <div className="text-[11px] uppercase tracking-[0.1em] text-gold">Primary flaw</div>
                     <h3 className="mt-2 text-[16px] font-medium tracking-[-0.03em] text-text">
-                      {data.entry.flaw.title}
+                      {entry.flaw.title}
                     </h3>
-                    <p className="mt-1.5 text-[13px] leading-6 text-muted">{data.entry.flaw.summary}</p>
-                    {data.entry.flaw.telltales.length ? (
+                    <p className="mt-1.5 text-[13px] leading-6 text-muted">{entry.flaw.summary}</p>
+                    {entry.flaw.telltales.length ? (
                       <div className="mt-3">
                         <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-muted-2">Telltales</div>
                         <div className="grid gap-1.5">
-                          {data.entry.flaw.telltales.map((telltale) => (
+                          {entry.flaw.telltales.map((telltale) => (
                             <div
                               key={telltale}
                               className="rounded-[10px] border border-line bg-white/[0.02] px-3 py-2 text-[13px] leading-6 text-text"
@@ -389,10 +403,10 @@ export function LearningPage() {
                 body="The main point of this guide and the first steps to act on it."
               />
               <div className="rounded-[16px] border border-line bg-white/[0.025] p-5">
-                <p className="text-[14px] leading-[1.75] text-text">{data.entry.summary}</p>
-                {data.entry.actions.length ? (
+                <p className="text-[14px] leading-[1.75] text-text">{entry.summary}</p>
+                {entry.actions.length ? (
                   <div className="mt-5 grid gap-2">
-                    {data.entry.actions.slice(0, 3).map((action, index) => (
+                    {entry.actions.slice(0, 3).map((action, index) => (
                       <div
                         key={`summary-action-${index}`}
                         className="flex gap-4 rounded-[12px] border border-mint/14 bg-mint/[0.03] px-4 py-3"
@@ -403,9 +417,9 @@ export function LearningPage() {
                         <p className="text-[13px] leading-6 text-[#d6f1e3]">{action}</p>
                       </div>
                     ))}
-                    {data.entry.actions.length > 3 && (
+                    {entry.actions.length > 3 && (
                       <div className="mt-1 text-[12px] text-muted-2">
-                        +{data.entry.actions.length - 3} more actions below
+                        +{entry.actions.length - 3} more actions below
                       </div>
                     )}
                   </div>
@@ -414,15 +428,15 @@ export function LearningPage() {
             </PageSection>
           </Grid>
 
-          <WhyList items={data.entry.why} />
-          <ActionsList items={data.entry.actions} />
-          <AvoidList items={data.entry.avoid} />
+          <WhyList items={entry.why} />
+          <ActionsList items={entry.actions} />
+          <AvoidList items={entry.avoid} />
 
-          {data.entry.drills.length ? (
+          {entry.drills.length ? (
             <PageSection>
               <SectionHeader eyebrow="Drills" title="Useful drills" />
               <div className="grid gap-3 md:grid-cols-2">
-                {data.entry.drills.map((drill) => (
+                {entry.drills.map((drill) => (
                   <div
                     key={`${drill.label}-${drill.query}`}
                     className="rounded-[16px] border border-line bg-white/[0.025] p-4"
@@ -440,33 +454,33 @@ export function LearningPage() {
             </PageSection>
           ) : null}
 
-          {data.entry.mechanics.length ? (
+          {entry.mechanics.length ? (
             <PageSection>
               <SectionHeader eyebrow="Mechanics" title="Aim mechanics explained" />
               <div className="grid gap-3 md:grid-cols-2">
-                {data.entry.mechanics.map((mechanic) => (
+                {entry.mechanics.map((mechanic) => (
                   <MechanicCard key={mechanic.id} mechanic={mechanic} />
                 ))}
               </div>
             </PageSection>
           ) : null}
 
-          {data.entry.scenarios.length ? (
+          {entry.scenarios.length ? (
             <PageSection>
               <SectionHeader eyebrow="Scenarios" title="Related training scenarios" />
               <div className="grid gap-3 md:grid-cols-2">
-                {data.entry.scenarios.map((scenario) => (
+                {entry.scenarios.map((scenario) => (
                   <ScenarioCard key={scenario.id} scenario={scenario} />
                 ))}
               </div>
             </PageSection>
           ) : null}
 
-          {data.entry.evidence.length ? (
+          {entry.evidence.length ? (
             <PageSection>
               <SectionHeader eyebrow="Evidence" title="Source-backed claims" />
               <div className="grid gap-3">
-                {data.entry.evidence.map((evidence, index) => (
+                {entry.evidence.map((evidence, index) => (
                   <div
                     key={`${evidence.sourceId}-${index}`}
                     className="rounded-[16px] border border-line bg-white/[0.025] p-4"
@@ -491,11 +505,11 @@ export function LearningPage() {
             </PageSection>
           ) : null}
 
-          {data.entry.sources.length ? (
+          {entry.sources.length ? (
             <PageSection>
               <SectionHeader eyebrow="Sources" title="Research & references" />
               <div className="grid gap-3 md:grid-cols-2">
-                {data.entry.sources.map((source) => (
+                {entry.sources.map((source) => (
                   <a
                     key={source.id}
                     href={source.url}
