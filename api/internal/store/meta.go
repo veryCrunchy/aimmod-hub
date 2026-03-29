@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type ProfileMeta struct {
@@ -48,6 +50,9 @@ func (s *Store) GetProfileMeta(ctx context.Context, handle string) (*ProfileMeta
 		LIMIT 1
 	`, handle).Scan(&m.Handle, &m.DisplayName, &m.RunCount, &m.ScenarioCount)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("get profile meta: %w", err)
 	}
 	return &m, nil

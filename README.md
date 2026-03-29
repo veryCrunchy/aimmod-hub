@@ -201,6 +201,7 @@ API uses:
 - `AIMMOD_HUB_ADDR`
 - `AIMMOD_HUB_VERSION`
 - `AIMMOD_HUB_WEB_ORIGIN` — allowed CORS origin for the web frontend
+- `AIMMOD_HUB_PROFILE_SUBDOMAIN_HOST` — optional apex host used for profile subdomain redirects like `player.aimmod.app -> https://aimmod.app/profiles/player`; defaults to the hostname from `AIMMOD_HUB_WEB_ORIGIN`
 - `AIMMOD_HUB_API_BASE_URL` — public base URL used in runtime config and replay media URLs
 - `AIMMOD_HUB_STATIC_DIR` — (optional) path to built `web/dist`; enables Mode B single-server deployment with SSR meta injection
 - `AIMMOD_HUB_LLM_DIR` — (optional) path mounted at `/llm/` for directly served local-coach assets

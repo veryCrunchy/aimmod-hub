@@ -81,7 +81,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 
 	if m := reProfile.FindStringSubmatch(path); m != nil {
 		meta, err := st.GetProfileMeta(ctx, m[1])
-		if err != nil {
+		if err != nil || meta == nil {
 			return pageMeta{Title: m[1] + " · AimMod Hub", Description: fallback.Description, OGType: "profile", Canonical: canonical}
 		}
 		name := meta.DisplayName
