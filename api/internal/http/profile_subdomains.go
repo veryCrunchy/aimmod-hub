@@ -48,18 +48,32 @@ func newProfileSubdomainRedirectHandler(cfg Config, st *store.Store, next http.H
 			return
 		}
 
-		meta, err := st.GetProfileMeta(r.Context(), handle)
+		record, err := st.GetProfileSubdomainRecord(r.Context(), handle)
 		if err != nil {
 			log.Printf("profile subdomain lookup failed for %q on host %q: %v", handle, r.Host, err)
 			next.ServeHTTP(w, r)
 			return
 		}
-		if meta == nil || strings.TrimSpace(meta.Handle) == "" {
+		if record == nil || strings.TrimSpace(record.Handle) == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
+		if r.URL.Path == "/.well-known/discord" {
+			token := strings.TrimSpace(record.DiscordDomainToken)
+			if token == "" {
+				http.NotFound(w, r)
+				return
+			}
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-store")
+			if r.Method == http.MethodHead {
+				return
+			}
+			_, _ = w.Write([]byte("dh=" + token))
+			return
+		}
 
-		destination := targetOrigin + "/profiles/" + url.PathEscape(meta.Handle)
+		destination := targetOrigin + "/profiles/" + url.PathEscape(record.Handle)
 		if rawQuery := strings.TrimSpace(r.URL.RawQuery); rawQuery != "" {
 			destination += "?" + rawQuery
 		}

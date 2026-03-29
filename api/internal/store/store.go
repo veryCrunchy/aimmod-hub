@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS hub_users (
   external_id TEXT NOT NULL UNIQUE,
   aimmod_user_id TEXT NOT NULL DEFAULT '',
 	profile_handle TEXT NOT NULL DEFAULT '',
+  discord_domain_token TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -375,6 +376,7 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 	if _, err := s.pool.Exec(ctx, `
 		ALTER TABLE hub_users ADD COLUMN IF NOT EXISTS aimmod_user_id TEXT NOT NULL DEFAULT '';
 		ALTER TABLE hub_users ADD COLUMN IF NOT EXISTS profile_handle TEXT NOT NULL DEFAULT '';
+		ALTER TABLE hub_users ADD COLUMN IF NOT EXISTS discord_domain_token TEXT NOT NULL DEFAULT '';
 		ALTER TABLE linked_accounts ADD COLUMN IF NOT EXISTS verified BOOLEAN NOT NULL DEFAULT FALSE;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS source_session_id TEXT;
 		ALTER TABLE scenario_runs ADD COLUMN IF NOT EXISTS public_run_id TEXT;

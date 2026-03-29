@@ -4,6 +4,7 @@ export type AuthUser = {
   userId: number;
   userExternalId: string;
   aimmodUserId: string;
+  discordDomainToken: string;
   discordUserId: string;
   username: string;
   displayName: string;
@@ -86,14 +87,14 @@ export async function revokeUploadToken(id: number) {
   }
 }
 
-export async function updateProfileHandle(handle: string) {
+export async function updateProfileSettings(handle: string, discordDomainToken: string) {
   const response = await fetch(`${apiBase}/auth/profile-handle`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ handle })
+    body: JSON.stringify({ handle, discordDomainToken })
   });
   if (!response.ok) {
     throw new Error(await response.text() || `Profile handle update failed: ${response.status}`);

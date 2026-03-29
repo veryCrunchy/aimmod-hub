@@ -15,6 +15,11 @@ type ProfileMeta struct {
 	ScenarioCount uint32
 }
 
+type ProfileSubdomainRecord struct {
+	Handle             string
+	DiscordDomainToken string
+}
+
 type ScenarioMeta struct {
 	Name      string
 	RunCount  uint32
@@ -56,6 +61,31 @@ func (s *Store) GetProfileMeta(ctx context.Context, handle string) (*ProfileMeta
 		return nil, fmt.Errorf("get profile meta: %w", err)
 	}
 	return &m, nil
+}
+
+func (s *Store) GetProfileSubdomainRecord(ctx context.Context, handle string) (*ProfileSubdomainRecord, error) {
+	handle = strings.TrimSpace(strings.ToLower(handle))
+	if handle == "" {
+		return nil, fmt.Errorf("handle required")
+	}
+	var record ProfileSubdomainRecord
+	err := s.pool.QueryRow(ctx, `
+		SELECT
+			hui.user_handle,
+			COALESCE(hu.discord_domain_token, '')
+		FROM hub_user_identity hui
+		JOIN hub_users hu ON hu.id = hui.user_id
+		WHERE LOWER(hui.user_handle) = $1
+		   OR LOWER(hui.external_id) = $1
+		LIMIT 1
+	`, handle).Scan(&record.Handle, &record.DiscordDomainToken)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get profile subdomain record: %w", err)
+	}
+	return &record, nil
 }
 
 func (s *Store) GetScenarioMeta(ctx context.Context, slug string) (*ScenarioMeta, error) {

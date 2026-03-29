@@ -19,6 +19,7 @@ type AuthUser struct {
 	UserID             int64  `json:"userId"`
 	UserExternalID     string `json:"userExternalId"`
 	AimmodUserID       string `json:"aimmodUserId"`
+	DiscordDomainToken string `json:"discordDomainToken"`
 	DiscordUserID      string `json:"discordUserId"`
 	Username           string `json:"username"`
 	DisplayName        string `json:"displayName"`
@@ -102,6 +103,24 @@ func profileHandleFromExternalID(externalID string) string {
 	return normalizeProfileHandle(trimmed)
 }
 
+func normalizeDiscordDomainToken(value string) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	trimmed = strings.TrimPrefix(trimmed, "dh=")
+	trimmed = strings.TrimSpace(trimmed)
+	if trimmed == "" {
+		return "", nil
+	}
+	if len(trimmed) > 255 {
+		return "", fmt.Errorf("Discord domain token is too long")
+	}
+	for _, r := range trimmed {
+		if r <= 32 || r > 126 {
+			return "", fmt.Errorf("Discord domain token must not contain spaces or control characters")
+		}
+	}
+	return trimmed, nil
+}
+
 func fallbackProfileHandle(userID int64) string {
 	return fmt.Sprintf("id-%d", userID)
 }
@@ -119,6 +138,7 @@ func loadAuthUserByUserIDTx(
 			hu.id,
 			hu.external_id,
 			COALESCE(hu.aimmod_user_id, ''),
+			COALESCE(hu.discord_domain_token, ''),
 			COALESCE(discord.provider_account_id, ''),
 			COALESCE(discord.username, ''),
 			COALESCE(discord.display_name, ''),
@@ -140,6 +160,7 @@ func loadAuthUserByUserIDTx(
 		&user.UserID,
 		&user.UserExternalID,
 		&user.AimmodUserID,
+		&user.DiscordDomainToken,
 		&user.DiscordUserID,
 		&user.Username,
 		&user.DisplayName,
@@ -185,6 +206,19 @@ func writeProfileHandleTx(ctx context.Context, tx profileHandleExecutor, userID 
 	`, userID, handle)
 	if err != nil {
 		return fmt.Errorf("update profile handle: %w", err)
+	}
+	return nil
+}
+
+func writeDiscordDomainTokenTx(ctx context.Context, tx profileHandleExecutor, userID int64, token string) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE hub_users
+		SET discord_domain_token = $2,
+		    updated_at = NOW()
+		WHERE id = $1
+	`, userID, token)
+	if err != nil {
+		return fmt.Errorf("update Discord domain token: %w", err)
 	}
 	return nil
 }
@@ -396,7 +430,7 @@ func (s *Store) backfillAimmodUserIDs(ctx context.Context) error {
 	return nil
 }
 
-func (s *Store) UpdateProfileHandle(ctx context.Context, userID int64, handle string) (AuthUser, error) {
+func (s *Store) UpdateProfileSettings(ctx context.Context, userID int64, handle string, discordDomainToken string) (AuthUser, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return AuthUser{}, fmt.Errorf("begin transaction: %w", err)
@@ -404,6 +438,13 @@ func (s *Store) UpdateProfileHandle(ctx context.Context, userID int64, handle st
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	if _, err := setProfileHandleTx(ctx, tx, userID, handle); err != nil {
+		return AuthUser{}, err
+	}
+	normalizedToken, err := normalizeDiscordDomainToken(discordDomainToken)
+	if err != nil {
+		return AuthUser{}, err
+	}
+	if err := writeDiscordDomainTokenTx(ctx, tx, userID, normalizedToken); err != nil {
 		return AuthUser{}, err
 	}
 
@@ -553,11 +594,11 @@ func (s *Store) UpsertDiscordUser(ctx context.Context, discordID, username, disp
 
 	var user AuthUser
 	err = tx.QueryRow(ctx, `
-		SELECT hu.id, hu.external_id, COALESCE(hu.aimmod_user_id, ''), la.provider_account_id, la.username, la.display_name, la.avatar_url
+		SELECT hu.id, hu.external_id, COALESCE(hu.aimmod_user_id, ''), COALESCE(hu.discord_domain_token, ''), la.provider_account_id, la.username, la.display_name, la.avatar_url
 		FROM linked_accounts la
 		JOIN hub_users hu ON hu.id = la.user_id
 		WHERE la.provider = 'discord' AND la.provider_account_id = $1
-	`, discordID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL)
+	`, discordID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL)
 	if err != nil {
 		userExternalID := "discord:" + discordID
 		userID, aimmodUserID, err := insertHubUserTx(ctx, tx, userExternalID)
@@ -642,6 +683,7 @@ func (s *Store) GetUserBySession(ctx context.Context, sessionID string) (AuthUse
 			hu.id,
 			hu.external_id,
 			COALESCE(hu.aimmod_user_id, ''),
+			COALESCE(hu.discord_domain_token, ''),
 			COALESCE(discord.provider_account_id, ''),
 			COALESCE(discord.username, ''),
 			COALESCE(discord.display_name, ''),
@@ -661,7 +703,7 @@ func (s *Store) GetUserBySession(ctx context.Context, sessionID string) (AuthUse
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE s.session_id = $1
-	`, sessionID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified, &expiresAt); err != nil {
+	`, sessionID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified, &expiresAt); err != nil {
 		return AuthUser{}, fmt.Errorf("load session user: %w", err)
 	}
 	if expiresAt.Before(time.Now().UTC()) {
@@ -759,6 +801,7 @@ func (s *Store) GetUserByUploadToken(ctx context.Context, rawToken string) (Auth
 			hu.id,
 			hu.external_id,
 			COALESCE(hu.aimmod_user_id, ''),
+			COALESCE(hu.discord_domain_token, ''),
 			COALESCE(discord.provider_account_id, ''),
 			COALESCE(discord.username, ''),
 			COALESCE(discord.display_name, ''),
@@ -777,7 +820,7 @@ func (s *Store) GetUserByUploadToken(ctx context.Context, rawToken string) (Auth
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE t.token_hash = $1 AND t.revoked_at IS NULL
-	`, tokenHash(token)).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+	`, tokenHash(token)).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 		return AuthUser{}, fmt.Errorf("load upload token user: %w", err)
 	}
 	if _, err := s.pool.Exec(ctx, `UPDATE upload_tokens SET last_used_at = NOW() WHERE token_hash = $1`, tokenHash(token)); err != nil {
@@ -881,6 +924,7 @@ func (s *Store) ApproveDeviceLink(ctx context.Context, userID int64, userCode st
 			hu.id,
 			hu.external_id,
 			COALESCE(hu.aimmod_user_id, ''),
+			COALESCE(hu.discord_domain_token, ''),
 			COALESCE(discord.provider_account_id, ''),
 			COALESCE(discord.username, ''),
 			COALESCE(discord.display_name, ''),
@@ -898,7 +942,7 @@ func (s *Store) ApproveDeviceLink(ctx context.Context, userID int64, userCode st
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE hu.id = $1
-		`, userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+		`, userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 		return DeviceLinkPollResult{}, fmt.Errorf("load approved device link user: %w", err)
 	}
 
@@ -949,6 +993,7 @@ func (s *Store) PollDeviceLink(ctx context.Context, deviceCode string) (DeviceLi
 				hu.id,
 				hu.external_id,
 				COALESCE(hu.aimmod_user_id, ''),
+				COALESCE(hu.discord_domain_token, ''),
 				COALESCE(discord.provider_account_id, ''),
 				COALESCE(discord.username, ''),
 				COALESCE(discord.display_name, ''),
@@ -966,7 +1011,7 @@ func (s *Store) PollDeviceLink(ctx context.Context, deviceCode string) (DeviceLi
 			LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 			JOIN hub_user_identity hui ON hui.user_id = hu.id
 			WHERE hu.id = $1
-		`, *userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+		`, *userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 			return DeviceLinkPollResult{}, fmt.Errorf("load device link user: %w", err)
 		}
 		result.User = &user

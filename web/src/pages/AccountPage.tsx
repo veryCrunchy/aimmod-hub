@@ -8,7 +8,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAuth } from "../lib/AuthContext";
-import { discordStartUrl, updateProfileHandle } from "../lib/auth";
+import { discordStartUrl, updateProfileSettings } from "../lib/auth";
 
 export function AccountPage() {
   const auth = useAuth();
@@ -16,10 +16,12 @@ export function AccountPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [handleInput, setHandleInput] = useState("");
+  const [discordDomainTokenInput, setDiscordDomainTokenInput] = useState("");
 
   useEffect(() => {
     setHandleInput(auth.user?.profileHandle || auth.user?.username || "");
-  }, [auth.user?.profileHandle, auth.user?.username]);
+    setDiscordDomainTokenInput(auth.user?.discordDomainToken || "");
+  }, [auth.user?.discordDomainToken, auth.user?.profileHandle, auth.user?.username]);
 
   async function handleRevokeToken(id: number) {
     setBusy(true);
@@ -33,15 +35,15 @@ export function AccountPage() {
     }
   }
 
-  async function handleSaveProfileHandle() {
+  async function handleSaveProfileSettings() {
     if (!auth.user) return;
     setBusy(true);
     setError(null);
     try {
-      await updateProfileHandle(handleInput);
+      await updateProfileSettings(handleInput, discordDomainTokenInput);
       await auth.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile handle");
+      setError(err instanceof Error ? err.message : "Failed to update profile settings");
     } finally {
       setBusy(false);
     }
@@ -88,6 +90,15 @@ export function AccountPage() {
     { label: "KovaaK's user ID", value: auth.user.kovaaksUserId },
     { label: "KovaaK's username", value: auth.user.kovaaksUsername },
   ].filter((row) => row.value && row.value.trim().length > 0);
+  const activeHandle = handleInput.trim() || auth.user.profileHandle || auth.user.username;
+  const profileSubdomainUrl =
+    typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost"
+      ? `${window.location.protocol}//${activeHandle}.${window.location.host}`
+      : "";
+  const discordWellKnownUrl = profileSubdomainUrl ? `${profileSubdomainUrl}/.well-known/discord` : "";
+  const settingsUnchanged =
+    handleInput.trim() === (auth.user.profileHandle || auth.user.username) &&
+    discordDomainTokenInput.trim().replace(/^dh=/, "") === (auth.user.discordDomainToken || "");
 
   return (
     <PageStack>
@@ -114,13 +125,25 @@ export function AccountPage() {
                 className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm text-text outline-none"
               />
               <Button
-                onClick={() => void handleSaveProfileHandle()}
-                disabled={busy || handleInput.trim() === (auth.user.profileHandle || auth.user.username)}
+                onClick={() => void handleSaveProfileSettings()}
+                disabled={busy || settingsUnchanged}
               >
                 Save
               </Button>
             </div>
+            <div className="mt-3">
+              <div className="text-[12px] uppercase tracking-[0.08em] text-muted">Discord domain proof</div>
+              <input
+                value={discordDomainTokenInput}
+                onChange={(event) => setDiscordDomainTokenInput(event.target.value)}
+                placeholder="dh=cc314c71a5e9dd72cfca630a75aef2779fd239cc"
+                className="mt-2 w-full rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm text-text outline-none"
+              />
+            </div>
             <p className="mt-2 text-xs text-muted">Public profile URL: /profiles/{auth.user.profileHandle || auth.user.username}</p>
+            {profileSubdomainUrl ? <p className="mt-2 text-xs text-muted">Handle subdomain: {profileSubdomainUrl}</p> : null}
+            {discordWellKnownUrl ? <p className="mt-2 text-xs text-muted">Discord verification URL: {discordWellKnownUrl}</p> : null}
+            <p className="mt-2 text-xs text-muted">Paste the token Discord gives you. AimMod serves it from `/.well-known/discord` on your handle subdomain as `dh=&lt;token&gt;`.</p>
             <p className="mt-3 text-sm leading-7 text-muted">Discord signs you in. Your verified in-game identity is what claims and owns the public training profile.</p>
           </div>
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">

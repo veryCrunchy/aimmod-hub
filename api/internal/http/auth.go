@@ -97,7 +97,8 @@ type deviceApproveRequest struct {
 }
 
 type updateProfileHandleRequest struct {
-	Handle string `json:"handle"`
+	Handle             string `json:"handle"`
+	DiscordDomainToken string `json:"discordDomainToken"`
 }
 
 type updateProfileHandleResponse struct {
@@ -333,7 +334,7 @@ func (h *authHandler) handleUpdateProfileHandle(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	updated, err := h.store.UpdateProfileHandle(r.Context(), user.UserID, payload.Handle)
+	updated, err := h.store.UpdateProfileSettings(r.Context(), user.UserID, payload.Handle, payload.DiscordDomainToken)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
