@@ -93,7 +93,7 @@ export function AccountPage() {
   const activeHandle = handleInput.trim() || auth.user.profileHandle || auth.user.username;
   const profileSubdomainUrl =
     typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost"
-      ? `${window.location.protocol}//${activeHandle}.${window.location.host}`
+      ? `http://${activeHandle}.${window.location.host}`
       : "";
   const discordWellKnownUrl = profileSubdomainUrl ? `${profileSubdomainUrl}/.well-known/discord` : "";
   const settingsUnchanged =
