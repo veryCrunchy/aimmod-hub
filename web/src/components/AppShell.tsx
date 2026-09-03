@@ -19,6 +19,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const navItems = [
     { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
     { to: "/app", label: "Get the App", title: "Download the AimMod desktop app", highlight: true },
+    { to: "/osu", label: "osu!lazer", title: "Open the AimMod osu!lazer workspace" },
     { to: "/community", label: "Community", title: "Browse all scenarios and players" },
     { to: "/learn", label: "Learn", title: "Browse KB-backed aim training learning pages" },
     { to: "/live", label: "Live", title: "See who is practicing right now" },

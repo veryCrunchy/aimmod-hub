@@ -15,10 +15,12 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	osuservice "github.com/veryCrunchy/aimmod-hub/api/internal/osu"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/service"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 	hubv1connect "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1/hubv1connect"
+	osuv1connect "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/osu/v1/osuv1connect"
 )
 
 type ingestBatchRequest struct {
@@ -77,6 +79,12 @@ type Config struct {
 	S3AccessKeyID                          string
 	S3SecretAccessKey                      string
 	S3ForcePathStyle                       bool
+	OsuClientID                            string
+	OsuClientSecret                        string
+	OsuCacheTTL                            time.Duration
+	OsuCacheMaxEntries                     int
+	OsuProviderRequestsPerSecond           float64
+	OsuRequestTimeout                      time.Duration
 }
 
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
@@ -84,6 +92,21 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	auth := newAuthHandler(cfg, hub.Store(), hub.Events())
 	path, handler := hubv1connect.NewHubServiceHandler(hub)
 	mux.Handle(path, withCORS(cfg.AllowedWebOrigin, handler))
+	osuServer, err := osuservice.NewServer(osuservice.Config{
+		OfficialClientID:          cfg.OsuClientID,
+		OfficialClientSecret:      cfg.OsuClientSecret,
+		UserAgent:                 "AimMod-Hub/" + cfg.Version + " (https://aimmod.app)",
+		CacheTTL:                  cfg.OsuCacheTTL,
+		CacheMaxEntries:           cfg.OsuCacheMaxEntries,
+		ProviderRequestsPerSecond: cfg.OsuProviderRequestsPerSecond,
+		RequestTimeout:            cfg.OsuRequestTimeout,
+	})
+	if err != nil {
+		log.Printf("osu provider service disabled: %v", err)
+	} else {
+		osuPath, osuHandler := osuv1connect.NewOsuServiceHandler(osuServer)
+		mux.Handle(osuPath, withCORS(cfg.AllowedWebOrigin, osuHandler))
+	}
 	auth.register(mux)
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -268,6 +291,12 @@ func DefaultConfig() Config {
 		S3AccessKeyID:                          strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_ACCESS_KEY_ID")),
 		S3SecretAccessKey:                      strings.TrimSpace(os.Getenv("AIMMOD_HUB_S3_SECRET_ACCESS_KEY")),
 		S3ForcePathStyle:                       parseEnvBool("AIMMOD_HUB_S3_FORCE_PATH_STYLE", false),
+		OsuClientID:                            strings.TrimSpace(os.Getenv("AIMMOD_OSU_CLIENT_ID")),
+		OsuClientSecret:                        strings.TrimSpace(os.Getenv("AIMMOD_OSU_CLIENT_SECRET")),
+		OsuCacheTTL:                            parseEnvDuration("AIMMOD_OSU_CACHE_TTL", 5*time.Minute),
+		OsuCacheMaxEntries:                     parseEnvInt("AIMMOD_OSU_CACHE_MAX_ENTRIES", 256, 1, 4096),
+		OsuProviderRequestsPerSecond:           parseEnvFloat("AIMMOD_OSU_PROVIDER_RPS", 4, 0.1, 100),
+		OsuRequestTimeout:                      parseEnvDuration("AIMMOD_OSU_REQUEST_TIMEOUT", 10*time.Second),
 	}
 }
 
@@ -285,6 +314,42 @@ func parseEnvBool(key string, fallback bool) bool {
 	}
 	parsed, err := strconv.ParseBool(value)
 	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func parseEnvDuration(key string, fallback time.Duration) time.Duration {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := time.ParseDuration(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+	return parsed
+}
+
+func parseEnvInt(key string, fallback, minimum, maximum int) int {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < minimum || parsed > maximum {
+		return fallback
+	}
+	return parsed
+}
+
+func parseEnvFloat(key string, fallback, minimum, maximum float64) float64 {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseFloat(value, 64)
+	if err != nil || parsed < minimum || parsed > maximum {
 		return fallback
 	}
 	return parsed
