@@ -7,6 +7,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Button } from "../components/ui/Button";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { fetchReplayHub } from "../lib/api";
 
@@ -21,6 +22,7 @@ export function ReplayHubPage() {
   const [filter, setFilter] = useState<ReplayFilter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [items, setItems] = useState<import("../lib/api").HubSearchRun[]>([]);
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export function ReplayHubPage() {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, attempt]);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -79,12 +81,15 @@ export function ReplayHubPage() {
       <PageSection>
         <SectionHeader
           eyebrow="Replay hub"
-          title="Watchable runs, all in one place"
-          body="Browse replay-ready runs across the hub, then jump into the scenario, player, or full run page."
+          level={1}
+          title="Replay library"
+          body="Recorded KovaaK's runs and mouse paths."
         />
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
           <input
+            aria-label="Search KovaaK's replays"
+            type="search"
             value={draftQuery}
             onChange={(event) => setDraftQuery(event.target.value)}
             placeholder="Search replays by scenario, player, or run id"
@@ -103,6 +108,7 @@ export function ReplayHubPage() {
             <button
               key={item}
               type="button"
+              aria-pressed={filter === item}
               onClick={() => setFilter(item)}
               className={[
                 "rounded-full border px-3 py-1.5 text-[12px] transition-colors",
@@ -118,18 +124,18 @@ export function ReplayHubPage() {
       </PageSection>
 
       <Grid className="grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
-        <div className="rounded-[16px] border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Replay runs</p>
+        <div className="rounded-md border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-normal text-muted-2">Replay runs</p>
           <p className="mt-2 text-3xl font-medium text-text">{items.length.toLocaleString()}</p>
           <p className="mt-1 text-[12px] text-muted">Runs with replay data in the current query window.</p>
         </div>
-        <div className="rounded-[16px] border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Video clips</p>
+        <div className="rounded-md border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-normal text-muted-2">Video clips</p>
           <p className="mt-2 text-3xl font-medium text-mint">{items.filter((item) => item.hasVideo).length.toLocaleString()}</p>
           <p className="mt-1 text-[12px] text-muted">Runs that already have watchable replay video on the hub.</p>
         </div>
-        <div className="rounded-[16px] border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Mouse path captures</p>
+        <div className="rounded-md border border-line bg-white/2 p-4">
+          <p className="text-[10px] uppercase tracking-normal text-muted-2">Mouse path captures</p>
           <p className="mt-2 text-3xl font-medium text-violet">{items.filter((item) => item.hasMousePath).length.toLocaleString()}</p>
           <p className="mt-1 text-[12px] text-muted">Runs with uploaded mouse-path replay data.</p>
         </div>
@@ -147,13 +153,14 @@ export function ReplayHubPage() {
         />
 
         {loading ? (
-          <div className="grid gap-3">
+          <div role="status" aria-label="Loading replays" className="grid gap-3">
+            <span className="text-sm text-muted">Loading replays...</span>
             {[0, 1, 2, 3, 4].map((index) => (
-              <Skeleton key={index} className="h-[124px] rounded-[16px]" />
+              <Skeleton key={index} className="h-[124px] rounded-md" />
             ))}
           </div>
         ) : error ? (
-          <EmptyState title="Could not load the replay hub" body={error} />
+          <EmptyState title="Replay library unavailable" body="Please try again in a moment."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></EmptyState>
         ) : filteredItems.length === 0 ? (
           <EmptyState
             title="No replay matches yet"

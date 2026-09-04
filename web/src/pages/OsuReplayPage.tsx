@@ -20,6 +20,7 @@ export function OsuReplayPage() {
   const { shareId = "" } = useParams();
   const [replay, setReplay] = useState<OsuSharedReplay | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +30,7 @@ export function OsuReplayPage() {
       .then((value) => { if (!cancelled) setReplay(value); })
       .catch((reason) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load this replay."); });
     return () => { cancelled = true; };
-  }, [shareId]);
+  }, [shareId, attempt]);
 
   const misses = useMemo(
     () => replay?.analysis?.judgements?.filter((item) => item.result?.toLowerCase() === "miss") ?? [],
@@ -45,10 +46,10 @@ export function OsuReplayPage() {
   }, [misses]);
 
   if (error) {
-    return <PageStack><PageSection><EmptyState title="Shared replay not found" body="This link is invalid, private, or no longer shared." /></PageSection></PageStack>;
+    return <PageStack><PageSection><EmptyState title="Replay unavailable" body="The replay may no longer be shared, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/replays">Browse replays</Button></EmptyState></PageSection></PageStack>;
   }
   if (!replay) {
-    return <PageStack><PageSection><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
+    return <PageStack><PageSection role="status" aria-label="Loading replay"><p className="mb-3 text-muted">Loading replay...</p><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
   }
 
   const pp = replay.performancePoints == null ? "Unavailable" : `${Math.round(replay.performancePoints)}pp`;
@@ -68,7 +69,7 @@ export function OsuReplayPage() {
         <div className="relative grid gap-5 bg-black/60 px-5 py-6 md:grid-cols-[minmax(0,1fr)_auto] md:px-7 md:py-7">
           <div className="min-w-0">
             <span className="text-[10px] uppercase text-[#ff9bc7]">osu! replay analysis</span>
-            <h1 className="mt-2 break-words text-[clamp(22px,4vw,38px)] leading-tight">{replay.artist} - {replay.title}</h1>
+            <h1 className="mt-2 break-words text-2xl md:text-3xl leading-tight">{replay.artist} - {replay.title}</h1>
             <p className="mt-2 text-[13px] text-muted">[{replay.difficulty}] by {replay.creator}</p>
             <p className="mt-3 text-[12px] text-muted">
               Shared by <Link className="text-cyan hover:text-text" to={`/osu/profiles/${replay.hubHandle}`}>{replay.osuUsername}</Link>

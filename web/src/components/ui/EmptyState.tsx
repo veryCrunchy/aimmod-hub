@@ -10,9 +10,9 @@ type EmptyStateProps = {
 
 export function EmptyState({ title, body, children, className }: EmptyStateProps) {
   return (
-    <div className={cn("rounded-[18px] border border-dashed border-line-strong bg-white/2 p-4", className)}>
+    <div role="status" className={cn("min-w-0 border-y border-line py-8 px-4 text-center", className)}>
       <strong className="mb-2 block text-sm text-text">{title}</strong>
-      <p className="text-sm leading-7 text-muted">{body}</p>
+      <p className="mx-auto max-w-prose break-words text-sm leading-6 text-muted">{body}</p>
       {children ? <div className="mt-3">{children}</div> : null}
     </div>
   );

@@ -32,21 +32,17 @@ export function ProductsPage() {
         <meta name="description" content="Choose AimMod for osu! on Windows or Linux, or AimMod for KovaaK's on Windows." />
       </Helmet>
 
-      <PageSection className="overflow-hidden border-cyan/20 bg-[linear-gradient(135deg,rgba(7,22,18,0.98),rgba(5,13,10,0.98))] px-5 py-7 md:px-8 md:py-10">
-        <div className="text-[11px] uppercase tracking-normal text-cyan">AimMod desktop</div>
-        <h1 className="my-3 max-w-[18ch] text-[clamp(30px,5vw,58px)] leading-[0.98] tracking-normal">
-          Choose where you practice.
-        </h1>
-        <p className="max-w-[720px] text-[14px] leading-6 text-muted md:text-[16px] md:leading-7">
-          Each AimMod client is built around its game and ships through its own release channel. Pick a product to see supported platforms, features, and downloads.
-        </p>
+      <PageSection className="p-0">
+        <img src="/images/aimmod-brand-banner.png" alt="AimMod" width="1676" height="419" className="mb-6 block w-full" />
+        <h1 className="text-3xl font-semibold">Download AimMod</h1>
+        <p className="mt-2 text-sm text-muted">Choose your game to find downloads and supported platforms.</p>
       </PageSection>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {products.map((product) => (
-          <PageSection key={product.name} className={`flex min-h-[280px] flex-col p-5 md:p-7 ${product.accent}`}>
+          <PageSection key={product.name} className="flex flex-col border-t border-line pt-5">
             <div className={`text-[10px] uppercase tracking-normal ${product.label}`}>{product.platform}</div>
-            <h2 className="mt-4 max-w-[14ch] text-[clamp(24px,3.4vw,38px)] leading-none tracking-normal">{product.name}</h2>
+            <h2 className="mt-4 text-2xl leading-snug tracking-normal">{product.name}</h2>
             <p className="mt-4 max-w-[58ch] text-[13px] leading-6 text-muted">{product.body}</p>
             <div className="mt-auto pt-7">
               <Button to={product.to} variant="primary">{product.action}</Button>

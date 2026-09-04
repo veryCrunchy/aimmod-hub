@@ -12,6 +12,8 @@ import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { VerificationBadge } from "../components/VerificationBadge";
+import { Button } from "../components/ui/Button";
+import { Skeleton } from "../components/ui/Skeleton";
 import { fetchOverview, formatDurationMs, formatRelativeTime, slugifyScenarioName } from "../lib/api";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 
@@ -27,6 +29,7 @@ export function CommunityPage() {
   const [runsVisible, setRunsVisible] = useState(PAGE_SIZE);
 
   const load = useCallback((reset: boolean) => {
+    if (reset) setError(null);
     void fetchOverview()
       .then((next) => {
         if (reset) setRunsVisible(PAGE_SIZE);
@@ -79,6 +82,15 @@ export function CommunityPage() {
   const visibleRuns = overview?.recentRuns.slice(0, runsVisible) ?? [];
   const hasMoreRuns = (overview?.recentRuns.length ?? 0) > runsVisible;
 
+  if (!overview) {
+    return <PageStack>
+      <Helmet><title>KovaaK's community · AimMod Hub</title></Helmet>
+      <PageSection><h1 className="text-3xl font-semibold">KovaaK's community</h1><p className="mt-2 text-sm text-muted">Scenarios, players, and recent runs.</p></PageSection>
+      {error ? <EmptyState title="Community activity is unavailable" body="Please try again in a moment."><Button onClick={() => load(true)}>Try again</Button></EmptyState>
+        : <div role="status" aria-label="Loading community activity"><p className="mb-4 text-muted">Loading community activity...</p><Skeleton className="h-64" /></div>}
+    </PageStack>;
+  }
+
   return (
     <PageStack>
       <Helmet>
@@ -88,8 +100,8 @@ export function CommunityPage() {
       <PageSection>
         <SectionHeader
           eyebrow="Community"
-          title="Where the strongest comparisons already are"
-          body="This is where you can find the scenarios, players, and recent runs that are already worth studying."
+          title="KovaaK\'s community"
+          body="Browse scenarios, players, and recent runs."
         />
         <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
           <StatCard label="Runs" value={overview ? overview.totalRuns.toLocaleString() : "—"} detail="Runs available to compare" />
@@ -102,8 +114,8 @@ export function CommunityPage() {
         <PageSection>
           <SectionHeader
             eyebrow="Scenario watchlist"
-            title="Best pages to open next"
-            body="These scenarios already have enough history to start showing useful score bands and run patterns."
+            title="Scenarios"
+            body="Explore practice history and compare scores."
             aside={<NavLink to="/leaderboard" className="text-cyan transition-colors hover:underline">View leaderboard →</NavLink>}
           />
           {overview?.topScenarios.length ? (
@@ -111,9 +123,9 @@ export function CommunityPage() {
               {scenarioTypes.length > 1 && (
                 <TypeFilterBar types={scenarioTypes} active={scenarioTypeFilter} onChange={setScenarioTypeFilter} />
               )}
-              <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+              <ScrollArea className="max-h-[min(64vh,820px)] overflow-auto rounded-md border border-line bg-white/2">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                  <thead className="sticky top-0 z-10 border-b border-line bg-panel-strong text-[11px] uppercase tracking-normal text-muted">
                     <tr>
                       <SortableTh label="Scenario" field="name" sortField={scenarioSortField} sortDir={scenarioSortDir} onSort={handleScenarioSort} />
                       <th className="px-4 py-3">Type</th>
@@ -156,7 +168,7 @@ export function CommunityPage() {
           <SectionHeader
             eyebrow="Player watchlist"
             title="Most active uploaders"
-            body="These are the best profiles to inspect first when you want examples and consistent practice history."
+            body="Players with the most shared practice."
           />
           {overview?.activeProfiles.length ? (
             <ScrollArea className="max-h-[min(64vh,820px)] pr-2">
@@ -165,7 +177,7 @@ export function CommunityPage() {
                 <Link
                   key={profile.userHandle}
                   to={`/profiles/${profile.userHandle}`}
-                    className="rounded-[18px] border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
+                    className="rounded-md border border-line bg-white/2 p-[18px] transition-colors hover:border-cyan/30 hover:bg-white/3"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -194,15 +206,15 @@ export function CommunityPage() {
       <PageSection>
         <SectionHeader
           eyebrow="Recent completed runs"
-          title="What players have actually just finished"
+          title="Recent runs"
           body="The latest runs players have completed."
           aside={<NavLink to="/replays" className="text-cyan transition-colors hover:underline">Browse replays →</NavLink>}
         />
         {overview?.recentRuns.length ? (
           <>
-            <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+            <ScrollArea className="max-h-[min(62vh,780px)] overflow-auto rounded-md border border-line bg-white/2">
               <table className="min-w-full text-left text-sm">
-                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                <thead className="sticky top-0 z-10 border-b border-line bg-panel-strong text-[11px] uppercase tracking-normal text-muted">
                   <tr>
                     <th className="px-4 py-3">Player</th>
                     <th className="px-4 py-3">Scenario</th>
@@ -243,7 +255,7 @@ export function CommunityPage() {
             {hasMoreRuns && (
               <button
                 onClick={() => setRunsVisible((n) => n + PAGE_SIZE)}
-                className="mt-3 w-full rounded-[14px] border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+                className="mt-3 w-full rounded-md border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
               >
                 Load {Math.min(PAGE_SIZE, (overview?.recentRuns.length ?? 0) - runsVisible)} more runs
               </button>

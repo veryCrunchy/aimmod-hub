@@ -6,7 +6,7 @@ import { ScenarioTypeBadge } from "./ScenarioTypeBadge";
 
 const quickNavItems = [
   { to: "/community", label: "Browse scenarios & players", sub: "All uploaded data, sorted by activity" },
-  { to: "/learn", label: "Aim training guides", sub: "KB-backed pages on mechanics, flaws, sensitivity, and transfer" },
+  { to: "/learn", label: "Aim training guides", sub: "Mechanics, sensitivity, and practice" },
   { to: "/leaderboard", label: "Global leaderboard", sub: "All-time records and top 100 scores" },
   { to: "/replays", label: "Replay library", sub: "Watch replays and mouse paths" },
   { to: "/app/osu", label: "AimMod for osu!", sub: "Native analysis and coaching for Windows and Linux" },
@@ -67,34 +67,42 @@ function buildItems(results: HubSearchResponse): DropdownItem[] {
   ].slice(0, 8);
 }
 
-export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_, ref) {
+export const HeaderSearch = forwardRef<HTMLInputElement, { game?: "osu" | "kovaaks" }>(function HeaderSearch({ game = "kovaaks" }, ref) {
   const navigate = useNavigate();
   const [value, setValue] = useState("");
   const [results, setResults] = useState<HubSearchResponse | null>(null);
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [searchState, setSearchState] = useState<"idle" | "loading" | "error">("idle");
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Debounced search
   useEffect(() => {
+    if (game === "osu") return;
+    let cancelled = false;
     const q = value.trim();
     if (!q) {
       setResults(null);
       setOpen(false);
+      setSearchState("idle");
       return;
     }
+    setResults(null);
+    setSearchState("loading");
     const tid = setTimeout(() => {
       void searchHub(q)
         .then((r) => {
+          if (cancelled) return;
           setResults(r);
           setOpen(true);
+          setSearchState("idle");
         })
-        .catch(() => {});
+        .catch(() => { if (!cancelled) setSearchState("error"); });
     }, 300);
-    return () => clearTimeout(tid);
-  }, [value]);
+    return () => { cancelled = true; clearTimeout(tid); };
+  }, [value, game]);
 
   // Close on outside click
   useEffect(() => {
@@ -131,10 +139,10 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
         setOpen(true);
         return;
       }
-      setActiveIndex((i) => (i + 1) % items.length);
+      if (items.length) setActiveIndex((i) => (i + 1) % items.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActiveIndex((i) => (i - 1 + items.length) % items.length);
+      if (items.length) setActiveIndex((i) => (i - 1 + items.length) % items.length);
     } else if (e.key === "Escape") {
       setOpen(false);
       setFocused(false);
@@ -160,10 +168,23 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
     setOpen(false);
   }
 
+  if (game === "osu") {
+    return <form role="search" className="flex min-w-0 gap-2" onSubmit={e => { e.preventDefault(); navigate(`/osu/community?q=${encodeURIComponent(value.trim())}`); }}>
+      <input ref={ref} type="search" aria-label="Search osu! plays" placeholder="Search beatmaps, players, or mappers" value={value} onChange={e => setValue(e.target.value)} className="min-w-0 flex-1 rounded-md border border-line bg-panel px-3 py-2.5 text-sm text-text placeholder:text-muted" />
+      <button type="submit" className="min-h-10 rounded-md border border-line bg-panel px-3 text-sm">Search</button>
+    </form>;
+  }
+
   return (
-    <div ref={containerRef} className="relative flex min-w-0 items-center gap-2 xl:min-w-[220px]">
-      <form onSubmit={handleSubmit} className="flex min-w-0 flex-1 items-center gap-2">
+    <div ref={containerRef} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setFocused(false); setOpen(false); } }} className="relative flex min-w-0 items-center gap-2 xl:min-w-[220px]">
+      <form role="search" onSubmit={handleSubmit} className="flex min-w-0 flex-1 items-center gap-2">
         <input
+          aria-label="Search AimMod Hub"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={focused && open && items.length > 0}
+          aria-controls={focused && open && items.length > 0 ? "hub-search-results" : undefined}
+          aria-activedescendant={focused && open && items[activeIndex] ? `hub-result-${activeIndex}` : undefined}
           ref={ref}
           value={value}
           onChange={(e) => {
@@ -175,27 +196,27 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
             if (items.length) setOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search players, scenarios, replays  ·  / or Ctrl+K"
-          className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] text-text outline-none transition-colors placeholder:text-muted focus:border-mint/70 md:text-sm"
+          placeholder="Search players, scenarios, replays"
+          className="min-w-0 flex-1 rounded-md border border-line bg-panel px-3 py-2.5 text-sm text-text transition-colors placeholder:text-muted focus:border-cyan"
         />
         <button
           type="submit"
-          className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 text-[13px] text-text transition-colors hover:border-line-strong hover:bg-[rgba(121,201,151,0.08)] md:min-h-10"
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md border border-line bg-panel px-3 text-sm text-text hover:border-line-strong"
         >
-          Go
+          Search
         </button>
       </form>
 
       {showQuickNav && (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-[14px] border border-line bg-[rgba(6,16,12,0.98)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-[60vh] overflow-auto rounded-md border border-line bg-panel-strong shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           <div className="border-b border-line/50 px-4 py-2.5">
-            <span className="text-[10px] uppercase tracking-[0.1em] text-muted">Quick navigation</span>
+            <span className="text-[10px] uppercase tracking-normal text-muted">Quick navigation</span>
           </div>
           {quickNavItems.map((item) => (
             <button
               key={item.to}
               type="button"
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.preventDefault();
                 go(item.to);
               }}
@@ -214,8 +235,13 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
         </div>
       )}
 
-      {open && items.length > 0 && (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-[min(420px,60vh)] overflow-y-auto overscroll-contain rounded-[14px] border border-line bg-[rgba(6,16,12,0.98)] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      {focused && value.trim() && (searchState !== "idle" || (results && items.length === 0)) && (
+        <div role="status" className="absolute left-0 right-0 top-full mt-2 rounded-md border border-line bg-panel-strong p-4 text-sm text-muted">
+          {searchState === "loading" ? "Searching..." : searchState === "error" ? "Search unavailable. Try again shortly." : "No matches found."}
+        </div>
+      )}
+      {focused && open && items.length > 0 && (
+        <div id="hub-search-results" role="listbox" aria-label="Search results" className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-[min(420px,60vh)] overflow-y-auto overscroll-contain rounded-md border border-line bg-panel-strong shadow-xl">
           {items.map((item, i) => (
             <button
               key={item.to}
@@ -223,7 +249,10 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
                 itemRefs.current[i] = el;
               }}
               type="button"
-              onMouseDown={(e) => {
+              role="option"
+              id={`hub-result-${i}`}
+              aria-selected={i === activeIndex}
+              onClick={(e) => {
                 e.preventDefault();
                 go(item.to);
               }}
@@ -236,7 +265,7 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
               )}
             >
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.08em] text-muted">
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-normal text-muted">
                   <span>{item.kind}</span>
                   {item.kind === "player" && (
                     <span className="text-muted-2">{item.subtitle}</span>
@@ -252,11 +281,13 @@ export const HeaderSearch = forwardRef<HTMLInputElement>(function HeaderSearch(_
           ))}
           <button
             type="button"
-            onMouseDown={(e) => {
+            onClick={(e) => {
               e.preventDefault();
               navigate(`/search?q=${encodeURIComponent(value.trim())}`);
               setOpen(false);
             }}
+            role="option"
+            aria-selected={false}
             className="flex w-full items-center justify-center gap-2 border-t border-line px-4 py-2.5 text-[12px] text-muted transition-colors hover:bg-[rgba(255,255,255,0.03)] hover:text-text"
           >
             See all results for "{value}"

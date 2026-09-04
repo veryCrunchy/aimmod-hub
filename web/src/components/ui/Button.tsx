@@ -3,9 +3,9 @@ import { Link, type LinkProps } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
 const buttonStyles = {
-  base: "inline-flex min-h-9 items-center justify-center rounded-full border px-3.5 text-[13px] transition-all md:min-h-10 md:px-4 md:text-sm",
-  primary: "border-mint/60 bg-mint text-[color:var(--color-bg)] hover:border-cyan hover:bg-cyan hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(121,201,151,0.28)]",
-  secondary: "border-line bg-[rgba(255,255,255,0.03)] text-muted hover:border-line-strong hover:bg-[rgba(121,201,151,0.06)] hover:text-text"
+  base: "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+  primary: "border-mint bg-mint text-[color:var(--color-bg)] hover:bg-cyan hover:border-cyan",
+  secondary: "border-line bg-panel text-text hover:border-line-strong hover:bg-bg-2"
 } as const;
 
 type ButtonVariant = keyof typeof buttonStyles;

@@ -18,12 +18,15 @@ export function SortableTh({ label, field, sortField, sortDir, onSort, className
         active ? "text-text" : "text-muted hover:text-text",
         className
       )}
-      onClick={() => onSort(field)}
+      scope="col"
+      aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
     >
+      <button type="button" className="inline-flex min-h-9 items-center text-left" onClick={() => onSort(field)}>
       {label}
       <span className={cn("ml-1 text-[10px]", active ? "" : "opacity-30")}>
         {active ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
       </span>
+      </button>
     </th>
   );
 }

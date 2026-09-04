@@ -11,6 +11,7 @@ import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
+import { Skeleton } from "../components/ui/Skeleton";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useCountUp } from "../hooks/useCountUp";
@@ -68,17 +69,32 @@ export function HomePage() {
   }, []);
 
   const doRefresh = useCallback(() => {
+    setError(null);
     void fetchOverview()
       .then((next) => {
         setOverview(next);
         setError(null);
       })
-      .catch(() => {});
+      .catch(() => setError("Community activity is temporarily unavailable."));
   }, []);
   useAutoRefresh(doRefresh, 30_000);
 
   const visibleRuns = overview?.recentRuns.slice(0, runsVisible) ?? [];
   const hasMoreRuns = (overview?.recentRuns.length ?? 0) > runsVisible;
+
+  if (!overview) {
+    return <PageStack>
+      <Helmet><title>Overview · AimMod Hub</title></Helmet>
+      <PageSection>
+        <h1 className="text-3xl font-semibold">Overview</h1>
+        <p className="mt-2 text-sm text-muted">Recent plays, players, and practice history.</p>
+        <div className="mt-5 flex flex-wrap gap-2"><Button to="/osu/community">Browse osu! plays</Button><Button to="/community">KovaaK's community</Button></div>
+      </PageSection>
+      {error ? <EmptyState title="Community activity is unavailable" body="Please try again in a moment."><Button onClick={doRefresh}>Try again</Button></EmptyState>
+        : <div role="status" aria-label="Loading community activity"><p className="mb-4 text-muted">Loading community activity...</p><Skeleton className="h-48" /></div>}
+      <Link to="/app" className="block max-w-lg"><img src="/images/aimmod-brand-card.png" width="512" height="256" alt="AimMod" className="w-full" /><span className="block py-3 text-sm text-cyan">Download AimMod</span></Link>
+    </PageStack>;
+  }
 
   return (
     <PageStack>
@@ -86,22 +102,10 @@ export function HomePage() {
         <title>AimMod Hub · Shared practice intelligence</title>
         <meta name="description" content="AimMod analysis and coaching for osu! and KovaaK's, plus shared KovaaK's practice data." />
       </Helmet>
-      <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.18),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.08),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-        <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
-        <h1 className="my-2.5 max-w-[16ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
-          Understand how you aim.
-        </h1>
-        <p className="max-w-[700px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
-          Explore shared KovaaK's practice data, or bring beatmaps, replays, scores, and PP goals together in the native AimMod client for osu! players.
-        </p>
-        <div className="relative mt-3 flex flex-wrap gap-2">
-          <Button to="/app" variant="primary">
-            Get AimMod
-          </Button>
-          <Button to="/app/osu">
-            AimMod for osu!
-          </Button>
-          <Button to="/community">Explore KovaaK's data</Button>
+      <PageSection>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div><p className="text-sm text-muted">Community activity</p><h1 className="mt-1 text-3xl font-semibold">Overview</h1><p className="mt-2 text-sm text-muted">Recent plays, players, and practice history.</p></div>
+          <Button to="/osu/community">Browse osu! plays</Button>
         </div>
       </PageSection>
 
@@ -128,7 +132,7 @@ export function HomePage() {
       <PageSection className="overflow-visible">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="shrink-0">
-            <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">KovaaK's lookup</div>
+            <div className="text-[11px] uppercase tracking-normal text-cyan">KovaaK's lookup</div>
             <div className="mt-0.5 text-[13px] text-text">Find any player</div>
           </div>
           <div className="flex-1">
@@ -137,39 +141,15 @@ export function HomePage() {
         </div>
       </PageSection>
 
-      <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
-        <Link
-          to="/replays"
-          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-cyan/30 hover:bg-white/3"
-        >
-          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-cyan">Mouse paths</div>
-          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Watch exactly how they moved</h3>
-          <p className="text-[13px] leading-relaxed text-muted">
-            See the full mouse path for any shared run — where targets were hit clean, where corrections happened, where pace broke down.
-          </p>
-          <div className="mt-4 text-[12px] text-cyan">Browse replays →</div>
-        </Link>
-        <Link
-          to="/community"
-          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-gold/25 hover:bg-white/3"
-        >
-          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-gold">Aim fingerprint</div>
-          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">6-axis aim style analysis</h3>
-          <p className="text-[13px] leading-relaxed text-muted">
-            Precision, Speed, Control, Consistency, Decisiveness, Rhythm — mapped across a player's full history and benchmarked against the community.
-          </p>
-          <div className="mt-4 text-[12px] text-gold">Explore profiles →</div>
-        </Link>
-        <Link
-          to="/leaderboard"
-          className="rounded-[18px] border border-line bg-white/2 p-5 transition-colors hover:border-mint/30 hover:bg-white/3"
-        >
-          <div className="mb-3 text-[11px] uppercase tracking-[0.1em] text-mint">Coaching</div>
-          <h3 className="mb-2 text-[15px] font-medium leading-tight tracking-[-0.02em]">Per-run feedback, not just a score</h3>
-          <p className="text-[13px] leading-relaxed text-muted">
-            Every run comes with coaching tags and second-by-second context windows — specific observations about what happened during the run.
-          </p>
-          <div className="mt-4 text-[12px] text-mint">View leaderboard →</div>
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
+        <nav aria-label="Browse community" className="grid content-start divide-y divide-line border-y border-line">
+          <Link to="/replays" className="flex items-center justify-between py-4"><span><strong className="block">Replay library</strong><span className="text-sm text-muted">Mouse paths and recorded runs</span></span><span aria-hidden="true">→</span></Link>
+          <Link to="/community" className="flex items-center justify-between py-4"><span><strong className="block">Players & scenarios</strong><span className="text-sm text-muted">Public profiles and practice history</span></span><span aria-hidden="true">→</span></Link>
+          <Link to="/leaderboard" className="flex items-center justify-between py-4"><span><strong className="block">Leaderboard</strong><span className="text-sm text-muted">Records and top scores</span></span><span aria-hidden="true">→</span></Link>
+        </nav>
+        <Link to="/app" className="block self-start overflow-hidden rounded-md border border-line bg-panel">
+          <img src="/images/aimmod-brand-card.png" alt="AimMod" width="512" height="256" className="block w-full" />
+          <span className="flex justify-between p-3 text-sm"><strong>Get AimMod</strong><span aria-hidden="true">→</span></span>
         </Link>
       </div>
 
@@ -177,7 +157,7 @@ export function HomePage() {
         <PageSection>
           <SectionHeader
             eyebrow="Top scenarios"
-            title="Where the current volume is"
+            title="Popular scenarios"
             body="These scenarios already have enough history to be useful comparison pages."
             aside={<NavLink to="/community" className="text-cyan transition-colors hover:underline">Browse all →</NavLink>}
           />
@@ -188,7 +168,7 @@ export function HomePage() {
                   <Link
                     key={scenario.scenarioSlug}
                     to={`/scenarios/${scenario.scenarioSlug}`}
-                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
+                    className="rounded-md border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -226,7 +206,7 @@ export function HomePage() {
                   <Link
                     key={profile.userHandle}
                     to={`/profiles/${profile.userHandle}`}
-                    className="rounded-[16px] border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
+                    className="rounded-md border border-line bg-white/2 p-4 transition-colors hover:border-cyan/25 hover:bg-white/3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -263,15 +243,15 @@ export function HomePage() {
       <PageSection>
         <SectionHeader
           eyebrow="Recent completed runs"
-          title="What players have actually just finished"
+          title="Recent runs"
           body="The latest runs players have completed."
           aside={<NavLink to="/leaderboard" className="text-cyan transition-colors hover:underline">View leaderboard →</NavLink>}
         />
         {overview?.recentRuns.length ? (
           <>
-            <ScrollArea className="max-h-[min(56vh,740px)] overflow-auto rounded-[16px] border border-line bg-white/2">
+            <ScrollArea className="max-h-[min(56vh,740px)] overflow-auto rounded-md border border-line bg-white/2">
               <table className="min-w-[760px] w-full text-left text-sm">
-                <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
+                <thead className="sticky top-0 z-10 border-b border-line bg-panel-strong text-[11px] uppercase tracking-normal text-muted">
                   <tr>
                     <th className="px-4 py-3">Scenario</th>
                     <th className="px-4 py-3">Player</th>
@@ -321,7 +301,7 @@ export function HomePage() {
             {hasMoreRuns && (
               <button
                 onClick={() => setRunsVisible((n) => n + PAGE_SIZE)}
-                className="mt-3 w-full rounded-[14px] border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
+                className="mt-3 w-full rounded-md border border-line py-2.5 text-sm text-muted transition-colors hover:border-cyan/30 hover:text-text"
               >
                 Load {Math.min(PAGE_SIZE, (overview?.recentRuns.length ?? 0) - runsVisible)} more runs
               </button>
@@ -338,8 +318,8 @@ export function HomePage() {
       <PageSection className="relative overflow-hidden border-mint/20 bg-[radial-gradient(circle_at_60%_0%,rgba(121,201,151,0.1),transparent_40%),linear-gradient(180deg,rgba(6,18,12,0.98),rgba(4,12,9,0.97))]">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-mint">AimMod desktop</div>
-            <h2 className="mb-2 max-w-[22ch] text-[clamp(18px,2.8vw,28px)] font-medium leading-[1.1] tracking-[-0.035em]">
+            <div className="mb-2 text-[11px] uppercase tracking-normal text-mint">AimMod desktop</div>
+            <h2 className="mb-2 max-w-[22ch] text-[clamp(18px,2.8vw,28px)] font-medium leading-[1.1] tracking-normal">
               This is everyone else's data.<br />Want to see yours?
             </h2>
             <p className="max-w-125 text-[13px] leading-relaxed text-muted">

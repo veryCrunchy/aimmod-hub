@@ -1,141 +1,106 @@
-import type { PropsWithChildren } from "react";
-import { useEffect, useRef } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { cn } from "../lib/cn";
+import { useEffect, useRef, useState, type PropsWithChildren } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { gameForPath, type HubGame } from "../lib/hubGame";
 import { useAuth } from "../lib/AuthContext";
 import { discordStartUrl } from "../lib/auth";
 import { Button } from "./ui/Button";
 import { HeaderSearch } from "./HeaderSearch";
 
-const supportLinks = [
-  { href: "https://ko-fi.com/verycrunchy", label: "Ko-fi" },
-  { href: "https://github.com/sponsors/veryCrunchy", label: "GitHub Sponsors" }
+const kovaaksGroups = [
+  { label: "KovaaK's", links: [["/", "Overview"], ["/community", "Community"], ["/replays", "Replays"], ["/live", "Live activity"]] },
+  { label: "Improve", links: [["/benchmarks", "Benchmarks"], ["/leaderboard", "Leaderboard"], ["/learn", "Learning library"]] },
+  { label: "AimMod", links: [["/app/kovaaks", "Get AimMod for KovaaK's"], ["/app", "All downloads"]] },
+];
+
+const osuGroups = [
+  { label: "osu!", links: [["/osu", "Overview"], ["/osu/beatmaps", "Beatmaps"], ["/osu/players", "Players"], ["/osu/replays", "Replay library"], ["/osu/community", "Community activity"]] },
+  { label: "AimMod", links: [["/app/osu", "Get AimMod for osu!"], ["/app", "All downloads"]] },
 ];
 
 export function AppShell({ children }: PropsWithChildren) {
   const auth = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [preferredGame, setPreferredGame] = useState<HubGame>("kovaaks");
+  const game = gameForPath(location.pathname) ?? preferredGame;
+  const groups = game === "osu" ? osuGroups : kovaaksGroups;
   const searchRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDetailsElement>(null);
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
-  const navItems = [
-    { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
-    { to: "/app", label: "Get AimMod", title: "Download AimMod for osu! or KovaaK's", highlight: true },
-    { to: "/app/osu", label: "osu!", title: "AimMod for osu! on Windows and Linux" },
-    { to: "/osu/community", label: "osu! community", title: "Browse public osu! scores and replay analysis" },
-    { to: "/community", label: "Community", title: "Browse all scenarios and players" },
-    { to: "/learn", label: "Learn", title: "Browse KB-backed aim training learning pages" },
-    { to: "/live", label: "Live", title: "See who is practicing right now" },
-    { to: "/benchmarks", label: "Benchmarks", title: "KovaaK's benchmark rankings and leaderboards" },
-    { to: "/replays", label: "Replays", title: "Watch replay videos and mouse paths" },
-    { to: "/leaderboard", label: "Leaderboard", title: "All-time records and top 100 scores" },
-    ...(isAdmin ? [{ to: "/admin", label: "Admin", title: "Admin panel" }] : []),
-    { to: "/account", label: "Settings", title: "Linked devices, handle, and account settings" },
-  ];
 
-  // Keyboard shortcut to focus search
+  useEffect(() => {
+    const routeGame = gameForPath(location.pathname);
+    try {
+      if (routeGame) {
+        localStorage.setItem("aimmod-hub-game", routeGame);
+        setPreferredGame(routeGame);
+      } else {
+        setPreferredGame(localStorage.getItem("aimmod-hub-game") === "osu" ? "osu" : "kovaaks");
+      }
+    } catch { /* Browsing still works when storage is disabled. */ }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (menuRef.current) menuRef.current.open = false;
+  }, [location.pathname]);
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      const target = e.target as HTMLElement;
+      const editing = target.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(target.tagName);
+      if (((e.ctrlKey || e.metaKey) && e.key === "k") || (e.key === "/" && !editing)) {
         e.preventDefault();
         searchRef.current?.focus();
         searchRef.current?.select();
-        return;
       }
-      const tag = (document.activeElement as HTMLElement)?.tagName;
-      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
-        e.preventDefault();
-        searchRef.current?.focus();
-        searchRef.current?.select();
+      if (e.key === "Escape" && menuRef.current?.open) {
+        menuRef.current.open = false;
+        menuRef.current.querySelector("summary")?.focus();
       }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  function navigation() {
+    return <>
+      {groups.map(group => <div className="hub-nav-group" key={group.label}>
+        <span className="hub-nav-label">{group.label}</span>
+        {group.links.map(([to, label]) => <NavLink key={to} to={to} end={to === "/" || to === "/app" || to === "/osu"}>{label}</NavLink>)}
+      </div>)}
+      <div className="hub-nav-group">
+        <span className="hub-nav-label">Account</span>
+        <NavLink to="/account">Settings & devices</NavLink>
+        {isAdmin && <NavLink to="/admin">Administration</NavLink>}
+        {auth.authenticated && <button type="button" onClick={() => void auth.signOut()}>Sign out</button>}
+      </div>
+    </>;
+  }
+
   return (
-    <div className="min-h-screen overflow-x-clip">
-      <header className="sticky top-0 z-10 border-b border-line bg-[linear-gradient(180deg,rgba(2,8,6,0.97),rgba(4,12,9,0.94))] px-3 py-3 backdrop-blur-xl md:px-5 md:py-3.5">
-        <div className="mx-auto flex w-[min(1380px,100%)] min-w-0 flex-col gap-2.5">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <Link to="/" className="flex min-w-0 items-center gap-2.5">
-              <span className="hidden h-5 w-[3px] rounded-sm bg-mint/70 sm:block" aria-hidden />
-              <div className="grid min-w-0 gap-0.5">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-cyan">AimMod Hub</span>
-                <span className="truncate text-[11px] text-muted-2 max-[400px]:hidden">shared practice intelligence</span>
-              </div>
-            </Link>
-
-            {auth.loading ? null : auth.authenticated && auth.user ? (
-              <div className="inline-flex min-w-0 items-center gap-2">
-                <Link
-                  to={auth.user.profileHandle ? `/profiles/${auth.user.profileHandle}` : "/account"}
-                  className="max-w-[44vw] truncate rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[12px] text-text md:max-w-60 md:px-3.5 md:text-[13px]"
-                >
-                  {auth.user.profileDisplayName || auth.user.displayName || auth.user.username}
-                </Link>
-                <Button to="/account" className="shrink-0 max-[500px]:hidden">
-                  Settings
-                </Button>
-                <Button onClick={() => void auth.signOut()} className="shrink-0">
-                  Sign out
-                </Button>
-              </div>
-            ) : (
-              <Button href={discordStartUrl("/account")} variant="primary" className="shrink-0">
-                Sign in with Discord
-              </Button>
-            )}
-          </div>
-
-          <HeaderSearch ref={searchRef} />
-
-          <nav className="flex flex-wrap items-center gap-x-4 gap-y-0" aria-label="Primary">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/app"}
-                title={item.title}
-                className={({ isActive }) =>
-                  cn(
-                    "border-b pb-[5px] pt-0.5 text-[12px] transition-colors",
-                    item.highlight
-                      ? cn("text-cyan", isActive ? "border-cyan" : "border-transparent hover:border-cyan/50")
-                      : cn("text-muted hover:text-text", isActive ? "border-mint text-text" : "border-transparent"),
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+    <div className="hub-shell" data-game={game}>
+      <a className="hub-skip" href="#main-content">Skip to content</a>
+      <header className="hub-header">
+        <Link to={game === "osu" ? "/osu" : "/"} className="hub-brand" aria-label="AimMod Hub home"><img className="hub-brand-mark" src="/images/aimmod-logo.png" width="36" height="36" alt="" /><strong>AimMod <span>Hub</span></strong></Link>
+        <select className="hub-game-selector" aria-label="Game" value={game} onChange={e => { const next = e.target.value as HubGame; setPreferredGame(next); navigate(next === "osu" ? "/osu" : "/"); }}>
+          <option value="osu">osu!</option><option value="kovaaks">KovaaK's</option>
+        </select>
+        <div className="hub-header-search"><HeaderSearch key={game} ref={searchRef} game={game} /></div>
+        <div className="hub-account">
+          {auth.loading ? <span role="status" className="text-muted text-sm">Connecting...</span> : auth.authenticated && auth.user ? (
+            <Link to={auth.user.profileHandle ? `/profiles/${auth.user.profileHandle}` : "/account"} className="hub-user">{auth.user.profileDisplayName || auth.user.displayName || auth.user.username}</Link>
+          ) : <Button href={discordStartUrl("/account")}>Sign in</Button>}
         </div>
+        <details className="hub-mobile-nav" ref={menuRef}>
+          <summary>Menu</summary>
+          <nav aria-label="Mobile navigation">{navigation()}</nav>
+        </details>
       </header>
-
-      <main className="mx-auto min-h-0 w-[min(1380px,calc(100vw-20px))] px-0 py-3 pb-12 md:w-[min(1380px,calc(100vw-32px))] md:py-5 md:pb-16">
-        {children}
-      </main>
-
-      <footer className="border-t border-line bg-[rgba(2,8,6,0.7)]">
-        <div className="mx-auto flex w-[min(1380px,calc(100vw-24px))] flex-wrap items-center justify-between gap-3 py-4 text-[13px] text-muted md:w-[min(1380px,calc(100vw-32px))] md:text-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-text">Support veryCrunchy</span>
-            <span className="text-muted">if AimMod helps your practice.</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {supportLinks.map((link) => (
-              <Button
-                key={link.href}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {link.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <aside className="hub-sidebar"><nav aria-label="Primary">{navigation()}</nav></aside>
+      <div className="hub-content">
+        <main id="main-content" tabIndex={-1}>{children}</main>
+        <footer className="hub-footer"><span>AimMod Hub</span><div><a href="https://ko-fi.com/verycrunchy" target="_blank" rel="noreferrer">Support AimMod</a><a href="https://github.com/veryCrunchy/aimmod" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/sponsors/veryCrunchy" target="_blank" rel="noreferrer">Sponsors</a></div></footer>
+      </div>
     </div>
   );
 }

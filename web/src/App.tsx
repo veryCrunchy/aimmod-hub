@@ -20,6 +20,7 @@ const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) =>
 const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m.LivePage })));
 const OsuDownloadPage = lazy(() => import("./pages/OsuDownloadPage").then((m) => ({ default: m.OsuDownloadPage })));
 const OsuCommunityPage = lazy(() => import("./pages/OsuCommunityPage").then((m) => ({ default: m.OsuCommunityPage })));
+const OsuDirectoryPage = lazy(() => import("./pages/OsuDirectoryPage").then((m) => ({ default: m.OsuDirectoryPage })));
 const OsuProfilePage = lazy(() => import("./pages/OsuProfilePage").then((m) => ({ default: m.OsuProfilePage })));
 const OsuReplayPage = lazy(() => import("./pages/OsuReplayPage").then((m) => ({ default: m.OsuReplayPage })));
 const ProductsPage = lazy(() => import("./pages/ProductsPage").then((m) => ({ default: m.ProductsPage })));
@@ -35,7 +36,7 @@ const ExternalKovaaksPage = lazy(() => import("./pages/ExternalProfilePage").the
 const ExternalBenchmarkPage = lazy(() => import("./pages/ExternalBenchmarkPage").then((m) => ({ default: m.ExternalBenchmarkPage })));
 
 function RouteLoading() {
-  return <div className="rounded-[18px] border border-line bg-white/2 px-6 py-10 text-sm text-muted">Loading page...</div>;
+  return <div role="status" className="flex min-h-64 items-center justify-center border-y border-line px-6 py-10 text-base text-muted">Loading page...</div>;
 }
 
 type RouterProps = PropsWithChildren<Record<string, unknown>>;
@@ -54,6 +55,9 @@ function AppRoutes() {
           <Route path="/app" element={<ProductsPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />
           <Route path="/osu/community" element={<OsuCommunityPage />} />
+          <Route path="/osu/beatmaps" element={<OsuDirectoryPage view="beatmaps" />} />
+          <Route path="/osu/players" element={<OsuDirectoryPage view="players" />} />
+          <Route path="/osu/replays" element={<OsuCommunityPage replayLibrary />} />
           <Route path="/osu/profiles/:handle" element={<OsuProfilePage />} />
           <Route path="/osu/replays/:shareId" element={<OsuReplayPage />} />
           <Route path="/app/kovaaks" element={<AimModPage />} />
@@ -62,7 +66,7 @@ function AppRoutes() {
           <Route path="/learn/topics/:topic" element={<LearningTopicPage />} />
           <Route path="/learn/:entryId" element={<LearningPage />} />
           <Route path="/live" element={<LivePage />} />
-          <Route path="/osu" element={<Navigate to="/app/osu" replace />} />
+          <Route path="/osu" element={<OsuDirectoryPage />} />
           <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
           <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
           <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />

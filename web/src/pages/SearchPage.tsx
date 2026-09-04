@@ -118,7 +118,7 @@ function SearchScenarioCard({ scenario }: { scenario: SearchScenarioCardData }) 
   return (
     <Link
       to={`/scenarios/${scenario.scenarioSlug}`}
-      className="rounded-[16px] border border-line bg-white/2 px-4 py-3 transition-colors hover:border-mint/30 hover:bg-white/[0.045]"
+      className="rounded-md border border-line bg-white/2 px-4 py-3 transition-colors hover:border-mint/30 hover:bg-white/[0.045]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -137,7 +137,7 @@ function SearchProfileCard({ profile }: { profile: SearchProfileCardData }) {
   return (
     <Link
       to={`/profiles/${profile.userHandle}`}
-      className="rounded-[16px] border border-line bg-white/2 px-4 py-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
+      className="rounded-md border border-line bg-white/2 px-4 py-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -163,7 +163,7 @@ function SearchRunCard({ run }: { run: SearchRunCardData }) {
   return (
     <Link
       to={`/runs/${run.publicRunID || run.sessionID}`}
-      className="rounded-[16px] border border-line bg-white/2 px-4 py-3 transition-colors hover:border-gold/30 hover:bg-white/[0.045]"
+      className="rounded-md border border-line bg-white/2 px-4 py-3 transition-colors hover:border-gold/30 hover:bg-white/[0.045]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -186,7 +186,7 @@ function SearchBenchmarkCard({ benchmark }: { benchmark: HubSearchBenchmark }) {
   return (
     <Link
       to={`/benchmarks/${benchmark.benchmarkId}`}
-      className="rounded-[16px] border border-line bg-white/2 px-4 py-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
+      className="rounded-md border border-line bg-white/2 px-4 py-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
@@ -245,7 +245,7 @@ function SearchQuickJump({
             to={item.to}
             onMouseEnter={() => onHover(index)}
             className={[
-              "rounded-[16px] border px-4 py-3 transition-colors",
+              "rounded-md border px-4 py-3 transition-colors",
               activeIndex === index
                 ? "border-mint/40 bg-[rgba(121,201,151,0.12)]"
                 : "border-line bg-[rgba(255,255,255,0.03)] hover:border-mint/25 hover:bg-[rgba(255,255,255,0.05)]",
@@ -253,7 +253,7 @@ function SearchQuickJump({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-cyan">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-normal text-cyan">
                   <span>
                     {item.kind === "scenario" ? "Scenario" : item.kind === "player" ? "Player" : item.kind === "benchmark" ? "Benchmark" : "Run"}
                   </span>
@@ -334,9 +334,9 @@ function SearchBestMatch({
       />
       <Link
         to={best.to}
-        className="block rounded-[18px] border border-mint/18 bg-[rgba(255,255,255,0.03)] px-5 py-4 transition-colors hover:border-mint/35 hover:bg-[rgba(255,255,255,0.05)]"
+        className="block rounded-md border border-mint/18 bg-[rgba(255,255,255,0.03)] px-5 py-4 transition-colors hover:border-mint/35 hover:bg-[rgba(255,255,255,0.05)]"
       >
-        <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-cyan">
+        <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-normal text-cyan">
           <span>{best.kind}</span>
           <ScenarioTypeBadge type={best.badge} />
         </div>
