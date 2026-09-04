@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 
-import { StatCard } from "../components/StatCard";
+import { AdminOsuWorkspace } from "./AdminOsuWorkspace";
+import "./adminWorkspace.css";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
@@ -46,6 +47,7 @@ function providerLabel(provider: string) {
 export function AdminPage() {
   const auth = useAuth();
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
+  const [workspace, setWorkspace] = useState<"osu" | "kovaaks">("osu");
   const [overview, setOverview] = useState<AdminOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionState, setActionState] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export function AdminPage() {
   const normalizedFilter = filter.trim().toLowerCase();
 
   const load = useCallback(() => {
-    if (!isAdmin) {
+    if (!isAdmin || workspace !== "kovaaks") {
       return;
     }
     void fetchAdminOverview(days)
@@ -73,7 +75,7 @@ export function AdminPage() {
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Could not load admin overview.");
       });
-  }, [isAdmin, days, selectedHandle]);
+  }, [isAdmin, days, selectedHandle, workspace]);
 
   useEffect(() => {
     load();
@@ -82,7 +84,7 @@ export function AdminPage() {
   useAutoRefresh(load, 30_000);
 
   useEffect(() => {
-    if (!isAdmin || !selectedHandle) {
+    if (!isAdmin || workspace !== "kovaaks" || !selectedHandle) {
       setSelectedUser(null);
       setSelectedUserError(null);
       return;
@@ -104,7 +106,7 @@ export function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, selectedHandle, days]);
+  }, [isAdmin, selectedHandle, days, workspace]);
 
   async function handleReclassify() {
     setRunningAction(true);
@@ -207,25 +209,35 @@ export function AdminPage() {
   }
 
   return (
-    <PageStack>
-      <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.18),transparent_22%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(4,12,9,0.98))]">
+    <PageStack className="admin-workspace">
+      <header className="admin-workspace-header"><div><p>Administration</p><h1>Hub operations</h1></div><Link to="/admin/coaching">Coaching KB</Link></header>
+      <div className="admin-tabs" role="tablist" aria-label="Admin workspace" onKeyDown={event => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === "Home" ? "osu" : event.key === "End" ? "kovaaks" : workspace === "osu" ? "kovaaks" : "osu";
+        setWorkspace(next);
+        event.currentTarget.querySelector<HTMLButtonElement>(`#admin-tab-${next}`)?.focus();
+      }}>
+        <button id="admin-tab-osu" role="tab" tabIndex={workspace === "osu" ? 0 : -1} aria-selected={workspace === "osu"} aria-controls="admin-panel-osu" onClick={() => setWorkspace("osu")}>osu!</button>
+        <button id="admin-tab-kovaaks" role="tab" tabIndex={workspace === "kovaaks" ? 0 : -1} aria-selected={workspace === "kovaaks"} aria-controls="admin-panel-kovaaks" onClick={() => setWorkspace("kovaaks")}>KovaaK's</button>
+      </div>
+      {workspace === "osu" ? <div id="admin-panel-osu" role="tabpanel" aria-labelledby="admin-tab-osu"><AdminOsuWorkspace /></div> : <div className="admin-kovaaks" id="admin-panel-kovaaks" role="tabpanel" aria-labelledby="admin-tab-kovaaks">
+      <PageSection>
         <SectionHeader
           eyebrow="Admin"
-          title="AimMod hub health"
-          body="A compact view of ingest quality, missing data, and the latest runs coming in."
+          title="KovaaK's ingest health"
           aside={
             <div className="flex flex-wrap items-center gap-2">
-              <Link to="/admin/coaching">
-                <Button variant="secondary">Coaching KB →</Button>
-              </Link>
-              {actionState ? <span>{actionState}</span> : null}
+              {actionState ? <span role="status">{actionState}</span> : null}
               <input
+                aria-label="Filter Kovaaks admin data"
                 value={filter}
                 onChange={(event) => setFilter(event.target.value)}
                 placeholder="Filter admin data"
                 className="min-w-[220px] rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-mint/70"
               />
               <select
+                aria-label="Kovaaks reporting period"
                 value={days}
                 onChange={(event) => setDays(Number(event.target.value))}
                 className="rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-text outline-none focus:border-mint/70"
@@ -236,6 +248,7 @@ export function AdminPage() {
                 <option value={365}>Last year</option>
                 <option value={0}>All time</option>
               </select>
+              <details className="admin-maintenance"><summary>Maintenance</summary><div>
               <Button onClick={() => void handleReclassify()} disabled={runningAction}>
                 {runningAction ? "Repairing..." : "Repair scenario types"}
               </Button>
@@ -248,12 +261,13 @@ export function AdminPage() {
               <Button href={`${API_BASE_URL}/admin/failures/export?format=csv`} target="_blank" rel="noreferrer">
                 Export failures
               </Button>
+              </div></details>
             </div>
           }
         />
       </PageSection>
 
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(190px,1fr))]">
+      <div className="admin-metrics">
         <StatCard label="Runs" value={overview ? formatCount(overview.totalRuns) : "—"} detail="Stored on the hub" />
         <StatCard label="Players" value={overview ? formatCount(overview.totalPlayers) : "—"} detail="Linked contributors" accent="cyan" />
         <StatCard label="Scenarios" value={overview ? formatCount(overview.totalScenarios) : "—"} detail="Distinct scenario pages" accent="gold" />
@@ -262,7 +276,7 @@ export function AdminPage() {
         <StatCard label="Missing context" value={overview ? formatCount(overview.missingContextRuns) : "—"} detail="Runs without saved focus windows" />
         <StatCard label="Missing features" value={overview ? formatCount(overview.missingFeatureRuns) : "—"} detail="Runs without derived feature sets" />
         <StatCard label="Zero score" value={overview ? formatCount(overview.zeroScoreRuns) : "—"} detail="Runs saved with no score" />
-      </Grid>
+      </div>
 
       {error ? (
         <PageSection>
@@ -771,6 +785,11 @@ export function AdminPage() {
         )}
         </PageSection>
       </Grid>
+      </div>}
     </PageStack>
   );
+}
+
+function StatCard({ label, value, detail }: { label: string; value: string; detail?: string; accent?: string }) {
+  return <div title={detail}><span className="admin-metric-label">{label}</span><strong className="admin-metric-value">{value}</strong></div>;
 }

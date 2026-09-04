@@ -108,6 +108,12 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		mux.Handle(osuPath, withCORS(cfg.AllowedWebOrigin, osuHandler))
 	}
 	auth.register(mux)
+	adminOsu := &adminOsuHandler{store: hub.Store(), isAdmin: auth.isAdminUser}
+	if osuServer != nil {
+		adminOsu.providers = osuServer
+	}
+	mux.Handle("/admin/osu/overview", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
+	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	newOsuSyncHandler(hub.Store(), auth.media).register(mux, cfg.AllowedWebOrigin)
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
