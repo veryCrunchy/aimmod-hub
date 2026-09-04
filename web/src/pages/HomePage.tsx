@@ -77,9 +77,6 @@ export function HomePage() {
   }, []);
   useAutoRefresh(doRefresh, 30_000);
 
-  const featuredScenario = overview?.topScenarios[0];
-  const featuredProfile = overview?.activeProfiles[0];
-
   const visibleRuns = overview?.recentRuns.slice(0, runsVisible) ?? [];
   const hasMoreRuns = (overview?.recentRuns.length ?? 0) > runsVisible;
 
@@ -87,27 +84,24 @@ export function HomePage() {
     <PageStack>
       <Helmet>
         <title>AimMod Hub · Shared practice intelligence</title>
-        <meta name="description" content="Shared KovaaK's practice data. View scenario pages, player profiles, and run history." />
+        <meta name="description" content="AimMod analysis and coaching for osu! and KovaaK's, plus shared KovaaK's practice data." />
       </Helmet>
       <PageSection className="relative overflow-hidden border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.18),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(184,255,225,0.08),transparent_18%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(6,15,11,0.96)_52%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
         <div className="text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod Hub</div>
         <h1 className="my-2.5 max-w-[16ch] break-words text-[clamp(28px,5.2vw,60px)] leading-[0.94] tracking-[-0.05em]">
-          See how the best KovaaK's players aim.
+          Understand how you aim.
         </h1>
         <p className="max-w-[700px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
-          Mouse path replays, aim fingerprint analysis, and per-run coaching — for every player that's shared their
-          practice data. No account required to explore.
+          Explore shared KovaaK's practice data, or bring beatmaps, replays, scores, and PP goals together in the native AimMod client for osu! players.
         </p>
         <div className="relative mt-3 flex flex-wrap gap-2">
-          <Button to="/community" variant="primary">
-            Explore community
+          <Button to="/app" variant="primary">
+            Get AimMod
           </Button>
-          <Button to="/replays">
-            Watch replays
+          <Button to="/app/osu">
+            AimMod for osu!
           </Button>
-          {featuredScenario ? (
-            <Button to={`/scenarios/${featuredScenario.scenarioSlug}`}>Top scenario</Button>
-          ) : null}
+          <Button to="/community">Explore KovaaK's data</Button>
         </div>
       </PageSection>
 
@@ -344,18 +338,17 @@ export function HomePage() {
       <PageSection className="relative overflow-hidden border-mint/20 bg-[radial-gradient(circle_at_60%_0%,rgba(121,201,151,0.1),transparent_40%),linear-gradient(180deg,rgba(6,18,12,0.98),rgba(4,12,9,0.97))]">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-mint">AimMod App</div>
+            <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-mint">AimMod desktop</div>
             <h2 className="mb-2 max-w-[22ch] text-[clamp(18px,2.8vw,28px)] font-medium leading-[1.1] tracking-[-0.035em]">
               This is everyone else's data.<br />Want to see yours?
             </h2>
             <p className="max-w-125 text-[13px] leading-relaxed text-muted">
-              Install AimMod to automatically sync your KovaaK's runs. Get mouse path replays, aim fingerprint
-              analysis, and per-run coaching for your own practice — in real time.
+              Choose the native osu! client for beatmaps, PP targets, replays, and practice maps, or the KovaaK's companion for live runs and mouse-path analysis.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
-            <Button to="/app" variant="primary">Download AimMod</Button>
-            <Button to="/app">Learn more</Button>
+            <Button to="/app" variant="primary">Choose a product</Button>
+            <Button to="/app/osu">Download for osu!</Button>
           </div>
         </div>
       </PageSection>

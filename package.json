@@ -11,6 +11,7 @@
     "build:api": "go build ./...",
     "build:coachpack": "go run ./api/cmd/aimmod-coachpack -out-dir ./api/internal/coaching/published",
     "build:web": "pnpm --dir web build",
+    "test:web": "pnpm --dir web test",
     "typecheck:api": "go build ./...",
     "typecheck:web": "pnpm --dir web typecheck",
     "proto": "buf generate",

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && tsx scripts/prerender-learning.tsx",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "engines": {
     "node": ">=22"

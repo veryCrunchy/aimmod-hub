@@ -5,7 +5,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { SectionHeader } from "../components/SectionHeader";
 
-const LATEST_RELEASE_URL = "https://github.com/veryCrunchy/aimmod/releases/latest";
+const LATEST_RELEASE_URL = "https://github.com/veryCrunchy/aimmod/releases";
 const REPO_URL = "https://github.com/veryCrunchy/aimmod";
 const HOMEPAGE_URL = "https://aimmod.app";
 
@@ -19,7 +19,7 @@ function useLatestRelease() {
     })
       .then((r) => r.json())
       .then((releases: { tag_name: string; prerelease: boolean; assets: { name: string; browser_download_url: string }[] }[]) => {
-        const stableReleases = releases.filter((r) => !r.prerelease);
+        const stableReleases = releases.filter((r) => !r.prerelease && /^v\d/.test(r.tag_name));
         for (const release of stableReleases) {
           const exe = release.assets.find(
             (a) => a.name.endsWith(".exe") && !a.name.includes("debug")
@@ -91,15 +91,15 @@ export function AimModPage() {
   return (
     <PageStack>
       <Helmet>
-        <title>Download AimMod · AimMod Hub</title>
-        <meta name="description" content="KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows." />
-        <meta property="og:title" content="Download AimMod · AimMod Hub" />
+        <title>AimMod for KovaaK's · Windows</title>
+        <meta name="description" content="Download AimMod for KovaaK's on Windows for live HUDs, replay review, and coaching." />
+        <meta property="og:title" content="AimMod for KovaaK's · Windows" />
         <meta property="og:description" content="KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows." />
       </Helmet>
       {/* Hero */}
       <PageSection className="relative overflow-hidden border-cyan/20 bg-[radial-gradient(circle_at_top_left,rgba(0,200,255,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(121,201,151,0.1),transparent_22%),linear-gradient(135deg,rgba(6,18,24,0.99),rgba(4,12,9,0.97)_55%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
         <div className="absolute inset-y-0 right-[6%] w-[32%] rounded-full bg-[radial-gradient(circle,rgba(0,200,255,0.1),transparent_65%)] blur-3xl" />
-        <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod {version ?? "v1.5.0"}</div>
+        <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod for KovaaK's {version ?? ""}</div>
         <h1 className="my-2.5 max-w-[18ch] break-words text-[clamp(26px,4.8vw,56px)] leading-[0.94] tracking-[-0.05em]">
           KovaaK's overlay, replay, and coaching suite.
         </h1>
@@ -121,6 +121,9 @@ export function AimModPage() {
           </Button>
           <Button href={REPO_URL} target="_blank" rel="noreferrer">
             GitHub
+          </Button>
+          <Button to="/app/osu">
+            Looking for osu!?
           </Button>
         </div>
         <div className="relative mt-4 flex flex-wrap items-center gap-3 text-[12px] text-muted">

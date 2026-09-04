@@ -9,7 +9,8 @@ const quickNavItems = [
   { to: "/learn", label: "Aim training guides", sub: "KB-backed pages on mechanics, flaws, sensitivity, and transfer" },
   { to: "/leaderboard", label: "Global leaderboard", sub: "All-time records and top 100 scores" },
   { to: "/replays", label: "Replay library", sub: "Watch replays and mouse paths" },
-  { to: "/app", label: "Download AimMod", sub: "Get the desktop app to start uploading" },
+  { to: "/app/osu", label: "AimMod for osu!", sub: "Native analysis and coaching for Windows and Linux" },
+  { to: "/app/kovaaks", label: "AimMod for KovaaK's", sub: "Live HUDs, replays, and coaching for Windows" },
 ];
 
 type DropdownItem = {
