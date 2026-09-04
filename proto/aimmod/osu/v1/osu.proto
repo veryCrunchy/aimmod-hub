@@ -1,0 +1,386 @@
+syntax = "proto3";
+
+package aimmod.osu.v1;
+
+option go_package = "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/osu/v1;osuv1";
+
+enum Provider {
+  PROVIDER_UNSPECIFIED = 0;
+  PROVIDER_OSU_OFFICIAL = 1;
+  PROVIDER_OSU_COLLECTOR = 2;
+}
+
+enum SkinProvider {
+  SKIN_PROVIDER_UNSPECIFIED = 0;
+  SKIN_PROVIDER_OSU_SKINS = 1;
+  SKIN_PROVIDER_OSUCK = 2;
+}
+
+enum ItemKind {
+  ITEM_KIND_UNSPECIFIED = 0;
+  ITEM_KIND_BEATMAPSET = 1;
+  ITEM_KIND_COLLECTION = 2;
+}
+
+enum Ruleset {
+  RULESET_UNSPECIFIED = 0;
+  RULESET_OSU = 1;
+  RULESET_TAIKO = 2;
+  RULESET_CATCH = 3;
+  RULESET_MANIA = 4;
+}
+
+enum DownloadHandoffKind {
+  DOWNLOAD_HANDOFF_KIND_UNSPECIFIED = 0;
+  DOWNLOAD_HANDOFF_KIND_LAZER_URI = 1;
+  DOWNLOAD_HANDOFF_KIND_UNAVAILABLE = 2;
+}
+
+enum SkinSort {
+  SKIN_SORT_UNSPECIFIED = 0;
+  SKIN_SORT_RELEVANCE = 1;
+  SKIN_SORT_NEWEST = 2;
+  SKIN_SORT_MOST_VIEWED = 3;
+  SKIN_SORT_MOST_DOWNLOADED = 4;
+  SKIN_SORT_NAME = 5;
+  SKIN_SORT_RANDOM = 6;
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASCENDING = 1;
+  SORT_DIRECTION_DESCENDING = 2;
+}
+
+enum SkinDownloadHandoffKind {
+  SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED = 0;
+  SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL = 1;
+  SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE = 2;
+}
+
+enum OfficialUserLookupKey {
+  OFFICIAL_USER_LOOKUP_KEY_UNSPECIFIED = 0;
+  OFFICIAL_USER_LOOKUP_KEY_ID = 1;
+  OFFICIAL_USER_LOOKUP_KEY_USERNAME = 2;
+}
+
+message ProviderCursor {
+  Provider provider = 1;
+  string page_token = 2;
+}
+
+message ProviderStatus {
+  Provider provider = 1;
+  bool configured = 2;
+  bool available = 3;
+  bool supports_search = 4;
+  bool supports_detail = 5;
+  bool supports_download_handoff = 6;
+  string authentication = 7;
+  string message = 8;
+  string checked_at_iso = 9;
+  bool contract_is_documented = 10;
+}
+
+message GetProviderStatusRequest {
+  repeated Provider providers = 1;
+}
+
+message GetProviderStatusResponse {
+  repeated ProviderStatus providers = 1;
+}
+
+message NumberRange {
+  optional double minimum = 1;
+  optional double maximum = 2;
+}
+
+message BeatmapSearchFilters {
+  Ruleset ruleset = 1;
+  string status = 2;
+  NumberRange stars = 3;
+  NumberRange bpm = 4;
+  NumberRange length_seconds = 5;
+  NumberRange approach_rate = 6;
+  NumberRange circle_size = 7;
+  NumberRange overall_difficulty = 8;
+}
+
+message RulesetCount {
+  Ruleset ruleset = 1;
+  uint32 count = 2;
+}
+
+message BeatmapDifficulty {
+  string beatmap_id = 1;
+  string beatmapset_id = 2;
+  string checksum = 3;
+  string name = 4;
+  Ruleset ruleset = 5;
+  string status = 6;
+  double stars = 7;
+  double bpm = 8;
+  double approach_rate = 9;
+  double circle_size = 10;
+  double overall_difficulty = 11;
+  double drain_rate = 12;
+  uint32 length_seconds = 13;
+  string title = 14;
+  string artist = 15;
+  string creator = 16;
+  string cover_url = 17;
+  DownloadHandoff download_handoff = 18;
+}
+
+message DownloadHandoff {
+  DownloadHandoffKind kind = 1;
+  bool available = 2;
+  string uri = 3;
+  string beatmapset_id = 4;
+  bool requires_osu_lazer = 5;
+  bool requires_user_confirmation = 6;
+  string message = 7;
+}
+
+message BeatmapItem {
+  Provider provider = 1;
+  ItemKind kind = 2;
+  string source_id = 3;
+  string title = 4;
+  string artist = 5;
+  string creator = 6;
+  string description = 7;
+  string status = 8;
+  string cover_url = 9;
+  string preview_url = 10;
+  uint32 beatmap_count = 11;
+  uint32 favourite_count = 12;
+  double minimum_stars = 13;
+  double maximum_stars = 14;
+  double minimum_bpm = 15;
+  double maximum_bpm = 16;
+  uint32 play_count = 17;
+  string submitted_at_iso = 18;
+  string updated_at_iso = 19;
+  repeated string tags = 20;
+  repeated RulesetCount ruleset_counts = 21;
+  repeated BeatmapDifficulty difficulties = 22;
+  DownloadHandoff download_handoff = 23;
+}
+
+message SearchBeatmapItemsRequest {
+  string query = 1;
+  repeated Provider providers = 2;
+  BeatmapSearchFilters filters = 3;
+  string sort = 4;
+  repeated ProviderCursor page_tokens = 5;
+}
+
+message SearchBeatmapItemsResponse {
+  repeated BeatmapItem items = 1;
+  repeated ProviderCursor next_page_tokens = 2;
+  repeated ProviderStatus providers = 3;
+}
+
+message GetBeatmapItemRequest {
+  Provider provider = 1;
+  string source_id = 2;
+  string page_token = 3;
+}
+
+message GetBeatmapItemResponse {
+  BeatmapItem item = 1;
+  string next_page_token = 2;
+  ProviderStatus provider = 3;
+}
+
+message GetDownloadHandoffRequest {
+  Provider provider = 1;
+  string source_id = 2;
+  string beatmapset_id = 3;
+}
+
+message GetDownloadHandoffResponse {
+  DownloadHandoff handoff = 1;
+}
+
+message SkinProviderCursor {
+  SkinProvider provider = 1;
+  string page_token = 2;
+}
+
+message SkinProviderStatus {
+  SkinProvider provider = 1;
+  bool available = 2;
+  bool supports_search = 3;
+  bool supports_detail = 4;
+  bool supports_screenshots = 5;
+  bool supports_direct_download = 6;
+  bool requires_interactive_download_verification = 7;
+  bool contract_is_documented = 8;
+  string message = 9;
+  string checked_at_iso = 10;
+}
+
+message SkinSearchFilters {
+  repeated Ruleset rulesets = 1;
+  string aspect_ratio = 2;
+  string creator = 3;
+  string player = 4;
+  string tag = 5;
+  optional bool include_sensitive = 6;
+}
+
+message SkinScreenshot {
+  string label = 1;
+  string image_url = 2;
+  uint32 width = 3;
+  uint32 height = 4;
+}
+
+message SkinDownloadHandoff {
+  SkinDownloadHandoffKind kind = 1;
+  bool available = 2;
+  string uri = 3;
+  string file_name = 4;
+  uint64 expected_size_bytes = 5;
+  string sha256 = 6;
+  uint64 max_download_bytes = 7;
+  bool requires_interactive_verification = 8;
+  string expires_at_iso = 9;
+  string message = 10;
+}
+
+message SkinItem {
+  SkinProvider provider = 1;
+  string source_id = 2;
+  string name = 3;
+  string creator = 4;
+  repeated string players = 5;
+  repeated Ruleset rulesets = 6;
+  repeated string aspect_ratios = 7;
+  repeated string tags = 8;
+  optional bool sensitive = 9;
+  string thumbnail_url = 10;
+  uint64 view_count = 11;
+  uint64 download_count = 12;
+  uint64 file_size_bytes = 13;
+  string submitted_at_iso = 14;
+  string updated_at_iso = 15;
+  repeated SkinScreenshot screenshots = 16;
+  SkinDownloadHandoff download_handoff = 17;
+  bool counts_are_approximate = 18;
+  bool file_size_is_approximate = 19;
+}
+
+message GetSkinProviderStatusRequest {
+  repeated SkinProvider providers = 1;
+}
+
+message GetSkinProviderStatusResponse {
+  repeated SkinProviderStatus providers = 1;
+}
+
+message SearchSkinsRequest {
+  string query = 1;
+  repeated SkinProvider providers = 2;
+  SkinSearchFilters filters = 3;
+  SkinSort sort = 4;
+  SortDirection direction = 5;
+  repeated SkinProviderCursor page_tokens = 6;
+}
+
+message SearchSkinsResponse {
+  repeated SkinItem items = 1;
+  repeated SkinProviderCursor next_page_tokens = 2;
+  repeated SkinProviderStatus providers = 3;
+}
+
+message GetSkinRequest {
+  SkinProvider provider = 1;
+  string source_id = 2;
+}
+
+message GetSkinResponse {
+  SkinItem item = 1;
+  SkinProviderStatus provider = 2;
+}
+
+message GetSkinDownloadHandoffRequest {
+  SkinProvider provider = 1;
+  string source_id = 2;
+}
+
+message GetSkinDownloadHandoffResponse {
+  SkinDownloadHandoff handoff = 1;
+  SkinProviderStatus provider = 2;
+}
+
+message OfficialUserTeam {
+  uint64 id = 1;
+  string name = 2;
+  string short_name = 3;
+  string flag_url = 4;
+}
+
+message OfficialUserGradeCounts {
+  uint32 ssh = 1;
+  uint32 ss = 2;
+  uint32 sh = 3;
+  uint32 s = 4;
+  uint32 a = 5;
+}
+
+message OfficialUserStatistics {
+  double pp = 1;
+  uint32 global_rank = 2;
+  uint32 country_rank = 3;
+  double hit_accuracy = 4;
+  uint32 play_count = 5;
+  uint64 play_time_seconds = 6;
+  uint64 total_score = 7;
+  uint64 ranked_score = 8;
+  uint32 maximum_combo = 9;
+  uint32 level_current = 10;
+  uint32 level_progress = 11;
+  OfficialUserGradeCounts grade_counts = 12;
+}
+
+message OfficialUserProfile {
+  uint64 user_id = 1;
+  string username = 2;
+  string country_code = 3;
+  string avatar_url = 4;
+  string cover_url = 5;
+  Ruleset default_ruleset = 6;
+  bool is_active = 7;
+  bool is_online = 8;
+  bool is_supporter = 9;
+  string join_date_iso = 10;
+  string last_visit_iso = 11;
+  OfficialUserStatistics statistics = 12;
+  OfficialUserTeam team = 13;
+}
+
+message GetOfficialUserProfileRequest {
+  string identifier = 1;
+  OfficialUserLookupKey lookup_key = 2;
+  Ruleset ruleset = 3;
+}
+
+message GetOfficialUserProfileResponse {
+  OfficialUserProfile profile = 1;
+  ProviderStatus provider = 2;
+}
+
+service OsuService {
+  rpc GetProviderStatus(GetProviderStatusRequest) returns (GetProviderStatusResponse);
+  rpc SearchBeatmapItems(SearchBeatmapItemsRequest) returns (SearchBeatmapItemsResponse);
+  rpc GetBeatmapItem(GetBeatmapItemRequest) returns (GetBeatmapItemResponse);
+  rpc GetDownloadHandoff(GetDownloadHandoffRequest) returns (GetDownloadHandoffResponse);
+  rpc GetSkinProviderStatus(GetSkinProviderStatusRequest) returns (GetSkinProviderStatusResponse);
+  rpc SearchSkins(SearchSkinsRequest) returns (SearchSkinsResponse);
+  rpc GetSkin(GetSkinRequest) returns (GetSkinResponse);
+  rpc GetSkinDownloadHandoff(GetSkinDownloadHandoffRequest) returns (GetSkinDownloadHandoffResponse);
+  rpc GetOfficialUserProfile(GetOfficialUserProfileRequest) returns (GetOfficialUserProfileResponse);
+}

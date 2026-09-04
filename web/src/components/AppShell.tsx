@@ -18,7 +18,8 @@ export function AppShell({ children }: PropsWithChildren) {
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
   const navItems = [
     { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
-    { to: "/app", label: "Get the App", title: "Download the AimMod desktop app", highlight: true },
+    { to: "/app", label: "Get AimMod", title: "Download AimMod for osu! or KovaaK's", highlight: true },
+    { to: "/app/osu", label: "osu!", title: "AimMod for osu! on Windows and Linux" },
     { to: "/community", label: "Community", title: "Browse all scenarios and players" },
     { to: "/learn", label: "Learn", title: "Browse KB-backed aim training learning pages" },
     { to: "/live", label: "Live", title: "See who is practicing right now" },
@@ -91,6 +92,7 @@ export function AppShell({ children }: PropsWithChildren) {
               <NavLink
                 key={item.to}
                 to={item.to}
+                end={item.to === "/app"}
                 title={item.title}
                 className={({ isActive }) =>
                   cn(

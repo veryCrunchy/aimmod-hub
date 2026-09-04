@@ -18,6 +18,8 @@ const DeviceLinkPage = lazy(() => import("./pages/DeviceLinkPage").then((m) => (
 const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m.HomePage })));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
 const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m.LivePage })));
+const OsuDownloadPage = lazy(() => import("./pages/OsuDownloadPage").then((m) => ({ default: m.OsuDownloadPage })));
+const ProductsPage = lazy(() => import("./pages/ProductsPage").then((m) => ({ default: m.ProductsPage })));
 const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then((m) => ({ default: m.PlayerScenarioPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const ReplayHubPage = lazy(() => import("./pages/ReplayHubPage").then((m) => ({ default: m.ReplayHubPage })));
@@ -46,12 +48,15 @@ function AppRoutes() {
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/app" element={<AimModPage />} />
+          <Route path="/app" element={<ProductsPage />} />
+          <Route path="/app/osu" element={<OsuDownloadPage />} />
+          <Route path="/app/kovaaks" element={<AimModPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/learn" element={<LearningHubPage />} />
           <Route path="/learn/topics/:topic" element={<LearningTopicPage />} />
           <Route path="/learn/:entryId" element={<LearningPage />} />
           <Route path="/live" element={<LivePage />} />
+          <Route path="/osu" element={<Navigate to="/app/osu" replace />} />
           <Route path="/benchmarks" element={<GlobalBenchmarksPage />} />
           <Route path="/benchmarks/:benchmarkId" element={<BenchmarkLeaderboardPage />} />
           <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />
