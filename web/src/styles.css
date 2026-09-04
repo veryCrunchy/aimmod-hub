@@ -42,10 +42,10 @@
 }
 
 .hub-header { position: sticky; top: 0; z-index: 60; height: 68px; display: flex; align-items: center; gap: 24px; padding: 0 28px; background: var(--color-bg); border-bottom: 1px solid var(--color-line); }
-.hub-brand { display: flex; align-items: center; gap: 10px; flex: 0 0 184px; font-size: 18px; white-space: nowrap; }
-.hub-brand strong { font-weight: 650; }
-.hub-brand strong span { color: var(--color-muted); font-weight: 400; }
-.hub-brand-mark { display: grid; place-items: center; width: 28px; height: 28px; background: var(--color-mint); color: #101113; font-size: 20px; font-weight: 800; border-radius: 5px; }
+.hub-brand { display: flex; align-items: center; gap: 8px; flex: 0 0 284px; min-width: 0; white-space: nowrap; }
+.hub-brand-wordmark { display: block; width: 244px; height: 59px; object-fit: contain; flex-shrink: 0; }
+.hub-brand-label { color: var(--color-muted); font-size: 15px; font-weight: 400; }
+.hub-brand-mark { display: none; width: 44px; height: 31px; object-fit: contain; flex-shrink: 0; }
 .hub-header-search { flex: 1; max-width: 620px; min-width: 0; }
 .hub-account { margin-left: auto; min-width: 0; }
 .hub-game-selector { min-height: 40px; max-width: 140px; border: 1px solid var(--color-line); border-radius: 5px; background: var(--color-panel); color: var(--color-text); padding: 8px 28px 8px 10px; font-size: 13px; }
@@ -82,6 +82,8 @@
   .hub-content { margin-left: 184px; }
   .hub-header { padding-inline: 20px; gap: 16px; }
   .hub-brand { flex-basis: 164px; }
+  .hub-brand-wordmark { display: none; }
+  .hub-brand-mark { display: block; }
   .hub-content main { padding-inline: 24px; }
   .hub-replay-row { grid-template-columns: 52px minmax(0,1fr) repeat(4,60px); gap: 10px; }
   .hub-replay-cover { width: 52px; }
@@ -89,7 +91,7 @@
 @media (max-width: 800px) {
   html { scroll-padding-top: 180px; }
   .hub-header { height: auto; min-height: 116px; padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
-  .hub-brand { flex: 1; font-size: 17px; }
+  .hub-brand { flex: 1; }
   .hub-header-search { order: 4; flex: 1 0 100%; max-width: none; }
   .hub-game-selector { order: 3; max-width: 120px; }
   .hub-account { margin-left: 0; }
@@ -108,8 +110,7 @@
 }
 @media (max-width: 420px) {
   .hub-header { gap: 8px; }
-  .hub-brand { font-size: 15px; }
-  .hub-brand strong span { display: none; }
+  .hub-brand-label { display: none; }
   .hub-game-selector { order: 4; flex: 0 0 100%; max-width: none; }
   .hub-header-search { order: 5; }
 }

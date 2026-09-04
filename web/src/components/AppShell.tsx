@@ -81,7 +81,11 @@ export function AppShell({ children }: PropsWithChildren) {
     <div className="hub-shell" data-game={game}>
       <a className="hub-skip" href="#main-content">Skip to content</a>
       <header className="hub-header">
-        <Link to={game === "osu" ? "/osu" : "/"} className="hub-brand" aria-label="AimMod Hub home"><img className="hub-brand-mark" src="/images/aimmod-logo.png" width="36" height="36" alt="" /><strong>AimMod <span>Hub</span></strong></Link>
+        <Link to={game === "osu" ? "/osu" : "/"} className="hub-brand" aria-label="AimMod Hub home">
+          <img className="hub-brand-wordmark" src="/brand/aimmod-v9/wordmark-white.svg" width="244" height="59" alt="" />
+          <img className="hub-brand-mark" src="/brand/aimmod-v9/mark-mint.svg" width="44" height="31" alt="" />
+          <span className="hub-brand-label" aria-hidden="true">Hub</span>
+        </Link>
         <select className="hub-game-selector" aria-label="Game" value={game} onChange={e => { const next = e.target.value as HubGame; setPreferredGame(next); navigate(next === "osu" ? "/osu" : "/"); }}>
           <option value="osu">osu!</option><option value="kovaaks">KovaaK's</option>
         </select>

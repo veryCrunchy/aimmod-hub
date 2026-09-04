@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"strings"
 
+	htmlparser "golang.org/x/net/html"
+
 	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
@@ -45,12 +47,68 @@ func (m pageMeta) inject(indexHTML string) string {
     <meta property="og:type" content="%s" />
     <meta property="og:url" content="%s" />
     <meta property="og:site_name" content="AimMod Hub" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="AimMod wordmark and forward-leaning monogram" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" />
+    <meta name="twitter:image:alt" content="AimMod wordmark and forward-leaning monogram" />
     <meta name="twitter:title" content="%s" />
     <meta name="twitter:description" content="%s" />`,
-		t, d, c, t, d, m.OGType, c, t, d,
+		t, d, c, t, d, html.EscapeString(m.OGType), c, t, d,
 	)
-	return strings.Replace(indexHTML, "<title>AimMod Hub</title>", block, 1)
+	// Replace owned head metadata rather than appending conflicting defaults.
+	// Tokenization preserves unrelated markup, scripts and favicon links verbatim.
+	z := htmlparser.NewTokenizer(strings.NewReader(indexHTML))
+	var output strings.Builder
+	inHead, inTitle := false, false
+	for {
+		kind := z.Next()
+		if kind == htmlparser.ErrorToken {
+			return output.String()
+		}
+		raw := string(z.Raw())
+		token := z.Token()
+		if kind == htmlparser.StartTagToken && token.Data == "head" {
+			inHead = true
+		}
+		if inHead {
+			if kind == htmlparser.EndTagToken && token.Data == "head" {
+				output.WriteString(block)
+				inHead = false
+			}
+			if token.Data == "title" && kind == htmlparser.StartTagToken {
+				inTitle = true
+				continue
+			}
+			if inTitle {
+				if kind == htmlparser.EndTagToken && token.Data == "title" {
+					inTitle = false
+				}
+				continue
+			}
+			if kind == htmlparser.StartTagToken || kind == htmlparser.SelfClosingTagToken {
+				owned := false
+				for _, attr := range token.Attr {
+					value := strings.ToLower(strings.TrimSpace(attr.Val))
+					if token.Data == "meta" && (attr.Key == "name" || attr.Key == "property") {
+						owned = owned || value == "description" || strings.HasPrefix(value, "og:") || strings.HasPrefix(value, "twitter:")
+					}
+					if token.Data == "link" && attr.Key == "rel" {
+						for _, rel := range strings.Fields(value) {
+							owned = owned || rel == "canonical"
+						}
+					}
+				}
+				if owned {
+					continue
+				}
+			}
+		}
+		output.WriteString(raw)
+	}
 }
 
 func isStaticAssetPath(p string) bool {
@@ -74,9 +132,33 @@ func isStaticAssetPath(p string) bool {
 func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Store) pageMeta {
 	fallback := pageMeta{
 		Title:       "AimMod Hub",
-		Description: "Shared KovaaK's practice data. View scenario pages, player profiles, and run history.",
+		Description: "AimMod analysis and coaching for osu! and KovaaK's, plus shared practice data.",
 		OGType:      "website",
 		Canonical:   canonical,
+	}
+
+	cleanPath := strings.TrimSuffix(path, "/")
+	if cleanPath == "/osu" || strings.HasPrefix(cleanPath, "/osu/") || cleanPath == "/app/osu" {
+		fallback.Title = "osu! Analysis and Community · AimMod Hub"
+		fallback.Description = "Explore osu! beatmaps, skins, player profiles and shared replays with AimMod analysis and coaching."
+		switch cleanPath {
+		case "/osu/beatmaps":
+			fallback.Title = "osu! Beatmaps · AimMod Hub"
+			fallback.Description = "Browse osu! beatmaps and difficulties, filter map statistics, and open maps in AimMod."
+		case "/osu/skins":
+			fallback.Title = "osu! Skins · AimMod Hub"
+			fallback.Description = "Browse osu! skins, inspect previews, and find a skin for your next play."
+		case "/osu/players":
+			fallback.Title = "osu! Players · AimMod Hub"
+		case "/osu/replays":
+			fallback.Title = "osu! Replay Library · AimMod Hub"
+		case "/osu/community":
+			fallback.Title = "osu! Community · AimMod Hub"
+		case "/app/osu":
+			fallback.Title = "Download AimMod for osu! · AimMod Hub"
+			fallback.Description = "Download AimMod for osu! on Windows and Linux for replay analysis, coaching and practice."
+		}
+		return fallback
 	}
 
 	if m := reProfile.FindStringSubmatch(path); m != nil {
@@ -166,7 +248,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	case "/app", "/app/":
 		return pageMeta{
 			Title:       "Download AimMod · AimMod Hub",
-			Description: "KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows.",
+			Description: "Download AimMod for osu! or KovaaK's. Replay analysis, coaching and practice tools for your game.",
 			OGType:      "website",
 			Canonical:   canonical,
 		}
