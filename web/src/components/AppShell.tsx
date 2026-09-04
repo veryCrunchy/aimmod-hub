@@ -20,6 +20,7 @@ export function AppShell({ children }: PropsWithChildren) {
     { to: "/", label: "Home", title: "Overview: stats, top scenarios, recent runs" },
     { to: "/app", label: "Get AimMod", title: "Download AimMod for osu! or KovaaK's", highlight: true },
     { to: "/app/osu", label: "osu!", title: "AimMod for osu! on Windows and Linux" },
+    { to: "/osu/community", label: "osu! community", title: "Browse public osu! scores and replay analysis" },
     { to: "/community", label: "Community", title: "Browse all scenarios and players" },
     { to: "/learn", label: "Learn", title: "Browse KB-backed aim training learning pages" },
     { to: "/live", label: "Live", title: "See who is practicing right now" },

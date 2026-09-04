@@ -226,6 +226,119 @@ CREATE INDEX IF NOT EXISTS idx_coaching_queries_created_at
 
 CREATE INDEX IF NOT EXISTS idx_coaching_queries_is_miss
   ON coaching_queries(is_miss, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS osu_profiles (
+  user_id BIGINT PRIMARY KEY REFERENCES hub_users(id) ON DELETE CASCADE,
+  osu_user_id BIGINT NOT NULL DEFAULT 0,
+  username TEXT NOT NULL DEFAULT '',
+  country_code TEXT NOT NULL DEFAULT '',
+  avatar_url TEXT NOT NULL DEFAULT '',
+  global_rank BIGINT,
+  performance_points DOUBLE PRECISION,
+  play_count BIGINT NOT NULL DEFAULT 0,
+  play_time_seconds BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_osu_profiles_osu_user_id
+  ON osu_profiles(osu_user_id)
+  WHERE osu_user_id > 0;
+
+CREATE TABLE IF NOT EXISTS osu_beatmap_sets (
+  set_key TEXT PRIMARY KEY,
+  online_id BIGINT NOT NULL DEFAULT 0,
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL DEFAULT '',
+  creator TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL DEFAULT '',
+  cover_url TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_osu_beatmap_sets_online_id
+  ON osu_beatmap_sets(online_id)
+  WHERE online_id > 0;
+
+CREATE TABLE IF NOT EXISTS osu_beatmap_difficulties (
+  difficulty_key TEXT PRIMARY KEY,
+  set_key TEXT NOT NULL REFERENCES osu_beatmap_sets(set_key) ON DELETE CASCADE,
+  online_id BIGINT NOT NULL DEFAULT 0,
+  checksum TEXT NOT NULL DEFAULT '',
+  version TEXT NOT NULL,
+  ruleset TEXT NOT NULL DEFAULT 'osu',
+  star_rating DOUBLE PRECISION NOT NULL DEFAULT 0,
+  bpm DOUBLE PRECISION NOT NULL DEFAULT 0,
+  length_ms BIGINT NOT NULL DEFAULT 0,
+  circle_size DOUBLE PRECISION NOT NULL DEFAULT 0,
+  approach_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+  overall_difficulty DOUBLE PRECISION NOT NULL DEFAULT 0,
+  drain_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+  max_combo INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_osu_beatmap_difficulties_online_id
+  ON osu_beatmap_difficulties(online_id)
+  WHERE online_id > 0;
+
+CREATE INDEX IF NOT EXISTS idx_osu_beatmap_difficulties_set
+  ON osu_beatmap_difficulties(set_key, star_rating);
+
+CREATE TABLE IF NOT EXISTS osu_scores (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES hub_users(id) ON DELETE CASCADE,
+  client_score_id TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  difficulty_key TEXT NOT NULL REFERENCES osu_beatmap_difficulties(difficulty_key),
+  online_score_id BIGINT NOT NULL DEFAULT 0,
+  played_at TIMESTAMPTZ NOT NULL,
+  total_score BIGINT NOT NULL DEFAULT 0,
+  performance_points DOUBLE PRECISION,
+  accuracy DOUBLE PRECISION NOT NULL DEFAULT 0,
+  max_combo INTEGER NOT NULL DEFAULT 0,
+  count_300 INTEGER NOT NULL DEFAULT 0,
+  count_100 INTEGER NOT NULL DEFAULT 0,
+  count_50 INTEGER NOT NULL DEFAULT 0,
+  count_miss INTEGER NOT NULL DEFAULT 0,
+  mods TEXT[] NOT NULL DEFAULT '{}',
+  passed BOOLEAN NOT NULL DEFAULT TRUE,
+  visibility TEXT NOT NULL DEFAULT 'private' CHECK (visibility IN ('private', 'unlisted', 'public')),
+  share_id TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, client_score_id),
+  UNIQUE (user_id, content_hash)
+);
+
+CREATE INDEX IF NOT EXISTS idx_osu_scores_public_played_at
+  ON osu_scores(played_at DESC)
+  WHERE visibility = 'public';
+
+CREATE INDEX IF NOT EXISTS idx_osu_scores_user_played_at
+  ON osu_scores(user_id, played_at DESC);
+
+CREATE TABLE IF NOT EXISTS osu_replay_files (
+  score_id BIGINT PRIMARY KEY REFERENCES osu_scores(id) ON DELETE CASCADE,
+  replay_sha256 TEXT NOT NULL,
+  storage_key TEXT NOT NULL DEFAULT '',
+  content_type TEXT NOT NULL DEFAULT 'application/x-osu-replay',
+  byte_size BIGINT NOT NULL DEFAULT 0,
+  client_filename TEXT NOT NULL DEFAULT '',
+  uploaded_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_osu_replay_files_storage_key
+  ON osu_replay_files(storage_key)
+  WHERE storage_key <> '';
+
+CREATE TABLE IF NOT EXISTS osu_replay_analyses (
+  score_id BIGINT PRIMARY KEY REFERENCES osu_scores(id) ON DELETE CASCADE,
+  schema_version INTEGER NOT NULL,
+  engine_version TEXT NOT NULL DEFAULT '',
+  analysis_json JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 `
 
 const hubUserIdentityViewSQL = `

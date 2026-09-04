@@ -19,6 +19,9 @@ const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
 const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m.LivePage })));
 const OsuDownloadPage = lazy(() => import("./pages/OsuDownloadPage").then((m) => ({ default: m.OsuDownloadPage })));
+const OsuCommunityPage = lazy(() => import("./pages/OsuCommunityPage").then((m) => ({ default: m.OsuCommunityPage })));
+const OsuProfilePage = lazy(() => import("./pages/OsuProfilePage").then((m) => ({ default: m.OsuProfilePage })));
+const OsuReplayPage = lazy(() => import("./pages/OsuReplayPage").then((m) => ({ default: m.OsuReplayPage })));
 const ProductsPage = lazy(() => import("./pages/ProductsPage").then((m) => ({ default: m.ProductsPage })));
 const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then((m) => ({ default: m.PlayerScenarioPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
@@ -50,6 +53,9 @@ function AppRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/app" element={<ProductsPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />
+          <Route path="/osu/community" element={<OsuCommunityPage />} />
+          <Route path="/osu/profiles/:handle" element={<OsuProfilePage />} />
+          <Route path="/osu/replays/:shareId" element={<OsuReplayPage />} />
           <Route path="/app/kovaaks" element={<AimModPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/learn" element={<LearningHubPage />} />

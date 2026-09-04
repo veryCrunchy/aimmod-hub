@@ -1,0 +1,123 @@
+import { API_BASE_URL } from "./config";
+
+export type OsuJudgementSummary = {
+  great?: number;
+  ok?: number;
+  meh?: number;
+  miss?: number;
+  sliderBreaks?: number;
+  other?: number;
+};
+
+export type OsuReplayJudgement = {
+  objectIndex?: number | null;
+  objectType?: string;
+  startTimeMs?: number;
+  result?: string;
+  timeOffsetMs?: number;
+  missAnalysis?: {
+    reason?: string;
+    confidence?: number;
+    closestDistance?: number;
+    distanceAtPress?: number | null;
+    pressTimeOffsetMs?: number | null;
+  } | null;
+};
+
+export type OsuReplayAnalysis = {
+  timeBasis?: string;
+  headlessAudioMuted?: boolean;
+  summary?: OsuJudgementSummary;
+  judgements?: OsuReplayJudgement[];
+};
+
+export type OsuSharedReplay = {
+  shareId: string;
+  visibility: "public" | "unlisted";
+  hubHandle: string;
+  hubDisplayName: string;
+  osuUserId: number;
+  osuUsername: string;
+  countryCode: string;
+  avatarUrl: string;
+  beatmapSetId: number;
+  beatmapId: number;
+  title: string;
+  artist: string;
+  creator: string;
+  coverUrl: string;
+  difficulty: string;
+  ruleset: string;
+  starRating: number;
+  bpm: number;
+  lengthMs: number;
+  playedAt: string;
+  totalScore: number;
+  performancePoints?: number | null;
+  accuracy: number;
+  maxCombo: number;
+  count300: number;
+  count100: number;
+  count50: number;
+  countMiss: number;
+  mods: string[];
+  passed: boolean;
+  hasReplayFile: boolean;
+  analysisSchema: number;
+  analysisEngine: string;
+  analysis?: OsuReplayAnalysis;
+};
+
+export type OsuPublicProfile = {
+  hubHandle: string;
+  hubDisplayName: string;
+  osuUserId: number;
+  osuUsername: string;
+  countryCode: string;
+  avatarUrl: string;
+  globalRank?: number | null;
+  performancePoints?: number | null;
+  playCount: number;
+  playTimeSeconds: number;
+  sharedReplayCount: number;
+  recentReplays: OsuSharedReplay[];
+};
+
+async function fetchJSON<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers: { Accept: "application/json" } });
+  if (!response.ok) {
+    const detail = (await response.text()).trim();
+    throw new Error(detail || `Request failed (${response.status}).`);
+  }
+  return response.json() as Promise<T>;
+}
+
+export async function fetchOsuCommunity(limit = 36): Promise<OsuSharedReplay[]> {
+  const response = await fetchJSON<{ items?: OsuSharedReplay[] }>(`/api/osu/v1/community?limit=${Math.max(1, Math.min(100, limit))}`);
+  return response.items ?? [];
+}
+
+export function fetchOsuProfile(handle: string, limit = 36): Promise<OsuPublicProfile> {
+  return fetchJSON(`/api/osu/v1/profiles/${encodeURIComponent(handle)}?limit=${Math.max(1, Math.min(100, limit))}`);
+}
+
+export function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> {
+  return fetchJSON(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`);
+}
+
+export function osuReplayDownloadUrl(shareId: string): string {
+  return `${API_BASE_URL}/media/osu-replays/${encodeURIComponent(shareId)}.osr`;
+}
+
+export function formatOsuAccuracy(value: number): string {
+  return `${(Math.max(0, Math.min(1, value)) * 100).toFixed(2)}%`;
+}
+
+export function formatOsuMods(mods: string[]): string {
+  return mods.length > 0 ? mods.join("") : "NM";
+}
+
+export function formatOsuDuration(milliseconds: number): string {
+  const seconds = Math.max(0, Math.round(milliseconds / 1000));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}

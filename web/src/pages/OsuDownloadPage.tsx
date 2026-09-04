@@ -125,6 +125,7 @@ export function OsuDownloadPage() {
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Button to="#downloads" variant="primary">Get AimMod for osu!</Button>
+              <Button to="/osu/community">Browse shared plays</Button>
               <Button href={REPOSITORY_URL} target="_blank" rel="noreferrer">View source</Button>
               <Button to="/app/kovaaks">Looking for KovaaK's?</Button>
             </div>

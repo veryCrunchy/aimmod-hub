@@ -108,6 +108,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		mux.Handle(osuPath, withCORS(cfg.AllowedWebOrigin, osuHandler))
 	}
 	auth.register(mux)
+	newOsuSyncHandler(hub.Store(), auth.media).register(mux, cfg.AllowedWebOrigin)
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -359,7 +360,7 @@ func withCORS(origin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Connect-Protocol-Version,Connect-Timeout-Ms,Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Connect-Protocol-Version,Connect-Timeout-Ms,Authorization,Idempotency-Key,X-Content-SHA256")
 		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 		w.Header().Set("Access-Control-Expose-Headers", "Grpc-Status,Grpc-Message,Grpc-Status-Details-Bin")
 		if r.Method == http.MethodOptions {
