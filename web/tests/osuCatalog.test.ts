@@ -4,7 +4,7 @@ import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { OsuService } from "../src/gen/aimmod/osu/v1/osu_connect";
 import { Provider, SearchBeatmapItemsRequest, SkinProvider } from "../src/gen/aimmod/osu/v1/osu_pb";
-import { beatmapLinks, CatalogCache, catalogRequest, mediaUrl, numberRange, skinLinks } from "../src/lib/osuCatalog";
+import { beatmapLinks, CatalogCache, catalogRequest, mediaUrl, numberRange, skinLinks, sliderRangeValue } from "../src/lib/osuCatalog";
 
 test("native handoffs accept supported IDs and reject injected paths or oversized IDs", () => {
   assert.equal(beatmapLinks("2147483647")?.osu, "osu://dl/2147483647");
@@ -52,6 +52,20 @@ test("range endpoints preserve presence through JSON and binary serialization", 
     assert.deepEqual(SearchBeatmapItemsRequest.fromJson(request.toJson()).filters?.stars?.toJson(), expected);
     assert.deepEqual(SearchBeatmapItemsRequest.fromBinary(request.toBinary()).filters?.stars?.toJson(), expected);
   }
+});
+
+test("sliders distinguish unlimited endpoints from zero and clamp crossing handles", () => {
+  assert.equal(sliderRangeValue(-0.1, "Min", 10, 0.1, ""), "");
+  assert.equal(sliderRangeValue(10.1, "Max", 10, 0.1, ""), "");
+  assert.equal(sliderRangeValue(0, "Min", 10, 0.1, ""), "0");
+  assert.equal(sliderRangeValue(0, "Max", 10, 0.1, ""), "0");
+  assert.equal(sliderRangeValue(6, "Min", 10, 0.1, "5.25"), "5.25");
+  assert.equal(sliderRangeValue(3, "Max", 10, 0.1, "4.25"), "4.25");
+  assert.equal(sliderRangeValue(3, "Max", 10, 0.1, "4.123456789"), "4.123456789");
+  assert.equal(sliderRangeValue(6, "Min", 10, 0.1, "4.123456789"), "4.123456789");
+  assert.equal(sliderRangeValue(0.1 + 0.2, "Min", 10, 0.1, ""), "0.3");
+  assert.equal(sliderRangeValue(900, "Max", 1200, 5, ""), "900");
+  assert.equal(sliderRangeValue(5, "Min", 10, 0.1, "invalid"), "5");
 });
 
 test("cache expires and evicts entries without leaking one query into another", () => {

@@ -42,6 +42,16 @@ export function numberRange(minimum: string, maximum: string): NumberRange | und
   return new NumberRange({ minimum: min, maximum: max });
 }
 
+export function sliderRangeValue(value: number, endpoint: "Min" | "Max", ceiling: number, step: number, opposite: string): string {
+  if ((endpoint === "Min" && value < 0) || (endpoint === "Max" && value > ceiling)) return "";
+  let bound = Number(Math.max(0, Math.min(ceiling, value)).toFixed(Math.max(6, (String(step).split(".")[1] ?? "").length)));
+  try {
+    const other = numberRange(opposite, "")?.minimum;
+    if (other !== undefined) bound = endpoint === "Min" ? Math.min(bound, other) : Math.max(bound, other);
+  } catch { /* The URL validation remains visible until the invalid endpoint is changed. */ }
+  return String(bound);
+}
+
 export class CatalogCache {
   private entries = new Map<string, { value: unknown; expires: number }>();
   constructor(private limit = 64, private ttl = 120_000, private now = Date.now) {}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Helmet } from "../lib/helmet";
 import { SectionHeader } from "../components/SectionHeader";
@@ -7,16 +7,72 @@ import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useCatalogRequest } from "../hooks/useCatalogRequest";
-import { beatmapLinks, mediaUrl, modeName, numberRange, osuClient, rulesets, skinLinks, skinSource } from "../lib/osuCatalog";
+import { beatmapLinks, mediaUrl, modeName, numberRange, osuClient, rulesets, skinLinks, skinSource, sliderRangeValue } from "../lib/osuCatalog";
 import { BeatmapSearchFilters, Provider, ProviderCursor, Ruleset, SearchBeatmapItemsRequest, SearchSkinsRequest, SkinItem, SkinProvider, SkinProviderCursor, SkinSort, SortDirection } from "../gen/aimmod/osu/v1/osu_pb";
 import "./osuCatalog.css";
 
-const ranges = [["stars", "Stars"], ["bpm", "BPM"], ["lengthSeconds", "Length (seconds)"], ["approachRate", "AR"], ["circleSize", "CS"], ["overallDifficulty", "OD"]] as const;
+const ranges = [["stars", "Stars", 10, 0.1], ["bpm", "BPM", 300, 1], ["lengthSeconds", "Length", 600, 5], ["approachRate", "AR", 11, 0.1], ["circleSize", "CS", 10, 0.1], ["overallDifficulty", "OD", 11, 0.1]] as const;
 const beatmapSort = [["relevance_desc", "Relevance"], ["ranked_desc", "Recently ranked"], ["updated_desc", "Recently updated"], ["plays_desc", "Most played"], ["favourites_desc", "Most favourited"], ["difficulty_asc", "Difficulty: low to high"], ["difficulty_desc", "Difficulty: high to low"], ["title_asc", "Title"]] as const;
 const skinSort = [["1", "Relevance"], ["2", "Newest"], ["3", "Most viewed"], ["4", "Most downloaded"], ["5", "Name"]] as const;
 
 function Select({ label, value, options, onChange }: { label: string; value: string; options: readonly (readonly [string, string])[]; onChange: (value: string) => void }) {
   return <label>{label}<select value={value} onChange={event => onChange(event.target.value)}>{options.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>;
+}
+
+function RangeSlider({ name, label, limit, step, minimum, maximum, onChange }: {
+  name: string; label: string; limit: number; step: number; minimum: string; maximum: string;
+  onChange: (endpoint: "Min" | "Max", value: string) => void;
+}) {
+  const id = useId();
+  const dragEndpoint = useRef<"Min" | "Max" | null>(null);
+  const extent = useRef(limit);
+  const parse = (value: string) => { try { return numberRange(value, "")?.minimum; } catch { return undefined; } };
+  const min = parse(minimum);
+  const max = parse(maximum);
+  // Keep shared URLs outside the usual scale editable without shrinking the rail during a drag.
+  extent.current = Math.max(extent.current, Math.ceil(min ?? 0), Math.ceil(max ?? 0));
+  const ceiling = extent.current;
+  const low = min ?? -step;
+  const high = max ?? ceiling + step;
+  const position = (value: number) => `${(value + step) / (ceiling + 2 * step) * 100}%`;
+  const display = (value: string) => {
+    if (!value.trim()) return "Any";
+    const number = parse(value);
+    if (number === undefined) return "Invalid";
+    return name === "lengthSeconds" ? `${Math.floor(number / 60)}:${String(Number((number % 60).toFixed(3))).padStart(2, "0")}` : String(number);
+  };
+  const change = (endpoint: "Min" | "Max", value: number) => onChange(endpoint, sliderRangeValue(value, endpoint, ceiling, step, endpoint === "Min" ? maximum : minimum));
+  const pointerValue = (element: HTMLDivElement, clientX: number) => {
+    const rect = element.getBoundingClientRect();
+    const fraction = Math.max(0, Math.min(1, (clientX - rect.left - 12) / (rect.width - 24)));
+    return Math.round((fraction * (ceiling + 2 * step) - step) / step) * step;
+  };
+  return <fieldset className={`catalog-range-control${name === "stars" ? " catalog-star-range" : ""}`}>
+    <legend>{label}</legend>
+    <div className="catalog-range-values">
+      <label htmlFor={`${id}-min`}>Minimum <strong>{display(minimum)}</strong></label>
+      <label htmlFor={`${id}-max`}>Maximum <strong>{display(maximum)}</strong></label>
+    </div>
+    <div className="catalog-dual-range" style={{ "--range-low": position(low), "--range-high": position(high) } as CSSProperties}
+      onPointerDown={event => {
+        if (event.target instanceof HTMLInputElement || event.button !== 0) return;
+        const value = pointerValue(event.currentTarget, event.clientX);
+        const endpoint = Math.abs(value - low) < Math.abs(value - high) ? "Min" : "Max";
+        dragEndpoint.current = endpoint;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        event.currentTarget.querySelector<HTMLInputElement>(`#${CSS.escape(`${id}-${endpoint.toLowerCase()}`)}`)?.focus({ preventScroll: true });
+        change(endpoint, value);
+      }}
+      onPointerMove={event => { if (dragEndpoint.current) change(dragEndpoint.current, pointerValue(event.currentTarget, event.clientX)); }}
+      onPointerUp={() => { dragEndpoint.current = null; }} onPointerCancel={() => { dragEndpoint.current = null; }}>
+      <div className="catalog-range-rail" aria-hidden="true" />
+      {(["Min", "Max"] as const).map(endpoint => <input key={endpoint} id={`${id}-${endpoint.toLowerCase()}`} type="range" min={-step} max={ceiling + step} step={step}
+        value={endpoint === "Min" ? low : high} aria-label={`${endpoint === "Min" ? "Minimum" : "Maximum"} ${label}`}
+        aria-valuetext={display(endpoint === "Min" ? minimum : maximum) === "Any" ? `No ${endpoint === "Min" ? "minimum" : "maximum"}` : `${display(endpoint === "Min" ? minimum : maximum)}${name === "stars" ? " stars" : name === "bpm" ? " BPM" : ""}`}
+        onChange={event => change(endpoint, Number(event.target.value))} />)}
+    </div>
+    <div className="catalog-range-scale" aria-hidden="true"><span>0</span><span>{display(String(ceiling / 2))}</span><span>{display(String(ceiling))}</span></div>
+  </fieldset>;
 }
 function External({ href, children }: { href: string; children: ReactNode }) { return <Button href={href} target="_blank" rel="noopener noreferrer">{children}</Button>; }
 function CatalogLoading({ skins = false }: { skins?: boolean }) {
@@ -49,18 +105,19 @@ export function OsuCatalogPage({ skins = false }: { skins?: boolean }) {
   const request = skins ? new SearchSkinsRequest({ query: get("q").trim().slice(0, 256), providers: provider === "all" ? [SkinProvider.OSU_SKINS, SkinProvider.OSUCK] : [provider === "2" ? SkinProvider.OSUCK : SkinProvider.OSU_SKINS], filters: { rulesets: ruleset ? [ruleset] : [], creator: get("creator"), player: get("player") }, sort: Number(get("sort", "1")) as SkinSort, direction: get("direction", "desc") === "asc" ? SortDirection.ASCENDING : SortDirection.DESCENDING })
     : new SearchBeatmapItemsRequest({ query: get("q").trim().slice(0, 256), providers: [Provider.OSU_OFFICIAL], filters, sort: get("sort", defaultSort) });
   const key = `${skins ? "skins" : "beatmaps"}:${request.toJsonString()}`;
-  const activeRanges = ranges.filter(([key]) => get(`${key}Min`) || get(`${key}Max`)).length;
+  const activeRanges = ranges.slice(1).filter(([key]) => get(`${key}Min`) || get(`${key}Max`)).length;
   return <PageStack className="catalog-workspace"><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection className="catalog-section">
     <SectionHeader level={1} eyebrow="osu!" title={skins ? "Skins" : "Beatmaps"} aside={<External href={skins ? "https://osuskins.net" : "https://osu.ppy.sh/beatmapsets"}>{skins ? "Browse osuskins.net" : "Browse osu!"}</External>} />
     <div className="hub-filters catalog-filters">
       <label>Search {skins ? "skins" : "beatmaps"}<input type="search" value={get("q")} maxLength={256} placeholder={skins ? "Skin name" : "Title, artist, or mapper"} onChange={event => update("q", event.target.value)} /></label>
+      {!skins && <RangeSlider name="stars" label="Stars" limit={10} step={0.1} minimum={get("starsMin")} maximum={get("starsMax")} onChange={(endpoint, value) => update(`stars${endpoint}`, value)} />}
       <Select label="Mode" value={String(ruleset)} options={rulesets} onChange={value => update("mode", value)} />
       {skins ? <Select label="Source" value={provider} options={[["1", "osuskins.net"], ["2", "skins.osuck.net"], ["all", "All sources"]]} onChange={value => update("provider", value)} /> : <Select label="Status" value={get("status", "ranked")} options={[["any", "Any status"], ["ranked", "Ranked"], ["loved", "Loved"], ["qualified", "Qualified"], ["pending", "Pending"], ["graveyard", "Graveyard"]]} onChange={value => update("status", value)} />}
       <Select label="Sort by" value={get("sort", defaultSort)} options={skins ? skinSort : beatmapSort} onChange={value => update("sort", value)} />
       {skins && <><Select label="Order" value={get("direction", "desc")} options={[["desc", "Descending"], ["asc", "Ascending"]]} onChange={value => update("direction", value)} /><label>Creator<input value={get("creator")} maxLength={128} onChange={event => update("creator", event.target.value)} /></label><label>Player<input value={get("player")} maxLength={128} onChange={event => update("player", event.target.value)} /></label></>}
       <Button onClick={() => setParams({})} disabled={params.size === 0}>Reset filters</Button>
     </div>
-    {!skins && <details className="catalog-ranges"><summary>Difficulty and tempo {activeRanges > 0 && <span className="catalog-filter-count">{activeRanges} active</span>}</summary><div className="hub-filters">{ranges.map(([key, label]) => <fieldset key={key}><legend>{label}</legend><div><label><span>Minimum</span><input aria-label={`Minimum ${label}`} type="number" min="0" step={key === "lengthSeconds" || key === "bpm" ? "1" : "0.1"} placeholder="Any" value={get(`${key}Min`)} onChange={event => update(`${key}Min`, event.target.value)} /></label><span aria-hidden="true" className="catalog-range-separator">to</span><label><span>Maximum</span><input aria-label={`Maximum ${label}`} type="number" min="0" step={key === "lengthSeconds" || key === "bpm" ? "1" : "0.1"} placeholder="Any" value={get(`${key}Max`)} onChange={event => update(`${key}Max`, event.target.value)} /></label></div></fieldset>)}</div></details>}
+    {!skins && <details className="catalog-ranges"><summary>More filters {activeRanges > 0 && <span className="catalog-filter-count">{activeRanges} active</span>}</summary><div className="catalog-range-grid">{ranges.slice(1).map(([key, label, limit, step]) => <RangeSlider key={key} name={key} label={label} limit={limit} step={step} minimum={get(`${key}Min`)} maximum={get(`${key}Max`)} onChange={(endpoint, value) => update(`${key}${endpoint}`, value)} />)}</div></details>}
     {validation ? <p role="alert" className="catalog-notice">{validation}</p> : skins ? <SkinResults key={key} request={request as SearchSkinsRequest} /> : <BeatmapResults key={key} request={request as SearchBeatmapItemsRequest} />}
   </PageSection></PageStack>;
 }
@@ -143,7 +200,7 @@ function SkinResults({ request }: { request: SearchSkinsRequest }) {
     {result.data && <><p className="hub-results">{result.data.items.length} skins</p>
       {!result.data.items.length && !unavailable.length && <p className="catalog-notice" role="status">No skins found. Try another search or reset your filters.</p>}
       <div className="catalog-layout"><div className="catalog-skins" role="region" aria-label="Skin results" tabIndex={0}>{result.data.items.map(item => <button className="catalog-skin" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId && selectedProvider === item.provider} onClick={() => select(item)}>
-        <Cover src={item.thumbnailUrl} name="" className="catalog-skin-cover" /><span className="catalog-item-text"><strong>{item.name}</strong>{item.creator && <span>{item.creator}</span>}<span>{[skinSource(item.provider)?.name, item.rulesets.map(modeName).join(", ")].filter(Boolean).join(" · ")}</span></span>
+        <span className="catalog-skin-media"><Cover src={item.thumbnailUrl} name="" className="catalog-skin-cover" /></span><span className="catalog-item-text"><strong>{item.name}</strong>{item.creator && <span>{item.creator}</span>}<span>{[skinSource(item.provider)?.name, item.rulesets.map(modeName).join(", ")].filter(Boolean).join(" · ")}</span></span>
       </button>)}</div>{selected && skinLinks(selectedProvider, selected) && <SkinDetail key={`${selectedProvider}:${selected}`} provider={selectedProvider} id={selected} close={() => select()} />}</div>
     </>}
     <Pagination page={page} loading={result.loading} hasNext={!!result.data?.nextPageTokens.length} previous={() => changePage(page - 1)} next={() => { if (result.data?.nextPageTokens.length) { setPages([...pages.slice(0, page + 1), result.data.nextPageTokens]); changePage(page + 1); } }} />
