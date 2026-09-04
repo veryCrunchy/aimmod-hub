@@ -49,7 +49,8 @@ export function OsuCatalogPage({ skins = false }: { skins?: boolean }) {
   const request = skins ? new SearchSkinsRequest({ query: get("q").trim().slice(0, 256), providers: provider === "all" ? [SkinProvider.OSU_SKINS, SkinProvider.OSUCK] : [provider === "2" ? SkinProvider.OSUCK : SkinProvider.OSU_SKINS], filters: { rulesets: ruleset ? [ruleset] : [], creator: get("creator"), player: get("player") }, sort: Number(get("sort", "1")) as SkinSort, direction: get("direction", "desc") === "asc" ? SortDirection.ASCENDING : SortDirection.DESCENDING })
     : new SearchBeatmapItemsRequest({ query: get("q").trim().slice(0, 256), providers: [Provider.OSU_OFFICIAL], filters, sort: get("sort", defaultSort) });
   const key = `${skins ? "skins" : "beatmaps"}:${request.toJsonString()}`;
-  return <PageStack><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection>
+  const activeRanges = ranges.filter(([key]) => get(`${key}Min`) || get(`${key}Max`)).length;
+  return <PageStack className="catalog-workspace"><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection className="catalog-section">
     <SectionHeader level={1} eyebrow="osu!" title={skins ? "Skins" : "Beatmaps"} aside={<External href={skins ? "https://osuskins.net" : "https://osu.ppy.sh/beatmapsets"}>{skins ? "Browse osuskins.net" : "Browse osu!"}</External>} />
     <div className="hub-filters catalog-filters">
       <label>Search {skins ? "skins" : "beatmaps"}<input type="search" value={get("q")} maxLength={256} placeholder={skins ? "Skin name" : "Title, artist, or mapper"} onChange={event => update("q", event.target.value)} /></label>
@@ -59,7 +60,7 @@ export function OsuCatalogPage({ skins = false }: { skins?: boolean }) {
       {skins && <><Select label="Order" value={get("direction", "desc")} options={[["desc", "Descending"], ["asc", "Ascending"]]} onChange={value => update("direction", value)} /><label>Creator<input value={get("creator")} maxLength={128} onChange={event => update("creator", event.target.value)} /></label><label>Player<input value={get("player")} maxLength={128} onChange={event => update("player", event.target.value)} /></label></>}
       <Button onClick={() => setParams({})} disabled={params.size === 0}>Reset filters</Button>
     </div>
-    {!skins && <details className="catalog-ranges"><summary>Difficulty and tempo</summary><div className="hub-filters">{ranges.map(([key, label]) => <fieldset key={key}><legend>{label}</legend><div><label><span className="sr-only">Minimum {label}</span><input aria-label={`Minimum ${label}`} type="number" min="0" step="any" placeholder="Min" value={get(`${key}Min`)} onChange={event => update(`${key}Min`, event.target.value)} /></label><span aria-hidden="true">to</span><label><span className="sr-only">Maximum {label}</span><input aria-label={`Maximum ${label}`} type="number" min="0" step="any" placeholder="Max" value={get(`${key}Max`)} onChange={event => update(`${key}Max`, event.target.value)} /></label></div></fieldset>)}</div></details>}
+    {!skins && <details className="catalog-ranges"><summary>Difficulty and tempo {activeRanges > 0 && <span className="catalog-filter-count">{activeRanges} active</span>}</summary><div className="hub-filters">{ranges.map(([key, label]) => <fieldset key={key}><legend>{label}</legend><div><label><span>Minimum</span><input aria-label={`Minimum ${label}`} type="number" min="0" step={key === "lengthSeconds" || key === "bpm" ? "1" : "0.1"} placeholder="Any" value={get(`${key}Min`)} onChange={event => update(`${key}Min`, event.target.value)} /></label><span aria-hidden="true" className="catalog-range-separator">to</span><label><span>Maximum</span><input aria-label={`Maximum ${label}`} type="number" min="0" step={key === "lengthSeconds" || key === "bpm" ? "1" : "0.1"} placeholder="Any" value={get(`${key}Max`)} onChange={event => update(`${key}Max`, event.target.value)} /></label></div></fieldset>)}</div></details>}
     {validation ? <p role="alert" className="catalog-notice">{validation}</p> : skins ? <SkinResults key={key} request={request as SearchSkinsRequest} /> : <BeatmapResults key={key} request={request as SearchBeatmapItemsRequest} />}
   </PageSection></PageStack>;
 }
@@ -77,22 +78,25 @@ function BeatmapResults({ request }: { request: SearchBeatmapItemsRequest }) {
   const result = useCatalogRequest(`beatmaps:${search.toJsonString()}`, signal => osuClient.searchBeatmapItems(search, { signal }));
   function changePage(value: number) { select(undefined, true); setPage(value); }
   const unavailable = result.error || result.data?.providers.some(status => !status.available);
-  return <>
+  return <div className="catalog-results" aria-busy={result.loading}>
     {result.loading && <CatalogLoading />}
     {unavailable && <Unavailable name="osu!" source="https://osu.ppy.sh/beatmapsets" retry={result.retry} />}
     {result.data && <><p className="hub-results">{result.data.items.length} beatmapsets · osu!</p>
       {!result.data.items.length && !unavailable && <p className="catalog-notice" role="status">No beatmaps found. Try another search or reset your filters.</p>}
-      <div className="catalog-layout"><div className="catalog-list">{result.data.items.map(item => <button className="catalog-map" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId} onClick={() => select(item.sourceId)}>
+      <div className="catalog-layout"><div className="catalog-list" role="region" aria-label="Beatmap results" tabIndex={0}>{result.data.items.map(item => <button className="catalog-map" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId} onClick={() => select(item.sourceId)}>
         <Cover src={item.coverUrl} name="" className="catalog-map-cover" /><span className="catalog-item-text"><strong>{item.title}</strong><span>{item.artist} · {item.creator}</span><span>{item.status} · {item.minimumStars.toFixed(1)}{item.minimumStars !== item.maximumStars ? `–${item.maximumStars.toFixed(1)}` : ""} stars · {item.beatmapCount} {item.beatmapCount === 1 ? "difficulty" : "difficulties"}</span></span>
       </button>)}</div>{selected && beatmapLinks(selected) && <BeatmapDetail key={selected} id={selected} filters={request.filters} close={() => select()} />}</div>
     </>}
     <Pagination page={page} loading={result.loading} hasNext={!!result.data?.nextPageTokens.length} previous={() => changePage(page - 1)} next={() => { if (result.data?.nextPageTokens.length) { setPages([...pages.slice(0, page + 1), result.data.nextPageTokens]); changePage(page + 1); } }} />
-  </>;
+  </div>;
 }
 function DetailFrame({ title, close, children }: { title: string; close: () => void; children: ReactNode }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: "nearest" }); }, []);
-  return <section className="catalog-detail" aria-label={title}><div className="catalog-detail-heading"><h2 ref={heading} tabIndex={-1}>{title}</h2><Button onClick={close} aria-label="Close details" title="Close details">×</Button></div>{children}</section>;
+  useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
+    if (window.matchMedia("(max-width: 1000px), (max-height: 649px)").matches) heading.current?.scrollIntoView({ block: "start" });
+  }, []);
+  return <section className="catalog-detail" aria-label={title} tabIndex={0}><div className="catalog-detail-heading"><h2 ref={heading} tabIndex={-1}>{title}</h2><Button onClick={close} aria-label="Close details" title="Close details">×</Button></div>{children}</section>;
 }
 function AudioPreview({ url }: { url: string }) {
   const audio = useRef<HTMLAudioElement>(null);
@@ -132,18 +136,18 @@ function SkinResults({ request }: { request: SearchSkinsRequest }) {
   const result = useCatalogRequest(`skins:${search.toJsonString()}`, signal => osuClient.searchSkins(search, { signal }));
   function changePage(value: number) { select(undefined, true); setPage(value); }
   const unavailable = result.data?.providers.filter(status => !status.available) ?? [];
-  return <>
+  return <div className="catalog-results" aria-busy={result.loading}>
     {result.loading && <CatalogLoading skins />}
     {result.error && request.providers.map(provider => { const source = skinSource(provider)!; return <Unavailable key={provider} name={source.name} source={source.url} retry={result.retry} />; })}
     {unavailable.map(status => { const source = skinSource(status.provider); return source && <Unavailable key={status.provider} name={source.name} source={source.url} retry={result.retry} />; })}
     {result.data && <><p className="hub-results">{result.data.items.length} skins</p>
       {!result.data.items.length && !unavailable.length && <p className="catalog-notice" role="status">No skins found. Try another search or reset your filters.</p>}
-      <div className="catalog-layout"><div className="catalog-skins">{result.data.items.map(item => <button className="catalog-skin" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId && selectedProvider === item.provider} onClick={() => select(item)}>
+      <div className="catalog-layout"><div className="catalog-skins" role="region" aria-label="Skin results" tabIndex={0}>{result.data.items.map(item => <button className="catalog-skin" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId && selectedProvider === item.provider} onClick={() => select(item)}>
         <Cover src={item.thumbnailUrl} name="" className="catalog-skin-cover" /><span className="catalog-item-text"><strong>{item.name}</strong>{item.creator && <span>{item.creator}</span>}<span>{[skinSource(item.provider)?.name, item.rulesets.map(modeName).join(", ")].filter(Boolean).join(" · ")}</span></span>
       </button>)}</div>{selected && skinLinks(selectedProvider, selected) && <SkinDetail key={`${selectedProvider}:${selected}`} provider={selectedProvider} id={selected} close={() => select()} />}</div>
     </>}
     <Pagination page={page} loading={result.loading} hasNext={!!result.data?.nextPageTokens.length} previous={() => changePage(page - 1)} next={() => { if (result.data?.nextPageTokens.length) { setPages([...pages.slice(0, page + 1), result.data.nextPageTokens]); changePage(page + 1); } }} />
-  </>;
+  </div>;
 }
 function SkinDetail({ provider, id, close }: { provider: SkinProvider; id: string; close: () => void }) {
   const result = useCatalogRequest(`skin:${provider}:${id}`, signal => osuClient.getSkin({ provider, sourceId: id }, { signal }), 0);

@@ -31,7 +31,11 @@ export function mediaUrl(value: string) {
 }
 
 export function numberRange(minimum: string, maximum: string): NumberRange | undefined {
+  minimum = minimum.trim();
+  maximum = maximum.trim();
   if (!minimum && !maximum) return undefined;
+  const decimal = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
+  if ([minimum, maximum].some(value => value && !decimal.test(value))) throw new Error("Enter a valid numeric range.");
   const min = minimum ? Number(minimum) : undefined;
   const max = maximum ? Number(maximum) : undefined;
   if ([min, max].some(value => value !== undefined && (!Number.isFinite(value) || value < 0)) || (min !== undefined && max !== undefined && min > max)) throw new Error("Enter a valid range, with minimum no greater than maximum.");

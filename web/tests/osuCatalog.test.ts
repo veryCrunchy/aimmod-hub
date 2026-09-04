@@ -30,6 +30,30 @@ test("range filters preserve zero and optional endpoints and reject invalid rang
   for (const [min, max] of [["6", "5"], ["-1", ""], ["NaN", "2"], ["", "Infinity"]]) assert.throws(() => numberRange(min, max));
 });
 
+test("range filters normalize whitespace and accept decimal input only", () => {
+  assert.equal(numberRange(" \t", "\n"), undefined);
+  assert.deepEqual(numberRange(" ", " 5 ")?.toJson(), { maximum: 5 });
+  assert.deepEqual(numberRange(" .5 ", "1e1")?.toJson(), { minimum: 0.5, maximum: 10 });
+  for (const value of ["0x10", "0b10", "0o10", "1,5", "1_000", "1e", "1e309"]) {
+    assert.throws(() => numberRange(value, ""), value);
+    assert.throws(() => numberRange("", value), value);
+  }
+});
+
+test("range endpoints preserve presence through JSON and binary serialization", () => {
+  for (const [min, max, expected] of [
+    ["", "", undefined],
+    ["0", "", { minimum: 0 }],
+    ["", "0", { maximum: 0 }],
+    ["0", "0", { minimum: 0, maximum: 0 }],
+    ["4.25", "5.75", { minimum: 4.25, maximum: 5.75 }],
+  ] as const) {
+    const request = new SearchBeatmapItemsRequest({ filters: { stars: numberRange(min, max) } });
+    assert.deepEqual(SearchBeatmapItemsRequest.fromJson(request.toJson()).filters?.stars?.toJson(), expected);
+    assert.deepEqual(SearchBeatmapItemsRequest.fromBinary(request.toBinary()).filters?.stars?.toJson(), expected);
+  }
+});
+
 test("cache expires and evicts entries without leaking one query into another", () => {
   let now = 0;
   const cache = new CatalogCache(2, 10, () => now);

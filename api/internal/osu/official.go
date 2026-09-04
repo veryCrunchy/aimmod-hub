@@ -85,7 +85,7 @@ type officialBeatmap struct {
 	CS               float64 `json:"cs"`
 	Accuracy         float64 `json:"accuracy"`
 	Drain            float64 `json:"drain"`
-	HitLength        uint32  `json:"hit_length"`
+	TotalLength      uint32  `json:"total_length"`
 }
 
 type officialUser struct {
@@ -431,7 +431,7 @@ func normalizeOfficialDifficulty(beatmap *officialBeatmap, set *officialBeatmaps
 		CircleSize:        beatmap.CS,
 		OverallDifficulty: beatmap.Accuracy,
 		DrainRate:         beatmap.Drain,
-		LengthSeconds:     beatmap.HitLength,
+		LengthSeconds:     beatmap.TotalLength,
 		Title:             set.Title,
 		Artist:            set.Artist,
 		Creator:           set.Creator,
