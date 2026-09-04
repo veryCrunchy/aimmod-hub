@@ -14,11 +14,12 @@ import (
 )
 
 type fakeAdminOsuStore struct {
-	user       store.AuthUser
-	sessionErr error
-	dataErr    error
-	calls      int
-	filter     store.AdminOsuFilter
+	user         store.AuthUser
+	sessionErr   error
+	dataErr      error
+	calls        int
+	filter       store.AdminOsuFilter
+	recordFilter store.AdminOsuRecordFilter
 }
 
 func (s *fakeAdminOsuStore) GetUserBySession(context.Context, string) (store.AuthUser, error) {
@@ -32,6 +33,18 @@ func (s *fakeAdminOsuStore) GetAdminOsuOverview(_ context.Context, f store.Admin
 
 type fakeAdminProviders struct{ calls int }
 
+func (s *fakeAdminOsuStore) GetAdminOsuPlayers(_ context.Context, f store.AdminOsuRecordFilter) (store.AdminOsuPlayers, error) {
+	s.calls++
+	s.recordFilter = f
+	return store.AdminOsuPlayers{Items: []store.AdminOsuPlayer{}, Total: 0}, s.dataErr
+}
+
+func (s *fakeAdminOsuStore) GetAdminOsuBeatmaps(_ context.Context, f store.AdminOsuRecordFilter) (store.AdminOsuBeatmaps, error) {
+	s.calls++
+	s.recordFilter = f
+	return store.AdminOsuBeatmaps{Items: []store.AdminOsuBeatmap{}, Total: 0}, s.dataErr
+}
+
 func (p *fakeAdminProviders) GetProviderStatus(context.Context, *connect.Request[osuv1.GetProviderStatusRequest]) (*connect.Response[osuv1.GetProviderStatusResponse], error) {
 	p.calls++
 	return connect.NewResponse(&osuv1.GetProviderStatusResponse{Providers: []*osuv1.ProviderStatus{{Provider: osuv1.Provider_PROVIDER_OSU_OFFICIAL, Message: "SECRET upstream response", Configured: true}}}), nil
@@ -42,7 +55,7 @@ func (p *fakeAdminProviders) GetSkinProviderStatus(context.Context, *connect.Req
 }
 
 func TestAdminOsuAccess(t *testing.T) {
-	for _, path := range []string{"/admin/osu/overview", "/admin/osu/providers"} {
+	for _, path := range []string{"/admin/osu/overview", "/admin/osu/providers", "/admin/osu/players", "/admin/osu/beatmaps"} {
 		for _, tc := range []struct {
 			name, cookie, discord, configured string
 			sessionErr                        error
@@ -92,6 +105,7 @@ func TestAdminOsuFiltersAndErrors(t *testing.T) {
 	}{
 		{"?q=Player&visibility=private&status=pending&offset=25", 200},
 		{"?visibility=secret", 400}, {"?status=failed", 400}, {"?offset=-1", 400}, {"?offset=1000001", 400}, {"?offset=abc", 400}, {"?q=" + strings.Repeat("a", 201), 400},
+		{"?userId=-1", 400}, {"?userId=abc", 400}, {"?difficultyKey=" + strings.Repeat("a", 257), 400},
 	} {
 		s := &fakeAdminOsuStore{}
 		h := &adminOsuHandler{store: s, isAdmin: func(store.AuthUser) bool { return true }}

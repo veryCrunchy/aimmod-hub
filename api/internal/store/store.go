@@ -317,6 +317,9 @@ CREATE INDEX IF NOT EXISTS idx_osu_scores_public_played_at
 CREATE INDEX IF NOT EXISTS idx_osu_scores_user_played_at
   ON osu_scores(user_id, played_at DESC);
 
+CREATE INDEX IF NOT EXISTS idx_osu_scores_difficulty_key
+  ON osu_scores(difficulty_key);
+
 CREATE TABLE IF NOT EXISTS osu_replay_files (
   score_id BIGINT PRIMARY KEY REFERENCES osu_scores(id) ON DELETE CASCADE,
   replay_sha256 TEXT NOT NULL,

@@ -83,6 +83,9 @@ SELECT i, 'SECRET-hash', CASE WHEN i <= 10 THEN 'SECRET-path-' || i ELSE '' END,
 		{AdminOsuFilter{Limit: 25, Search: "%"}, 28, 25},
 		{AdminOsuFilter{Limit: 25, Search: "' OR 1=1 --"}, 0, 0},
 		{AdminOsuFilter{Limit: 25, Offset: 100}, 28, 0},
+		{AdminOsuFilter{Limit: 25, UserID: 1, DifficultyKey: "diff", Status: "uploaded"}, 10, 10},
+		{AdminOsuFilter{Limit: 25, UserID: 999}, 0, 0},
+		{AdminOsuFilter{Limit: 25, DifficultyKey: "diff' OR 1=1 --"}, 0, 0},
 	} {
 		got, err := s.GetAdminOsuOverview(ctx, tc.filter)
 		if err != nil {
@@ -90,6 +93,86 @@ SELECT i, 'SECRET-hash', CASE WHEN i <= 10 THEN 'SECRET-path-' || i ELSE '' END,
 		}
 		if got.Total != tc.total || len(got.Items) != tc.length {
 			t.Fatalf("filter %+v: total %d length %d", tc.filter, got.Total, len(got.Items))
+		}
+	}
+	if _, err = isolated.Exec(ctx, `
+INSERT INTO hub_users (id, external_id, profile_handle) SELECT i, 'user-' || i, 'player-' || i FROM generate_series(2,28) i;
+UPDATE linked_accounts SET username = 'account-name', verified = true;
+INSERT INTO linked_accounts (user_id, provider, provider_account_id, username) VALUES (1, 'steam', 'SECRET-account', 'other-account');
+INSERT INTO upload_tokens (user_id, token_hash, last_four, revoked_at) VALUES (1, 'SECRET-revoked', 'CRET', NOW());
+INSERT INTO osu_beatmap_difficulties (difficulty_key, set_key, version, online_id) VALUES ('online:42', 'set', 'Insane', 42);
+`); err != nil {
+		t.Fatal(err)
+	}
+	players, err := s.GetAdminOsuPlayers(ctx, AdminOsuRecordFilter{Limit: 25, Kind: "synced"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if players.Total != 1 || len(players.Items) != 1 {
+		t.Fatalf("wrong synced players: %+v", players)
+	}
+	p := players.Items[0]
+	if p.UserID != 1 || p.Scores != 28 || p.Public != 10 || p.Unlisted != 10 || p.Private != 8 || p.Replays != 10 || p.ReplayBytes != 10240 || p.ActiveCredentials != 1 || len(p.Accounts) != 2 || !p.Accounts[0].Verified || p.LastScoreAt == nil {
+		t.Fatalf("wrong player record: %+v", p)
+	}
+	payload, _ = json.Marshal(players)
+	if strings.Contains(string(payload), "SECRET") || strings.Contains(string(payload), "CRET") {
+		t.Fatal("account secrets leaked")
+	}
+	for _, tc := range []struct {
+		filter AdminOsuRecordFilter
+		total  int64
+		length int
+	}{
+		{AdminOsuRecordFilter{Limit: 25}, 28, 25},
+		{AdminOsuRecordFilter{Limit: 25, Offset: 25}, 28, 3},
+		{AdminOsuRecordFilter{Limit: 25, Kind: "unsynced"}, 27, 25},
+		{AdminOsuRecordFilter{Limit: 25, Search: "PLAYER-28"}, 1, 1},
+		{AdminOsuRecordFilter{Limit: 25, Search: "' OR 1=1 --"}, 0, 0},
+	} {
+		got, err := s.GetAdminOsuPlayers(ctx, tc.filter)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got.Total != tc.total || len(got.Items) != tc.length {
+			t.Fatalf("player filter %+v: %+v", tc.filter, got)
+		}
+	}
+	beatmaps, err := s.GetAdminOsuBeatmaps(ctx, AdminOsuRecordFilter{Limit: 25, Kind: "local"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if beatmaps.Total != 1 || len(beatmaps.Items) != 1 {
+		t.Fatalf("wrong local beatmaps: %+v", beatmaps)
+	}
+	b := beatmaps.Items[0]
+	if b.Key != "diff" || b.Scores != 28 || b.Players != 1 || b.Public != 10 || b.Unlisted != 10 || b.Private != 8 || b.Replays != 10 || b.ReplayBytes != 10240 {
+		t.Fatalf("wrong beatmap counts: %+v", b)
+	}
+	for _, tc := range []struct {
+		filter AdminOsuRecordFilter
+		total  int64
+		length int
+	}{
+		{AdminOsuRecordFilter{Limit: 25}, 2, 2},
+		{AdminOsuRecordFilter{Limit: 25, Kind: "online"}, 1, 1},
+		{AdminOsuRecordFilter{Limit: 25, Search: "42"}, 1, 1},
+		{AdminOsuRecordFilter{Limit: 25, Search: "hArD"}, 1, 1},
+		{AdminOsuRecordFilter{Limit: 25, Search: "%"}, 2, 2},
+		{AdminOsuRecordFilter{Limit: 25, Offset: 25}, 2, 0},
+		{AdminOsuRecordFilter{Limit: 25, Search: "' OR 1=1 --"}, 0, 0},
+	} {
+		got, err := s.GetAdminOsuBeatmaps(ctx, tc.filter)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got.Total != tc.total || len(got.Items) != tc.length {
+			t.Fatalf("beatmap filter %+v: %+v", tc.filter, got)
+		}
+		for _, item := range got.Items {
+			if item.OnlineID == 42 && (item.Scores != 0 || item.Replays != 0 || item.LastScoreAt != nil) {
+				t.Fatal("empty beatmap inflated by joins")
+			}
 		}
 	}
 }

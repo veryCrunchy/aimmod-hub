@@ -15,6 +15,8 @@ import (
 type adminOsuStore interface {
 	GetUserBySession(context.Context, string) (store.AuthUser, error)
 	GetAdminOsuOverview(context.Context, store.AdminOsuFilter) (store.AdminOsuOverview, error)
+	GetAdminOsuPlayers(context.Context, store.AdminOsuRecordFilter) (store.AdminOsuPlayers, error)
+	GetAdminOsuBeatmaps(context.Context, store.AdminOsuRecordFilter) (store.AdminOsuBeatmaps, error)
 }
 
 type adminOsuProviders interface {
@@ -92,12 +94,28 @@ func (h *adminOsuHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"items": items})
 		return
 	}
+	if r.URL.Path == "/admin/osu/players" || r.URL.Path == "/admin/osu/beatmaps" {
+		h.handleRecords(w, r.WithContext(ctx))
+		return
+	}
 	if r.URL.Path != "/admin/osu/overview" {
 		http.NotFound(w, r)
 		return
 	}
 	q := r.URL.Query()
 	filter := store.AdminOsuFilter{Search: strings.TrimSpace(q.Get("q")), Visibility: q.Get("visibility"), Status: q.Get("status"), Limit: 25}
+	filter.DifficultyKey = q.Get("difficultyKey")
+	if len(filter.DifficultyKey) > 256 {
+		http.Error(w, "invalid difficulty key", http.StatusBadRequest)
+		return
+	}
+	if q.Get("userId") != "" {
+		filter.UserID, err = strconv.ParseInt(q.Get("userId"), 10, 64)
+		if err != nil || filter.UserID <= 0 {
+			http.Error(w, "invalid user id", http.StatusBadRequest)
+			return
+		}
+	}
 	if len(filter.Search) > 200 || !adminOsuChoice(filter.Visibility, "", "public", "unlisted", "private") || !adminOsuChoice(filter.Status, "", "uploaded", "pending", "none") {
 		http.Error(w, "invalid filter", http.StatusBadRequest)
 		return
@@ -112,6 +130,38 @@ func (h *adminOsuHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	result, err := h.store.GetAdminOsuOverview(ctx, filter)
 	if err != nil {
 		http.Error(w, "could not load osu administration", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (h *adminOsuHandler) handleRecords(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	f := store.AdminOsuRecordFilter{Search: strings.TrimSpace(q.Get("q")), Kind: q.Get("kind"), Limit: 25}
+	allowed := []string{"", "synced", "unsynced"}
+	if r.URL.Path == "/admin/osu/beatmaps" {
+		allowed = []string{"", "online", "local"}
+	}
+	if len(f.Search) > 200 || !adminOsuChoice(f.Kind, allowed...) {
+		http.Error(w, "invalid filter", http.StatusBadRequest)
+		return
+	}
+	var err error
+	if q.Get("offset") != "" {
+		f.Offset, err = strconv.Atoi(q.Get("offset"))
+		if err != nil || f.Offset < 0 || f.Offset > 1000000 {
+			http.Error(w, "invalid offset", http.StatusBadRequest)
+			return
+		}
+	}
+	var result any
+	if r.URL.Path == "/admin/osu/players" {
+		result, err = h.store.GetAdminOsuPlayers(r.Context(), f)
+	} else {
+		result, err = h.store.GetAdminOsuBeatmaps(r.Context(), f)
+	}
+	if err != nil {
+		http.Error(w, "could not load admin records", http.StatusInternalServerError)
 		return
 	}
 	writeJSON(w, http.StatusOK, result)

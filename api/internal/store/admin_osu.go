@@ -10,6 +10,8 @@ import (
 type AdminOsuFilter struct {
 	Search, Visibility, Status string
 	Limit, Offset              int
+	UserID                     int64
+	DifficultyKey              string
 }
 
 type AdminOsuSummary struct {
@@ -29,16 +31,26 @@ type AdminOsuSummary struct {
 
 // This projection deliberately excludes replay payloads, file paths and credentials.
 type AdminOsuShare struct {
-	ID         int64      `json:"id"`
-	Handle     string     `json:"handle"`
-	Username   string     `json:"username"`
-	Title      string     `json:"title"`
-	Difficulty string     `json:"difficulty"`
-	Visibility string     `json:"visibility"`
-	Status     string     `json:"status"`
-	ByteSize   int64      `json:"byteSize"`
-	CreatedAt  time.Time  `json:"createdAt"`
-	UploadedAt *time.Time `json:"uploadedAt"`
+	ID                int64      `json:"id"`
+	UserID            int64      `json:"userId"`
+	DifficultyKey     string     `json:"difficultyKey"`
+	Accuracy          float64    `json:"accuracy"`
+	TotalScore        int64      `json:"totalScore"`
+	PerformancePoints *float64   `json:"performancePoints"`
+	MaxCombo          int        `json:"maxCombo"`
+	Misses            int        `json:"misses"`
+	Mods              []string   `json:"mods"`
+	Passed            bool       `json:"passed"`
+	PlayedAt          time.Time  `json:"playedAt"`
+	Handle            string     `json:"handle"`
+	Username          string     `json:"username"`
+	Title             string     `json:"title"`
+	Difficulty        string     `json:"difficulty"`
+	Visibility        string     `json:"visibility"`
+	Status            string     `json:"status"`
+	ByteSize          int64      `json:"byteSize"`
+	CreatedAt         time.Time  `json:"createdAt"`
+	UploadedAt        *time.Time `json:"uploadedAt"`
 }
 
 type AdminOsuOverview struct {
@@ -58,7 +70,9 @@ const adminOsuStatus = `CASE WHEN f.score_id IS NULL THEN 'none' WHEN f.storage_
 
 const adminOsuWhere = ` WHERE ($1 = '' OR strpos(lower(concat_ws(' ', u.user_handle, p.username, b.title, d.version)), lower($1)) > 0)
 AND ($2 = '' OR s.visibility = $2)
-AND ($3 = '' OR (` + adminOsuStatus + `) = $3)`
+AND ($3 = '' OR (` + adminOsuStatus + `) = $3)
+AND ($4::bigint = 0 OR s.user_id = $4)
+AND ($5 = '' OR s.difficulty_key = $5)`
 
 func (s *Store) GetAdminOsuOverview(ctx context.Context, filter AdminOsuFilter) (AdminOsuOverview, error) {
 	result := AdminOsuOverview{Items: make([]AdminOsuShare, 0)}
@@ -85,19 +99,20 @@ FROM osu_scores s LEFT JOIN osu_replay_files f ON f.score_id = s.id`).Scan(
 	if err != nil {
 		return result, err
 	}
-	args := []any{filter.Search, filter.Visibility, filter.Status}
+	args := []any{filter.Search, filter.Visibility, filter.Status, filter.UserID, filter.DifficultyKey}
 	if err = tx.QueryRow(ctx, `SELECT count(*)`+adminOsuFrom+adminOsuWhere, args...).Scan(&result.Total); err != nil {
 		return result, err
 	}
 	rows, err := tx.Query(ctx, `SELECT s.id, u.user_handle, COALESCE(p.username, ''), b.title, d.version,
-s.visibility, `+adminOsuStatus+`, COALESCE(f.byte_size, 0), s.created_at, f.uploaded_at`+adminOsuFrom+adminOsuWhere+` ORDER BY s.created_at DESC, s.id DESC LIMIT $4 OFFSET $5`, append(args, filter.Limit, filter.Offset)...)
+s.visibility, `+adminOsuStatus+`, COALESCE(f.byte_size, 0), s.created_at, f.uploaded_at,
+s.user_id, s.difficulty_key, s.accuracy, s.total_score, s.performance_points, s.max_combo, s.count_miss, s.mods, s.passed, s.played_at`+adminOsuFrom+adminOsuWhere+` ORDER BY s.created_at DESC, s.id DESC LIMIT $6 OFFSET $7`, append(args, filter.Limit, filter.Offset)...)
 	if err != nil {
 		return result, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var item AdminOsuShare
-		if err = rows.Scan(&item.ID, &item.Handle, &item.Username, &item.Title, &item.Difficulty, &item.Visibility, &item.Status, &item.ByteSize, &item.CreatedAt, &item.UploadedAt); err != nil {
+		if err = rows.Scan(&item.ID, &item.Handle, &item.Username, &item.Title, &item.Difficulty, &item.Visibility, &item.Status, &item.ByteSize, &item.CreatedAt, &item.UploadedAt, &item.UserID, &item.DifficultyKey, &item.Accuracy, &item.TotalScore, &item.PerformancePoints, &item.MaxCombo, &item.Misses, &item.Mods, &item.Passed, &item.PlayedAt); err != nil {
 			return result, err
 		}
 		result.Items = append(result.Items, item)

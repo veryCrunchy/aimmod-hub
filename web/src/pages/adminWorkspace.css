@@ -46,6 +46,63 @@
 .admin-pagination > span { flex: 1; color: #b8c8be; }
 .admin-table .admin-table-empty { padding: 30px 12px; text-align: center; color: #b8c8be; }
 .admin-error { color: #efb3b3; padding: 12px 0; }
+.admin-record-workspace { gap: 0; }
+.admin-operations-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0 18px; }
+.admin-operations-heading h2 { font-size: 23px; margin: 4px 0 0; }
+.admin-eyebrow { color: #9ab8c6; font-size: 11px; }
+.admin-health-strip { display: flex; flex-wrap: wrap; gap: 12px 28px; padding: 15px 0; border-block: 1px solid #35414a; color: #aab7c0; font-size: 12px; }
+.admin-health-strip strong { color: #eff3f4; font-variant-numeric: tabular-nums; font-size: 16px; margin-right: 5px; }
+.admin-health-strip > :last-child { margin-left: auto; }
+.admin-record-layout { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 24px; padding-top: 24px; }
+.admin-record-nav { border-right: 1px solid #303c44; padding-right: 14px; }
+.admin-osu .admin-record-nav button { display: block; width: 100%; text-align: left; background: transparent; border: 0; border-left: 2px solid transparent; border-radius: 0; padding: 12px 9px; margin-bottom: 3px; }
+.admin-osu .admin-record-nav button[aria-current="page"] { background: #183139; border-left-color: #72c8de; }
+.admin-record-nav strong { display: block; font-size: 13px; font-weight: 500; }
+.admin-record-nav small { display: block; color: #aab7c0; font-size: 11px; margin-top: 4px; }
+.admin-record-nav > p { font-size: 11px; line-height: 1.8; color: #83929d; border-top: 1px solid #303c44; margin-top: 24px; padding-top: 14px; }
+.admin-record-main, .admin-record-list { min-width: 0; }
+.admin-record-split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; }
+.admin-record-workspace .admin-table { min-width: 590px; }
+.admin-record-workspace .admin-table th { background: #202b30; color: #c1cbd0; }
+.admin-record-workspace .admin-table td, .admin-record-workspace .admin-table th { padding: 12px 10px; border-color: #2e3a41; }
+.admin-record-workspace .admin-table td { max-width: 240px; }
+.admin-record-workspace .admin-table-scroll { border-color: #35414a; max-height: 620px; }
+.admin-record-workspace .admin-table .is-selected { background: #17303a; }
+.admin-osu button.admin-record-link { border: 0; background: transparent; padding: 0; min-height: 24px; text-align: left; color: #b5e2ee; font-weight: 500; white-space: normal; overflow-wrap: anywhere; }
+.admin-osu button.admin-record-link:hover { background: transparent; text-decoration: underline; }
+.admin-inspector { border-left: 1px solid #3e4c56; padding-left: 18px; min-width: 0; max-height: 720px; overflow: auto; }
+.admin-inspector header { padding-bottom: 14px; border-bottom: 1px solid #35414a; margin-bottom: 14px; }
+.admin-inspector h3 { font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; margin: 7px 0 0; }
+.admin-inspector header p { color: #b3c0c8; font-size: 12px; margin: 5px 0 0; overflow-wrap: anywhere; }
+.admin-inspector h4 { font-size: 12px; color: #a8c7d2; margin: 20px 0 8px; border-top: 1px solid #35414a; padding-top: 14px; }
+.admin-detail-facts { margin: 0; font-size: 12px; }
+.admin-detail-facts > div { display: flex; align-items: start; justify-content: space-between; gap: 14px; padding: 7px 0; }
+.admin-detail-facts dt { color: #aab7c0; flex: 1; }
+.admin-detail-facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; max-width: 60%; }
+.admin-primary-command { margin-bottom: 12px; width: 100%; }
+.admin-account-list { margin: 0; padding: 0; list-style: none; }
+.admin-account-list li { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid #303c44; font-size: 12px; overflow-wrap: anywhere; }
+.admin-account-list strong { text-transform: capitalize; }
+.admin-account-list small { font-size: 11px; color: #aab7c0; }
+.admin-scope { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-left: 2px solid #72c8de; background: #16303a; padding: 10px 12px; margin-bottom: 16px; font-size: 12px; overflow-wrap: anywhere; }
+.admin-connection-band { max-width: 500px; margin-top: 28px; }
+.admin-connection-band h3 { font-size: 16px; }
+@media (max-width: 1250px) {
+  .admin-record-layout { grid-template-columns: 140px minmax(0, 1fr); gap: 16px; }
+  .admin-record-split { grid-template-columns: minmax(0, 1fr); }
+  .admin-inspector { border-left: 0; border-top: 1px solid #3e4c56; padding: 20px 0 0; max-height: none; }
+  .admin-detail-facts { max-width: 550px; }
+  .admin-primary-command { width: auto; }
+}
+@media (max-width: 760px) {
+  .admin-record-layout { grid-template-columns: minmax(0, 1fr); padding-top: 16px; }
+  .admin-record-nav { display: flex; overflow-x: auto; border-right: 0; border-bottom: 1px solid #303c44; padding: 0 0 8px; }
+  .admin-record-nav > p, .admin-record-nav small { display: none; }
+  .admin-osu .admin-record-nav button { width: auto; flex: none; padding: 10px 12px; }
+  .admin-operations-heading { flex-wrap: wrap; }
+  .admin-health-strip { gap: 12px 20px; }
+  .admin-health-strip > :last-child { margin-left: 0; }
+}
 .admin-maintenance { width: 100%; font-size: 13px; }
 .admin-maintenance summary { cursor: pointer; padding: 8px 0; color: #b8c8be; }
 .admin-maintenance > div { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; }
