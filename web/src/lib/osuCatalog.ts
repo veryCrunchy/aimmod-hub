@@ -21,7 +21,7 @@ export function skinSource(provider: SkinProvider) {
 
 export function skinLinks(provider: SkinProvider, id: string) {
   const source = skinSource(provider);
-  if (!source || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(id)) return null;
+  if (!source || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(id)) return null;
   if (provider === SkinProvider.OSU_SKINS && !/^[A-Za-z0-9]{7}$/.test(id)) return null;
   return { aimmod: `aimmod-osu://skins/${source.slug}/${id}`, source: provider === SkinProvider.OSU_SKINS ? `${source.url}/skin/${id}` : source.url };
 }

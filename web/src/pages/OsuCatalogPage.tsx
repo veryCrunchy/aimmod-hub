@@ -23,6 +23,7 @@ function CatalogLoading({ skins = false }: { skins?: boolean }) {
   return <div role="status" aria-label={skins ? "Loading skins" : "Loading beatmaps"}><p className="hub-results">Loading {skins ? "skins" : "beatmaps"}...</p><div aria-hidden="true" className={skins ? "catalog-skins" : "catalog-list"}>{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className={skins ? "h-56" : "mb-3 h-24"} />)}</div></div>;
 }
 function Unavailable({ retry, source, name }: { retry: () => void; source: string; name: string }) {
+  if (source === "https://skins.osuck.net") return <div className="catalog-notice" role="status"><p>Browse skins.osuck.net in your browser. Its catalog cannot currently be searched from AimMod Hub.</p><div className="catalog-actions"><External href="https://skins.osuck.net/skins?l=en&s=1">Browse on skins.osuck.net</External><Button to="/osu/skins?provider=1">Search osuskins.net</Button></div></div>;
   return <div className="catalog-notice" role="status"><p>{name} is unavailable. Please try again.</p><div className="catalog-actions"><Button onClick={retry}>Try again</Button><External href={source}>Browse {name}</External></div></div>;
 }
 function Cover({ src, name, className = "" }: { src: string; name: string; className?: string }) {
