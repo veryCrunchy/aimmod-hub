@@ -1,0 +1,51 @@
+.catalog-filters > label { flex: 0 1 180px; min-width: 130px; }
+.catalog-filters > label:first-child { flex: 1 1 240px; }
+.catalog-ranges { margin-block: 12px 20px; }
+.catalog-ranges summary { cursor: pointer; color: var(--color-muted); }
+.catalog-ranges fieldset { min-width: 0; width: 190px; }
+.catalog-ranges fieldset > div { display: flex; align-items: center; gap: 8px; }
+.catalog-ranges fieldset label { min-width: 0; flex: 1; }
+.catalog-ranges legend { margin-bottom: 6px; color: var(--color-muted); font-size: 12px; }
+.catalog-layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; align-items: start; }
+.catalog-layout:has(.catalog-detail) { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.catalog-map { width: 100%; display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--color-line); text-align: left; align-items: center; }
+.catalog-map:hover, .catalog-skin:hover { background: var(--color-panel); }
+.catalog-map[aria-pressed=true], .catalog-skin[aria-pressed=true] { outline: 1px solid var(--color-mint); outline-offset: -1px; }
+.catalog-map-cover { width: 100px; height: 72px; flex: 0 0 100px; object-fit: cover; border-radius: 4px; }
+.catalog-item-text { display: grid; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
+.catalog-item-text strong { font-size: 15px; font-weight: 600; }
+.catalog-item-text > span { font-size: 12px; color: var(--color-muted); }
+.catalog-skins { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,230px),1fr)); gap: 16px; }
+.catalog-skin { border: 1px solid var(--color-line); border-radius: 5px; overflow: hidden; text-align: left; min-width: 0; align-self: start; }
+.catalog-skin .catalog-item-text { padding: 12px; }
+.catalog-skin-cover { width: 100%; aspect-ratio: 16/9; object-fit: contain; background: var(--color-panel); }
+.catalog-detail { min-width: 0; border-left: 1px solid var(--color-line); padding-left: 24px; display: grid; gap: 14px; overflow-wrap: anywhere; }
+.catalog-detail-heading { display: flex; gap: 12px; align-items: start; justify-content: space-between; }
+.catalog-detail-heading h2 { font-size: 20px; font-weight: 600; min-width: 0; }
+.catalog-detail-heading button { flex-shrink: 0; font-size: 20px; width: 40px; padding: 0; }
+.catalog-detail h3 { font-weight: 600; font-size: 16px; }
+.catalog-detail-cover { width: 100%; aspect-ratio: 16/7; object-fit: cover; border-radius: 4px; }
+.catalog-gallery-image { width: 100%; aspect-ratio: 16/10; object-fit: contain; background: var(--color-panel); }
+.catalog-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.catalog-gallery button { border: 2px solid transparent; min-width: 0; }
+.catalog-gallery button[aria-pressed=true] { border-color: var(--color-mint); }
+.catalog-gallery img { width: 100%; aspect-ratio: 16/10; object-fit: contain; }
+.catalog-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.catalog-actions a { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
+.catalog-difficulties > div { display: grid; gap: 4px; padding-block: 12px; border-bottom: 1px solid var(--color-line); }
+.catalog-difficulties span { color: var(--color-muted); font-size: 12px; }
+.catalog-notice { padding: 24px 0; }
+.catalog-notice .catalog-actions { margin-top: 12px; }
+.catalog-pagination { display: flex; justify-content: center; align-items: center; gap: 20px; padding-top: 24px; }
+.catalog-no-image { display: grid; place-items: center; background: var(--color-panel); color: var(--color-muted); font-size: 12px; text-align: center; }
+.catalog-audio audio { width: 100%; }
+.catalog-tags { font-size: 12px; }
+@media (max-width: 1000px) {
+  .catalog-layout:has(.catalog-detail) { grid-template-columns: minmax(0,1fr); }
+  .catalog-detail { grid-row: 1; border-left: 0; padding: 0 0 24px; border-bottom: 1px solid var(--color-line); }
+}
+@media (max-width: 480px) {
+  .catalog-filters > label { flex: 1 1 130px; }
+  .catalog-ranges fieldset { width: 100%; }
+  .catalog-map-cover { width: 72px; flex-basis: 72px; height: 64px; }
+}

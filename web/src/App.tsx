@@ -21,6 +21,7 @@ const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m
 const OsuDownloadPage = lazy(() => import("./pages/OsuDownloadPage").then((m) => ({ default: m.OsuDownloadPage })));
 const OsuCommunityPage = lazy(() => import("./pages/OsuCommunityPage").then((m) => ({ default: m.OsuCommunityPage })));
 const OsuDirectoryPage = lazy(() => import("./pages/OsuDirectoryPage").then((m) => ({ default: m.OsuDirectoryPage })));
+const OsuCatalogPage = lazy(() => import("./pages/OsuCatalogPage").then((m) => ({ default: m.OsuCatalogPage })));
 const OsuProfilePage = lazy(() => import("./pages/OsuProfilePage").then((m) => ({ default: m.OsuProfilePage })));
 const OsuReplayPage = lazy(() => import("./pages/OsuReplayPage").then((m) => ({ default: m.OsuReplayPage })));
 const ProductsPage = lazy(() => import("./pages/ProductsPage").then((m) => ({ default: m.ProductsPage })));
@@ -55,7 +56,8 @@ function AppRoutes() {
           <Route path="/app" element={<ProductsPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />
           <Route path="/osu/community" element={<OsuCommunityPage />} />
-          <Route path="/osu/beatmaps" element={<OsuDirectoryPage view="beatmaps" />} />
+          <Route path="/osu/beatmaps" element={<OsuCatalogPage key="beatmaps" />} />
+          <Route path="/osu/skins" element={<OsuCatalogPage key="skins" skins />} />
           <Route path="/osu/players" element={<OsuDirectoryPage view="players" />} />
           <Route path="/osu/replays" element={<OsuCommunityPage replayLibrary />} />
           <Route path="/osu/profiles/:handle" element={<OsuProfilePage />} />

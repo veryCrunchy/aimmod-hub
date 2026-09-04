@@ -7,6 +7,15 @@ This repo is intentionally independent from the desktop app repo so:
 - app releases do not drag the website along with them
 - accounts, uploads, public profiles, and community analytics can evolve on their own cadence
 
+## osu! Catalogs
+
+- `/osu/beatmaps` searches the osu! beatmap catalog, with difficulty filters and per-set details.
+- `/osu/skins` browses skin catalogs and screenshot previews, with source-site download handoff.
+- Beatmaps offer `Open in osu!` and `Open in AimMod`. Skin details can also open in AimMod.
+- Community scores, players, and replays remain available under `/osu/community`, `/osu/players`, and `/osu/replays`.
+
+Beatmap search requires `AIMMOD_OSU_CLIENT_ID` and `AIMMOD_OSU_CLIENT_SECRET` on the API server. These credentials must never be included in the frontend environment. See [catalog setup and app links](docs/osu-catalog-website.md).
+
 ## Stack
 
 - API: Go + Connect RPC + protobuf
