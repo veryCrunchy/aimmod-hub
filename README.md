@@ -1,5 +1,7 @@
 # AimMod Hub
 
+[Join the AimMod Discord](https://aimmod.app/join) for updates, feedback and support.
+
 AimMod Hub is the separate website and API for the AimMod ecosystem.
 
 This repo is intentionally independent from the desktop app repo so:
