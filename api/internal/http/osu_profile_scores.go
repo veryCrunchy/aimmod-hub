@@ -122,6 +122,7 @@ func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.R
 	if hasMore {
 		items = items[:limit]
 	}
+	enrichSharedScoreItems(r.Context(), h.official, items)
 	w.Header().Set("Cache-Control", "public, max-age=30")
 	writeJSON(w, http.StatusOK, profileScoresResponse{Profile: profile, Items: items, Coverage: result.Coverage,
 		Local: localScoreCoverage{Returned: len(local), HasMore: profile.SharedReplayCount > len(profile.RecentReplays)}, HasMore: hasMore})

@@ -5,6 +5,7 @@ import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackAudioUrl, osuPlayback
 import { createAimModPlaybackSkin, disposeAimModPlaybackSkin } from "../lib/osuPlaybackSkin";
 import { playbackAnalysis } from "../lib/osuPlaybackAnalysis";
 import type { OsuReplayAnalysis } from "../lib/osuCommunity";
+import type { ParsedOsuPlayback } from "../lib/osuPlayback";
 import "./OsuReplayPlayer.css";
 
 export interface OsuReplayPlayerProps {
@@ -19,6 +20,7 @@ export interface OsuReplayPlayerProps {
   onTimeChange?: (beatmapMs: number) => void;
   onAnalysis?: (analysis: OsuReplayAnalysis) => void;
   onPlaybackError?: (message: string) => void;
+  onVerifiedReplay?: (playback: ParsedOsuPlayback) => void;
 }
 
 export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
@@ -27,7 +29,7 @@ export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
 }
 
 function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl, title = "Replay", audioUrl, backgroundUrl,
-  seekToMs, onTimeChange, onAnalysis, onPlaybackError }: OsuReplayPlayerProps) {
+  seekToMs, onTimeChange, onAnalysis, onPlaybackError, onVerifiedReplay }: OsuReplayPlayerProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const settingsId = useId();
   const root = useRef<HTMLElement>(null);
@@ -39,6 +41,8 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
   analysisCallback.current = onAnalysis;
   const errorCallback = useRef(onPlaybackError);
   errorCallback.current = onPlaybackError;
+  const verifiedCallback = useRef(onVerifiedReplay);
+  verifiedCallback.current = onVerifiedReplay;
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [stage, setStage] = useState("Loading replay and beatmap");
@@ -87,6 +91,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
       setStage("Decoding replay inputs");
       const parsed = await decodeOsuPlayback(replayBytes, mapBytes, abort.signal);
       if (!alive()) return;
+      verifiedCallback.current?.(parsed);
       setStage("Preparing playback");
       audio = new AudioContext(); context.current = audio;
       skin = await createAimModPlaybackSkin();

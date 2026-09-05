@@ -18,6 +18,7 @@ type PublicScoreItem struct {
 	PPSource             string                   `json:"ppSource"`
 	Uploads              []store.OsuPublicReplay  `json:"uploads,omitempty"`
 	PPCalculation        *ScorePPCalculationInput `json:"ppCalculation,omitempty"`
+	PPCalculationStatus  string                   `json:"ppCalculationStatus,omitempty"`
 }
 
 // MergePublicScores never treats an accuracy or map match as a play identity.

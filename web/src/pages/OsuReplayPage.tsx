@@ -3,6 +3,7 @@ import { PageSeo } from "../components/PageSeo";
 import { useScorePp } from "../hooks/useScorePp";
 import { ScorePpStatus } from "../components/ScorePpStatus";
 import { OsuReplayPlayer } from "../components/OsuReplayPlayer";
+import { replayHeaderScorePp } from "../lib/replayHeaderPp";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -102,7 +103,15 @@ export function OsuReplayPage() {
         </div>
       </PageSection>
 
-      {playbackSource && replay.ruleset === "osu" && <OsuReplayPlayer replayUrl={playbackSource} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} seekToMs={seekToMs} onAnalysis={value => { setBrowserAnalysis(value); setPlaybackError(""); }} onPlaybackError={setPlaybackError} />}
+      {playbackSource && replay.ruleset === "osu" && <OsuReplayPlayer replayUrl={playbackSource} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} seekToMs={seekToMs} onAnalysis={value => { setBrowserAnalysis(value); setPlaybackError(""); }} onPlaybackError={setPlaybackError}
+        onVerifiedReplay={parsed => {
+          if (replay.performancePoints != null || replay.ppCalculation) return;
+          const result = replayHeaderScorePp(parsed.replay, { beatmapId: replay.beatmapId, objectCount: parsed.beatmap.hitObjects.length, passed: replay.passed });
+          setReplay(current => {
+            if (!current || current.shareId !== replay.shareId || current.beatmapId !== replay.beatmapId || current.performancePoints != null || current.ppCalculation) return current;
+            return result.input ? { ...current, ppCalculation: result.input } : { ...current, ppCalculationError: result.reason };
+          });
+        }} />}
       {officialScoreId && !replay.officialReplayExists && <p className="text-sm text-muted">osu! does not list a replay file for this score.</p>}
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">

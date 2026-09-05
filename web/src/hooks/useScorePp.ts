@@ -5,10 +5,40 @@ import { getCachedScorePp, setCachedScorePp, scorePpCacheKey, scorePpValidationR
 
 const empty: OsuSharedReplay[] = [];
 export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
-  const input = source ?? empty;
+  const original = source ?? empty;
+  const [metadata, setMetadata] = useState<Record<string, Partial<OsuSharedReplay>>>({});
   const [results, setResults] = useState<Record<string, { pp?: number; error?: string }>>({});
   const [activeKey, setActiveKey] = useState("");
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    setMetadata({});
+    void (async () => {
+      const resolved: Record<string, Partial<OsuSharedReplay>> = {};
+      for (const score of original) {
+        if (controller.signal.aborted) return;
+        if (score.performancePoints != null || score.ppCalculation || score.ppCalculationStatus !== "pending") continue;
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/osu/v1/replays/${encodeURIComponent(score.shareId)}`, {
+            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
+            headers: { Accept: "application/json" },
+          });
+          if (!response.ok) throw new Error("Score data could not be loaded. Please retry.");
+          const detail = await response.json() as OsuSharedReplay;
+          if (detail.shareId !== score.shareId || detail.osuUserId !== score.osuUserId || detail.beatmapId !== score.beatmapId || detail.ruleset !== score.ruleset)
+            throw new Error("Score data did not match this play.");
+          if (detail.performancePoints == null && !detail.ppCalculation)
+            throw new Error("Exact score data is not available yet. Please retry.");
+          resolved[score.shareId] = { performancePoints: detail.performancePoints, ppCalculation: detail.ppCalculation, ppSource: detail.ppSource };
+        } catch (error) {
+          resolved[score.shareId] = { ppCalculationError: error instanceof Error ? error.message : "Score data could not be loaded. Please retry." };
+        }
+      }
+      if (!controller.signal.aborted) setMetadata(resolved);
+    })();
+    return () => controller.abort();
+  }, [original, attempt]);
+  const input = useMemo(() => original.map(score => ({ ...score, ...metadata[score.shareId] })), [original, metadata]);
   useEffect(() => {
     let active = true;
     let worker: Worker | undefined;
@@ -64,7 +94,7 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
   }, [input, attempt]);
   const items = useMemo(() => input.map(score => {
     if (score.performancePoints != null) return score;
-    if (!score.ppCalculation) return { ...score, ppCalculationState: "unavailable" as const };
+    if (!score.ppCalculation) return { ...score, ppCalculationState: score.ppCalculationStatus === "pending" && !score.ppCalculationError ? "queued" as const : "unavailable" as const };
     const invalid = scorePpValidationReason(score.ppCalculation);
     if (invalid) return { ...score, ppCalculationState: "unavailable" as const, ppCalculationError: invalid };
     const key = scorePpCacheKey(score.ppCalculation);

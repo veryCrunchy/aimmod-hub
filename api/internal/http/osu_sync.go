@@ -119,7 +119,7 @@ func (h *osuSyncHandler) handleCommunity(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=30")
-	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+	writeJSON(w, http.StatusOK, map[string]any{"items": sharedScoreItems(r.Context(), h.official, items)})
 }
 
 func (h *osuSyncHandler) handleProfile(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +138,10 @@ func (h *osuSyncHandler) handleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=30")
-	writeJSON(w, http.StatusOK, profile)
+	writeJSON(w, http.StatusOK, struct {
+		store.OsuPublicProfile
+		RecentReplays []osuservice.PublicScoreItem `json:"recentReplays"`
+	}{profile, sharedScoreItems(r.Context(), h.official, profile.RecentReplays)})
 }
 
 func (h *osuSyncHandler) handleReplay(w http.ResponseWriter, r *http.Request) {
@@ -166,17 +169,7 @@ func (h *osuSyncHandler) handleReplay(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Cache-Control", "public, max-age=30")
 	}
-	if replay.PerformancePoints == nil && replay.OnlineScoreID > 0 && h.official != nil {
-		detail, err := h.official.GetPublicScore(r.Context(), replay.OnlineScoreID)
-		if err == nil && detail.Status == "available" && detail.Item != nil {
-			score := detail.Item
-			if score.OnlineScoreID == replay.OnlineScoreID && score.OsuUserID == replay.OsuUserID && score.BeatmapID == replay.BeatmapID && score.Ruleset == replay.Ruleset && score.PerformancePoints != nil && !math.IsNaN(*score.PerformancePoints) && !math.IsInf(*score.PerformancePoints, 0) && *score.PerformancePoints >= 0 {
-				pp := *score.PerformancePoints
-				replay.PerformancePoints = &pp
-			}
-		}
-	}
-	writeJSON(w, http.StatusOK, replay)
+	writeJSON(w, http.StatusOK, sharedScoreItems(r.Context(), h.official, []store.OsuPublicReplay{replay})[0])
 }
 
 func (h *osuSyncHandler) handleReplayUpload(w http.ResponseWriter, r *http.Request, shareID string) {

@@ -3,6 +3,8 @@ import { Helmet } from "../lib/helmet";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { osuClient } from "../lib/osuCatalog";
 import { useOsuDirectory } from "../hooks/useOsuDirectory";
+import { useScorePp } from "../hooks/useScorePp";
+import { ScorePpStatus } from "../components/ScorePpStatus";
 import { groupOsuPlays } from "../lib/osuDirectory";
 import { OsuReplayRow } from "../components/OsuReplayRow";
 import { SectionHeader } from "../components/SectionHeader";
@@ -14,6 +16,7 @@ import { PageStack } from "../components/ui/Stack";
 
 export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "beatmaps" | "players" }) {
   const { items, error, retry } = useOsuDirectory();
+  const pp = useScorePp(items);
   const navigate = useNavigate();
   const [finding, setFinding] = useState(false);
   const [lookupError, setLookupError] = useState("");
@@ -23,7 +26,7 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
   const title = view === "overview" ? "osu! overview" : view === "players" ? "Players" : "Beatmaps";
   const groups = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return groupOsuPlays(items ?? [], view === "players" ? "players" : "beatmaps")
+    return groupOsuPlays(pp.items, view === "players" ? "players" : "beatmaps")
       .filter(group => (view === "players"
         ? [group.latest.osuUsername, group.latest.hubHandle, group.latest.hubDisplayName]
         : [group.latest.title, group.latest.artist, group.latest.creator, group.latest.difficulty])
@@ -31,7 +34,7 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
       .sort((a,b) => sort === "plays" ? b.plays.length - a.plays.length : sort === "pp"
         ? (b.bestPP ?? -1) - (a.bestPP ?? -1)
         : Date.parse(b.latest.playedAt) - Date.parse(a.latest.playedAt));
-  }, [items, view, query, sort]);
+  }, [pp.items, view, query, sort]);
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params);
@@ -64,12 +67,13 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
         : !items ? <div role="status"><p className="mb-4 text-muted">Loading osu! activity...</p><Skeleton className="h-64" /></div>
         : <>
           <p className="hub-results">Based on the latest {items.length} public shared plays.</p>
+          <ScorePpStatus pending={pp.pending} failed={pp.failed} retry={pp.retry} />
           {view === "overview" ? <>
             <div className="grid grid-cols-3 gap-3 border-y border-line py-5">
               {[[String(items.length),"Shared plays","/osu/community"],[String(groupOsuPlays(items,"beatmaps").length),"Beatmaps","/osu/beatmaps"],[String(groupOsuPlays(items,"players").length),"Players","/osu/players"]].map(([count,label,to])=><Link key={to} to={to} className="min-w-0"><strong className="block text-2xl font-semibold">{count}</strong><span className="text-sm text-muted">{label}</span></Link>)}
             </div>
             <div className="mt-7 mb-3 flex items-center justify-between"><h2 className="text-xl font-semibold">Recent plays</h2><Link to="/osu/community" className="text-sm text-cyan">View all</Link></div>
-            {items.slice(0,8).map(replay => <OsuReplayRow key={replay.shareId} replay={replay} />)}
+            {pp.items.slice(0,8).map(replay => <OsuReplayRow key={replay.shareId} replay={replay} />)}
             {items.length === 0 && <EmptyState title="No public plays yet" body="Share a play from AimMod to add it to the community." />}
           </> : groups.length === 0 ? <EmptyState title="No matches" body="Try another search or clear your filters."><Button onClick={() => setParams({})}>Clear filters</Button></EmptyState>
           : <div className="divide-y divide-line border-y border-line">{groups.map(group => {

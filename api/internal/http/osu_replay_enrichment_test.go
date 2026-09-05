@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	osuservice "github.com/veryCrunchy/aimmod-hub/api/internal/osu"
@@ -22,7 +23,16 @@ func (s *replayEnrichmentStore) GetOsuPublicReplay(context.Context, string) (sto
 	return s.replay, nil
 }
 
+func (s *replayEnrichmentStore) ListOsuCommunity(context.Context, int) ([]store.OsuPublicReplay, error) {
+	return []store.OsuPublicReplay{s.replay}, nil
+}
+
+func (s *replayEnrichmentStore) GetOsuPublicProfile(context.Context, string, int) (store.OsuPublicProfile, error) {
+	return store.OsuPublicProfile{RecentReplays: []store.OsuPublicReplay{s.replay}}, nil
+}
+
 type replayEnrichmentProvider struct {
+	mu sync.Mutex
 	scoreProviderStub
 	detail   osuservice.OfficialScoreDetail
 	calls    int
@@ -30,6 +40,8 @@ type replayEnrichmentProvider struct {
 }
 
 func (s *replayEnrichmentProvider) GetPublicScore(context.Context, int64) (osuservice.OfficialScoreDetail, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.calls++
 	return s.detail, nil
 }

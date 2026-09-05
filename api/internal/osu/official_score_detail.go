@@ -30,6 +30,18 @@ type OfficialScoreDetail struct {
 }
 
 func (s *Server) GetPublicScore(ctx context.Context, id int64) (OfficialScoreDetail, error) {
+	return s.getPublicScore(ctx, id, "")
+}
+
+// GetPublicLegacyScore resolves the separate, ruleset-scoped stable ID namespace.
+func (s *Server) GetPublicLegacyScore(ctx context.Context, id int64, mode string) (OfficialScoreDetail, error) {
+	if mode != "osu" && mode != "taiko" && mode != "fruits" && mode != "mania" {
+		return OfficialScoreDetail{Status: "invalid_response"}, nil
+	}
+	return s.getPublicScore(ctx, id, mode)
+}
+
+func (s *Server) getPublicScore(ctx context.Context, id int64, legacyMode string) (OfficialScoreDetail, error) {
 	result := OfficialScoreDetail{Status: "not_configured", Replay: OfficialReplayAvailability{Status: "unavailable"}}
 	if id <= 0 {
 		return result, fmt.Errorf("invalid score ID")
@@ -45,13 +57,21 @@ func (s *Server) GetPublicScore(ctx context.Context, id int64) (OfficialScoreDet
 		result.Status = "authentication_failed"
 		return result, ctx.Err()
 	}
-	body, err := s.official.getScorePage(ctx, "/api/v2/scores/"+strconv.FormatInt(id, 10), nil, token)
+	path := "/api/v2/scores/"
+	if legacyMode != "" {
+		path += legacyMode + "/"
+	}
+	body, err := s.official.getScorePage(ctx, path+strconv.FormatInt(id, 10), nil, token)
 	if err != nil {
 		result.Status = scoreErrorStatus(err)
 		return result, ctx.Err()
 	}
 	var score officialScore
-	if json.Unmarshal(body, &score) != nil || score.ID != id || score.UserID <= 0 || score.RulesetID == nil || scoreMode(*score.RulesetID) == "" {
+	if json.Unmarshal(body, &score) != nil || score.ID <= 0 || score.UserID <= 0 || score.RulesetID == nil || scoreMode(*score.RulesetID) == "" {
+		result.Status = "invalid_response"
+		return result, nil
+	}
+	if (legacyMode == "" && score.ID != id) || (legacyMode != "" && (score.LegacyScoreID == nil || *score.LegacyScoreID != id || scoreMode(*score.RulesetID) != legacyMode)) {
 		result.Status = "invalid_response"
 		return result, nil
 	}
@@ -61,12 +81,17 @@ func (s *Server) GetPublicScore(ctx context.Context, id int64) (OfficialScoreDet
 		return result, nil
 	}
 	result.Item = &items[0]
+	if legacyMode != "" {
+		// Preserve the requested alias for the caller's scoped identity check.
+		// OfficialScoreID and its URL still identify the canonical modern score.
+		result.Item.OnlineScoreID = id
+	}
 	result.Status = "available"
 	result.Replay.Exists = score.HasReplay
 	result.Replay.Status = "not_available"
 	if score.HasReplay {
 		result.Replay.Status = "permission_unchecked"
-		result.Replay.DownloadURL = fmt.Sprintf("/api/osu/v1/official-scores/%d/replay", id)
+		result.Replay.DownloadURL = fmt.Sprintf("/api/osu/v1/official-scores/%d/replay", score.ID)
 	}
 	return result, nil
 }
