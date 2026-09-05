@@ -16,6 +16,26 @@ This repo is intentionally independent from the desktop app repo so:
 
 Beatmap search requires `AIMMOD_OSU_CLIENT_ID` and `AIMMOD_OSU_CLIENT_SECRET` on the API server. These credentials must never be included in the frontend environment. See [catalog setup and app links](docs/osu-catalog-website.md).
 
+## Website Screenshots
+
+### Beatmap search
+
+![Official beatmap search with filters and selected beatmap details](web/public/images/aimmod-hub-beatmaps.png)
+
+Browse difficulties and open maps directly in osu! or AimMod. Filters persist across reloads.
+
+### PP targets
+
+![PP targets showing calculated full-combo PP at a selected accuracy](web/public/images/aimmod-hub-pp-targets.png)
+
+Compare full-combo PP by accuracy, mods and scoring mode, with revision-aware calculation caching. Personal compatibility profiles remain in the desktop app.
+
+### Knowledge base
+
+![Osu knowledge base with learning paths and sourced guides](web/public/images/aimmod-hub-knowledge-base.png)
+
+Browse sourced guides and video resources on reading, aim, timing and practice. Public replay pages also support browser playback, separate music and hitsound controls, and score analysis.
+
 ## Stack
 
 - API: Go + Connect RPC + protobuf
