@@ -118,7 +118,11 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	newOsuSyncHandler(hub.Store(), auth.media, osuServer).register(mux, cfg.AllowedWebOrigin)
 	newOsuProfileScoresHandler(hub.Store(), osuServer).register(mux, cfg.AllowedWebOrigin)
-	newOsuPlaybackHandler().register(mux, cfg.AllowedWebOrigin)
+	var playbackMetadata osuPlaybackMetadataProvider
+	if osuServer != nil {
+		playbackMetadata = osuServer
+	}
+	newOsuPlaybackHandler(playbackMetadata).register(mux, cfg.AllowedWebOrigin)
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)

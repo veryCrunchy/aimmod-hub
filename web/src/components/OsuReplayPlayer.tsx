@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createReplaySession, type CoreSession, type SkinAssets } from "replayviewer-js";
-import { Play, Pause, RotateCcw, Maximize } from "lucide-react";
-import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackBeatmapUrl, playbackTimeLabel } from "../lib/osuPlayback";
+import { Play, Pause, RotateCcw, Maximize, Settings2, Volume2 } from "lucide-react";
+import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackAudioUrl, osuPlaybackBeatmapUrl, playbackTimeLabel } from "../lib/osuPlayback";
 import { createAimModPlaybackSkin, disposeAimModPlaybackSkin } from "../lib/osuPlaybackSkin";
 import "./OsuReplayPlayer.css";
 
 export interface OsuReplayPlayerProps {
   replayUrl: string;
   beatmapId: number;
+  beatmapsetId?: number;
   beatmapUrl?: string;
   title?: string;
   audioUrl?: string;
@@ -17,13 +18,14 @@ export interface OsuReplayPlayerProps {
 }
 
 export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
-  // A different play must not inherit a locally-selected song or beatmap file.
+  // A different play must not inherit a locally-selected beatmap file.
   return <OsuReplayPlayerSession key={`${props.replayUrl}|${props.beatmapId}`} {...props} />;
 }
 
-function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Replay", audioUrl, backgroundUrl,
+function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl, title = "Replay", audioUrl, backgroundUrl,
   seekToMs, onTimeChange }: OsuReplayPlayerProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const settingsId = useId();
   const root = useRef<HTMLElement>(null);
   const session = useRef<CoreSession | null>(null);
   const context = useRef<AudioContext | null>(null);
@@ -39,9 +41,13 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
   const [rate, setRate] = useState(1);
   const [volume, setVolume] = useState(.65);
   const [audioAvailable, setAudioAvailable] = useState(false);
-  const [localAudio, setLocalAudio] = useState<File | null>(null);
   const [localMap, setLocalMap] = useState<File | null>(null);
   const [controlError, setControlError] = useState("");
+  const [songError, setSongError] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
+  const [dim, setDim] = useState(.65);
+  const [keysVisible, setKeysVisible] = useState(true);
+  const [timingVisible, setTimingVisible] = useState(true);
   const generation = useRef(0);
 
   const pause = () => {
@@ -58,7 +64,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
     let background: ImageBitmap | null = null;
     let frame = 0;
     let audio: AudioContext | null = null;
-    setState("loading"); setError(""); setPlaying(false); setPosition(0); setControlError("");
+    setState("loading"); setError(""); setPlaying(false); setPosition(0); setControlError(""); setSongError("");
     setStage("Loading replay and beatmap");
     const alive = () => !abort.signal.aborted;
     const run = async () => {
@@ -76,17 +82,17 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
       audio = new AudioContext(); context.current = audio;
       skin = await createAimModPlaybackSkin();
       let song: AudioBuffer | null = null;
-      if (localAudio || audioUrl) {
+      const songUrl = audioUrl || osuPlaybackAudioUrl(beatmapId, beatmapsetId, parsed.replay.beatmapHash);
+      if (songUrl) {
+        setStage("Loading song audio");
         try {
-          const bytes = localAudio
-            ? localAudio.size <= 64 * 1024 * 1024 ? await localAudio.arrayBuffer() : null
-            : await fetchPlaybackBytes(audioUrl!, 64 * 1024 * 1024, abort.signal);
-          if (bytes) song = await audio.decodeAudioData(bytes);
-        } catch { if (alive()) setControlError("Song audio could not be opened. Choose another audio file."); }
+          const bytes = await fetchPlaybackBytes(songUrl, 64 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(60000)]));
+          song = await audio.decodeAudioData(bytes);
+        } catch { if (alive()) setSongError("The matching song is unavailable. Replay hitsounds remain enabled."); }
       }
       if (backgroundUrl) {
         try {
-          const bytes = await fetchPlaybackBytes(backgroundUrl, 8 * 1024 * 1024, abort.signal);
+          const bytes = await fetchPlaybackBytes(backgroundUrl, 8 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(10000)]));
           background = await createImageBitmap(new Blob([bytes]));
         } catch { /* The play remains watchable without artwork. */ }
       }
@@ -96,13 +102,13 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
         lazerDefaultsUrl: "/playback/aimmod-sounds", userRate: 1 });
       if (!alive()) { owned.audioSync.pause(); owned.destroy(); return; }
       session.current = owned;
-      owned.renderer.options.backgroundDim = .78;
+      owned.renderer.options.backgroundDim = .65;
       owned.renderer.options.showURBar = true;
       owned.renderer.options.showKeyOverlay = true;
       owned.player.setClockFn(owned.audioSync.clockFn);
       owned.audioSync.setSongVolume(.65); owned.audioSync.setEffectsVolume(.35);
       owned.renderer.start();
-      setRate(1); setVolume(.65); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
+      setRate(1); setVolume(.65); setDim(.65); setKeysVisible(true); setTimingVisible(true); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
       let last = 0;
       const tick = (time: number) => {
         if (!alive() || !owned) return;
@@ -134,7 +140,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
       if (session.current === owned) session.current = null;
       if (context.current === audio) context.current = null;
     };
-  }, [replayUrl, beatmapId, beatmapUrl, audioUrl, backgroundUrl, localMap, localAudio, attempt]);
+  }, [replayUrl, beatmapId, beatmapsetId, beatmapUrl, audioUrl, backgroundUrl, localMap, attempt]);
 
   const seek = async (time: number) => {
     const current = session.current;
@@ -193,12 +199,18 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Rep
         onChange={event => void seek(Number(event.target.value)).catch(() => setControlError("Could not seek replay."))} />
       <div className="osu-replay-player__sound">
         <span>{audioAvailable ? "Song + hitsounds" : "Hitsounds only"}</span>
-        <label>Volume<input aria-label="Playback volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={event => {
+        <label><Volume2 size={16} aria-hidden="true" /><input aria-label="Playback volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={event => {
           const value = Number(event.target.value); setVolume(value); session.current?.audioSync.setSongVolume(value); session.current?.audioSync.setEffectsVolume(value * .55);
         }} /></label>
-        <label className="osu-replay-player__file">{audioAvailable ? "Change song" : "Add song audio"}<input type="file" accept="audio/*" onChange={event => setLocalAudio(event.target.files?.[0] ?? null)} /></label>
+        <button type="button" className="osu-replay-player__settings-button osu-replay-player__icon" aria-label="Replay display settings" title="Replay display settings" aria-expanded={showSettings} aria-controls={settingsId} onClick={() => setShowSettings(value => !value)}><Settings2 size={17} /></button>
       </div>
+      {showSettings ? <div id={settingsId} className="osu-replay-player__settings">
+        <label>Background dim <output>{Math.round(dim * 100)}%</output><input aria-label="Background dim" type="range" min="0" max="1" step="0.05" value={dim} onChange={event => { const value = Number(event.target.value); setDim(value); if (session.current) session.current.renderer.options.backgroundDim = value; }} /></label>
+        <label><input type="checkbox" checked={keysVisible} onChange={event => { setKeysVisible(event.target.checked); if (session.current) session.current.renderer.options.showKeyOverlay = event.target.checked; }} /> Key presses</label>
+        <label><input type="checkbox" checked={timingVisible} onChange={event => { setTimingVisible(event.target.checked); if (session.current) session.current.renderer.options.showURBar = event.target.checked; }} /> Hit timing</label>
+      </div> : null}
       {controlError ? <p role="status" className="osu-replay-player__notice">{controlError}</p> : null}
+      {songError ? <p role="status" className="osu-replay-player__notice">{songError}</p> : null}
     </div>
   </section>;
 }

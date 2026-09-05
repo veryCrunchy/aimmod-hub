@@ -87,8 +87,8 @@ export function OsuReplayPage() {
         </div>
       </PageSection>
 
-      {replay.hasReplayFile && replay.shareId && replay.ruleset === "osu" && <OsuReplayPlayer key={replay.shareId} replayUrl={osuReplayDownloadUrl(replay.shareId)} beatmapId={replay.beatmapId} title={replay.title} />}
-      {officialScoreId && replay.officialReplayExists && replay.ruleset === "osu" && <OsuReplayPlayer key={officialScoreId} replayUrl={osuOfficialReplayDownloadUrl(officialScoreId)} beatmapId={replay.beatmapId} title={replay.title} />}
+      {replay.hasReplayFile && replay.shareId && replay.ruleset === "osu" && <OsuReplayPlayer key={replay.shareId} replayUrl={osuReplayDownloadUrl(replay.shareId)} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} />}
+      {officialScoreId && replay.officialReplayExists && replay.ruleset === "osu" && <OsuReplayPlayer key={officialScoreId} replayUrl={osuOfficialReplayDownloadUrl(officialScoreId)} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} />}
       {officialScoreId && !replay.officialReplayExists && <p className="text-sm text-muted">osu! does not list a replay file for this score.</p>}
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">

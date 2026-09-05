@@ -10,6 +10,12 @@ const base = process.env.PLAYBACK_QA_URL || "http://127.0.0.1:5192";
 const output = resolve(process.env.PLAYBACK_QA_OUTPUT || "../.qa/replay-player");
 mkdirSync(output, { recursive: true });
 const replay = await createPlaybackReplay();
+const song = Buffer.alloc(44 + 44100 * 10 * 2);
+song.write("RIFF"); song.writeUInt32LE(song.length - 8, 4); song.write("WAVEfmt ", 8);
+song.writeUInt32LE(16, 16); song.writeUInt16LE(1, 20); song.writeUInt16LE(1, 22);
+song.writeUInt32LE(44100, 24); song.writeUInt32LE(88200, 28); song.writeUInt16LE(2, 32);
+song.writeUInt16LE(16, 34); song.write("data", 36); song.writeUInt32LE(song.length - 44, 40);
+for (let i = 0; i < 441000; i++) song.writeInt16LE(Math.round(Math.sin(i * 2 * Math.PI * 220 / 44100) * 3000), 44 + i * 2);
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const report: unknown[] = [];
 try {
@@ -20,15 +26,30 @@ try {
     await page.addInitScript(() => {
       const NativeAudio = window.AudioContext;
       (window as any).__audioContexts = [];
+      (window as any).__songStarts = [];
+      const start = AudioBufferSourceNode.prototype.start;
+      AudioBufferSourceNode.prototype.start = function(when = 0, offset = 0, duration?: number) {
+        if (this.buffer && this.buffer.duration >= 10) (window as any).__songStarts.push({ offset, nonzero: this.buffer.getChannelData(0).some(value => Math.abs(value) > 0.01) });
+        if (duration === undefined) start.call(this, when, offset); else start.call(this, when, offset, duration);
+      };
       window.AudioContext = class extends NativeAudio {
         constructor(options?: AudioContextOptions) { super(options); (window as any).__audioContexts.push(this); }
       };
     });
     await page.route("**/__qa/replay.osr", (route: any) => route.fulfill({ body: replay, contentType: "application/octet-stream" }));
     await page.route("**/__qa/beatmap.osu", (route: any) => route.fulfill({ body: playbackBeatmap, contentType: "text/plain" }));
+    await page.route("**/playback/beatmaps/42/audio?*", (route: any) => route.fulfill({ body: song, contentType: "audio/wav" }));
     await page.goto(`${base}/tests/fixtures/playback-qa.html`);
     await page.locator('.osu-replay-player[data-state="ready"]').waitFor({ timeout: 60000 });
     assert.equal(await page.getByRole("button", { name: "Play replay", exact: true }).isVisible(), true);
+    await page.getByRole("button", { name: "Replay display settings" }).click();
+    await page.getByRole("slider", { name: "Background dim", exact: true }).fill("0.8");
+    await page.getByRole("checkbox", { name: "Key presses", exact: true }).uncheck();
+    await page.getByRole("checkbox", { name: "Hit timing", exact: true }).uncheck();
+    await page.getByRole("checkbox", { name: "Key presses", exact: true }).check();
+    await page.getByRole("checkbox", { name: "Hit timing", exact: true }).check();
+    await page.getByRole("slider", { name: "Background dim", exact: true }).fill("0.65");
+    await page.getByRole("button", { name: "Replay display settings" }).click();
     const timeline = page.getByRole("slider", { name: "Replay timeline" });
     await timeline.fill("2700");
     await page.waitForTimeout(200);
@@ -47,6 +68,8 @@ try {
     await page.getByRole("button", { name: "Play replay", exact: true }).click();
     await page.waitForTimeout(550);
     const advanced = Number(await timeline.inputValue());
+    const audioStarts = await page.evaluate(() => (window as any).__songStarts);
+    assert.ok(audioStarts.some((item: { offset: number; nonzero: boolean }) => item.nonzero && Math.abs(item.offset - 2.7) < 0.1), "Song buffer was not played at the seek position");
     assert.ok(advanced > 3000, "Replay clock did not advance");
     await page.getByRole("button", { name: "Pause replay", exact: true }).click();
     const paused = Number(await timeline.inputValue());
@@ -82,7 +105,14 @@ try {
     await page.waitForTimeout(200);
     assert.equal(await page.evaluate(() => (window as any).__audioContexts.every((context: AudioContext) => context.state === "closed")), true, "Audio survives route unmount");
     assert.deepEqual(errors, []);
-    report.push({ width, pixels, controls: "play/pause/seek/speed/restart/end passed", hiddenTab: "paused and audio suspended", cleanup: "all audio contexts closed", errors });
+    report.push({ width, pixels, song: "non-silent ten-second buffer scheduled at seek position", controls: "play/pause/seek/speed/restart/end passed", hiddenTab: "paused and audio suspended", cleanup: "all audio contexts closed", errors });
+    await page.route("**/playback/beatmaps/42/audio?*", (route: any) => route.fulfill({ status: 403, body: "Unavailable" }));
+    await page.reload();
+    await page.locator('.osu-replay-player[data-state="ready"]').waitFor({ timeout: 60000 });
+    assert.equal(await page.getByText("Hitsounds only", { exact: true }).isVisible(), true);
+    await page.getByRole("button", { name: "Play replay", exact: true }).click();
+    assert.equal(await page.getByText("The matching song is unavailable. Replay hitsounds remain enabled.", { exact: true }).isVisible(), true);
+    assert.equal(await page.locator('input[accept="audio/*"]').count(), 0);
     await page.close();
   }
   writeFileSync(resolve(output, "report.json"), JSON.stringify(report, null, 2));

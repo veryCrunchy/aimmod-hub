@@ -8,6 +8,12 @@ export function osuPlaybackBeatmapUrl(beatmapId: number): string {
   return `${API_BASE_URL}/api/osu/v1/playback/beatmaps/${beatmapId}/file`;
 }
 
+export function osuPlaybackAudioUrl(beatmapId: number, beatmapsetId: number | undefined, checksum: string): string | undefined {
+  if (!Number.isSafeInteger(beatmapsetId) || !beatmapsetId || beatmapsetId <= 0 || beatmapsetId > 2147483647) return;
+  if (!Number.isSafeInteger(beatmapId) || beatmapId <= 0 || beatmapId > 2147483647 || !/^[a-f0-9]{32}$/i.test(checksum)) return;
+  return `${API_BASE_URL}/api/osu/v1/playback/beatmaps/${beatmapId}/audio?beatmapsetId=${beatmapsetId}&checksum=${checksum.toLowerCase()}`;
+}
+
 export async function fetchPlaybackBytes(url: string, maximumBytes: number, signal: AbortSignal): Promise<ArrayBuffer> {
   const parsed = new URL(url, typeof location === "undefined" ? "http://localhost" : location.href);
   if (!["https:", "http:", "blob:"].includes(parsed.protocol)) throw new Error("This playback source is not supported.");

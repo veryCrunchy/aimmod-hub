@@ -2,9 +2,19 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { computeModDifficulty } from "replayviewer-js";
 import { parseOsuPlayback } from "../src/lib/osuPlaybackDecode";
+import { osuPlaybackAudioUrl } from "../src/lib/osuPlayback";
 import { createPlaybackReplay, playbackBeatmap } from "./fixtures/osuPlaybackFixture";
 
 const exactBuffer = (bytes: Uint8Array) => Uint8Array.from(bytes).buffer;
+
+test("song requests identify the exact difficulty, set and replay checksum", () => {
+  const checksum = "A".repeat(32);
+  assert.ok(osuPlaybackAudioUrl(42, 12, checksum)?.endsWith(`/beatmaps/42/audio?beatmapsetId=12&checksum=${checksum.toLowerCase()}`));
+  assert.equal(osuPlaybackAudioUrl(42, undefined, checksum), undefined);
+  assert.equal(osuPlaybackAudioUrl(42, -1, checksum), undefined);
+  assert.equal(osuPlaybackAudioUrl(1.5, 12, checksum), undefined);
+  assert.equal(osuPlaybackAudioUrl(42, 12, "wrong"), undefined);
+});
 
 test("actual LZMA replay inputs and curved repeating sliders survive decoding", async () => {
   const result = await parseOsuPlayback(exactBuffer(await createPlaybackReplay()), new TextEncoder().encode(playbackBeatmap).buffer);

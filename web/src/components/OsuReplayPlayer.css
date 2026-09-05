@@ -18,6 +18,14 @@
 .osu-replay-player__sound { font-size: 11px; color: #bdc6c8; }
 .osu-replay-player__sound label { display: inline-flex; align-items: center; gap: 8px; }
 .osu-replay-player__sound input[type=range] { width: 88px; accent-color: #69d9cc; }
+.osu-replay-player__settings-button { margin-left: auto; }
+.osu-replay-player__settings { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 16px 0 2px; margin-top: 12px; border-top: 1px solid #303136; font-size: 12px; }
+.osu-replay-player__settings label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.osu-replay-player__settings output { color: #69d9cc; min-width: 30px; font-variant-numeric: tabular-nums; }
+.osu-replay-player__settings input { accent-color: #69d9cc; }
+.osu-replay-player__settings input[type=range] { width: 110px; }
+.osu-replay-player__transport button:first-child { color: #091311; background: #69d9cc; border-color: #69d9cc; }
+.osu-replay-player__transport button:first-child:hover { background: #9aede3; }
 .osu-replay-player__file { position: relative; display: inline-flex; align-items: center; }
 .osu-replay-player__file input[type=file] { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
 .osu-replay-player__notice { margin: 8px 0 0; color: #ffb5c9; font-size: 12px; }

@@ -33,6 +33,7 @@ type osuPlaybackMap struct {
 }
 
 type osuPlaybackHandler struct {
+	audio      *osuPlaybackAudioHandler
 	client     *http.Client
 	mu         sync.Mutex
 	cache      map[string]osuPlaybackMap
@@ -41,11 +42,15 @@ type osuPlaybackHandler struct {
 	capacity   chan struct{}
 }
 
-func newOsuPlaybackHandler() *osuPlaybackHandler {
-	return &osuPlaybackHandler{
+func newOsuPlaybackHandler(metadata ...osuPlaybackMetadataProvider) *osuPlaybackHandler {
+	h := &osuPlaybackHandler{
 		client: &http.Client{Timeout: 10 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }},
 		cache:  make(map[string]osuPlaybackMap), capacity: make(chan struct{}, 4),
 	}
+	if len(metadata) > 0 && metadata[0] != nil {
+		h.audio = newOsuPlaybackAudioHandler(metadata[0])
+	}
+	return h
 }
 
 func (h *osuPlaybackHandler) register(mux *http.ServeMux, origin string) {
@@ -60,6 +65,10 @@ func (h *osuPlaybackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, osuPlaybackMapPrefix), "/")
+	if strings.HasPrefix(r.URL.Path, osuPlaybackMapPrefix) && len(parts) == 2 && parts[1] == "audio" && h.audio != nil {
+		h.audio.ServeHTTP(w, r)
+		return
+	}
 	if !strings.HasPrefix(r.URL.Path, osuPlaybackMapPrefix) || len(parts) != 2 || parts[1] != "file" {
 		http.NotFound(w, r)
 		return
