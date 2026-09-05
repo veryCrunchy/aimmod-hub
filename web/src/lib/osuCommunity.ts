@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./config";
+import { normalizeOsuReplayAnalysis } from "./osuReplayAnalysis";
 
 export type OsuJudgementSummary = {
   great?: number;
@@ -94,15 +95,20 @@ async function fetchJSON<T>(path: string): Promise<T> {
 
 export async function fetchOsuCommunity(limit = 36): Promise<OsuSharedReplay[]> {
   const response = await fetchJSON<{ items?: OsuSharedReplay[] }>(`/api/osu/v1/community?limit=${Math.max(1, Math.min(100, limit))}`);
-  return response.items ?? [];
+  return (response.items ?? []).map(normalizeReplay);
 }
 
-export function fetchOsuProfile(handle: string, limit = 36): Promise<OsuPublicProfile> {
-  return fetchJSON(`/api/osu/v1/profiles/${encodeURIComponent(handle)}?limit=${Math.max(1, Math.min(100, limit))}`);
+export async function fetchOsuProfile(handle: string, limit = 36): Promise<OsuPublicProfile> {
+  const profile = await fetchJSON<OsuPublicProfile>(`/api/osu/v1/profiles/${encodeURIComponent(handle)}?limit=${Math.max(1, Math.min(100, limit))}`);
+  return { ...profile, recentReplays: (profile.recentReplays ?? []).map(normalizeReplay) };
 }
 
-export function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> {
-  return fetchJSON(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`);
+export async function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> {
+  return normalizeReplay(await fetchJSON<OsuSharedReplay>(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`));
+}
+
+function normalizeReplay(replay: OsuSharedReplay): OsuSharedReplay {
+  return { ...replay, analysis: normalizeOsuReplayAnalysis(replay.analysis) };
 }
 
 export function osuReplayDownloadUrl(shareId: string): string {

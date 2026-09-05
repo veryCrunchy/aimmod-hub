@@ -6,6 +6,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
 import { Skeleton } from "../components/ui/Skeleton";
+import { formatOsuMissReason } from "../lib/osuReplayAnalysis";
 import {
   fetchOsuReplay,
   formatOsuAccuracy,
@@ -39,7 +40,7 @@ export function OsuReplayPage() {
   const missReasons = useMemo(() => {
     const counts = new Map<string, number>();
     for (const judgement of misses) {
-      const reason = readableReason(judgement.missAnalysis?.reason);
+      const reason = formatOsuMissReason(judgement.missAnalysis?.reason);
       counts.set(reason, (counts.get(reason) ?? 0) + 1);
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
@@ -148,7 +149,7 @@ function JudgementMetric({ label, value, colour }: { label: string; value: numbe
 }
 
 function JudgementRow({ judgement }: { judgement: OsuReplayJudgement }) {
-  const reason = readableReason(judgement.missAnalysis?.reason);
+  const reason = formatOsuMissReason(judgement.missAnalysis?.reason);
   const timestamp = formatOsuDuration(judgement.startTimeMs ?? 0);
   const timing = judgement.missAnalysis?.pressTimeOffsetMs == null ? "No click registered" : `${Math.round(judgement.missAnalysis.pressTimeOffsetMs)}ms tap offset`;
   return (
@@ -162,9 +163,4 @@ function JudgementRow({ judgement }: { judgement: OsuReplayJudgement }) {
 
 function Detail({ label, value }: { label: string; value: string }) {
   return <div className="flex items-center justify-between gap-4 py-2.5"><dt className="text-muted">{label}</dt><dd className="m-0 tabular-nums text-text">{value}</dd></div>;
-}
-
-function readableReason(value?: string): string {
-  if (!value) return "Unclassified miss";
-  return value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 }
