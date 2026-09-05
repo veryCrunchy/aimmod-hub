@@ -41,6 +41,7 @@ try {
     await page.route("**/playback/beatmaps/42/audio?*", (route: any) => route.fulfill({ body: song, contentType: "audio/wav" }));
     await page.goto(`${base}/tests/fixtures/playback-qa.html`);
     await page.locator('.osu-replay-player[data-state="ready"]').waitFor({ timeout: 60000 });
+    assert.ok(await page.evaluate(() => (window as any).__replayAnalysis?.judgements?.length > 0), "Playback did not publish reconstructed judgements");
     assert.equal(await page.getByRole("button", { name: "Play replay", exact: true }).isVisible(), true);
     const songVolume = page.getByRole("slider", { name: "Song volume", exact: true });
     const hitsoundVolume = page.getByRole("slider", { name: "Hitsound volume", exact: true });
@@ -121,6 +122,27 @@ try {
     assert.equal(await page.locator('input[accept="audio/*"]').count(), 0);
     await page.close();
   }
+  const officialPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await officialPage.route("**/api/osu/v1/official-scores/123", (route: any) => route.fulfill({ json: {
+    replay: { exists: true }, item: { source: "official", officialScoreId: "123", shareId: "", visibility: "public",
+      osuUserId: 4, osuUsername: "AimMod QA", beatmapId: 42, beatmapSetId: 12, ruleset: "osu", hasReplayFile: false,
+      title: "Playback QA", artist: "AimMod", creator: "AimMod", difficulty: "Test", totalScore: 12345,
+      performancePoints: 12, accuracy: .9, maxCombo: 4, starRating: 3, count300: 2, count100: 1, count50: 0, countMiss: 2,
+      bpm: 120, lengthMs: 8600, playedAt: "2026-09-05T00:00:00Z", mods: [] },
+  } }));
+  await officialPage.route("**/api/osu/v1/official-scores/123/replay", (route: any) => route.fulfill({ body: replay, contentType: "application/octet-stream" }));
+  await officialPage.route("**/playback/beatmaps/42/file", (route: any) => route.fulfill({ body: playbackBeatmap, contentType: "text/plain" }));
+  await officialPage.route("**/playback/beatmaps/42/audio?*", (route: any) => route.fulfill({ body: song, contentType: "audio/wav" }));
+  await officialPage.goto(`${base}/osu/scores/123`);
+  await officialPage.locator('.osu-replay-player[data-state="ready"]').waitFor({ timeout: 60000 });
+  await officialPage.getByText("Replay reconstruction", { exact: true }).waitFor();
+  assert.equal(await officialPage.getByText("No miss analysis in this share", { exact: true }).count(), 0);
+  const moment = officialPage.getByRole("button", { name: /^Seek to / }).first();
+  await moment.click();
+  assert.ok(Number(await officialPage.getByRole("slider", { name: "Replay timeline" }).inputValue()) >= 0);
+  await officialPage.screenshot({ path: resolve(output, "official-score-analysis.png"), fullPage: true });
+  await officialPage.close();
+  report.push({ officialScore: "no Hub attachment required; reconstructed judgements and seek links visible" });
   writeFileSync(resolve(output, "report.json"), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally { await browser.close(); }

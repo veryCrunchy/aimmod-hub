@@ -17,6 +17,7 @@ import {
   osuReplayDownloadUrl,
   osuOfficialReplayDownloadUrl,
   type OsuReplayJudgement,
+  type OsuReplayAnalysis,
   type OsuSharedReplay,
 } from "../lib/osuCommunity";
 
@@ -25,24 +26,30 @@ export function OsuReplayPage() {
   const [replay, setReplay] = useState<OsuSharedReplay | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [browserAnalysis, setBrowserAnalysis] = useState<OsuReplayAnalysis | null>(null);
+  const [playbackError, setPlaybackError] = useState("");
+  const [seekToMs, setSeekToMs] = useState<number>();
 
   useEffect(() => {
     let cancelled = false;
     setReplay(null);
     setError(null);
+    setBrowserAnalysis(null); setPlaybackError(""); setSeekToMs(undefined);
     void (officialScoreId ? fetchOsuOfficialScore(officialScoreId) : fetchOsuReplay(shareId))
       .then((value) => { if (!cancelled) setReplay(value); })
       .catch((reason) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load this replay."); });
     return () => { cancelled = true; };
   }, [shareId, officialScoreId, attempt]);
 
+  const analysis = replay?.analysis?.judgements?.length ? replay.analysis : browserAnalysis;
   const misses = useMemo(
-    () => replay?.analysis?.judgements?.filter((item) => item.result?.toLowerCase() === "miss") ?? [],
-    [replay],
+    () => analysis?.judgements?.filter((item) => ["miss", "sliderbreak"].includes(item.result?.toLowerCase() ?? "")) ?? [],
+    [analysis],
   );
   const missReasons = useMemo(() => {
     const counts = new Map<string, number>();
     for (const judgement of misses) {
+      if (!judgement.missAnalysis?.reason) continue;
       const reason = formatOsuMissReason(judgement.missAnalysis?.reason);
       counts.set(reason, (counts.get(reason) ?? 0) + 1);
     }
@@ -57,6 +64,9 @@ export function OsuReplayPage() {
   }
 
   const pp = replay.performancePoints == null ? "Unavailable" : `${Math.round(replay.performancePoints)}pp`;
+  const sourceScoreId = officialScoreId || replay.officialScoreId;
+  const playbackSource = replay.hasReplayFile && replay.shareId ? osuReplayDownloadUrl(replay.shareId)
+    : sourceScoreId && replay.officialReplayExists ? osuOfficialReplayDownloadUrl(sourceScoreId) : undefined;
   const notable = misses
     .slice()
     .sort((a, b) => (b.missAnalysis?.confidence ?? 0) - (a.missAnalysis?.confidence ?? 0))
@@ -81,14 +91,13 @@ export function OsuReplayPage() {
           </div>
           <div className="flex items-end gap-2 md:items-start">
             {officialScoreId && <Button href={`https://osu.ppy.sh/scores/${officialScoreId}`} target="_blank" rel="noreferrer">View score on osu!</Button>}
-            {replay.hasReplayFile ? <Button href={osuReplayDownloadUrl(replay.shareId)} variant="primary">Download replay</Button> : null}
+            {playbackSource ? <Button href={playbackSource} variant="primary">Download replay</Button> : null}
             {replay.beatmapSetId > 0 ? <Button href={`https://osu.ppy.sh/beatmapsets/${replay.beatmapSetId}#osu/${replay.beatmapId}`} target="_blank" rel="noreferrer">Open beatmap</Button> : null}
           </div>
         </div>
       </PageSection>
 
-      {replay.hasReplayFile && replay.shareId && replay.ruleset === "osu" && <OsuReplayPlayer key={replay.shareId} replayUrl={osuReplayDownloadUrl(replay.shareId)} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} />}
-      {officialScoreId && replay.officialReplayExists && replay.ruleset === "osu" && <OsuReplayPlayer key={officialScoreId} replayUrl={osuOfficialReplayDownloadUrl(officialScoreId)} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} />}
+      {playbackSource && replay.ruleset === "osu" && <OsuReplayPlayer replayUrl={playbackSource} beatmapId={replay.beatmapId} beatmapsetId={replay.beatmapSetId} backgroundUrl={replay.coverUrl || undefined} title={replay.title} seekToMs={seekToMs} onAnalysis={value => { setBrowserAnalysis(value); setPlaybackError(""); }} onPlaybackError={setPlaybackError} />}
       {officialScoreId && !replay.officialReplayExists && <p className="text-sm text-muted">osu! does not list a replay file for this score.</p>}
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">
@@ -107,13 +116,16 @@ export function OsuReplayPage() {
               <span className="text-[10px] uppercase text-cyan">Notable moments</span>
               <h2 className="mt-1 text-[20px]">What happened during this play</h2>
             </div>
-            <span className="text-[11px] text-muted">{replay.analysisEngine || "Analysis unavailable"}</span>
+            <span className="text-[11px] text-muted">{replay.analysis?.judgements?.length ? replay.analysisEngine : browserAnalysis ? "Replay reconstruction" : ""}</span>
           </div>
           {notable.length === 0 ? (
-            <EmptyState title="No miss analysis in this share" body="The score is available, but its exact replay judgement analysis was not uploaded." />
+            analysis ? <EmptyState title="No misses or slider breaks" body="No misses or slider breaks were found in this replay analysis." />
+              : playbackError ? <EmptyState title="Replay analysis unavailable" body={playbackError} />
+              : playbackSource && replay.ruleset === "osu" ? <div role="status" className="flex min-h-36 flex-col items-center justify-center gap-3"><strong>Preparing replay analysis</strong><progress aria-label="Preparing replay analysis" className="h-1 w-48" /></div>
+              : <EmptyState title="Replay data unavailable" body="Judgement analysis requires the replay file. The score summary alone cannot identify when or why a miss happened." />
           ) : (
             <div className="mt-5 border-y border-line">
-              {notable.map((judgement, index) => <JudgementRow key={`${judgement.objectIndex ?? index}-${judgement.startTimeMs ?? index}`} judgement={judgement} />)}
+              {notable.map((judgement, index) => <JudgementRow key={`${judgement.objectIndex ?? index}-${judgement.startTimeMs ?? index}`} judgement={judgement} onSeek={playbackSource ? () => setSeekToMs(Math.max(0, (judgement.startTimeMs ?? 0) - 1500)) : undefined} />)}
             </div>
           )}
         </PageSection>
@@ -155,15 +167,15 @@ function JudgementMetric({ label, value, colour }: { label: string; value: numbe
   return <div className="bg-panel px-3 py-3"><span className={`text-[18px] font-semibold tabular-nums ${colour}`}>{value}</span><span className="ml-2 text-[10px] text-muted">{label}</span></div>;
 }
 
-function JudgementRow({ judgement }: { judgement: OsuReplayJudgement }) {
-  const reason = formatOsuMissReason(judgement.missAnalysis?.reason);
+function JudgementRow({ judgement, onSeek }: { judgement: OsuReplayJudgement; onSeek?: () => void }) {
+  const reason = judgement.missAnalysis?.reason ? formatOsuMissReason(judgement.missAnalysis.reason) : judgement.result === "SliderBreak" ? "Slider break" : "Miss";
   const timestamp = formatOsuDuration(judgement.startTimeMs ?? 0);
-  const timing = judgement.missAnalysis?.pressTimeOffsetMs == null ? "No click registered" : `${Math.round(judgement.missAnalysis.pressTimeOffsetMs)}ms tap offset`;
+  const timing = !judgement.missAnalysis ? "Review cursor movement and tapping at this moment" : judgement.missAnalysis.pressTimeOffsetMs == null ? "No click registered" : `${Math.round(judgement.missAnalysis.pressTimeOffsetMs)}ms tap offset`;
   return (
     <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-3 last:border-b-0 max-[560px]:grid-cols-[48px_minmax(0,1fr)]">
-      <span className="text-[11px] tabular-nums text-muted">{timestamp}</span>
+      {onSeek ? <button className="text-[11px] tabular-nums text-cyan" onClick={onSeek} aria-label={`Seek to ${timestamp}`}>{timestamp}</button> : <span className="text-[11px] tabular-nums text-muted">{timestamp}</span>}
       <span className="min-w-0"><strong className="block truncate text-[12px] text-text">{reason}</strong><span className="mt-0.5 block truncate text-[10px] text-muted">{timing}</span></span>
-      <span className="text-[10px] tabular-nums text-muted max-[560px]:hidden">{Math.round((judgement.missAnalysis?.confidence ?? 0) * 100)}% confidence</span>
+      {judgement.missAnalysis?.confidence != null && <span className="text-[10px] tabular-nums text-muted max-[560px]:hidden">{Math.round(judgement.missAnalysis.confidence * 100)}% confidence</span>}
     </div>
   );
 }

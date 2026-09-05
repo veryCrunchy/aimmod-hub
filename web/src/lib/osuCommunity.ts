@@ -110,7 +110,16 @@ export async function fetchOsuProfile(handle: string, limit = 36): Promise<OsuPu
 }
 
 export async function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> {
-  return normalizeReplay(await fetchJSON<OsuSharedReplay>(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`));
+  const replay = normalizeReplay(await fetchJSON<OsuSharedReplay>(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`));
+  if (!replay.hasReplayFile && replay.onlineScoreId && Number.isSafeInteger(replay.onlineScoreId) && replay.onlineScoreId > 0) {
+    try {
+      const official = await fetchOsuOfficialScore(String(replay.onlineScoreId));
+      if (official.osuUserId === replay.osuUserId && official.beatmapId === replay.beatmapId && official.ruleset === replay.ruleset) {
+        return { ...replay, officialScoreId: String(replay.onlineScoreId), officialReplayExists: official.officialReplayExists };
+      }
+    } catch { /* Keep the shared score accessible if official metadata is unavailable. */ }
+  }
+  return replay;
 }
 
 export type OsuScoreHistory = {

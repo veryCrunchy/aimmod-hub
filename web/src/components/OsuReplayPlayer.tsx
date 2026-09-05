@@ -3,6 +3,8 @@ import { createReplaySession, type CoreSession, type SkinAssets } from "replayvi
 import { Play, Pause, RotateCcw, Maximize, Settings2, Volume2 } from "lucide-react";
 import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackAudioUrl, osuPlaybackBeatmapUrl, playbackTimeLabel } from "../lib/osuPlayback";
 import { createAimModPlaybackSkin, disposeAimModPlaybackSkin } from "../lib/osuPlaybackSkin";
+import { playbackAnalysis } from "../lib/osuPlaybackAnalysis";
+import type { OsuReplayAnalysis } from "../lib/osuCommunity";
 import "./OsuReplayPlayer.css";
 
 export interface OsuReplayPlayerProps {
@@ -15,6 +17,8 @@ export interface OsuReplayPlayerProps {
   backgroundUrl?: string;
   seekToMs?: number;
   onTimeChange?: (beatmapMs: number) => void;
+  onAnalysis?: (analysis: OsuReplayAnalysis) => void;
+  onPlaybackError?: (message: string) => void;
 }
 
 export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
@@ -23,7 +27,7 @@ export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
 }
 
 function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl, title = "Replay", audioUrl, backgroundUrl,
-  seekToMs, onTimeChange }: OsuReplayPlayerProps) {
+  seekToMs, onTimeChange, onAnalysis, onPlaybackError }: OsuReplayPlayerProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const settingsId = useId();
   const root = useRef<HTMLElement>(null);
@@ -31,6 +35,10 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
   const context = useRef<AudioContext | null>(null);
   const callback = useRef(onTimeChange);
   callback.current = onTimeChange;
+  const analysisCallback = useRef(onAnalysis);
+  analysisCallback.current = onAnalysis;
+  const errorCallback = useRef(onPlaybackError);
+  errorCallback.current = onPlaybackError;
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [stage, setStage] = useState("Loading replay and beatmap");
@@ -103,6 +111,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
         lazerDefaultsUrl: "/playback/aimmod-sounds", userRate: 1 });
       if (!alive()) { owned.audioSync.pause(); owned.destroy(); return; }
       session.current = owned;
+      analysisCallback.current?.(playbackAnalysis(owned.renderer.hitResults, parsed.beatmap));
       owned.renderer.options.backgroundDim = .65;
       owned.renderer.options.showURBar = true;
       owned.renderer.options.showKeyOverlay = true;
@@ -128,7 +137,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
     };
     document.addEventListener("visibilitychange", hidden);
     void run().catch(reason => {
-      if (alive()) { setError(reason instanceof Error ? reason.message : "This replay could not be opened."); setState("error"); }
+      if (alive()) { const message = reason instanceof Error ? reason.message : "This replay could not be opened."; setError(message); setState("error"); errorCallback.current?.(message); }
     }).finally(() => {
       if (!alive()) { owned?.audioSync.pause(); owned?.destroy(); if (skin) disposeAimModPlaybackSkin(skin); background?.close(); }
     });

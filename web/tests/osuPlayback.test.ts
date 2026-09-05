@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { computeModDifficulty } from "replayviewer-js";
 import { parseOsuPlayback } from "../src/lib/osuPlaybackDecode";
 import { osuPlaybackAudioUrl } from "../src/lib/osuPlayback";
+import { playbackAnalysis } from "../src/lib/osuPlaybackAnalysis";
 import { createPlaybackReplay, playbackBeatmap } from "./fixtures/osuPlaybackFixture";
 
 const exactBuffer = (bytes: Uint8Array) => Uint8Array.from(bytes).buffer;
@@ -34,4 +35,20 @@ test("replay rate and HR come from the actual replay mod data", async () => {
   const difficulty = computeModDifficulty(result.beatmap, result.replay);
   assert.equal(difficulty.speed, 1.5);
   assert.equal(difficulty.isHR, true);
+});
+
+test("browser judgements retain misses and slider breaks without inventing miss timing or causes", async () => {
+  const parsed = await parseOsuPlayback(exactBuffer(await createPlaybackReplay()), new TextEncoder().encode(playbackBeatmap).buffer);
+  const analysis = playbackAnalysis([
+    { objectIndex: 0, judgement: 0, time: 1300, x: 0, y: 0, hitSound: 0, comboBreak: true },
+    { objectIndex: 1, judgement: 0, time: 2400, x: 0, y: 0, hitSound: 0, comboBreak: true, isSliderSub: true },
+    { objectIndex: 1, judgement: 300, time: 2300, x: 0, y: 0, hitSound: 0, comboBreak: false, isSliderSub: true },
+  ], parsed.beatmap);
+  assert.equal(analysis.judgements?.length, 2);
+  assert.equal(analysis.judgements?.[0].result, "Miss");
+  assert.equal(analysis.judgements?.[0].startTimeMs, parsed.beatmap.hitObjects[0].time);
+  assert.equal(analysis.judgements?.[0].timeOffsetMs, undefined);
+  assert.equal(analysis.judgements?.[0].missAnalysis, undefined);
+  assert.equal(analysis.judgements?.[1].result, "SliderBreak");
+  assert.equal(analysis.judgements?.[1].startTimeMs, 2400);
 });

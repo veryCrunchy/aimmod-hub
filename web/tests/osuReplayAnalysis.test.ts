@@ -53,3 +53,20 @@ test("all public replay fetch boundaries normalize uploaded analysis", async t =
   const replays = [await fetchOsuReplay("test"), ...(await fetchOsuCommunity()), ...(await fetchOsuProfile("player")).recentReplays];
   for (const replay of replays) assert.equal(replay.analysis?.judgements?.[0].missAnalysis?.reason, "LateClick");
 });
+
+test("a shared score without an attachment can use its matching official replay", async t => {
+  const item = { shareId: "test", onlineScoreId: 123, osuUserId: 4, beatmapId: 42, ruleset: "osu", hasReplayFile: false };
+  t.mock.method(globalThis, "fetch", async (url: string) => new Response(JSON.stringify(url.includes("official-scores")
+    ? { item, replay: { exists: true } } : item)));
+  const result = await fetchOsuReplay("test");
+  assert.equal(result.officialReplayExists, true);
+  assert.equal(result.officialScoreId, "123");
+  assert.equal(result.hasReplayFile, false);
+});
+
+test("an official replay from a different player cannot be attached to a shared score", async t => {
+  const item = { shareId: "test", onlineScoreId: 123, osuUserId: 4, beatmapId: 42, ruleset: "osu", hasReplayFile: false };
+  t.mock.method(globalThis, "fetch", async (url: string) => new Response(JSON.stringify(url.includes("official-scores")
+    ? { item: { ...item, osuUserId: 5 }, replay: { exists: true } } : item)));
+  assert.equal((await fetchOsuReplay("test")).officialReplayExists, undefined);
+});
