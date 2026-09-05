@@ -42,6 +42,12 @@ try {
     await page.goto(`${base}/tests/fixtures/playback-qa.html`);
     await page.locator('.osu-replay-player[data-state="ready"]').waitFor({ timeout: 60000 });
     assert.equal(await page.getByRole("button", { name: "Play replay", exact: true }).isVisible(), true);
+    const songVolume = page.getByRole("slider", { name: "Song volume", exact: true });
+    const hitsoundVolume = page.getByRole("slider", { name: "Hitsound volume", exact: true });
+    await songVolume.fill("0.2");
+    assert.equal(await hitsoundVolume.inputValue(), "0.35");
+    await hitsoundVolume.fill("0.8");
+    assert.equal(await songVolume.inputValue(), "0.2");
     await page.getByRole("button", { name: "Replay display settings" }).click();
     await page.getByRole("slider", { name: "Background dim", exact: true }).fill("0.8");
     await page.getByRole("checkbox", { name: "Key presses", exact: true }).uncheck();

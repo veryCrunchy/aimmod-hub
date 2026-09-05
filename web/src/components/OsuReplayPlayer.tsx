@@ -39,7 +39,8 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(1);
   const [rate, setRate] = useState(1);
-  const [volume, setVolume] = useState(.65);
+  const [songVolume, setSongVolume] = useState(.65);
+  const [hitsoundVolume, setHitsoundVolume] = useState(.35);
   const [audioAvailable, setAudioAvailable] = useState(false);
   const [localMap, setLocalMap] = useState<File | null>(null);
   const [controlError, setControlError] = useState("");
@@ -108,7 +109,7 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
       owned.player.setClockFn(owned.audioSync.clockFn);
       owned.audioSync.setSongVolume(.65); owned.audioSync.setEffectsVolume(.35);
       owned.renderer.start();
-      setRate(1); setVolume(.65); setDim(.65); setKeysVisible(true); setTimingVisible(true); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
+      setRate(1); setSongVolume(.65); setHitsoundVolume(.35); setDim(.65); setKeysVisible(true); setTimingVisible(true); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
       let last = 0;
       const tick = (time: number) => {
         if (!alive() || !owned) return;
@@ -199,8 +200,11 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
         onChange={event => void seek(Number(event.target.value)).catch(() => setControlError("Could not seek replay."))} />
       <div className="osu-replay-player__sound">
         <span>{audioAvailable ? "Song + hitsounds" : "Hitsounds only"}</span>
-        <label><Volume2 size={16} aria-hidden="true" /><input aria-label="Playback volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={event => {
-          const value = Number(event.target.value); setVolume(value); session.current?.audioSync.setSongVolume(value); session.current?.audioSync.setEffectsVolume(value * .55);
+        <label><Volume2 size={16} aria-hidden="true" />Song<input aria-label="Song volume" type="range" min="0" max="1" step="0.05" value={songVolume} onChange={event => {
+          const value = Number(event.target.value); setSongVolume(value); session.current?.audioSync.setSongVolume(value);
+        }} /></label>
+        <label>Hitsounds<input aria-label="Hitsound volume" type="range" min="0" max="1" step="0.05" value={hitsoundVolume} onChange={event => {
+          const value = Number(event.target.value); setHitsoundVolume(value); session.current?.audioSync.setEffectsVolume(value);
         }} /></label>
         <button type="button" className="osu-replay-player__settings-button osu-replay-player__icon" aria-label="Replay display settings" title="Replay display settings" aria-expanded={showSettings} aria-controls={settingsId} onClick={() => setShowSettings(value => !value)}><Settings2 size={17} /></button>
       </div>
