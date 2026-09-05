@@ -1,0 +1,10 @@
+.score-filters { display: grid; gap: 14px; padding: 20px 0; }
+.score-filters .hub-filters { margin: 0; }
+.score-filters__search { display: grid; grid-template-columns: minmax(0, 1fr) 42px; align-items: end; }
+.score-filters__search button { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: 4px; color: var(--color-text); background: var(--color-panel); }
+.score-filters__selects { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); }
+.score-filters__selects label, .score-filters__search label { min-width: 0; }
+.score-filters__selects select { width: 100%; min-width: 0; }
+.score-filters__ranges { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+@media (max-width: 1100px) { .score-filters__selects { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 640px) { .score-filters__selects { grid-template-columns: repeat(2,minmax(0,1fr)); } .score-filters__ranges { grid-template-columns: minmax(0,1fr); gap: 12px; } }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Helmet } from "../lib/helmet";
 import { useSearchParams } from "react-router-dom";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { SectionHeader } from "../components/SectionHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -19,7 +20,8 @@ export function ReplayHubPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
   const [draftQuery, setDraftQuery] = useState(query);
-  const [filter, setFilter] = useState<ReplayFilter>("all");
+  const filter = filterChoice<ReplayFilter>(searchParams.get("replay"), FILTERS, "all");
+  const setFilter = (replay: ReplayFilter) => setSearchParams(current => updateFilterQuery(current, { replay }), { replace: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);

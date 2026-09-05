@@ -28,8 +28,33 @@ type OfficialScoreCoverage struct {
 }
 
 type OfficialPublicScore struct {
-	Replay           store.OsuPublicReplay
-	FallbackEligible bool
+	Replay               store.OsuPublicReplay
+	FallbackEligible     bool
+	OfficialReplayExists bool
+	PPCalculation        *ScorePPCalculationInput
+}
+
+type OfficialScoreMod struct {
+	Acronym  string         `json:"acronym"`
+	Settings map[string]any `json:"settings,omitempty"`
+}
+
+// ScorePPCalculationInput preserves public upstream evidence, not an estimated
+// result. Missing scoring identity and judgement keys must not become defaults.
+type ScorePPCalculationInput struct {
+	Version           int                `json:"version"`
+	BeatmapID         int64              `json:"beatmapId"`
+	BeatmapChecksum   string             `json:"beatmapChecksum"`
+	RulesetID         int                `json:"rulesetId"`
+	Lazer             *bool              `json:"lazer"`
+	Mods              []OfficialScoreMod `json:"mods"`
+	Statistics        map[string]int     `json:"statistics"`
+	MaximumStatistics map[string]int     `json:"maximumStatistics"`
+	MaxCombo          int                `json:"maxCombo"`
+	Accuracy          float64            `json:"accuracy"`
+	Passed            bool               `json:"passed"`
+	TotalScore        int64              `json:"totalScore"`
+	LegacyTotalScore  *int64             `json:"legacyTotalScore"`
 }
 
 type OfficialScoresResult struct {
@@ -38,25 +63,43 @@ type OfficialScoresResult struct {
 }
 
 type officialScore struct {
-	ID            int64          `json:"id"`
-	UserID        int64          `json:"user_id"`
-	RulesetID     *int           `json:"ruleset_id"`
-	BeatmapID     int64          `json:"beatmap_id"`
-	EndedAt       time.Time      `json:"ended_at"`
-	TotalScore    int64          `json:"total_score"`
-	LegacyScoreID *int64         `json:"legacy_score_id"`
-	PP            *float64       `json:"pp"`
-	Accuracy      float64        `json:"accuracy"`
-	MaxCombo      int            `json:"max_combo"`
-	Passed        bool           `json:"passed"`
-	HasReplay     bool           `json:"has_replay"`
-	Statistics    map[string]int `json:"statistics"`
-	Mods          []struct {
-		Acronym  string         `json:"acronym"`
-		Settings map[string]any `json:"settings"`
-	} `json:"mods"`
-	Beatmap    officialBeatmap    `json:"beatmap"`
-	Beatmapset officialBeatmapset `json:"beatmapset"`
+	legacyIdentityPresent bool
+	ID                    int64              `json:"id"`
+	UserID                int64              `json:"user_id"`
+	RulesetID             *int               `json:"ruleset_id"`
+	BeatmapID             int64              `json:"beatmap_id"`
+	EndedAt               time.Time          `json:"ended_at"`
+	TotalScore            int64              `json:"total_score"`
+	LegacyScoreID         *int64             `json:"legacy_score_id"`
+	LegacyTotalScore      *int64             `json:"legacy_total_score"`
+	BuildID               *int64             `json:"build_id"`
+	PP                    *float64           `json:"pp"`
+	Accuracy              float64            `json:"accuracy"`
+	MaxCombo              int                `json:"max_combo"`
+	Passed                bool               `json:"passed"`
+	HasReplay             bool               `json:"has_replay"`
+	Statistics            map[string]int     `json:"statistics"`
+	MaximumStatistics     map[string]int     `json:"maximum_statistics"`
+	Mods                  []OfficialScoreMod `json:"mods"`
+	Beatmap               officialBeatmap    `json:"beatmap"`
+	Beatmapset            officialBeatmapset `json:"beatmapset"`
+}
+
+func (s *officialScore) UnmarshalJSON(data []byte) error {
+	type scoreAlias officialScore
+	var decoded scoreAlias
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
+	var identity struct {
+		Legacy json.RawMessage `json:"legacy_score_id"`
+	}
+	if err := json.Unmarshal(data, &identity); err != nil {
+		return err
+	}
+	*s = officialScore(decoded)
+	s.legacyIdentityPresent = identity.Legacy != nil
+	return nil
 }
 
 // Public user scores require the application's public OAuth scope, not a user's token.
@@ -231,5 +274,23 @@ func normalizePublicScore(score officialScore, mode string) OfficialPublicScore 
 	// Uploads lack mod settings and non-standard judgements. Those cannot prove a
 	// content identity, nor can legacy and standardised score totals be equated.
 	eligible := mode == "osu" && len(mods) == 0 && score.LegacyScoreID == nil && score.Statistics != nil
-	return OfficialPublicScore{Replay: replay, FallbackEligible: eligible}
+	var input *ScorePPCalculationInput
+	if score.RulesetID != nil && scoreMode(*score.RulesetID) == mode {
+		input = &ScorePPCalculationInput{
+			Version: 1, BeatmapID: id, BeatmapChecksum: score.Beatmap.Checksum, RulesetID: *score.RulesetID,
+			Mods: score.Mods, Statistics: score.Statistics, MaximumStatistics: score.MaximumStatistics,
+			MaxCombo: score.MaxCombo, Accuracy: score.Accuracy, Passed: score.Passed,
+			TotalScore: score.TotalScore, LegacyTotalScore: score.LegacyTotalScore,
+		}
+		// osu-web Solo/Score::isLegacy uses non-null legacy_score_id, including
+		// zero for stable scores without a legacy best ID. Missing is not null.
+		if score.LegacyScoreID != nil && *score.LegacyScoreID >= 0 {
+			lazer := false
+			input.Lazer = &lazer
+		} else if score.LegacyScoreID == nil && (score.legacyIdentityPresent || (score.BuildID != nil && *score.BuildID > 0)) {
+			lazer := true
+			input.Lazer = &lazer
+		}
+	}
+	return OfficialPublicScore{Replay: replay, FallbackEligible: eligible, OfficialReplayExists: score.HasReplay, PPCalculation: input}
 }

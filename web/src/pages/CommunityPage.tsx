@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "../lib/helmet";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useSearchParams } from "react-router-dom";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
@@ -23,9 +24,10 @@ type ScenarioSortField = "runCount" | "name";
 export function CommunityPage() {
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string | null>(null);
-  const [scenarioSortField, setScenarioSortField] = useState<ScenarioSortField>("runCount");
-  const [scenarioSortDir, setScenarioSortDir] = useState<"asc" | "desc">("desc");
+  const [params, setParams] = useSearchParams();
+  const scenarioSortField = filterChoice<ScenarioSortField>(params.get("sort"), ["runCount", "name"], "runCount");
+  const scenarioSortDir = filterChoice(params.get("direction"), ["asc", "desc"] as const, "desc");
+  const setScenarioTypeFilter = (scenarioType: string | null) => setParams(current => updateFilterQuery(current, { scenarioType }), { replace: true });
   const [runsVisible, setRunsVisible] = useState(PAGE_SIZE);
 
   const load = useCallback((reset: boolean) => {
@@ -48,13 +50,9 @@ export function CommunityPage() {
   useAutoRefresh(() => load(false), 30_000);
 
   function handleScenarioSort(field: string) {
-    const f = field as ScenarioSortField;
-    if (f === scenarioSortField) {
-      setScenarioSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setScenarioSortField(f);
-      setScenarioSortDir(f === "name" ? "asc" : "desc");
-    }
+    const f = filterChoice<ScenarioSortField>(field, ["runCount", "name"], "runCount");
+    const direction = f === scenarioSortField ? (scenarioSortDir === "asc" ? "desc" : "asc") : f === "name" ? "asc" : "desc";
+    setParams(current => updateFilterQuery(current, { sort: f, direction }), { replace: true });
   }
 
   const scenarioTypes = useMemo(() => {
@@ -65,6 +63,8 @@ export function CommunityPage() {
     }
     return [...types];
   }, [overview]);
+
+  const scenarioTypeFilter = scenarioTypes.includes(params.get("scenarioType") ?? "") ? params.get("scenarioType") : null;
 
   const filteredSortedScenarios = useMemo(() => {
     if (!overview) return [];

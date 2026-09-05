@@ -7,16 +7,20 @@ import (
 	"html"
 	"io/fs"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	htmlparser "golang.org/x/net/html"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
+	osuservice "github.com/veryCrunchy/aimmod-hub/api/internal/osu"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/seo"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
@@ -28,6 +32,7 @@ var (
 	reLearn        = regexp.MustCompile(`^/learn/([^/]+)$`)
 	reLearnTopic   = regexp.MustCompile(`^/learn/topics/([^/]+)$`)
 	reSocialDetail = regexp.MustCompile(`^/(?:osu/(?:learn|replays|profiles)|learn(?:/topics)?|profiles|runs|scenarios)/[^/]+$`)
+	reClientDetail = regexp.MustCompile(`^/(?:benchmarks/[^/]+|u/[^/]+(?:/benchmarks/[^/]+)?|u/kovaaks/[^/]+)$`)
 )
 
 type pageMeta struct {
@@ -36,6 +41,52 @@ type pageMeta struct {
 	OGType      string
 	Canonical   string
 	NoIndex     bool
+}
+
+type publicScoreMetadataProvider interface {
+	GetPublicScore(context.Context, int64) (osuservice.OfficialScoreDetail, error)
+}
+
+func resolveOfficialScoreMeta(ctx context.Context, route, canonical string, provider publicScoreMetadataProvider) pageMeta {
+	meta := pageMeta{Title: "osu! score unavailable · AimMod Hub", Description: "This official osu! score is unavailable.", OGType: "website", Canonical: canonical, NoIndex: true}
+	rawID := strings.TrimPrefix(route, "/osu/scores/")
+	id, err := strconv.ParseInt(rawID, 10, 64)
+	if err != nil || id <= 0 || strconv.FormatInt(id, 10) != rawID || provider == nil {
+		return meta
+	}
+	// Reuse the public application-credential provider and its cache. Do not fetch
+	// replay bytes or user-authorized/private score data to construct metadata.
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	detail, err := provider.GetPublicScore(ctx, id)
+	if err != nil || ctx.Err() != nil || detail.Status != "available" || detail.Item == nil {
+		return meta
+	}
+	item := detail.Item
+	if item.Source != "official" || item.Visibility != store.OsuVisibilityPublic || item.OnlineScoreID != id || item.OfficialScoreID != rawID || item.OsuUserID <= 0 || item.BeatmapID <= 0 {
+		return meta
+	}
+	player := strings.TrimSpace(item.OsuUsername)
+	if player == "" {
+		player = fmt.Sprintf("osu! player %d", item.OsuUserID)
+	}
+	beatmap := strings.TrimSpace(item.Title)
+	if beatmap == "" {
+		beatmap = fmt.Sprintf("Beatmap %d", item.BeatmapID)
+	}
+	if item.Difficulty != "" {
+		beatmap += " [" + item.Difficulty + "]"
+	}
+	meta.Title = fmt.Sprintf("%s on %s · osu! score %d · AimMod Hub", player, beatmap, id)
+	meta.Description = fmt.Sprintf("Official osu! score by %s on %s.", player, beatmap)
+	if !math.IsNaN(item.Accuracy) && !math.IsInf(item.Accuracy, 0) && item.Accuracy >= 0 && item.Accuracy <= 1 {
+		meta.Description += fmt.Sprintf(" Accuracy %.2f%%.", item.Accuracy*100)
+	}
+	if pp := item.PerformancePoints; pp != nil && item.PPSource == "official" && !math.IsNaN(*pp) && !math.IsInf(*pp, 0) && *pp >= 0 {
+		meta.Description += fmt.Sprintf(" %.2f PP.", *pp)
+	}
+	meta.NoIndex = false
+	return meta
 }
 
 func (m pageMeta) inject(indexHTML string) string {
@@ -157,7 +208,7 @@ func isStaticAssetPath(p string) bool {
 	}
 }
 
-func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Store) pageMeta {
+func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Store, providers ...publicScoreMetadataProvider) pageMeta {
 	if strings.Trim(path, "/") != "" {
 		canonical = strings.TrimRight(canonical, "/")
 	}
@@ -171,6 +222,17 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	cleanPath := strings.TrimSuffix(path, "/")
 	if cleanPath == "" {
 		cleanPath = "/"
+	}
+	if seo.IsPrivateRoute(cleanPath) {
+		fallback.NoIndex = true
+		return fallback
+	}
+	if strings.HasPrefix(cleanPath, "/osu/scores/") {
+		var provider publicScoreMetadataProvider
+		if len(providers) > 0 {
+			provider = providers[0]
+		}
+		return resolveOfficialScoreMeta(ctx, cleanPath, canonical, provider)
 	}
 	if page, ok := seo.Published.Routes[cleanPath]; ok {
 		return pageMeta{Title: page.Title, Description: page.Description, OGType: "website", Canonical: canonical, NoIndex: cleanPath == "/search"}
@@ -189,12 +251,6 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 			return unavailableOsuMeta(canonical)
 		}
 		return resolveOsuDetailMeta(ctx, cleanPath, canonical, st)
-	}
-	for _, prefix := range []string{"/admin", "/account", "/link-device", "/auth"} {
-		if cleanPath == prefix || strings.HasPrefix(cleanPath, prefix+"/") {
-			fallback.NoIndex = true
-			return fallback
-		}
 	}
 	if cleanPath == "/osu" || strings.HasPrefix(cleanPath, "/osu/") || cleanPath == "/app/osu" {
 		fallback.Title = "osu! Analysis and Community · AimMod Hub"
@@ -342,10 +398,12 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 		}
 	}
 
+	// These existing public routes hydrate their detail metadata in the client.
+	fallback.NoIndex = !reClientDetail.MatchString(cleanPath)
 	return fallback
 }
 
-func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
+func NewSPAHandler(dir string, st *store.Store, origin string, providers ...publicScoreMetadataProvider) http.Handler {
 	origin = strings.TrimRight(strings.TrimSpace(origin), "/")
 	if origin == "" {
 		origin = "https://aimmod.app"
@@ -374,6 +432,13 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 			indexPath := path.Join(p, "index.html")
 			rawRouteHTML, readErr := fs.ReadFile(fsys, indexPath)
 			if readErr == nil {
+				if seo.IsPrivateRoute(r.URL.Path) || strings.HasPrefix(r.URL.Path, "/osu/scores/") {
+					meta := resolvePageMeta(r.Context(), r.URL.Path, origin+r.URL.Path, st, providers...)
+					rawRouteHTML = []byte(meta.inject(string(rawRouteHTML)))
+					if meta.NoIndex {
+						w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+					}
+				}
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.Header().Set("Cache-Control", "no-store")
 				_, _ = w.Write(rawRouteHTML)
@@ -387,7 +452,7 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 
 		// SPA fallback: serve index.html with injected meta.
 		canonical := origin + r.URL.Path
-		meta := resolvePageMeta(r.Context(), r.URL.Path, canonical, st)
+		meta := resolvePageMeta(r.Context(), r.URL.Path, canonical, st, providers...)
 		if meta.NoIndex {
 			w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 		}

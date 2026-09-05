@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
-import { useParams } from "react-router-dom";
+import { useScorePp } from "../hooks/useScorePp";
+import { ScorePpStatus } from "../components/ScorePpStatus";
+import { useParams, useSearchParams } from "react-router-dom";
+import { OsuScoreFilters } from "../components/OsuScoreFilters";
+import { filterOsuScores, scoreFilterKeys } from "../lib/osuScoreFilters";
 import { OsuReplayRow } from "../components/OsuReplayRow";
 import { SectionHeader } from "../components/SectionHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -16,7 +20,12 @@ export function OsuProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [history, setHistory] = useState<OsuScoreHistory | null>(null);
-  const [mode, setMode] = useState("osu");
+  const [params, setParams] = useSearchParams();
+  const selectedMode = params.get("mode") ?? "osu";
+  const mode = ["osu", "taiko", "fruits", "mania"].includes(selectedMode) ? selectedMode : "osu";
+  const setMode = (value: string) => setParams(previous => { const next = new URLSearchParams(previous); next.set("mode", value); return next; }, { replace: true });
+  const pp = useScorePp(profile?.recentReplays);
+  const visible = useMemo(() => filterOsuScores(pp.items, params), [pp.items, params]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,8 +64,12 @@ export function OsuProfilePage() {
       <label className="flex items-center gap-3 text-sm">Ruleset<select className="rounded border border-line bg-panel p-2" value={mode} onChange={event => setMode(event.target.value)}><option value="osu">osu!</option><option value="taiko">osu!taiko</option><option value="fruits">osu!catch</option><option value="mania">osu!mania</option></select></label>
       {history && <div className="text-sm text-muted"><p>Official best and recent scores, combined with public uploads. This is not a complete play history. {history.coverage.best.fetched} best / {history.coverage.recent.fetched} recent scores fetched.{history.hasMore ? " Showing the first 100 matching plays." : ""}</p>{[history.coverage.best, history.coverage.recent].some(source => !["available", "page_limit"].includes(source.status)) && <p role="status" className="mt-2">Some official scores could not be loaded. <button className="text-cyan underline" onClick={() => setAttempt(value => value + 1)}>Try again</button></p>}</div>}
       <PageSection className="p-0 overflow-hidden">
+        <OsuScoreFilters />
+        <ScorePpStatus {...pp} />
+        <p className="hub-results" role="status">{visible.length} of {profile.recentReplays.length} loaded plays</p>
         {profile.recentReplays.length > 0
-          ? profile.recentReplays.map((replay) => <OsuReplayRow key={replay.shareId || replay.officialScoreId} replay={replay} />)
+          ? visible.length ? visible.map((replay) => <OsuReplayRow key={replay.shareId || replay.officialScoreId} replay={replay} />)
+            : <EmptyState title="No matching plays" body="Try a wider range or clear your filters."><Button onClick={() => setParams(previous => { const next = new URLSearchParams(previous); scoreFilterKeys.forEach(key => next.delete(key)); return next; })}>Clear filters</Button></EmptyState>
           : <EmptyState title="No scores to display" body="No plays were returned for this ruleset. Check source availability or choose another ruleset." />}
       </PageSection>
     </PageStack>

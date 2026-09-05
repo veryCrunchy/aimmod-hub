@@ -55,7 +55,7 @@ func newSitemapHandler(origin string) http.Handler {
 		urls := []sitemapURL{}
 		paths := []string{}
 		for route := range seo.Published.Routes {
-			if route != "/search" {
+			if !seo.IsPrivateRoute(route) {
 				paths = append(paths, route)
 			}
 		}

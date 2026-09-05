@@ -26,6 +26,8 @@ captures/
 # Local browser verification and generated helper output.
 /web/scripts/verify-catalog-focus.ts
 /web/scripts/verify-score-filters.ts
+/web/scripts/verify-generic-filters.ts
+/web/scripts/verify-score-pp.ts
 /web/tests/ppTargetCache.browser.ts
 /web/scripts/rosu-browser.js
 /web/scripts/rosu-browser.d.ts

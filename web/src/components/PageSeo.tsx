@@ -3,10 +3,13 @@ import { Helmet } from "../lib/helmet";
 import content from "../../../api/internal/seo/content.json";
 import { socialPreviewImage } from "../lib/socialPreview";
 
+const restrictedRoute = /^\/(admin|account|link-device|auth|search)(?:\/|$)/;
+
 export function PageSeo({ title, description, type = "website", noindex = false, schema }: {
   title: string; description: string; type?: string; noindex?: boolean; schema?: Record<string, unknown>;
 }) {
   const { pathname } = useLocation();
+  noindex = noindex || restrictedRoute.test(pathname);
   const canonical = `https://aimmod.app${pathname.replace(/\/$/, "") || "/"}`;
   const image = socialPreviewImage(pathname, noindex);
   return <Helmet>
@@ -33,7 +36,7 @@ export function RouteSeo() {
   const page = (content.routes as Record<string, { title: string; description: string }>)[route];
   // These pages own their complete head, including loading/error visibility states.
   if (/^\/(learn(?:\/|$)|osu\/(pp-targets$|learn(?:\/|$)|(?:replays|profiles|scores)\/))/.test(route)) return null;
-  const restricted = /^\/(admin(?:\/|$)|account(?:\/|$)|link-device(?:\/|$)|search(?:\/|$))/.test(route);
+  const restricted = restrictedRoute.test(route);
   const dynamic = /^\/(profiles|runs|scenarios|u|benchmarks)\//.test(route);
   const existingTitle = Boolean(page && route !== "/benchmarks") || dynamic;
   if (!existingTitle) return <PageSeo title={page?.title ?? "AimMod Hub"} description={page?.description ?? "AimMod analysis, shared practice data and coaching guides."} noindex={restricted || !page} />;
@@ -44,10 +47,17 @@ export function RouteSeo() {
     {!existingDescription && <meta name="description" content={page?.description ?? "Public practice results and comparisons on AimMod Hub."} />}
     {!existingSocial && page && <meta property="og:title" content={page.title} />}
     {!existingSocial && page && <meta property="og:description" content={page.description} />}
+    {!existingSocial && page && <meta property="og:type" content="website" />}
+    {!existingSocial && page && <meta name="twitter:title" content={page.title} />}
+    {!existingSocial && page && <meta name="twitter:description" content={page.description} />}
     <meta property="og:url" content={`https://aimmod.app${route}`} />
     <meta property="og:site_name" content="AimMod Hub" />
     <meta property="og:image" content={socialPreviewImage(route, restricted)} />
+    <meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    {page && <meta property="og:image:alt" content={page.title} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={socialPreviewImage(route, restricted)} />
+    {page && <meta name="twitter:image:alt" content={page.title} />}
   </Helmet>;
 }

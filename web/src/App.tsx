@@ -8,6 +8,7 @@ import LearningTopicPage from "./pages/LearningTopicPage";
 import { OsuLearningPage } from "./pages/OsuLearningPage";
 import { RouteSeo } from "./components/PageSeo";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
+import { useSavedPageFilters } from "./hooks/useSavedPageFilters";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
@@ -52,6 +53,7 @@ type AppProps = {
 };
 
 function AppRoutes() {
+  useSavedPageFilters();
   return (
     <AppShell>
       <RouteSeo />

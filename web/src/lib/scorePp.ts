@@ -1,0 +1,136 @@
+import type { PerformanceArgs } from "rosu-pp-js";
+
+export type ScorePpInput = {
+  version: number; beatmapId: number; beatmapChecksum: string; rulesetId: number;
+  lazer: boolean | null; mods: { acronym: string; settings?: Record<string, unknown> }[] | null;
+  statistics: Record<string, number> | null; maximumStatistics: Record<string, number> | null;
+  maxCombo: number; accuracy: number; passed: boolean; totalScore: number; legacyTotalScore: number | null;
+};
+export type ScorePpWorkerRequest = { id: string; input: ScorePpInput; url: string };
+export type ScorePpWorkerResponse = { id: string; pp: number } | { id: string; error: string };
+export const scorePpVersion = "rosu4.0.1-actual-v1";
+export const scorePpTTL = 24 * 60 * 60_000;
+const prefix = `aimmod-score-pp-${scorePpVersion}:`;
+
+function canonical(value: unknown, depth = 0): string {
+  if (depth > 8) throw new Error("Calculation inputs are too deeply nested");
+  if (value === null || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "string" && value.length <= 256) return JSON.stringify(value);
+  if (typeof value === "number" && Number.isFinite(value)) return JSON.stringify(value);
+  if (Array.isArray(value) && value.length <= 64) return `[${value.map(item => canonical(item, depth + 1)).join(",")}]`;
+  if (value && typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype) {
+    const entries = Object.entries(value).sort(([a], [b]) => a.localeCompare(b));
+    if (entries.length <= 64) return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${canonical(item, depth + 1)}`).join(",")}}`;
+  }
+  throw new Error("Invalid calculation inputs");
+}
+
+export function validScorePp(pp: unknown): pp is number {
+  return typeof pp === "number" && Number.isFinite(pp) && pp >= 0;
+}
+
+export function scorePpValidationReason(input: ScorePpInput): string | null {
+  try {
+    if (!input || input.version !== 1 || input.rulesetId !== 0) return "Only supported osu!standard score inputs can be calculated";
+    if (!/^[a-f0-9]{32}$/i.test(input.beatmapChecksum) || !Number.isSafeInteger(input.beatmapId) || input.beatmapId <= 0) return "The exact beatmap revision is unavailable";
+    if (typeof input.lazer !== "boolean") return "The score's stable or lazer rules are unknown";
+    if (!Array.isArray(input.mods) || input.mods.some(mod => !mod || typeof mod.acronym !== "string" || !/^[A-Z0-9]{1,8}$/.test(mod.acronym))) return "The score's full mods are unavailable";
+    if (!input.statistics || Array.isArray(input.statistics) || typeof input.statistics !== "object") return "Score judgements are unavailable";
+    if (typeof input.passed !== "boolean") return "Score completion is unknown";
+    const count = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 0xffffffff;
+    if (!count(input.maxCombo) || !Number.isSafeInteger(input.totalScore) || input.totalScore < 0 || (input.legacyTotalScore !== null && (!Number.isSafeInteger(input.legacyTotalScore) || input.legacyTotalScore < 0))) return "Score totals are invalid";
+    if (input.legacyTotalScore !== null && input.legacyTotalScore > 0xffffffff) return "The legacy score exceeds this calculation engine's supported range";
+    if (!Number.isFinite(input.accuracy) || input.accuracy < 0 || input.accuracy > 1) return "Score accuracy is invalid";
+    for (const stats of [input.statistics, input.maximumStatistics]) {
+      if (stats === null) continue;
+      if (Array.isArray(stats) || typeof stats !== "object" || !Object.values(stats).every(count)) return "Score judgements are invalid";
+    }
+    if (canonical(input).length > 8192) return "Score inputs are too large";
+    return null;
+  } catch { return "Score inputs are invalid"; }
+}
+export function canCalculateScorePp(input: ScorePpInput): boolean { return scorePpValidationReason(input) === null; }
+
+export function validateScorePpObjectCount(input: ScorePpInput, objectCount: number): void {
+  const args = scorePpPerformanceArgs(input);
+  const judged = args.n300! + args.n100! + args.n50! + args.misses!;
+  if (!Number.isSafeInteger(objectCount) || objectCount < 0 || judged > objectCount || (input.passed && judged !== objectCount)) {
+    throw new Error("Score judgements do not match this beatmap revision");
+  }
+}
+
+export function scorePpPerformanceArgs(input: ScorePpInput): PerformanceArgs {
+  const reason = scorePpValidationReason(input);
+  if (reason) throw new Error(reason);
+  const stats = input.statistics!;
+  // A present official statistics dictionary omits zero counts. Never infer FC or accuracy.
+  const args: PerformanceArgs = {
+    mods: input.mods!, lazer: input.lazer!, combo: input.maxCombo,
+    n300: stats.great ?? 0, n100: stats.ok ?? 0, n50: stats.meh ?? 0, misses: stats.miss ?? 0,
+  };
+  if (!input.passed) args.passedObjects = args.n300! + args.n100! + args.n50! + args.misses!;
+  if (input.lazer) {
+    args.largeTickHits = stats.large_tick_hit ?? 0;
+    args.smallTickHits = stats.small_tick_hit ?? 0;
+    args.sliderEndHits = stats.slider_tail_hit ?? 0;
+  }
+  if (input.legacyTotalScore !== null) args.legacyTotalScore = input.legacyTotalScore;
+  return args;
+}
+
+export function scorePpCacheKey(input: ScorePpInput): string {
+  if (!canCalculateScorePp(input)) return "";
+  // Project explicit score inputs only: no user identity, URL, or unrelated response fields.
+  const { version, beatmapChecksum, rulesetId, lazer, mods, statistics, maximumStatistics, maxCombo, accuracy, passed, totalScore, legacyTotalScore } = input;
+  return prefix + canonical({ version, beatmapChecksum: beatmapChecksum.toLowerCase(), rulesetId, lazer, mods, statistics, maximumStatistics, maxCombo, accuracy, passed, totalScore, legacyTotalScore });
+}
+
+type StorageLike = Pick<Storage, "length" | "key" | "getItem" | "setItem" | "removeItem">;
+export class ScorePpCache {
+  constructor(private storage?: StorageLike, private now = Date.now) {}
+  get(calculation: ScorePpInput): number | undefined {
+    const key = scorePpCacheKey(calculation);
+    if (!key) return;
+    try {
+      const raw = this.storage?.getItem(key);
+      if (!raw) return;
+      if (raw.length > 256) { this.storage?.removeItem(key); return; }
+      const value = JSON.parse(raw);
+      if (!validScorePp(value.pp) || !Number.isFinite(value.expires) || value.expires <= this.now() || value.expires > this.now() + scorePpTTL) {
+        this.storage?.removeItem(key); return;
+      }
+      return value.pp;
+    } catch { return; }
+  }
+  set(calculation: ScorePpInput, pp: number): void {
+    const key = scorePpCacheKey(calculation);
+    if (!key || !validScorePp(pp) || !this.storage) return;
+    try {
+      this.storage.removeItem(key);
+      const entries: { key: string; expires: number; bytes: number }[] = [];
+      for (let i = 0; i < this.storage.length; i++) {
+        const other = this.storage.key(i);
+        if (!other?.startsWith(prefix)) continue;
+        const raw = this.storage.getItem(other) ?? "";
+        let expires = 0;
+        try { expires = Number(JSON.parse(raw).expires) || 0; } catch { /* Evict corrupt entries first. */ }
+        entries.push({ key: other, expires, bytes: (other.length + raw.length) * 2 });
+      }
+      entries.sort((a, b) => a.expires - b.expires);
+      const raw = JSON.stringify({ pp, expires: this.now() + scorePpTTL });
+      let bytes = entries.reduce((sum, entry) => sum + entry.bytes, (key.length + raw.length) * 2);
+      while (entries.length >= 400 || bytes > 2 * 1024 * 1024) {
+        const oldest = entries.shift();
+        if (!oldest) return;
+        this.storage.removeItem(oldest.key);
+        bytes -= oldest.bytes;
+      }
+      this.storage.setItem(key, raw);
+    } catch { /* Calculation remains usable when browser storage is unavailable. */ }
+  }
+}
+export function browserScorePpCache(): ScorePpCache {
+  try { return new ScorePpCache(window.localStorage); } catch { return new ScorePpCache(); }
+}
+export function getCachedScorePp(input: ScorePpInput): number | undefined { return browserScorePpCache().get(input); }
+export function setCachedScorePp(input: ScorePpInput, pp: number): void { browserScorePpCache().set(input, pp); }

@@ -56,7 +56,7 @@ func TestSEOPrivateRoutesAndCanonical(t *testing.T) {
 		t.Fatal(err)
 	}
 	handler := NewSPAHandler(dir, nil, "https://aimmod.app/")
-	for _, route := range []string{"/admin", "/admin/coaching", "/account", "/link-device", "/search", "/osu/replays/private", "/osu/learn/not-a-guide"} {
+	for _, route := range []string{"/admin", "/admin/coaching", "/account", "/auth/callback", "/link-device", "/search", "/osu/replays/private", "/osu/learn/not-a-guide", "/not-a-page"} {
 		r := httptest.NewRecorder()
 		handler.ServeHTTP(r, httptest.NewRequest("GET", route+"/?secret=excluded", nil))
 		m := readBrandHead(t, r.Body.String())
@@ -92,7 +92,7 @@ func TestSEOSitemapIncludesPublishedGuidesAndExcludesPrivateRoutes(t *testing.T)
 			t.Fatalf("private or search route listed: %s", item.Loc)
 		}
 	}
-	for _, route := range []string{"/osu", "/osu/beatmaps", "/osu/skins", "/osu/learn"} {
+	for _, route := range []string{"/osu", "/osu/beatmaps", "/osu/skins", "/osu/learn", "/osu/pp-targets"} {
 		if !seen["https://aimmod.app"+route] {
 			t.Fatal("missing", route)
 		}
@@ -105,5 +105,59 @@ func TestSEOSitemapIncludesPublishedGuidesAndExcludesPrivateRoutes(t *testing.T)
 		if m.NoIndex || m.OGType != "article" || m.Description != guide.Description {
 			t.Fatalf("guide metadata %+v", m)
 		}
+	}
+}
+
+func TestPpTargetsServerMetadata(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte(`<html><head><title>Default</title><meta name="robots" content="noindex"></head><body>App</body></html>`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRecorder()
+	NewSPAHandler(dir, nil, "https://aimmod.app").ServeHTTP(r, httptest.NewRequest("GET", "/osu/pp-targets/?accuracy=99&mods=HD", nil))
+	head := readBrandHead(t, r.Body.String())
+	for key, want := range map[string]string{
+		"canonical":           "https://aimmod.app/osu/pp-targets",
+		"og:url":              "https://aimmod.app/osu/pp-targets",
+		"og:title":            seo.Published.Routes["/osu/pp-targets"].Title,
+		"twitter:description": seo.Published.Routes["/osu/pp-targets"].Description,
+		"og:image":            "https://aimmod.app/social-preview.png?path=%2Fosu%2Fpp-targets&v=1",
+		"robots":              "index, follow",
+	} {
+		if len(head[key]) != 1 || head[key][0] != want {
+			t.Errorf("%s = %v, want %q", key, head[key], want)
+		}
+	}
+	if r.Header().Get("X-Robots-Tag") != "" {
+		t.Fatal("public PP targets blocked")
+	}
+}
+
+func TestClientPublicDetailRoutesRemainIndexable(t *testing.T) {
+	for _, route := range []string{"/benchmarks/example", "/u/123", "/u/123/benchmarks/example", "/u/kovaaks/player"} {
+		meta := resolvePageMeta(context.Background(), route, "https://aimmod.app"+route, nil)
+		if meta.NoIndex {
+			t.Errorf("public client detail blocked: %s", route)
+		}
+	}
+}
+
+func TestPrerenderedPrivateRouteCannotBypassNoindex(t *testing.T) {
+	dir := t.TempDir()
+	document := []byte(`<html><head><title>Account</title><meta name="robots" content="index, follow"></head><body>App</body></html>`)
+	if err := os.WriteFile(filepath.Join(dir, "index.html"), document, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(dir, "account"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "account", "index.html"), document, 0600); err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRecorder()
+	NewSPAHandler(dir, nil, "https://aimmod.app").ServeHTTP(r, httptest.NewRequest("GET", "/account/", nil))
+	head := readBrandHead(t, r.Body.String())
+	if len(head["robots"]) != 1 || head["robots"][0] != "noindex, nofollow" || r.Header().Get("X-Robots-Tag") != "noindex, nofollow" {
+		t.Fatalf("private prerender indexed: %v", head)
 	}
 }

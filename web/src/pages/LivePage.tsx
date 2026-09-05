@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "../lib/helmet";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { updateFilterQuery } from "../lib/savedPageFilters";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
@@ -72,8 +73,10 @@ function AnimatedMetric({
 
 export function LivePage() {
   const [items, setItems] = useState<LiveHubActivity[]>([]);
-  const [query, setQuery] = useState("");
-  const [scenarioTypeFilter, setScenarioTypeFilter] = useState<string>("all");
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q") ?? "";
+  const setQuery = (q: string) => setParams(current => updateFilterQuery(current, { q }), { replace: true });
+  const setScenarioTypeFilter = (scenarioType: string) => setParams(current => updateFilterQuery(current, { scenarioType: scenarioType === "all" ? null : scenarioType }), { replace: true });
   const [error, setError] = useState<string | null>(null);
   const refreshTimeoutRef = useRef<number | null>(null);
   const nowMs = useNow(1000);
@@ -127,6 +130,8 @@ export function LivePage() {
     }
     return [...values].sort((a, b) => a.localeCompare(b));
   }, [items]);
+
+  const scenarioTypeFilter = scenarioTypes.includes(params.get("scenarioType") ?? "") ? params.get("scenarioType")! : "all";
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

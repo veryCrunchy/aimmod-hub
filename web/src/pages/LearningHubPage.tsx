@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { updateFilterQuery } from "../lib/savedPageFilters";
 import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -150,7 +151,9 @@ function HubPageSkeleton() {
 export function LearningHubPage() {
   const [data, setData] = useState<Awaited<ReturnType<typeof fetchLearningIndex>> | null>(() => getPrerenderLearningIndex());
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [params, setParams] = useSearchParams();
+  const search = params.get("q") ?? "";
+  const setSearch = (q: string) => setParams(current => updateFilterQuery(current, { q }), { replace: true });
 
   useEffect(() => {
     if (data) return;

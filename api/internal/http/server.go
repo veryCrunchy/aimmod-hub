@@ -222,7 +222,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		_, _ = w.Write([]byte(`{"ok":true,"service":"aimmod-hub"}`))
 	})
 	if cfg.StaticDir != "" {
-		mux.Handle("/", NewSPAHandler(cfg.StaticDir, hub.Store(), cfg.WebAppOrigin))
+		mux.Handle("/", NewSPAHandler(cfg.StaticDir, hub.Store(), cfg.WebAppOrigin, osuServer))
 	}
 	rootHandler := http.Handler(mux)
 	rootHandler = newProfileSubdomainRedirectHandler(cfg, hub.Store(), rootHandler)

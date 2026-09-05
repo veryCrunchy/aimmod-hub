@@ -134,69 +134,306 @@
     },
     {
       "slug":"performance-points-and-difficulty",
-      "title":"osu! PP and star rating: what each number means",
-      "description":"Separate map difficulty, score PP and weighted profile PP when choosing your next osu! practice target.",
+      "title":"osu! PP explained: star rating, score PP and profile gains",
+      "description":"Understand why a 200 PP play does not add 200 profile PP, compare realistic score scenarios, and troubleshoot differences between calculators.",
       "sections":[
-        {"title":"Difficulty is not a predicted result","body":"Star rating describes calculated beatmap difficulty. Performance points evaluate a score using the map and the performance achieved on it. A star rating alone does not say whether you can play the map accurately. Two maps with similar stars can ask for different combinations of cursor movement, tapping and reading."},
-        {"title":"A score's PP is not its profile gain","body":"Profile PP weights scores according to their position among your best performances. A new 200 PP score does not necessarily add 200 PP to your profile. Difficulty and performance calculations can also change after official updates; compare estimates made with the same calculator version and mod settings."},
-        {"title":"Review exercise","body":"Choose two maps near your comfortable star range. Compare note rate, spacing and the sections where you lose accuracy, then play both with the same mods. Keep the better-matched map as a score target and the other as a specific practice task. Treat an SS calculation as a scenario, not a promise of the result you will achieve."}
+        {"title":"Which PP number are you looking at?","body":"Star rating is calculated difficulty, not a prediction of your result. Score PP evaluates a particular performance; profile PP combines weighted performances. Keep those three numbers separate. A calculator's SS scenario assumes a perfect result and is not a personal target by itself. Before comparing two estimates, check the exact difficulty, ruleset, mods and rate, then ask whether the assumed accuracy and misses resemble your recent complete attempts."},
+        {"title":"Why a 200 PP play does not add 200 PP","body":"The weight for a score at position n in your best performances is 0.95^(n-1). A 200 PP score in second place contributes 190 weighted PP. That contribution is not the profile increase: inserting it can move other scores down, and a replacement changes an existing contribution. Bonus PP is separate. For a useful before-and-after comparison, record your profile total and the score's position instead of subtracting its raw PP from your new total."},
+        {"title":"Build a realistic scenario before choosing a target","body":"Suggested comparison: take three recent complete attempts on one difficulty and note accuracy, misses and slider breaks. Calculate a scenario resembling the middle attempt, another resembling your best repeatable attempt, and SS. Keep the same calculator and settings. If only the SS number looks attractive while actual attempts repeatedly fail the ending, move that map into practice rather than treating its ceiling as expected earnings. Do not estimate PP by multiplying SS PP by accuracy or a compatibility percentage."},
+        {"title":"Why do two calculators disagree?","body":"Check the difficulty ID and whether one tool used an edited beatmap. Next compare mod settings, clock rate, judgement assumptions and calculation version. Official difficulty and PP updates can change old values. Record whether a number is an official submitted result or an estimate. If a tool lacks the necessary score data, leave PP unavailable rather than substituting zero or copying the value from another play on the same map."},
+        {"title":"Use PP without letting it choose every session","body":"Try two similarly rated difficulties with different patterns. Use the one you can already execute consistently for a score attempt; use a specific troublesome section from the other for practice. Revisit both after several sessions under the same settings. Better accuracy or fewer repeat errors can justify continuing the exercise even before a new top score appears. There is no universal star-to-PP conversion or guaranteed daily profile gain."}
       ],
       "sources":[{"title":"osu! wiki: Performance points","url":"https://osu.ppy.sh/wiki/en/Performance_points"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"}]
     },
     {
       "slug":"reviewing-replay-mistakes",
-      "title":"Review osu! replay mistakes without guessing the cause",
-      "description":"Check cursor position, tap timing and slider events before turning an osu! replay miss into a practice decision.",
+      "title":"How to review an osu! replay and diagnose repeated misses",
+      "description":"Follow a replay review checklist, separate aim and timing observations, and troubleshoot missing beatmaps or incomplete score data.",
       "sections":[
-        {"title":"Start with the event","body":"A replay lets you revisit a play rather than relying on memory. For a missed circle, inspect where the cursor was when the tap happened and whether the tap was inside the judgement window. A cursor passing through the circle at some other time is not enough to establish a successful hit."},
-        {"title":"Separate slider parts","body":"A slider has a head and additional events along its path. A failed slider event is not automatically a missed head. Compare the relevant event and scoring rules before counting it as an aim or timing mistake. An analysis label such as overshoot or late click is a hypothesis about that event, not a complete explanation of your technique."},
-        {"title":"Review exercise","body":"Pick three mistakes, including one from a failed attempt. Watch the lead-in, the input and the next object. Write one observation for each: cursor outside on tap, no observed tap, or late input, for example. When the evidence is ambiguous, leave the cause unknown. Compare several similar sections before choosing a practice focus."}
+        {"title":"Start with the right replay and difficulty","body":"Match the player, play time, exact difficulty and mods before reviewing. A score summary is not a cursor replay: accuracy and miss count cannot reconstruct movement or key presses. An exported .osr also needs its matching beatmap. If playback cannot locate the map, obtain the original difficulty instead of substituting another difficulty with the same song title. In stable, the results screen's F2 export is the documented way to save a replay."},
+        {"title":"Review a short sequence, not a frozen miss","body":"Choose three errors, including one from an unsuccessful attempt. Watch each lead-in at normal speed, then slow playback to inspect the input and movement order. Note the object time, cursor position when input occurs, and the next object. Example note: at 01:12, the cursor is left of the circle on input and enters it afterwards. This supports an arrival/tap coordination observation; it does not prove that sensitivity, reaction time or reading is the cause."},
+        {"title":"Turn the observation into the next check","body":"Cursor outside on input: inspect whether movement stops short or continues past the target. Cursor reaches the target before the input: check whether it leaves too soon. No clear input: inspect recorded key state rather than assuming an aim error. For sliders, locate the head, tick, repeat or end involved before comparing failures. If playback or analysis cannot resolve the event, mark it unknown. Do not count an uncertain label as a confirmed technique problem."},
+        {"title":"Choose one correction you can test","body":"Suggested exercise: after finding the same observation in several places, choose a short section that contains the preceding object and the next transition. Make three attempts with one focus, such as keeping the cursor on the target until the intended tap. Then play another section with comparable movement and rhythm. Record whether the original error decreased and whether a new error appeared. A clean memorised section alone is not evidence of reliable transfer."},
+        {"title":"When replay review cannot answer the question","body":"If a replay ends early, review only the portion actually recorded. If a download is unavailable, a public score entry does not guarantee accessible replay bytes. If the cursor looks wrong after an import, first compare the original map and mod settings. Avoid deleting the original replay while troubleshooting. Keep a compact log: difficulty ID, time, observed event, uncertainty and next check. That gives the next review a concrete starting point."}
       ],
       "sources":[{"title":"osu! wiki: Replay","url":"https://osu.ppy.sh/wiki/en/Gameplay/Replay"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"}]
     },
     {
       "slug":"jump-stream-and-burst-practice",
-      "title":"Choose osu! pattern practice by spacing and rhythm",
-      "description":"Compare jumps, bursts and streams using spacing, note intervals and repeated replay evidence instead of stars alone.",
+      "title":"osu! jump, burst or stream practice: choose the right maps",
+      "description":"Build a practice pool around spacing, note rate and pattern length, with examples for selecting a manageable challenge and testing progress.",
       "sections":[
-        {"title":"Name the demand, not just the map","body":"Streams are sequences of closely timed objects. Within a sequence, spacing and direction can still vary. A short fast burst and a long stream need not expose the same difficulty for you. For practice selection, record the duration of the difficult section as well as how quickly notes arrive and how far the cursor must travel."},
-        {"title":"Compare like with like","body":"Keep the ruleset and rate settings fixed when comparing attempts. A comfortable jump map is not proof that you can maintain accuracy on a dense stream at the same star rating. Look for repeated success and repeated misses on similar sections across different maps, rather than treating your best play as your typical result."},
-        {"title":"Review exercise","body":"Select a small group of maps with a shared pattern demand. Play a baseline attempt, choose one observable problem and review another attempt after practice. Change one demand at a time: spacing, note rate or section length. Keep failed attempts in the comparison. This is a way to structure your review, not a guarantee of a particular improvement rate."}
+        {"title":"Describe the section before searching for maps","body":"Jumps emphasise movement between separated targets; streams commonly place circles in quick succession, often on quarter-beat subdivisions. A burst is a short sequence rather than a guarantee of one fixed length. For your own search, write the demand explicitly: wide jumps at a comfortable rhythm, five-note burst entries, or longer low-spacing sequences. A map called a stream map may still fail to contain the particular transition you need."},
+        {"title":"Use three filters instead of one star range","body":"Compare spacing, note interval and sequence length. At 180 BPM, regularly spaced quarter-beat notes arrive every 83.3 milliseconds, or 12 per second; half-beat notes arrive every 166.7 milliseconds, or 6 per second. These are interval calculations, not a prescription to tap faster. A short and a long sequence can share the same interval but present different challenges. Star rating is a starting filter, not a substitute for inspecting the relevant section."},
+        {"title":"Match the exercise to the repeated observation","body":"If jumps fail while their rhythm remains comfortable, try a similar rhythm with less spacing. If the first note of a burst repeatedly fails but later notes are clean, include the preceding object rather than practising only the middle of the burst. If errors accumulate later in a sequence, compare a shorter sequence at the same rate. If the cursor loses a direction change while tapping stays regular, select a less demanding turn rather than changing every setting."},
+        {"title":"Build a pool with an easier step and a transfer check","body":"Suggested pool: one manageable example, one current challenge and one unfamiliar map sharing the target demand. For example, compare three-, five- and seven-note bursts near one comfortable tempo instead of adding speed and length together. Play a fresh baseline on each. Practise the challenge briefly, then return to the original settings and the unfamiliar map. The numbers are an example progression, not a required definition of difficulty."},
+        {"title":"Know when to replace a practice map","body":"Move to a harder variation after you can repeat the intended section and retain that control on another map, not merely after one pass. Step back if almost every attempt fails before reaching the target section. Replace a map when its unrelated patterns dominate your errors or extensive repetition has turned the exercise into memorisation. Keep the old map as an occasional check, with the exact difficulty and rate recorded."}
       ],
       "sources":[{"title":"osu! wiki: Stream","url":"https://osu.ppy.sh/wiki/en/Beatmap/Pattern/osu!/Stream"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"}]
     },
     {
       "slug":"stable-lazer-and-classic",
-      "title":"Compare osu! stable, lazer and Classic scores fairly",
-      "description":"Keep client, slider judgement and mod settings in view when comparing osu! stable and lazer performance.",
+      "title":"osu! stable vs lazer: accuracy, sliders and Classic explained",
+      "description":"Troubleshoot accuracy and score differences after switching to lazer, distinguish Classic mod from score display, and compare matched plays.",
       "sections":[
-        {"title":"Record the rules used","body":"Stable and lazer are not interchangeable labels for an identical scoring environment. The official migration guide documents gameplay differences, including slider behaviour, grading and input handling. Classic can restore selected legacy behaviours; it is not a reason to assume every setting or result is identical to stable."},
-        {"title":"Use matched comparisons","body":"When accuracy changes after switching clients, first check the beatmap version, mods and their settings. Compare the judgement breakdown and slider-head results before concluding that your timing has become worse. Keep each score's original client and ruleset context with your notes."},
-        {"title":"Review exercise","body":"Choose a familiar map and record the settings for each play. Review circles and slider heads separately where the available analysis supports that distinction. Do not average unlike score totals into a single improvement claim. Consult the official upgrading guide for current compatibility and migration details rather than relying on an old feature checklist."}
+        {"title":"A client change can change what the result measures","body":"In ordinary stable gameplay, a successful slider head has more forgiving accuracy requirements than a hit circle. Lazer judges slider-head timing; ScoreV2 and Classic settings require separate consideration. If accuracy drops mainly on slider-heavy maps after switching, inspect head judgements before concluding that all of your timing deteriorated. Treat circle-only sections as a useful comparison, not as proof that the clients behave identically."},
+        {"title":"Classic mod is not classic score display","body":"Lazer's Classic mod restores selected legacy behaviours. Its classic score display is a different setting: it changes how score totals are presented, not a switch back to stable's complete gameplay rules. The official migration guide also documents grading changes that Classic does not undo. Compare the actual mod settings, judgements and scoring display rather than assuming that matching the word Classic makes two results interchangeable."},
+        {"title":"Troubleshoot one difference at a time","body":"First confirm the exact beatmap version, then record rate, AR, OD and enabled mod settings. Next check audio and input settings against your old setup; do not assume migration copied every preference. Choose a familiar difficulty with both circles and sliders. Compare several attempts and note whether the change appears throughout the map or mainly on slider entries. Avoid changing offset, skin and mod settings together, which would obscure the comparison."},
+        {"title":"Use a small comparison sheet","body":"Suggested columns: client, score date, difficulty ID, mods with settings, displayed score type, accuracy, misses and slider-head observations. Keep a stable play, a lazer play and any Classic experiment on separate rows. If only raw score differs, first check the score display rather than treating it as lost skill. If circle judgements remain similar but slider heads worsen, practise their entries and check another slider-heavy map before judging progress."},
+        {"title":"Keep original results and current documentation","body":"An imported old play is not a new performance under your current setup. Preserve its original context and avoid averaging it with new attempts to make a single accuracy trend. For progress, compare a consistent group of plays within one setup, then describe cross-client differences separately. Use the official migration guide for current compatibility details; an old video or feature checklist may describe a different lazer release."}
       ],
       "sources":[{"title":"osu! help centre: Upgrading to lazer","url":"https://osu.ppy.sh/wiki/en/Help_centre/Upgrading_to_lazer"},{"title":"osu! wiki: Lazer release stream","url":"https://osu.ppy.sh/wiki/en/Client/Release_stream/Lazer"}]
     },
     {
       "slug":"mods-and-practice-settings",
-      "title":"Keep osu! mods and rate settings in your practice notes",
-      "description":"Understand why mod acronyms alone are not enough to compare osu! practice attempts and difficulty estimates.",
+      "title":"osu! practice rates and mods: BPM, timing and useful notes",
+      "description":"Calculate effective BPM for DT, HT and custom rates, record the settings that matter, and test whether slower practice transfers to normal speed.",
       "sections":[
-        {"title":"Mods change the task","body":"Game modifiers can alter beatmap settings and gameplay. A rate-changing setup changes the time available between objects; visibility or difficulty settings can change a different part of the task. Do not treat an identical beatmap title as evidence that two attempts presented identical demands."},
-        {"title":"Save settings, not only acronyms","body":"Lazer supports settings within mods. When a custom setting is used, keep its value alongside the acronym. Compare difficulty and performance estimates under the same effective setup, and check the client for the current scoring eligibility of that combination. An estimate is not confirmation that a score will be submitted or ranked."},
-        {"title":"Review exercise","body":"Start with your usual setup and change one setting. Note the exact rate, then compare the same section for accuracy and miss location. Keep the original attempt as the baseline. If a slower attempt becomes cleaner, test again at the original rate before concluding that the practice transfers to your score target."}
+        {"title":"DT is not twice as fast, and HT is not half speed","body":"Standard Double Time uses 1.5x speed; standard Half Time uses 0.75x. Calculate effective BPM as original BPM multiplied by clock rate. A 180 BPM section becomes 270 BPM at 1.5x and 135 BPM at 0.75x. For a constant-rate 120-second section, duration becomes 80 seconds or 160 seconds respectively. These examples describe elapsed time, not an automatic PP multiplier or a guarantee of ranked eligibility."},
+        {"title":"Keep the exact rate, not just the mod name","body":"When using a custom rate, write the actual value beside the mod acronym. Keep the difficulty ID, client, AR, OD and other changed settings in the same note. Example: original 180 BPM, rate 0.90x, effective 162 BPM, same difficulty and skin. For a map with tempo changes, apply the rate to each relevant section rather than treating one BPM label as a complete description of the map."},
+        {"title":"A slower section is not an aim-only experiment","body":"Changing clock rate changes the time between objects and the real time available for reading and hitting them. It can make several demands easier at once. If a slowed attempt improves, that alone does not identify the original problem. Compare the cursor and input sequence to see what changed. Do not multiply the AR or OD number by the rate as if these difficulty settings were BPM; use the client's effective settings when available."},
+        {"title":"Practise below the target, then retest the target","body":"Suggested exercise: take one baseline at 1.00x, then try the same troublesome section at a manageable lower rate while keeping its lead-in. Make a small set of attempts and record the first repeated error. Increase the rate only when the intended movement and rhythm remain repeatable; return to 1.00x for a check before ending. If the lower rate is clean but the target is unchanged, use an intermediate step or an easier section rather than counting the slowed score as the target result."},
+        {"title":"Why does my estimate or leaderboard result differ?","body":"Compare every mod setting, not only the visible acronym, and ensure the calculator used the same difficulty and rate. Check current eligibility in the client instead of assuming that a displayed PP estimate promises submission or ranking. Keep practice attempts and submitted score targets distinguishable in your notes. The useful outcome is a repeatable change at the intended settings, not a larger number produced by changing the task."}
       ],
-      "sources":[{"title":"osu! wiki: Game modifier","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier"},{"title":"osu! wiki: Game modifier (lazer)","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier_(lazer)"}]
+      "sources":[{"title":"osu! wiki: Game modifier","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier"},{"title":"osu! wiki: Game modifier (lazer)","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier_(lazer)"},{"title":"osu! wiki: Double Time","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier/Double_Time"},{"title":"osu! wiki: Half Time","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier/Half_Time"}]
     },
     {
       "slug":"accuracy-combo-and-score",
-      "title":"Read osu! accuracy, combo and score together",
-      "description":"Use judgement counts and scoring context to compare osu! attempts without confusing score, accuracy, combo and PP.",
+      "title":"osu! accuracy vs combo: why a cleaner play can score less",
+      "description":"Understand 300s, 100s, misses and full combo with a worked accuracy example, then compare complete attempts without confusing score and PP.",
       "sections":[
-        {"title":"Each number answers a different question","body":"Accuracy summarizes judgement quality. Combo records a consecutive sequence, while total score follows the scoring system in use. PP is a separate performance calculation. A larger score total alone is not enough to conclude that every part of the play improved."},
-        {"title":"Check the breakdown","body":"Compare the counts of 300s, 100s, 50s and misses, then inspect where those results occurred. Keep slider events and the client context in mind. A whole-play percentage can conceal a short difficult section, and a failed attempt may only contain evidence for the portion that was played."},
-        {"title":"Review exercise","body":"Place two attempts on the same map and setup side by side. Record accuracy, miss count, maximum combo and whether the play reached the end. Identify one section that improved and one that still breaks down. Keep unknown completion or missing analysis explicitly unknown instead of filling the gap with a favourable assumption."}
+        {"title":"Accuracy measures judgement value, not just hit percentage","body":"For an osu!standard example containing only 100 hit circles, 90 GREATs and 10 OKs give (90 x 300 + 10 x 100) / (100 x 300) = 93.33% accuracy. All circles were hit, but some received less than full value. By contrast, 99 GREATs and one miss give 99% despite the combo break. This worked example is not a formula to apply blindly to slider events or another ruleset."},
+        {"title":"Zero misses does not always mean full combo","body":"A maximum-combo result and a zero-miss result are not always interchangeable. Slider breaks or dropped ends can prevent maximum combo without appearing as ordinary circle misses, depending on the scoring rules. Community shorthand around dropped ends can also differ from the strict maximum-combo definition. Check the actual combo and slider judgements before labelling a play FC. A full combo is not automatically SS: lower-value judgements can still reduce accuracy."},
+        {"title":"A lower score can contain a useful improvement","body":"Suggested comparison: attempt A has fewer lower-value judgements but one late-map combo break; attempt B has more lower-value judgements but a longer combo. Do not pick a universal winner from accuracy or score alone. For an accuracy exercise, compare timing judgements in the target section. For a consistency goal, compare repeated breaks across full plays. For a PP target, use the actual performance calculation rather than treating score or combo as a substitute."},
+        {"title":"Check completion and scoring context first","body":"Before comparing totals, match difficulty, client, mods and rate. Check whether both attempts reached the same section. A 99% result that ended before the hardest pattern does not demonstrate better full-map accuracy than a 97% completion. Also distinguish a displayed score number from PP. When one result comes from another client or score-display mode, establish a compatible comparison before drawing a progression trend."},
+        {"title":"Use a result log that leads to a decision","body":"For three full attempts, record accuracy, judgement counts, misses, maximum combo and the first troublesome section. Add a brief observation rather than only a final percentage: burst entry early, slider exit broken, or cause unclear. Next session, keep the settings fixed and compare that same observation. Continue the exercise when it improves repeatedly; change focus when another error becomes the limit. Keep the failed attempts visible so the comparison reflects typical play."}
       ],
-      "sources":[{"title":"osu! wiki: Score","url":"https://osu.ppy.sh/wiki/en/Gameplay/Score"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"}]
+      "sources":[{"title":"osu! wiki: Score","url":"https://osu.ppy.sh/wiki/en/Gameplay/Score"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"},{"title":"osu! wiki: Accuracy","url":"https://osu.ppy.sh/wiki/en/Gameplay/Accuracy"},{"title":"osu! wiki: Full combo","url":"https://osu.ppy.sh/wiki/en/Gameplay/Full_combo"}]
+    },
+    {
+      "slug": "small-circles-and-precision",
+      "title": "Small circles: practise precision without changing everything",
+      "description": "Separate small-target precision from jump speed, then test controlled arrivals with a repeatable osu! practice exercise.",
+      "sections": [
+        {
+          "title": "Check target size before blaming your speed",
+          "body": "In osu!standard, higher circle size (CS) makes circles and sliders smaller. The same cursor movement can therefore succeed on one difficulty and miss on another even when the object centres are equally far apart. Treat CS as a separate practice variable, not a synonym for star rating. Start with a section where the next object is easy to identify and the rhythm is comfortable; otherwise a reading or tapping error can look like a precision problem."
+        },
+        {
+          "title": "Compare the press position, not only the cursor trail",
+          "body": "Choose three misses and inspect where the cursor was when the relevant input occurred. Passing through a circle before or after the press does not make that input an aimed hit. Note whether you repeatedly stop short, move beyond the far edge, or pass to one side. Also keep an example that succeeded. If both examples use a similar movement but the press arrives at different times, test aim-tap coordination before changing your sensitivity."
+        },
+        {
+          "title": "Set up a controlled comparison",
+          "body": "Suggested exercise: pick a comfortable difficulty with moderate spacing and a mix of directions. Keep your device settings, skin, approach rate and playback rate fixed. If you make a practice copy with a different CS, label it clearly and retain the original. Do not use Hard Rock as a CS-only experiment: it changes other difficulty settings as well. Record the effective CS and whether you played the original or an edited copy."
+        },
+        {
+          "title": "Practise a short sequence of arrivals",
+          "body": "Select a phrase of roughly eight to sixteen circles with a clear lead-in. Play it at a demand where you can still choose your movement instead of reacting in a panic. Aim for a deliberate arrival at each target and let the rhythm determine the press; do not wait for a perfect visual centre and then tap late. After three attempts, review the same two transitions in each replay. If errors increase, simplify spacing before making targets smaller again."
+        },
+        {
+          "title": "Look for a repeatable direction-specific error",
+          "body": "A useful note is specific: 'three of five down-left arrivals stopped short at the press' is more actionable than 'bad aim'. Compare that direction with successful movements of similar distance. Do not infer a faulty tablet area from a single miss, and do not let one successful attempt settle the question. If you later test a device setting, save its old value and repeat the comparison separately from the CS exercise."
+        },
+        {
+          "title": "Finish on the original and an unfamiliar map",
+          "body": "Return to the unedited difficulty, then try a second map with comparable target size and spacing. Count off-target presses in the chosen phrases rather than judging the experiment only by total accuracy. Improvement on the edited phrase alone may reflect familiarity. A useful next step is fewer precision errors on the original without a new increase in late hits. Keep the smaller-circle exercise as practice, not as a requirement to change your normal settings."
+        }
+      ],
+      "sources": [
+        {
+          "title": "osu! wiki: Circle size",
+          "url": "https://osu.ppy.sh/wiki/en/Beatmap/Circle_size"
+        },
+        {
+          "title": "osu! wiki: Hard Rock",
+          "url": "https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier/Hard_Rock"
+        },
+        {
+          "title": "Further viewing: pishifat - osu!mapping: circle size",
+          "url": "https://www.youtube.com/watch?v=AZuWQKAZ83E"
+        }
+      ]
+    },
+    {
+      "slug": "alternating-pattern-entry-and-exit",
+      "title": "Alternating: practise the entry and exit, not just the stream",
+      "description": "Use short, comfortable patterns to diagnose finger-order mistakes when switching between single taps, bursts and alternating.",
+      "sections": [
+        {
+          "title": "Choose the tapping behaviour you want to learn",
+          "body": "Alternating distributes successive taps between two inputs. Single-tapping mainly uses one input, with many players switching to two for faster sequences. You do not need to declare one style universally better before practising a difficult transition. Choose a concrete goal such as starting a three-note burst with either finger, or alternating a simple phrase without accidentally pressing twice with the same finger. Keep your normal style available for ordinary play."
+        },
+        {
+          "title": "Find the first input that differs from your plan",
+          "body": "Watch a replay's key overlay alongside the objects. Does the error happen when entering the burst, halfway through it, or on the first circle after it? A burst followed by an accidental extra press is a different problem from a burst that starts late. Input states help you locate the event, but they do not measure physical finger force or prove that a particular finger is weak. Write down the sequence you intended before interpreting the replay."
+        },
+        {
+          "title": "Start with an easy rhythm and familiar aim",
+          "body": "Suggested exercise: select a short phrase whose spacing and speed already feel comfortable. Alternate one press per object, then repeat the phrase beginning with the other input. Review whether the intended order survived, not whether the attempt produced a personal best. If the movement itself is difficult, choose a simpler map. The purpose is to make finger order observable; a pattern that immediately turns into uncontrolled tapping is not a useful starting test."
+        },
+        {
+          "title": "Include the object after the burst",
+          "body": "Next, practise a single note, a short burst and the following note as one phrase. Under strict alternation, three successive taps starting on K1 end on K1; the next tap would be K2. Four taps end on K2, leaving K1 next. This is an example sequence, not a rule that every player must follow. Use it to check whether an odd- or even-length burst changes your intended exit. Keep the gap after the burst in the exercise."
+        },
+        {
+          "title": "Change order before adding more speed",
+          "body": "Try a few phrases with different burst lengths while keeping the pace manageable. Record an entry error, an internal ordering error or an exit error for each attempt. Only increase demand after you can reproduce the intended sequence across more than one phrase. Do not turn this into a maximum-tapping test or force a new finger position because a stronger player uses it. Stop an exercise that causes discomfort rather than trying to finish a quota."
+        },
+        {
+          "title": "Check whether the new option helps normal play",
+          "body": "Finish with an unfamiliar, comfortable map and play normally. Look for the transition you practised, without trying to police every input for the whole song. If deliberate alternation works only in the isolated phrase, keep the next session short and focused on transfer. If both entry choices work, use the one that lets you follow the music reliably. The result you want is a usable option at a difficult transition, not a particular-looking key overlay."
+        }
+      ],
+      "sources": [
+        {
+          "title": "osu! wiki: Alternating",
+          "url": "https://osu.ppy.sh/wiki/en/Gameplay/Play_style/Alternating"
+        },
+        {
+          "title": "osu! wiki: Single-tapping",
+          "url": "https://osu.ppy.sh/wiki/en/Gameplay/Play_style/Single-tapping"
+        },
+        {
+          "title": "osu! wiki: Play style and input overlays",
+          "url": "https://osu.ppy.sh/wiki/en/Gameplay/Play_style"
+        }
+      ]
+    },
+    {
+      "slug": "rhythm-subdivisions-and-rests",
+      "title": "Rhythm changes: recognise subdivisions and leave room for rests",
+      "description": "Learn to distinguish note count from rhythm, locate rushed transitions and practise changing subdivisions without adding extra taps.",
+      "sections": [
+        {
+          "title": "Three objects do not automatically mean triplet timing",
+          "body": "Object count tells you how many taps a circle pattern needs, not how those taps are spaced in time. A three-object burst can use evenly spaced quarter-beat intervals without being a musical triplet. In osu!'s editor, 1/4 snapping divides one beat into four equal parts; 1/3 divides it into three. A pattern can also leave some positions empty. Inspect the intervals before deciding to practise the entire section as a faster version of your usual tapping."
+        },
+        {
+          "title": "Use one beat as a timing reference",
+          "body": "For a section timed at 120 BPM, one beat lasts 500 milliseconds. An interval of one quarter of that beat is 125 milliseconds; one third is about 166.7 milliseconds. These are examples, not speed targets. They illustrate why similar-looking groups can require different timing. Use the actual timing section and playback rate for your map. A song's headline BPM is not enough to describe every interval you will encounter."
+        },
+        {
+          "title": "Listen to the phrase before repeating it",
+          "body": "Suggested exercise: choose a short section where your accuracy drops as the rhythm changes. Listen once without trying to play and identify a steady pulse. Then follow the mapped objects against that pulse. Ask which sounds the objects follow and where there is a deliberate gap. Do not assume every audible drum or vocal syllable requires a press. If you cannot yet describe the rhythm, examine the object timeline before adding more attempts."
+        },
+        {
+          "title": "Practise the change, including silence",
+          "body": "Play a phrase that contains the comfortable rhythm, the change and the next few objects. Keep the aim demand easy enough that tapping is the question being tested. Watch for continuing the previous tap rate into a longer gap, or adding a press after a short burst has ended. Repeat the whole phrase rather than starting immediately on its hardest object. If you reduce playback rate, note the rate and return to the original for a separate comparison."
+        },
+        {
+          "title": "Find where the timing first drifts",
+          "body": "Review the first mistimed input, not just the final miss. If the new rhythm begins correctly but your taps gradually move early, try maintaining the new spacing through the whole group. If the first object is already late, practise recognising the transition from its lead-in. If there is an extra tap in the rest, include that gap in your next exercise. A single timing histogram for the whole map can conceal these different patterns."
+        },
+        {
+          "title": "Transfer the rhythm to different spacing",
+          "body": "Choose a second map with a comparable rhythm change but different object positions. Keep the speed comfortable and check whether you can recognise the change without memorising the first map's cursor path. Then return to ordinary play. Success means the rhythm remains controlled through the transition and rest, not merely that you survived by pressing more often. For a mapping perspective on rhythm choice, pishifat's basic rhythm episode is listed below as further viewing."
+        }
+      ],
+      "sources": [
+        {
+          "title": "osu! wiki: Beat snap divisor",
+          "url": "https://osu.ppy.sh/wiki/en/Client/Beatmap_editor/Beat_snap_divisor"
+        },
+        {
+          "title": "Further viewing: pishifat - osu!mapping: basic rhythm",
+          "url": "https://www.youtube.com/watch?v=3BC_I2ufqC8"
+        },
+        {
+          "title": "osu! wiki: osu!mapping episode directory",
+          "url": "https://osu.ppy.sh/wiki/en/Community/Video_series/osu!mapping"
+        }
+      ]
+    },
+    {
+      "slug": "skin-readability-and-visual-settings",
+      "title": "Choose an osu! skin by what you can read during play",
+      "description": "Compare circle numbers, approach circles, slider tracking and cursor contrast with a practical skin-readability test.",
+      "sections": [
+        {
+          "title": "Test gameplay elements, not only the preview image",
+          "body": "A skin changes the presentation of gameplay elements; an attractive menu does not tell you whether you can follow a crowded phrase. Pick a familiar map with separate circles, overlapping objects and at least one reversing slider. Compare the specific cues you use: object numbers, the approach circle, the slider ball and the cursor. Keep the same map and settings while checking two skins so that a different song or difficulty does not decide the comparison for you."
+        },
+        {
+          "title": "Check which skin is actually being displayed",
+          "body": "The stable client has separate options for beatmap skins, the skin cursor and sound samples. A map can therefore change part of what you see or hear even after you select a skin. Check those options before concluding that a skin behaves inconsistently. Setting names and layout can differ in lazer. Save your starting configuration so that each change is reversible, and keep the audio choice fixed while you compare visuals."
+        },
+        {
+          "title": "Run a four-cue readability check",
+          "body": "Suggested exercise: pause a replay before a busy phrase and answer four questions. Can you identify the next object number? Can you distinguish its approach circle from nearby outlines? Can you locate the slider ball rather than just the slider body? Can you see the cursor against both bright and dark parts of the scene? Resume at normal speed afterwards. A still image is useful for locating contrast problems, but the final test is whether those cues remain clear while moving."
+        },
+        {
+          "title": "Adjust one source of visual competition",
+          "body": "If a background obscures objects, test a different dim level before replacing the entire skin. If the cursor covers a target number, compare a modest cursor-size adjustment while leaving target size unchanged. If effects draw attention away from upcoming objects, test the relevant visual option on the same phrase. Do not change approach rate at the same time: that would change how long objects are visible, rather than only how clearly you can distinguish them."
+        },
+        {
+          "title": "Compare two short plays without chasing a record",
+          "body": "Play the same comfortable map once with each candidate skin, then reverse the order on another map. Note concrete problems such as losing the cursor at a slider exit or confusing adjacent numbers. A higher score on the second attempt may come from familiarity, so use more than one map and do not judge only the best attempt. Keep a skin that makes your recurring problem easier to observe and handle, even if its results-screen artwork is less appealing."
+        },
+        {
+          "title": "Keep a dependable baseline",
+          "body": "Once you have a readable setup, save its skin name and relevant settings in your practice notes. Return to it when testing unfamiliar maps, and reserve further visual changes for a specific problem you can reproduce. A skin cannot establish that you have fixed a rhythm or movement error simply because the play looks cleaner. Use the replay to check the original mistake again. The aim is a clear, repeatable view of the task rather than a promise of extra PP."
+        }
+      ],
+      "sources": [
+        {
+          "title": "osu! wiki: Skinning",
+          "url": "https://osu.ppy.sh/wiki/en/Skinning"
+        },
+        {
+          "title": "osu! wiki: osu! gameplay skin elements",
+          "url": "https://osu.ppy.sh/wiki/en/Skinning/osu!"
+        },
+        {
+          "title": "osu! wiki: Client options",
+          "url": "https://osu.ppy.sh/wiki/en/Client/Options"
+        }
+      ]
+    },
+    {
+      "slug": "hitsounds-and-music-balance",
+      "title": "Hear your timing: balance hitsounds and music before practising",
+      "description": "Check which sounds follow your inputs, compare music and effect balance, and avoid mistaking an audio change for a timing fix.",
+      "sections": [
+        {
+          "title": "Separate the song from input feedback",
+          "body": "Hitsounds provide feedback when you interact with hit objects. A circle or slider-head sound can help you hear how your input lines up with the music. Not every sound is a fresh keypress, though: slider events can produce passive sounds, and storyboard samples can play independently of whether you hit an object. Before using a sound to diagnose timing, establish which event produced it. Treat the replay's input and judgement data as a separate check."
+        },
+        {
+          "title": "Start with a simple, audible comparison",
+          "body": "Suggested exercise: choose a familiar map with a clear pulse and a simple circle section. Keep the output device, playback rate and timing offsets unchanged. Listen to the phrase once, then play it while attending to the relationship between the music and your circle hitsounds. If you cannot distinguish the two, first adjust their balance rather than changing universal offset. Lowering the competing channel may make the cue clearer without increasing the overall volume."
+        },
+        {
+          "title": "Know what the volume controls change",
+          "body": "In stable, music and effect volume are separate controls; the effect channel includes hitsounds and other game sounds. Skin and beatmap sound settings also affect which samples you hear. Record the selected skin and whether beatmap samples are being used. Client layouts can differ, so look for the equivalent controls in your version. Avoid copying someone else's percentages as a target: different samples and output setups can produce very different balances at the same displayed values."
+        },
+        {
+          "title": "Compare two balances on the same phrase",
+          "body": "Make a small balance change, play the phrase again, then return to the original balance for a third attempt. Ask whether the pulse is still audible and whether you can hear a deliberately observed early or late hit against it. Check the judgement result afterwards instead of assuming that a sharper-sounding sample means better timing. If one balance helps only because you have memorised the phrase, repeat the comparison on a second comfortable song."
+        },
+        {
+          "title": "Do not use a slider sound as proof of a new tap",
+          "body": "A repeated sound during a slider may be feedback from following its path rather than an instruction to press again. Review a circle-only phrase first if that distinction is confusing, then compare a phrase with sliders while watching the input overlay. Keep track of the slider head and the next circle separately. Pishifat's hitsounds episode is included as further viewing from a mapping perspective; the exercise here is to identify the cues in your own play, not to imitate a particular sample set."
+        },
+        {
+          "title": "Keep audio clarity and calibration as separate questions",
+          "body": "After choosing an audible balance, play several familiar maps with unchanged offsets. Record whether the new balance helps you notice a recurring error, rather than claiming it corrected that error automatically. If timing still seems consistently displaced, investigate that separately using comparable plays and the client's calibration tools. Do not repeatedly move an offset to rescue one difficult section. Save a dependable audio setup and spend the next practice block on the specific rhythm or input mistake that remains."
+        }
+      ],
+      "sources": [
+        {
+          "title": "osu! wiki: Hitsound",
+          "url": "https://osu.ppy.sh/wiki/en/Beatmapping/Hitsound"
+        },
+        {
+          "title": "osu! wiki: Client options",
+          "url": "https://osu.ppy.sh/wiki/en/Client/Options"
+        },
+        {
+          "title": "Further viewing: pishifat - osu!mapping: hitsounds",
+          "url": "https://www.youtube.com/watch?v=Lz6D7HPJ0eQ"
+        }
+      ]
     }
   ]
 }

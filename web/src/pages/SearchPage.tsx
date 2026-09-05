@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Helmet } from "../lib/helmet";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import type { GetOverviewResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { SectionHeader } from "../components/SectionHeader";
@@ -400,13 +401,14 @@ function SearchSuggestions({ overview }: { overview: GetOverviewResponse }) {
 
 export function SearchPage() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const query = params.get("q")?.trim() ?? "";
   const [draftQuery, setDraftQuery] = useState(query);
   const [results, setResults] = useState<HubSearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<GetOverviewResponse | null>(null);
-  const [view, setView] = useState<SearchView>("all");
+  const view = filterChoice<SearchView>(params.get("view"), ["all", "scenarios", "players", "runs", "replays", "benchmarks"], "all");
+  const setView = (view: SearchView) => setParams(current => updateFilterQuery(current, { view }), { replace: true });
   const [activeQuickIndex, setActiveQuickIndex] = useState(0);
   const [quickSelectionActive, setQuickSelectionActive] = useState(false);
 
@@ -419,15 +421,10 @@ export function SearchPage() {
     const tid = setTimeout(() => {
       const next = draftQuery.trim();
       if (next === query) return;
-      if (!next) {
-        navigate("/search", { replace: true });
-      } else {
-        navigate(`/search?q=${encodeURIComponent(next)}`, { replace: true });
-      }
+      setParams(current => updateFilterQuery(current, { q: next }), { replace: true });
     }, 400);
     return () => clearTimeout(tid);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftQuery]);
+  }, [draftQuery, query, setParams]);
 
   useEffect(() => {
     if (!query) {
@@ -606,11 +603,7 @@ export function SearchPage() {
       return;
     }
     const next = draftQuery.trim();
-    if (!next) {
-      navigate("/search");
-      return;
-    }
-    navigate(`/search?q=${encodeURIComponent(next)}`);
+    setParams(current => updateFilterQuery(current, { q: next }));
   }
 
   function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -674,7 +667,7 @@ export function SearchPage() {
               type="button"
               onClick={() => {
                 setDraftQuery("");
-                navigate("/search");
+                setParams(current => updateFilterQuery(current, { q: null }));
               }}
             >
               Clear

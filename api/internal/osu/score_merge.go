@@ -11,11 +11,13 @@ import (
 
 type PublicScoreItem struct {
 	store.OsuPublicReplay
-	Source           string                  `json:"source"`
-	OfficialScoreID  string                  `json:"officialScoreId,omitempty"`
-	OfficialScoreURL string                  `json:"officialScoreUrl,omitempty"`
-	PPSource         string                  `json:"ppSource"`
-	Uploads          []store.OsuPublicReplay `json:"uploads,omitempty"`
+	Source               string                   `json:"source"`
+	OfficialScoreID      string                   `json:"officialScoreId,omitempty"`
+	OfficialScoreURL     string                   `json:"officialScoreUrl,omitempty"`
+	OfficialReplayExists bool                     `json:"officialReplayExists"`
+	PPSource             string                   `json:"ppSource"`
+	Uploads              []store.OsuPublicReplay  `json:"uploads,omitempty"`
+	PPCalculation        *ScorePPCalculationInput `json:"ppCalculation,omitempty"`
 }
 
 // MergePublicScores never treats an accuracy or map match as a play identity.
@@ -45,7 +47,7 @@ func MergePublicScores(local []store.OsuPublicReplay, official []OfficialPublicS
 			ppSource = "official"
 		}
 		id := strconv.FormatInt(r.OnlineScoreID, 10)
-		items = append(items, PublicScoreItem{OsuPublicReplay: r, Source: "official", OfficialScoreID: id, OfficialScoreURL: "https://osu.ppy.sh/scores/" + id, PPSource: ppSource})
+		items = append(items, PublicScoreItem{OsuPublicReplay: r, Source: "official", OfficialScoreID: id, OfficialScoreURL: "https://osu.ppy.sh/scores/" + id, OfficialReplayExists: score.OfficialReplayExists, PPSource: ppSource, PPCalculation: score.PPCalculation})
 	}
 	localContentCounts := map[string]int{}
 	for _, r := range local {

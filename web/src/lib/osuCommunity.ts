@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { normalizeOsuReplayAnalysis } from "./osuReplayAnalysis";
+import type { ScorePpInput } from "./scorePp";
 
 export type OsuJudgementSummary = {
   great?: number;
@@ -37,6 +38,9 @@ export type OsuSharedReplay = {
   officialScoreId?: string;
   officialScoreUrl?: string;
   ppSource?: string;
+  ppCalculation?: ScorePpInput;
+  ppCalculationState?: "queued" | "calculating" | "unavailable";
+  ppCalculationError?: string;
   onlineScoreId?: number;
   officialReplayExists?: boolean;
   shareId: string;
@@ -111,11 +115,14 @@ export async function fetchOsuProfile(handle: string, limit = 36): Promise<OsuPu
 
 export async function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> {
   const replay = normalizeReplay(await fetchJSON<OsuSharedReplay>(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`));
-  if (!replay.hasReplayFile && replay.onlineScoreId && Number.isSafeInteger(replay.onlineScoreId) && replay.onlineScoreId > 0) {
+  if ((!replay.hasReplayFile || replay.performancePoints == null) && replay.onlineScoreId && Number.isSafeInteger(replay.onlineScoreId) && replay.onlineScoreId > 0) {
     try {
       const official = await fetchOsuOfficialScore(String(replay.onlineScoreId));
       if (official.osuUserId === replay.osuUserId && official.beatmapId === replay.beatmapId && official.ruleset === replay.ruleset) {
-        return { ...replay, officialScoreId: String(replay.onlineScoreId), officialReplayExists: official.officialReplayExists };
+        return { ...replay, officialScoreId: String(replay.onlineScoreId), officialReplayExists: official.officialReplayExists,
+          performancePoints: official.performancePoints ?? replay.performancePoints,
+          ppSource: official.performancePoints != null ? "official" : replay.ppSource,
+          ppCalculation: official.ppCalculation ?? replay.ppCalculation };
       }
     } catch { /* Keep the shared score accessible if official metadata is unavailable. */ }
   }

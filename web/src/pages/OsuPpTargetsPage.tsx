@@ -1,24 +1,22 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PageSeo } from "../components/PageSeo";
 import { Button } from "../components/ui/Button";
 import { beatmapLinks, mediaUrl, osuClient } from "../lib/osuCatalog";
 import { API_BASE_URL } from "../lib/config";
 import { BeatmapDifficulty, Provider, Ruleset } from "../gen/aimmod/osu/v1/osu_pb";
 import { RangeSlider } from "./OsuCatalogPage";
+import { browserPpCache, candidateKey, ppMods, readPpSettings, validChecksum, validPpResult, type PpResult } from "../lib/ppTargetCache";
 import "./osuCatalog.css";
 
-type Result = { pp: number; maxPp: number; stars: number; error?: string };
-type Candidate = { map: BeatmapDifficulty; result?: Result };
-const cachePrefix = "aimmod-pp-rosu4.0.1-fc-v1:";
+type Candidate = { map: BeatmapDifficulty; result?: PpResult };
 
 export function OsuPpTargetsPage() {
-  const [query, setQuery] = useState("");
-  const [low, setLow] = useState("3");
-  const [high, setHigh] = useState("7");
-  const [accuracy, setAccuracy] = useState(98);
-  const [mods, setMods] = useState("NM");
-  const [lazer, setLazer] = useState(true);
-  const [sort, setSort] = useState("pp");
+  const [params, setParams] = useSearchParams();
+  const { query, low, high, accuracy, mods, lazer, sort } = readPpSettings(params);
+  const updateParam = (key: string, value: string) => setParams(current => {
+    const next = new URLSearchParams(current); next.set(key, value); return next;
+  }, { replace: true });
   const [rows, setRows] = useState<Candidate[]>([]);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -30,59 +28,79 @@ export function OsuPpTargetsPage() {
   useEffect(() => {
     const revision = ++generation.current;
     const controller = new AbortController();
+    const active = () => !controller.signal.aborted && revision === generation.current;
+    const cache = browserPpCache();
+    const settings = { query, low, high, accuracy, mods, lazer, sort: "pp" };
+    const searchKey = candidateKey(settings);
+    const restored = cache.getCandidates(searchKey);
     let worker: Worker | undefined;
     setBusy(true); setError(""); setRows([]); setProgress(0); setStatus("Finding difficulties");
-    const timer = setTimeout(async () => {
-      setBusy(true); setError(""); setRows([]); setProgress(0); setStatus("Finding difficulties");
+    const run = async () => {
       try {
-        const response = await osuClient.searchBeatmapItems({ query, providers: [Provider.OSU_OFFICIAL], filters: { ruleset: Ruleset.OSU, status: "ranked", stars: { minimum: low ? Number(low) : undefined, maximum: high ? Number(high) : undefined } }, sort: "plays_desc" }, { signal: controller.signal });
-        if (response.providers.some(provider => !provider.available)) throw new Error("Beatmap search is unavailable. Please try again.");
-        const maps: BeatmapDifficulty[] = [];
-        for (const item of response.items.slice(0, 12)) {
-          if (revision === generation.current) setStatus(`Loading ${item.title || "map"} difficulties`);
-          const detail = await osuClient.getBeatmapItem({ provider: Provider.OSU_OFFICIAL, sourceId: item.sourceId }, { signal: controller.signal });
-          for (const map of detail.item?.difficulties ?? []) {
-            if (map.ruleset === Ruleset.OSU && (!low || map.stars >= Number(low)) && (!high || map.stars <= Number(high)) && !maps.some(existing => existing.beatmapId === map.beatmapId)) maps.push(map);
-          }
-        }
-        if (revision !== generation.current) return;
-        const candidates: Candidate[] = maps.map(map => ({ map }));
-        setRows([...candidates]);
-        worker = new Worker(new URL("../lib/ppTargetWorker.ts", import.meta.url), { type: "module" });
-        for (let index = 0; index < candidates.length; index++) {
-          if (controller.signal.aborted) return;
-          const candidate = candidates[index];
-          setStatus(`Calculating difficulty ${index + 1} of ${candidates.length}`);
-          const key = `${cachePrefix}${candidate.map.beatmapId}:${candidate.map.checksum}:${accuracy}:${mods}:${lazer}`;
-          let result: Result | undefined;
-          try {
-            const cached = JSON.parse(localStorage.getItem(key) ?? "null");
-            if (candidate.map.checksum && cached?.expires > Date.now() && [cached.pp, cached.maxPp, cached.stars].every(value => typeof value === "number" && Number.isFinite(value) && value >= 0)) result = cached;
-          } catch { /* Storage may be disabled. */ }
-          if (!result) {
-            result = await new Promise<Result>((resolve, reject) => {
-              const timeout = setTimeout(() => reject(new Error("PP calculation timed out. Try a different search.")), 25000);
-              worker!.onmessage = event => { clearTimeout(timeout); resolve(event.data); };
-              worker!.onerror = () => { clearTimeout(timeout); reject(new Error("PP calculator could not start.")); };
-              controller.signal.addEventListener("abort", () => { clearTimeout(timeout); reject(new DOMException("Cancelled", "AbortError")); }, { once: true });
-              const checksum = candidate.map.checksum;
-              worker!.postMessage({ id: index, url: `${API_BASE_URL}/api/osu/v1/playback/beatmaps/${candidate.map.beatmapId}/file${checksum ? `?checksum=${encodeURIComponent(checksum)}` : ""}`, checksum, accuracy, mods, lazer });
-            });
-            if (!result.error && [result.pp, result.maxPp, result.stars].every(Number.isFinite)) {
-              try {
-                const keys = Object.keys(localStorage).filter(key => key.startsWith(cachePrefix));
-                for (const stale of keys.slice(0, Math.max(0, keys.length - 399))) localStorage.removeItem(stale);
-                localStorage.setItem(key, JSON.stringify({ ...result, expires: Date.now() + 86400000 }));
-              } catch { /* Results remain usable without persistent storage. */ }
+        let maps = restored;
+        if (!maps) {
+          const response = await osuClient.searchBeatmapItems({ query, providers: [Provider.OSU_OFFICIAL], filters: { ruleset: Ruleset.OSU, status: "ranked", stars: { minimum: low ? Number(low) : undefined, maximum: high ? Number(high) : undefined } }, sort: "plays_desc" }, { signal: controller.signal });
+          if (!active()) return;
+          if (response.providers.some(provider => !provider.available)) throw new Error("Beatmap search is unavailable. Please try again.");
+          maps = [];
+          for (const item of response.items.slice(0, 12)) {
+            if (!active()) return;
+            setStatus(`Loading ${item.title || "map"} difficulties`);
+            const detail = await osuClient.getBeatmapItem({ provider: Provider.OSU_OFFICIAL, sourceId: item.sourceId }, { signal: controller.signal });
+            if (!active()) return;
+            if (!detail.item || detail.provider?.available === false) throw new Error("Map details are unavailable. Please try again.");
+            for (const map of detail.item.difficulties) {
+              if (map.ruleset === Ruleset.OSU && (!low || map.stars >= Number(low)) && (!high || map.stars <= Number(high)) && !maps.some(existing => existing.beatmapId === map.beatmapId)) maps.push(map);
             }
           }
-          if (revision !== generation.current) return;
-          candidate.result = result;
-          setRows([...candidates]); setProgress(index + 1);
+          if (!active()) return;
+          cache.setCandidates(searchKey, maps);
         }
-      } catch (failure) { if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : "Search unavailable"); }
-      finally { worker?.terminate(); if (revision === generation.current) { setBusy(false); setStatus(""); } }
-    }, 450);
+        if (!active()) return;
+        const candidates: Candidate[] = maps.map(map => ({ map, result: cache.getResult(map, settings) }));
+        setRows([...candidates]);
+        setProgress(candidates.filter(candidate => candidate.result).length);
+        for (let index = 0; index < candidates.length; index++) {
+          if (!active()) return;
+          const candidate = candidates[index];
+          if (candidate.result) continue;
+          setStatus(`Calculating difficulty ${index + 1} of ${candidates.length}`);
+          let result: PpResult;
+          if (!validChecksum(candidate.map.checksum)) {
+            result = { pp: 0, maxPp: 0, stars: candidate.map.stars, error: "Map checksum unavailable. Refresh the search to verify this difficulty." };
+          } else {
+            worker ??= new Worker(new URL("../lib/ppTargetWorker.ts", import.meta.url), { type: "module" });
+            result = await new Promise<PpResult>((resolve, reject) => {
+              const cleanup = () => {
+                clearTimeout(timeout); controller.signal.removeEventListener("abort", abort);
+                worker!.onmessage = null; worker!.onerror = null;
+              };
+              const abort = () => { cleanup(); reject(new DOMException("Cancelled", "AbortError")); };
+              const timeout = setTimeout(() => { cleanup(); reject(new Error("PP calculation timed out. Try a different search.")); }, 25000);
+              worker!.onmessage = event => {
+                if (event.data?.id !== index) return;
+                cleanup();
+                if (!validPpResult(event.data) && typeof event.data?.error !== "string") reject(new Error("PP calculator returned an invalid result."));
+                else resolve(event.data);
+              };
+              worker!.onerror = () => { cleanup(); reject(new Error("PP calculator could not start.")); };
+              controller.signal.addEventListener("abort", abort, { once: true });
+              const checksum = candidate.map.checksum;
+              try { worker!.postMessage({ id: index, url: `${API_BASE_URL}/api/osu/v1/playback/beatmaps/${candidate.map.beatmapId}/file?checksum=${encodeURIComponent(checksum)}`, checksum, accuracy, mods, lazer }); }
+              catch (failure) { cleanup(); reject(failure); }
+            });
+          }
+          if (!active()) return;
+          cache.setResult(candidate.map, settings, result);
+          if (result.error) cache.deleteCandidates(searchKey);
+          candidate.result = result;
+          setRows([...candidates]); setProgress(candidates.filter(candidate => candidate.result).length);
+        }
+      } catch (failure) { if (active()) setError(failure instanceof Error ? failure.message : "Search unavailable"); }
+      finally { worker?.terminate(); if (active()) { setBusy(false); setStatus(""); } }
+    };
+    const timer = restored === undefined ? setTimeout(() => void run(), 450) : undefined;
+    if (restored !== undefined) void run();
     return () => { clearTimeout(timer); controller.abort(); worker?.terminate(); };
   }, [query, low, high, accuracy, mods, lazer, attempt]);
 
@@ -92,15 +110,16 @@ export function OsuPpTargetsPage() {
     <h1 className="text-3xl">PP targets</h1>
     <p className="text-muted mt-3">Full-combo PP at your selected accuracy. Personal skill compatibility and recommendations are available in AimMod.</p>
     <div className="hub-filters catalog-filters my-5">
-      <label>Search<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Title, artist, mapper" maxLength={256} /></label>
-      <RangeSlider name="stars" label="Stars (no mods)" limit={10} step={0.1} minimum={low} maximum={high} onChange={(endpoint, value) => endpoint === "Min" ? setLow(value) : setHigh(value)} />
-      <label>Accuracy: {accuracy.toFixed(1)}%<input type="range" min={80} max={100} step={0.1} value={accuracy} onChange={event => setAccuracy(Number(event.target.value))} /></label>
-      <label>Mods<select value={mods} onChange={event => setMods(event.target.value)}>{["NM", "HD", "HR", "HDHR", "DT", "HDDT", "HT"].map(mod => <option key={mod}>{mod}</option>)}</select></label>
-      <label>Scoring<select value={String(lazer)} onChange={event => setLazer(event.target.value === "true")}><option value="true">Lazer</option><option value="false">Stable</option></select></label>
-      <label>Sort<select value={sort} onChange={event => setSort(event.target.value)}><option value="pp">PP at accuracy</option><option value="max">SS PP</option><option value="stars">Modded stars</option></select></label>
+      <label>Search<input type="search" value={query} onChange={event => updateParam("q", event.target.value)} placeholder="Title, artist, mapper" maxLength={256} /></label>
+      <RangeSlider name="stars" label="Stars (no mods)" limit={10} step={0.1} minimum={low} maximum={high} onChange={(endpoint, value) => updateParam(endpoint === "Min" ? "min" : "max", value)} />
+      <label>Accuracy: {accuracy.toFixed(1)}%<input type="range" min={80} max={100} step={0.1} value={accuracy} onChange={event => updateParam("acc", event.target.value)} /></label>
+      <label>Mods<select value={mods} onChange={event => updateParam("mods", event.target.value)}>{ppMods.map(mod => <option key={mod}>{mod}</option>)}</select></label>
+      <label>Scoring<select value={String(lazer)} onChange={event => updateParam("scoring", event.target.value === "true" ? "lazer" : "stable")}><option value="true">Lazer</option><option value="false">Stable</option></select></label>
+      <label>Sort<select value={sort} onChange={event => updateParam("sort", event.target.value)}><option value="pp">PP at accuracy</option><option value="max">SS PP</option><option value="stars">Modded stars</option></select></label>
     </div>
     {busy && <div role="status" className="py-4"><p>{status}</p>{rows.length > 0 && <progress className="w-full mt-2" value={progress} max={rows.length} />}</div>}
     {error && <div role="alert" className="py-4"><p className="mb-3">{error}</p><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></div>}
+    {!busy && <div className="mb-4"><Button onClick={() => { browserPpCache().deleteCandidates(candidateKey({ query, low, high })); setAttempt(value => value + 1); }}>Refresh results</Button></div>}
     {!busy && !error && !rows.length && <p className="py-8">No matching difficulties. Broaden the star range or change your search.</p>}
     <p className="text-muted text-sm mb-4">{rows.length} difficulties from up to 12 popular matching sets. Values assume no misses and full combo; they are not predicted results or profile PP gains.</p>
     <div className="divide-y divide-line">{ordered.map(({ map, result }) => {

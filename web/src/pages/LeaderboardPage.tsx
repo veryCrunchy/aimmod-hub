@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "../lib/helmet";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import type { GetLeaderboardResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { SectionHeader } from "../components/SectionHeader";
@@ -24,8 +25,10 @@ function fetchLeaderboard(scenarioType: string) {
 export function LeaderboardPage() {
   const [data, setData] = useState<GetLeaderboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("records");
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const tab = filterChoice<Tab>(params.get("tab"), ["records", "top"], "records");
+  const setTab = (tab: Tab) => setParams(current => updateFilterQuery(current, { tab }), { replace: true });
+  const setTypeFilter = (scenarioType: string | null) => setParams(current => updateFilterQuery(current, { scenarioType }), { replace: true });
 
   const load = useCallback(() => {
     void fetchLeaderboard("")
@@ -44,6 +47,8 @@ export function LeaderboardPage() {
     }
     return [...types];
   }, [data]);
+
+  const typeFilter = scenarioTypes.includes(params.get("scenarioType") ?? "") ? params.get("scenarioType") : null;
 
   const filteredRecords = useMemo(() => {
     if (!data) return [];

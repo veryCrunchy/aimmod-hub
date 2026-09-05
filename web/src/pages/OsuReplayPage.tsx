@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
+import { useScorePp } from "../hooks/useScorePp";
+import { ScorePpStatus } from "../components/ScorePpStatus";
 import { OsuReplayPlayer } from "../components/OsuReplayPlayer";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
@@ -23,7 +25,10 @@ import {
 
 export function OsuReplayPage() {
   const { shareId = "", officialScoreId = "" } = useParams();
-  const [replay, setReplay] = useState<OsuSharedReplay | null>(null);
+  const [rawReplay, setReplay] = useState<OsuSharedReplay | null>(null);
+  const replayItems = useMemo(() => rawReplay ? [rawReplay] : [], [rawReplay]);
+  const calculated = useScorePp(replayItems);
+  const replay = calculated.items[0];
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [browserAnalysis, setBrowserAnalysis] = useState<OsuReplayAnalysis | null>(null);
@@ -63,7 +68,7 @@ export function OsuReplayPage() {
     return <PageStack><PageSeo title="osu! replay · AimMod Hub" description="Loading shared replay." noindex /><PageSection role="status" aria-label="Loading replay"><p className="mb-3 text-muted">Loading replay...</p><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
   }
 
-  const pp = replay.performancePoints == null ? "Unavailable" : `${Math.round(replay.performancePoints)}pp`;
+  const pp = replay.performancePoints == null ? (calculated.pending ? "Calculating..." : "Unavailable") : `${Math.round(replay.performancePoints)}pp`;
   const sourceScoreId = officialScoreId || replay.officialScoreId;
   const playbackSource = replay.hasReplayFile && replay.shareId ? osuReplayDownloadUrl(replay.shareId)
     : sourceScoreId && replay.officialReplayExists ? osuOfficialReplayDownloadUrl(sourceScoreId) : undefined;
@@ -102,7 +107,7 @@ export function OsuReplayPage() {
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">
         <Metric label="Accuracy" value={formatOsuAccuracy(replay.accuracy)} accent="cyan" />
-        <Metric label="Performance" value={pp} accent="pink" />
+        <Metric label={replay.ppSource === "calculated" ? "Calculated PP" : "Performance"} value={pp} accent="pink" />
         <Metric label="Score" value={replay.totalScore.toLocaleString()} />
         <Metric label="Combo" value={`${replay.maxCombo}x`} />
         <Metric label="Difficulty" value={`${replay.starRating.toFixed(2)}★`} accent="gold" />
@@ -154,6 +159,7 @@ export function OsuReplayPage() {
           ) : null}
         </PageSection>
       </div>
+      <ScorePpStatus {...calculated} />
     </PageStack>
   );
 }

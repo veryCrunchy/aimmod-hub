@@ -56,11 +56,11 @@ test("knowledge index links every guide and missing guide is noindex without Art
 test("knowledge offers search, video filtering and section navigation", () => {
   const index = render("/osu/learn");
   assert.ok(index.body.includes('type="search"'));
-  assert.ok(index.body.includes("With video resources"));
+  assert.ok(index.body.includes("With videos"));
   const article = render("/osu/learn/aim-misses-and-cursor-control");
   assert.ok(article.body.includes('href="#section-1"'));
   assert.ok(article.body.includes('id="section-1"'));
-  assert.ok(article.body.includes("Community coaching"));
+  assert.ok(article.body.includes("okb-video"));
 });
 
 test("SEO canonical drops queries and trailing slash and private pages emit no schema", () => {

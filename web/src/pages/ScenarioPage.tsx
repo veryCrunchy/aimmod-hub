@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "../lib/helmet";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import type { GetScenarioPageResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { ScoreDistributionChart } from "../components/charts/ScoreDistributionChart";
@@ -247,9 +248,11 @@ export function ScenarioPage() {
   const [page, setPage] = useState<GetScenarioPageResponse | null>(null);
   const [replays, setReplays] = useState<HubSearchRun[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>("date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [tab, setTab] = useState<Tab>("recent");
+  const [params, setParams] = useSearchParams();
+  const sortField = filterChoice<SortField>(params.get("sort"), ["score", "accuracy", "date"], "date");
+  const sortDir = filterChoice(params.get("direction"), ["asc", "desc"] as const, "desc");
+  const tab = filterChoice<Tab>(params.get("tab"), ["recent", "leaderboard"], "recent");
+  const setTab = (tab: Tab) => setParams(current => updateFilterQuery(current, { tab }), { replace: true });
   const [recentVisible, setRecentVisible] = useState(PAGE_SIZE);
   const [topVisible, setTopVisible] = useState(PAGE_SIZE);
 
@@ -260,7 +263,6 @@ export function ScenarioPage() {
     setError(null);
     setRecentVisible(PAGE_SIZE);
     setTopVisible(PAGE_SIZE);
-    setTab("recent");
     void fetchScenarioPage(slug)
       .then((next) => {
         if (!cancelled) {
@@ -288,13 +290,9 @@ export function ScenarioPage() {
   useAutoRefresh(doRefresh, 60_000);
 
   function handleSort(field: string) {
-    const f = field as SortField;
-    if (f === sortField) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(f);
-      setSortDir("desc");
-    }
+    const f = filterChoice<SortField>(field, ["score", "accuracy", "date"], "date");
+    const direction = f === sortField ? (sortDir === "asc" ? "desc" : "asc") : "desc";
+    setParams(current => updateFilterQuery(current, { sort: f, direction }), { replace: true });
   }
 
   const metaTitle = page ? `${page.scenarioName} · AimMod Hub` : `${slug} · AimMod Hub`;
