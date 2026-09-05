@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -33,8 +32,7 @@ func TestOfficialReplayLivePublicCredential(t *testing.T) {
 	}
 	scoreID := os.Getenv("AIMMOD_OFFICIAL_REPLAY_SCORE_ID")
 	if scoreID == "" {
-		// Discovered through the live public mrekk profile feed, 2026-09-05.
-		scoreID = "7408746193"
+		t.Skip("set AIMMOD_OFFICIAL_REPLAY_SCORE_ID to an explicitly selected public test score")
 	}
 	id, err := strconv.ParseInt(scoreID, 10, 64)
 	if err != nil || id <= 0 || strconv.FormatInt(id, 10) != scoreID {
@@ -81,5 +79,5 @@ func TestOfficialReplayLivePublicCredential(t *testing.T) {
 	if !bytes.Contains(data[:min(len(data), 1024)], []byte(checksum)) {
 		t.Fatal("live replay header does not contain the score's exact beatmap checksum")
 	}
-	t.Logf("REAL public-credential replay PASS score=%s bytes=%d mode=%d beatmapChecksum=%s sha256=%x elapsed=%s", scoreID, len(data), data[0], checksum, sha256.Sum256(data), time.Since(start).Round(time.Millisecond))
+	t.Logf("Public-credential replay PASS bytes=%d mode=%d elapsed=%s", len(data), data[0], time.Since(start).Round(time.Millisecond))
 }

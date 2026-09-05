@@ -5,3 +5,31 @@ node_modules
 dist
 coverage
 pnpm-lock.yaml
+
+# Local QA output, browser captures and machine-specific scratch data.
+.qa/
+.tmp-media/
+.playwright/
+playwright-report/
+test-results/
+blob-report/
+design-qa/
+design-qa*
+codex-clipboard-*
+.tmp/
+screenshots/
+captures/
+*.har
+*.trace.zip
+*.tsbuildinfo
+
+# Local browser verification and generated helper output.
+/web/scripts/verify-catalog-focus.ts
+/web/scripts/verify-score-filters.ts
+/web/tests/ppTargetCache.browser.ts
+/web/scripts/rosu-browser.js
+/web/scripts/rosu-browser.d.ts
+/api/internal/seo/osu-content-expansion.json
+
+# Removed personal-data mockup; never reintroduce it as a product asset.
+/web/public/images/aimmod-osu-beatmaps.png

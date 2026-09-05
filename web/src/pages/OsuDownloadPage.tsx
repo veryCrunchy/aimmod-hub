@@ -112,12 +112,6 @@ export function OsuDownloadPage() {
       </Helmet>
 
       <section className="relative flex min-h-[520px] items-end overflow-hidden border-y border-[#ff66aa]/25 bg-[#070b13] p-5 md:p-8">
-        <img
-          src="/images/aimmod-osu-beatmaps.png"
-          alt="AimMod for osu! beatmap analysis with difficulty statistics, PP at accuracy, and a skill-demand graph"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-[#070b13]/75" aria-hidden />
         <div className="relative z-10 min-w-0 max-w-[680px] pb-3">
             <div className="text-[11px] uppercase tracking-normal text-[#ff9bc7]">Native analysis and coaching</div>
             <h1 className="my-3 max-w-[12ch] text-[clamp(34px,5.5vw,64px)] leading-[0.94] tracking-normal">AimMod for osu!</h1>

@@ -28,5 +28,5 @@ export function RouteErrorBoundary({ children }: PropsWithChildren) {
   const location = useLocation();
   // A failed lazy module stays rejected until a document reload. Other routes
   // must remain navigable without carrying the failed route's boundary state.
-  return <PageErrorBoundary key={location.pathname + location.search}>{children}</PageErrorBoundary>;
+  return <PageErrorBoundary key={location.pathname}>{children}</PageErrorBoundary>;
 }

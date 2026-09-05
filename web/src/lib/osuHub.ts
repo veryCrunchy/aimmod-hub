@@ -54,7 +54,7 @@ export interface OsuHubClient {
 
 const workspace: OsuWorkspaceData = {
   player: {
-    username: "veryCrunchy",
+    username: "Example Player",
     globalRank: 42817,
     pp: 6142,
     accuracy: 97.84,
@@ -174,7 +174,7 @@ const workspace: OsuWorkspaceData = {
     {
       id: "r-9021",
       beatmapId: "b-2354778",
-      player: "veryCrunchy",
+      player: "Example Player",
       score: 847291,
       accuracy: 96.72,
       combo: 824,
@@ -193,7 +193,7 @@ const workspace: OsuWorkspaceData = {
     {
       id: "r-9014",
       beatmapId: "b-3901725",
-      player: "veryCrunchy",
+      player: "Example Player",
       score: 712480,
       accuracy: 95.18,
       combo: 611,
@@ -212,7 +212,7 @@ const workspace: OsuWorkspaceData = {
     {
       id: "r-8978",
       beatmapId: "b-2819592",
-      player: "veryCrunchy",
+      player: "Example Player",
       score: 962314,
       accuracy: 98.34,
       combo: 1062,

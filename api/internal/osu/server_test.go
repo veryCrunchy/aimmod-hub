@@ -234,14 +234,14 @@ func TestOfficialUserProfileUsesUsernameLookup(t *testing.T) {
 		switch r.URL.Path {
 		case "/oauth/token":
 			_, _ = w.Write([]byte(`{"access_token":"token","expires_in":3600}`))
-		case "/api/v2/users/verycrunchy/osu":
+		case "/api/v2/users/example-player/osu":
 			if got := r.URL.Query().Get("key"); got != "username" {
 				t.Errorf("profile key = %q; want username", got)
 			}
 			if got := r.Header.Get("Authorization"); got != "Bearer token" {
 				t.Errorf("profile authorization = %q", got)
 			}
-			_, _ = w.Write([]byte(`{"id":25200488,"username":"verycrunchy","country_code":"NL","avatar_url":"https://a.ppy.sh/25200488","cover_url":"https://assets.ppy.sh/user-profile-covers/25200488/x.jpg","playmode":"osu","is_active":true,"is_online":false,"is_supporter":true,"join_date":"2021-01-01T00:00:00Z","last_visit":"2026-09-01T00:00:00Z","statistics":{"pp":1234.5,"global_rank":1000,"country_rank":50,"hit_accuracy":98.2,"play_count":2000,"play_time":3000,"total_score":4000,"ranked_score":3500,"maximum_combo":500,"level":{"current":100,"progress":12},"grade_counts":{"ssh":1,"ss":2,"sh":3,"s":4,"a":5}},"team":{"id":10,"name":"AimMod","short_name":"AIM","flag_url":"https://assets.ppy.sh/teams/10/flag.png"}}`))
+			_, _ = w.Write([]byte(`{"id":42,"username":"example-player","country_code":"ZZ","avatar_url":"https://example.invalid/avatar.png","cover_url":"https://example.invalid/cover.jpg","playmode":"osu","is_active":true,"is_online":false,"is_supporter":true,"join_date":"2021-01-01T00:00:00Z","last_visit":"2026-09-01T00:00:00Z","statistics":{"pp":1234.5,"global_rank":1000,"country_rank":50,"hit_accuracy":98.2,"play_count":2000,"play_time":3000,"total_score":4000,"ranked_score":3500,"maximum_combo":500,"level":{"current":100,"progress":12},"grade_counts":{"ssh":1,"ss":2,"sh":3,"s":4,"a":5}},"team":{"id":10,"name":"AimMod","short_name":"AIM","flag_url":"https://example.invalid/flag.png"}}`))
 		default:
 			http.NotFound(w, r)
 		}
@@ -261,7 +261,7 @@ func TestOfficialUserProfileUsesUsernameLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	response, err := server.GetOfficialUserProfile(context.Background(), connect.NewRequest(&osuv1.GetOfficialUserProfileRequest{
-		Identifier: "verycrunchy",
+		Identifier: "example-player",
 		LookupKey:  osuv1.OfficialUserLookupKey_OFFICIAL_USER_LOOKUP_KEY_USERNAME,
 		Ruleset:    osuv1.Ruleset_RULESET_OSU,
 	}))
@@ -269,7 +269,7 @@ func TestOfficialUserProfileUsesUsernameLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	profile := response.Msg.GetProfile()
-	if profile.GetUserId() != 25200488 || profile.GetUsername() != "verycrunchy" || profile.GetCountryCode() != "NL" {
+	if profile.GetUserId() != 42 || profile.GetUsername() != "example-player" || profile.GetCountryCode() != "ZZ" {
 		t.Fatalf("unexpected profile identity: %+v", profile)
 	}
 	if profile.GetStatistics().GetPp() != 1234.5 || profile.GetTeam().GetName() != "AimMod" || profile.GetAvatarUrl() == "" || profile.GetCoverUrl() == "" {
@@ -406,7 +406,7 @@ func TestOfficialUserProfileRequiresConfiguredOAuth(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = server.GetOfficialUserProfile(context.Background(), connect.NewRequest(&osuv1.GetOfficialUserProfileRequest{
-		Identifier: "verycrunchy",
+		Identifier: "example-player",
 		LookupKey:  osuv1.OfficialUserLookupKey_OFFICIAL_USER_LOOKUP_KEY_USERNAME,
 		Ruleset:    osuv1.Ruleset_RULESET_OSU,
 	}))
