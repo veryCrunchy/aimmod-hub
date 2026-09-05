@@ -23,6 +23,78 @@
   },
   "guides": [
     {
+      "slug":"reading-density-and-approach-rate",
+      "title":"Reading crowded patterns without rushing your taps",
+      "description":"Separate visual density from movement speed and practise following object order at different approach rates.",
+      "sections":[
+        {"title":"Identify the point where the pattern becomes unclear","body":"Watch the lead-in to a difficult section. Can you describe the next few objects in order, including slider endings and direction changes? If not, begin with recognition rather than assuming your cursor is too slow. A replay shows inputs and movement, not eye tracking: a late movement can suggest several causes and does not prove a reading problem."},
+        {"title":"AR and timing difficulty are different controls","body":"Approach rate changes how early objects become visible. Lower AR gives more advance visibility but can leave more objects on screen together; higher AR gives less advance visibility. Overall difficulty controls judgement windows. Changing AR is therefore not the same as making tapping timing more forgiving. Rate-changing mods also change the real time available, so retain the exact settings in comparisons."},
+        {"title":"Practice: recognise, then execute","body":"Suggested exercise: choose a comfortable map containing one crowded section. Watch it once and identify the object order, then play it without pausing. If necessary, adjust AR slightly while keeping rate fixed and test whether the ordering becomes clearer. Do not simultaneously change your skin, tablet area and rate. After a few attempts, return to the original AR and try an unfamiliar map with a similar density."},
+        {"title":"Measure something beyond memorisation","body":"Record whether the first error occurs before, during or after the crowded section. Compare first attempts on several maps, not only a section you have repeated many times. If only the rehearsed map improves, add unfamiliar patterns at the same demand. If you recognise the order but still click before arriving, move your focus to aim-tap coordination rather than continuing to lower AR."}
+      ],
+      "sources":[{"title":"osu! wiki: Approach rate","url":"https://osu.ppy.sh/wiki/en/Beatmap/Approach_rate"},{"title":"osu! wiki: Overall difficulty","url":"https://osu.ppy.sh/wiki/en/Beatmap/Overall_difficulty"}]
+    },
+    {
+      "slug":"timing-bias-and-unstable-rate",
+      "title":"Low accuracy: read timing bias and unstable rate together",
+      "description":"Understand the difference between consistently early inputs and inconsistent timing before changing your settings.",
+      "sections":[
+        {"title":"A tight group can still be off-centre","body":"Unstable rate measures the spread of hit errors, not whether their average is centred on the intended time. It is ten times the standard deviation of hit errors measured in milliseconds. Consistently late hits can therefore produce a low UR and poor accuracy. Check average error and the distribution alongside UR; do not interpret a single smaller number as proof that every part of timing improved."},
+        {"title":"Compare compatible measurements","body":"Use the same client, mods, rate and object selection. Stable's rate-mod UR convention and modern lazer's real-time UR convention differ; do not apply a conversion twice. Also check OD: identical input errors can produce different judgement counts under tighter windows. A partial failed play and a full completion may cover very different sections even when they share a map title."},
+        {"title":"Practice: contrast simple and complex rhythms","body":"Suggested exercise: choose a familiar map with simple rhythms and a second map with rhythm changes at a manageable speed. Keep settings unchanged and record several attempts. If the simple rhythm stays centred but the complex pattern spreads out, practise recognising and executing those transitions. If both shift consistently to one side across multiple maps, investigate the setup and your timing reference before deciding that a harder map is the solution."},
+        {"title":"Do not calibrate from one bad play","body":"Avoid repeatedly adjusting offset after individual misses. Write down the original setting before any controlled change, then compare multiple familiar maps under otherwise identical conditions. Keep the change only when it improves the repeatable bias without introducing another problem. If the evidence is mixed, restore the baseline. A wide distribution is not fixed merely by moving its centre."}
+      ],
+      "sources":[{"title":"osu! wiki: Unstable rate","url":"https://osu.ppy.sh/wiki/en/Gameplay/Unstable_rate"},{"title":"osu! wiki: Overall difficulty","url":"https://osu.ppy.sh/wiki/en/Beatmap/Overall_difficulty"}]
+    },
+    {
+      "slug":"slider-breaks-and-exits",
+      "title":"Slider breaks: check the head, follow and exit separately",
+      "description":"Find whether slider mistakes happen on entry, during tracking or when moving to the next object.",
+      "sections":[
+        {"title":"Locate the failed event","body":"Begin with the exact judgement and the client rules used for that play. A slider contains more than its starting circle, and a failed slider event should not automatically be described as a missed head. Inspect cursor movement and held inputs through the relevant part. When only a summary score is available, keep the cause unresolved rather than inventing a tracking diagnosis."},
+        {"title":"Look at the transition as well as the slider","body":"If the same slider repeatedly breaks, review the preceding object and the next target. Did the cursor arrive late, cut a curve, leave while input was still required, or move correctly but release? These observations lead to different exercises. An apparently easy slider may be difficult because of how you enter or leave it, not because its shape alone is demanding."},
+        {"title":"Practice: keep the exit in the exercise","body":"Suggested exercise: repeat a short section containing the preceding object, the entire slider and the next few objects. Focus first on completing the slider, then inspect whether the next input remains on time. If you slow the section, keep its geometry unchanged and return to the original rate afterwards. Do not practise only the slider in isolation and assume its transition is solved."},
+        {"title":"Check that you did not move the error","body":"Count slider-event failures and errors immediately after the slider across several attempts. Fewer slider breaks accompanied by more late next-object misses is a tradeoff, not a completed fix. Test another slider with a comparable exit direction. Keep stable, lazer and Classic settings separate so a scoring-rule change is not mistaken for a technique improvement."}
+      ],
+      "sources":[{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"},{"title":"osu! help centre: Upgrading to lazer","url":"https://osu.ppy.sh/wiki/en/Help_centre/Upgrading_to_lazer"}]
+    },
+    {
+      "slug":"full-map-consistency",
+      "title":"Good sections, inconsistent full plays: build consistency",
+      "description":"Compare section practice with complete attempts and identify repeatable breakdowns without relying only on personal bests.",
+      "sections":[
+        {"title":"Separate a fixed obstacle from scattered misses","body":"Compare several complete attempts on the same setup. Repeated failures at one transition suggest a focused practice target. Misses distributed across otherwise manageable sections call for a broader comparison. Do not conclude that scattered misses are nerves or fatigue from the score alone; those explanations need more context than a replay can provide."},
+        {"title":"Track opportunities, not just errors","body":"A section missed three times in three attempts is different from one missed three times in thirty attempts. Record how often you actually reached each section. Attempts that ended earlier should not count as successful runs through a later pattern. Keep the first-error location and completion status alongside accuracy so your review does not reward repeated early retries."},
+        {"title":"Practice: alternate sections and full attempts","body":"Suggested exercise: take one baseline full attempt, practise a troublesome transition briefly, then return to a full attempt. Include the lead-in when isolating the section. Keep another map with similar demands in the session so you can test transfer. Use a small planned block rather than continuing until a lucky full combo hides the less consistent attempts."},
+        {"title":"Judge your typical play","body":"Compare the middle result and the range of results across similar sessions, as well as your best. A narrower spread of miss counts or more frequent clean transitions can be useful progress before a new personal best appears. If your isolated success does not survive a full play, extend the lead-in or practise entering the section from different contexts rather than only adding repetitions."}
+      ],
+      "sources":[{"title":"osu! wiki: Replay","url":"https://osu.ppy.sh/wiki/en/Gameplay/Replay"},{"title":"osu! wiki: Score","url":"https://osu.ppy.sh/wiki/en/Gameplay/Score"}]
+    },
+    {
+      "slug":"choose-maps-for-your-goal",
+      "title":"Choose maps for practice, score targets and skill checks",
+      "description":"Build a useful map pool by distinguishing maps you want to score on from maps that expose a specific weakness.",
+      "sections":[
+        {"title":"Give each map a job","body":"Use a score target to seek a strong result with skills you can already repeat. Use a practice target to expose one manageable weakness. Use a check map to test whether an improvement transfers without extensive rehearsal. One map can change roles over time, but mixing these goals within every attempt makes it harder to decide whether a session helped."},
+        {"title":"Inspect the difficulty, not only its star badge","body":"A beatmapset contains distinct difficulties; compare the exact difficulty you intend to play. Star rating alone does not describe every demand you will experience. Preview the relevant sections and compare spacing, rhythm, burst length, direction changes and transitions. Keep AR, OD and rate in view rather than assuming that equal stars make two maps equivalent practice."},
+        {"title":"Practice: build a three-map pool","body":"Suggested exercise: choose one familiar score target, one map with a repeated weakness and one less familiar map with a similar demand. Record the exact difficulty and mods for each. Play the check map before rehearsing it extensively. Replace a practice map when you can repeat the target section reliably, or when it combines so many failures that you cannot identify a useful focus."},
+        {"title":"Use PP scenarios without treating them as predictions","body":"PP at a chosen accuracy describes a score scenario with additional assumptions such as combo and misses. An SS value is not the amount you should expect to earn, and score PP is not the same as profile gain. On the website, use these scenarios to compare potential results. Use your actual recent performance and in-app compatibility evidence to judge whether the scenario is realistic for you."}
+      ],
+      "sources":[{"title":"osu! wiki: Beatmap difficulty","url":"https://osu.ppy.sh/wiki/en/Beatmap/Difficulty"},{"title":"osu! wiki: Performance points","url":"https://osu.ppy.sh/wiki/en/Performance_points"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"}]
+    },
+    {
+      "slug":"review-a-plateau",
+      "title":"Stuck at the same level? Review the evidence before changing everything",
+      "description":"Use recent attempts to distinguish a score plateau from a repeated skill problem and plan a controlled change.",
+      "sections":[
+        {"title":"Define what has stopped improving","body":"No new top PP score does not necessarily mean that nothing improved. Compare completion rate, section accuracy and repeated errors on familiar demands. Conversely, one personal best does not establish that your typical play improved. Choose a recent review period and keep the map and settings comparable; a year's worth of very different plays can obscure the problem you have now."},
+        {"title":"Look for a repeated bottleneck","body":"Review a small sample of recent replays across several maps. Group observations, not speculative causes: inputs before arrival, losing rhythm after a burst, or leaving slider exits early. Record how often each demand occurred. A rare dramatic miss should not automatically outrank a smaller mistake present throughout most of your plays."},
+        {"title":"Practice: run one experiment","body":"Suggested exercise: write a prediction before changing your practice. For example: practising burst entries at a manageable rate should reduce first-note errors on two check maps. Keep your usual setup fixed, collect a baseline and practise in a short planned block. Test the check maps again before rehearsing them. Changing your grip, skin, rate and map pool together makes the result difficult to interpret."},
+        {"title":"Decide what to keep next session","body":"Keep an exercise when its intended observation improves repeatedly and transfers beyond the rehearsed pattern. Modify it when a different error becomes the limit. Drop it when repeated checks show no relevant change, rather than assuming more repetitions must work. Treat this as a practical review method, not a guaranteed schedule for rank gains. Preserve notes on unsuccessful experiments so you do not unknowingly repeat them."}
+      ],
+      "sources":[{"title":"osu! wiki: Replay","url":"https://osu.ppy.sh/wiki/en/Gameplay/Replay"},{"title":"osu! wiki: Performance points","url":"https://osu.ppy.sh/wiki/en/Performance_points"}]
+    },
+    {
       "slug":"aim-misses-and-cursor-control",
       "title":"Missing jumps? Separate aim errors from early and late taps",
       "description":"Diagnose overshoots, undershoots and aim-tap coordination, then choose a focused practice exercise.",

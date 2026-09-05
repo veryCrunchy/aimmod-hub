@@ -20,7 +20,7 @@ function render(route: string, page = createElement(OsuLearningPage)) {
 }
 
 test("sourced osu guides render real content, one H1 and one article schema", () => {
-  assert.ok(content.guides.length >= 9);
+  assert.ok(content.guides.length >= 15);
   assert.equal(new Set(content.guides.map(g => g.slug)).size, content.guides.length);
   for (const guide of content.guides) {
     assert.ok(guide.sections.reduce((length, section) => length + section.body.split(/\s+/).length, 0) >= 120);
