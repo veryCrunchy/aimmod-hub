@@ -12,11 +12,12 @@ export function updateFilterQuery(current: URLSearchParams, changes: Record<stri
 }
 const allowed = new Set(["q", "source", "replay", "mods", "result", "period", "sort", "beatmap", "starsMin", "starsMax", "accMin", "accMax", "ppMin", "ppMax", "mode", "provider", "order", "creator", "player", "status", "item", "itemProvider", "topic", "level", "video", "min", "max", "acc", "scoring", "bpmMin", "bpmMax", "lengthSecondsMin", "lengthSecondsMax", "approachRateMin", "approachRateMax", "circleSizeMin", "circleSizeMax", "overallDifficultyMin", "overallDifficultyMax"]);
 export function supportsSavedFilters(path: string) {
+  if (path === "/branding") return true;
   if (["/learn", "/live"].includes(path) || /^\/scenarios\/[^/]+$/.test(path)) return true;
   return ["/search", "/community", "/replays", "/leaderboard", "/benchmarks", "/osu", "/osu/beatmaps", "/osu/skins", "/osu/players", "/osu/community", "/osu/replays", "/osu/pp-targets", "/osu/learn"].includes(path)
     || /^\/(?:osu\/)?profiles\/[^/]+$/.test(path);
 }
-for (const name of ["direction", "view", "tab", "scenarioType"]) allowed.add(name);
+for (const name of ["direction", "view", "tab", "scenarioType", "category", "iconSize"]) allowed.add(name);
 export function filterPreferenceQuery(search: string) {
   const clean = new URLSearchParams();
   for (const [name, value] of new URLSearchParams(search)) {

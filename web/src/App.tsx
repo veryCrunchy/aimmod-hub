@@ -11,6 +11,7 @@ import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { useSavedPageFilters } from "./hooks/useSavedPageFilters";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
+const BrandingPage = lazy(() => import("./pages/BrandingPage").then((m) => ({ default: m.BrandingPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
 const AdminCoachingPage = lazy(() => import("./pages/AdminCoachingPage").then((m) => ({ default: m.AdminCoachingPage })));
 const CommunityPage = lazy(() => import("./pages/CommunityPage").then((m) => ({ default: m.CommunityPage })));
@@ -61,6 +62,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/app" element={<ProductsPage />} />
+          <Route path="/branding" element={<BrandingPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />
           <Route path="/osu/community" element={<OsuCommunityPage />} />
           <Route path="/osu/learn" element={<OsuLearningPage />} />

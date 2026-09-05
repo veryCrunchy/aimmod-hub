@@ -1,6 +1,7 @@
 {
   "updatedAt": "2026-09-05",
   "routes": {
+    "/branding": {"title":"AimMod Branding & Assets","description":"Download AimMod logos, icons, banners and social artwork. Brand colours, clear space and logo usage guidelines."},
     "/osu/pp-targets": {"title":"osu! PP Targets · AimMod Hub","description":"Find ranked osu! difficulties and compare full-combo PP at your chosen accuracy and mods. Open maps in AimMod for personal skill compatibility."},
     "/": {"title":"KovaaK's Analysis and Community · AimMod Hub","description":"Explore shared KovaaK's practice runs, scenarios, benchmarks and aim training guides on AimMod Hub."},
     "/app": {"title":"Download AimMod · AimMod Hub","description":"Choose AimMod for osu! or KovaaK's: replay analysis, coaching and practice tools for your game."},
