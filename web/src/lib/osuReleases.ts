@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config";
+
 export type OsuReleaseChannel = "stable" | "preview";
 export type OsuReleasePlatform = "windows" | "linux";
 
@@ -36,25 +38,11 @@ export interface OsuReleaseManifest {
 }
 
 const RELEASE_ROOT = "https://github.com/veryCrunchy/aimmod/releases/download";
-const RELEASE_API_ROOT = "https://api.github.com/repos/veryCrunchy/aimmod/releases";
 
 export const OSU_RELEASE_MANIFEST_URLS: Record<OsuReleaseChannel, string> = {
   stable: `${RELEASE_ROOT}/aimmod-osu-stable/aimmod-osu-stable.json`,
   preview: `${RELEASE_ROOT}/aimmod-osu-preview/aimmod-osu-preview.json`,
 };
-
-interface GitHubReleaseAsset {
-  name: string;
-  size: number;
-  digest: string;
-  browser_download_url: string;
-}
-
-interface GitHubRelease {
-  tag_name: string;
-  html_url: string;
-  assets: GitHubReleaseAsset[];
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -168,129 +156,14 @@ export function parseOsuReleaseManifest(value: unknown, expectedChannel: OsuRele
   return { ...value, assets: parsedAssets, installers: parsedInstallers } as unknown as OsuReleaseManifest;
 }
 
-export async function fetchOsuReleaseManifest(
-  channel: OsuReleaseChannel,
-  signal?: AbortSignal,
-): Promise<OsuReleaseManifest> {
-  let channelResponse: Response;
-  try {
-    channelResponse = await fetch(`${RELEASE_API_ROOT}/tags/aimmod-osu-${channel}`, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-cache",
-      signal,
-    });
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === "AbortError") throw reason;
-    throw new Error("Release information is temporarily unavailable.");
-  }
-
-  if (!channelResponse.ok) {
-    if (channelResponse.status === 404) {
-      throw new Error(`${channel === "stable" ? "Stable" : "Preview"} builds are not published yet.`);
-    }
-    throw new Error("Release information is temporarily unavailable.");
-  }
-
-  const channelRelease = parseGitHubRelease(await channelResponse.json());
-  const version = versionFromChannelAssets(channelRelease.assets, channel);
-  if (!version) throw new Error("The release channel returned an invalid manifest.");
-
-  let versionResponse: Response;
-  try {
-    versionResponse = await fetch(`${RELEASE_API_ROOT}/tags/aimmod-osu-v${version}`, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-cache",
-      signal,
-    });
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === "AbortError") throw reason;
-    throw new Error("Release information is temporarily unavailable.");
-  }
-
-  if (!versionResponse.ok) throw new Error("Release information is temporarily unavailable.");
-  const versionRelease = parseGitHubRelease(await versionResponse.json());
-  return manifestFromGitHubRelease(versionRelease, channel, version);
-}
-
-function parseGitHubRelease(value: unknown): GitHubRelease {
-  if (!isRecord(value) || typeof value.tag_name !== "string" || !isHttpsUrl(value.html_url) || !Array.isArray(value.assets)) {
-    throw new Error("The release channel returned an invalid manifest.");
-  }
-
-  const assets = value.assets.map((asset): GitHubReleaseAsset | null => {
-    if (
-      !isRecord(asset)
-      || typeof asset.name !== "string"
-      || typeof asset.size !== "number"
-      || !Number.isSafeInteger(asset.size)
-      || asset.size <= 0
-      || typeof asset.digest !== "string"
-      || !/^sha256:[a-f\d]{64}$/i.test(asset.digest)
-      || !isHttpsUrl(asset.browser_download_url)
-    ) return null;
-    return asset as unknown as GitHubReleaseAsset;
+export async function fetchOsuReleaseManifest(channel: OsuReleaseChannel, signal?: AbortSignal): Promise<OsuReleaseManifest> {
+  const response = await fetch(`${API_BASE_URL}/api/osu/v1/releases/${channel}`, {
+    headers: { Accept: "application/json" }, cache: "no-cache", signal,
   });
-
-  if (assets.some((asset) => asset === null)) throw new Error("The release channel returned an invalid manifest.");
-  return { tag_name: value.tag_name, html_url: value.html_url, assets: assets as GitHubReleaseAsset[] };
-}
-
-function versionFromChannelAssets(assets: GitHubReleaseAsset[], channel: OsuReleaseChannel) {
-  const escapedChannel = channel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`^AimMod\\.Osu-(\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?)-(?:win|linux)-${escapedChannel}-full\\.nupkg$`);
-  const versions = new Set(assets.map((asset) => pattern.exec(asset.name)?.[1]).filter((value): value is string => Boolean(value)));
-  return versions.size === 1 ? [...versions][0] : null;
-}
-
-function manifestFromGitHubRelease(release: GitHubRelease, channel: OsuReleaseChannel, version: string) {
-  const expectedTag = `aimmod-osu-v${version}`;
-  if (release.tag_name !== expectedTag) throw new Error("The release channel returned an invalid manifest.");
-
-  const get = (name: string) => release.assets.find((asset) => asset.name === name);
-  const assetValue = (name: string, operatingSystem: OsuReleasePlatform, runtimeIdentifier: "win-x64" | "linux-x64", format: "zip" | "tar.gz") => {
-    const asset = get(name);
-    return asset && {
-      operatingSystem,
-      runtimeIdentifier,
-      architecture: "x64",
-      format,
-      fileName: asset.name,
-      size: asset.size,
-      sha256: asset.digest.slice("sha256:".length),
-      downloadUrl: asset.browser_download_url,
-    };
-  };
-  const installerValue = (name: string, operatingSystem: OsuReleasePlatform, runtimeIdentifier: "win-x64" | "linux-x64", format: "exe" | "AppImage") => {
-    const asset = get(name);
-    return asset && {
-      operatingSystem,
-      runtimeIdentifier,
-      architecture: "x64",
-      format,
-      fileName: asset.name,
-      size: asset.size,
-      sha256: asset.digest.slice("sha256:".length),
-      downloadUrl: asset.browser_download_url,
-      supportsInAppUpdates: true,
-    };
-  };
-
-  return parseOsuReleaseManifest({
-    schemaVersion: 1,
-    product: "aimmod-osu",
-    channel,
-    version,
-    tag: expectedTag,
-    releaseUrl: release.html_url,
-    installers: [
-      installerValue(`AimMod.Osu-win-${channel}-Setup.exe`, "windows", "win-x64", "exe"),
-      installerValue(`AimMod.Osu-linux-${channel}.AppImage`, "linux", "linux-x64", "AppImage"),
-    ],
-    assets: [
-      assetValue(`aimmod-osu-${version}-win-x64.zip`, "windows", "win-x64", "zip"),
-      assetValue(`aimmod-osu-${version}-linux-x64.tar.gz`, "linux", "linux-x64", "tar.gz"),
-    ],
-  }, channel);
+  if (!response.ok) throw new Error(response.status === 404
+    ? `${channel === "stable" ? "Stable" : "Preview"} builds are not published yet.`
+    : "Release information is temporarily unavailable.");
+  return parseOsuReleaseManifest(await response.json(), channel);
 }
 
 export function findOsuReleaseAsset(manifest: OsuReleaseManifest, platform: OsuReleasePlatform) {

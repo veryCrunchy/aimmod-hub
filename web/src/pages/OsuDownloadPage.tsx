@@ -38,6 +38,7 @@ function useRelease(channel: OsuReleaseChannel) {
   const [manifest, setManifest] = useState<OsuReleaseManifest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,7 +47,7 @@ function useRelease(channel: OsuReleaseChannel) {
     setLoading(true);
 
     void fetchOsuReleaseManifest(channel, controller.signal)
-      .then((next) => setManifest(next))
+      .then((next) => { if (!controller.signal.aborted) setManifest(next); })
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : "Release information is temporarily unavailable.");
@@ -57,9 +58,9 @@ function useRelease(channel: OsuReleaseChannel) {
       });
 
     return () => controller.abort();
-  }, [channel]);
+  }, [channel, attempt]);
 
-  return { manifest, error, loading };
+  return { manifest, error, loading, retry: () => setAttempt(value => value + 1) };
 }
 
 function PlatformDownload({ platform, manifest, loading }: {
@@ -78,7 +79,7 @@ function PlatformDownload({ platform, manifest, loading }: {
           <span className="text-[11px] text-muted-2">{platform.detail}</span>
         </div>
         <div className="mt-2 text-[12px] text-muted">
-          {loading ? "Checking release channel..." : installer && manifest ? `${platform.packageName} · ${formatFileSize(installer.size)} · v${manifest.version}` : "No build is available in this channel."}
+          {loading ? "Checking release channel..." : installer && manifest ? `${platform.packageName} · ${formatFileSize(installer.size)} · v${manifest.version}` : "Download information is unavailable."}
         </div>
         {installer ? (
           <details className="mt-3 text-[10px] text-muted-2">
@@ -99,7 +100,7 @@ function PlatformDownload({ platform, manifest, loading }: {
 
 export function OsuDownloadPage() {
   const [channel, setChannel] = useState<OsuReleaseChannel>("stable");
-  const { manifest, error, loading } = useRelease(channel);
+  const { manifest, error, loading, retry } = useRelease(channel);
 
   return (
     <PageStack>
@@ -167,7 +168,7 @@ export function OsuDownloadPage() {
 
         {error ? (
           <div className="border-t border-line pt-4 text-[12px] text-muted">
-            <span className="text-text">{error}</span> Check the channel again soon or review its status on GitHub.
+            <p className="mb-3 text-text">{error}</p><Button onClick={retry}>Try again</Button>
           </div>
         ) : manifest ? (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-[10px] text-muted-2">

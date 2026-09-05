@@ -105,40 +105,15 @@ test("formats release asset sizes", () => {
   assert.equal(formatFileSize(1572864), "1.5 MB");
 });
 
-test("discovers browser downloads through GitHub's CORS-enabled release API", async () => {
-  const originalFetch = globalThis.fetch;
+test("reads the authoritative channel manifest instead of guessing from old packages", async t => {
   const calls: string[] = [];
-  globalThis.fetch = (async (input: string | URL | Request) => {
-    const url = input.toString();
-    calls.push(url);
-    const payload = url.endsWith("aimmod-osu-stable")
-      ? {
-          tag_name: "aimmod-osu-stable",
-          html_url: "https://github.com/veryCrunchy/aimmod/releases/tag/aimmod-osu-stable",
-          assets: [
-            githubAsset("AimMod.Osu-1.2.3-win-stable-full.nupkg"),
-            githubAsset("AimMod.Osu-1.2.3-linux-stable-full.nupkg"),
-          ],
-        }
-      : {
-          tag_name: "aimmod-osu-v1.2.3",
-          html_url: "https://github.com/veryCrunchy/aimmod/releases/tag/aimmod-osu-v1.2.3",
-          assets: [
-            githubAsset("AimMod.Osu-win-stable-Setup.exe"),
-            githubAsset("AimMod.Osu-linux-stable.AppImage"),
-            githubAsset("aimmod-osu-1.2.3-win-x64.zip"),
-            githubAsset("aimmod-osu-1.2.3-linux-x64.tar.gz"),
-          ],
-        };
-    return new Response(JSON.stringify(payload), { status: 200 });
-  }) as typeof fetch;
-
-  try {
-    const parsed = await fetchOsuReleaseManifest("stable");
-    assert.equal(parsed.version, "1.2.3");
-    assert.equal(findOsuInstaller(parsed, "windows")?.fileName, "AimMod.Osu-win-stable-Setup.exe");
-    assert.deepEqual(calls.map((url) => url.split("/").at(-1)), ["aimmod-osu-stable", "aimmod-osu-v1.2.3"]);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    calls.push(input.toString());
+    return new Response(JSON.stringify(manifest()), { status: 200 });
+  });
+  const parsed = await fetchOsuReleaseManifest("stable");
+  assert.equal(parsed.version, "1.2.3");
+  assert.equal(findOsuInstaller(parsed, "windows")?.fileName, "AimMod.Osu-win-stable-Setup.exe");
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].endsWith("/api/osu/v1/releases/stable"));
 });

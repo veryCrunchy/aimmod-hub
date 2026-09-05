@@ -123,6 +123,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 		playbackMetadata = osuServer
 	}
 	newOsuPlaybackHandler(playbackMetadata).register(mux, cfg.AllowedWebOrigin)
+	mux.Handle("/api/osu/v1/releases/", withCORS(cfg.AllowedWebOrigin, newOsuReleaseChannelHandler()))
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
