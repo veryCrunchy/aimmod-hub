@@ -7,6 +7,7 @@ import LearningPage from "./pages/LearningPage";
 import LearningTopicPage from "./pages/LearningTopicPage";
 import { OsuLearningPage } from "./pages/OsuLearningPage";
 import { RouteSeo } from "./components/PageSeo";
+import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
@@ -54,7 +55,7 @@ function AppRoutes() {
   return (
     <AppShell>
       <RouteSeo />
-      <Suspense fallback={<RouteLoading />}>
+      <RouteErrorBoundary><Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/app" element={<ProductsPage />} />
@@ -97,7 +98,7 @@ function AppRoutes() {
           <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
           <Route path="*" element={<section className="py-8"><h1 className="text-2xl">Page not found</h1><Link className="text-cyan" to="/">Return to AimMod Hub</Link></section>} />
         </Routes>
-      </Suspense>
+      </Suspense></RouteErrorBoundary>
     </AppShell>
   );
 }

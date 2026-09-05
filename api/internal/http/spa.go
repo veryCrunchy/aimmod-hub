@@ -365,9 +365,10 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 		// Serve hashed assets and other real files directly without preflight
 		// fs.Stat() checks so asset requests can't fail closed with a 500.
 		if isStaticAssetPath(p) {
-			fileServer.ServeHTTP(w, r)
+			fileServer.ServeHTTP(&spaStaticResponse{ResponseWriter: w, assetPath: p}, r)
 			return
 		}
+		w.Header().Set("Cache-Control", "no-store")
 
 		if p != "" {
 			indexPath := path.Join(p, "index.html")
