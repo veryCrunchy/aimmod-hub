@@ -116,7 +116,9 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/admin/osu/players", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	mux.Handle("/admin/osu/beatmaps", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
-	newOsuSyncHandler(hub.Store(), auth.media).register(mux, cfg.AllowedWebOrigin)
+	newOsuSyncHandler(hub.Store(), auth.media, osuServer).register(mux, cfg.AllowedWebOrigin)
+	newOsuProfileScoresHandler(hub.Store(), osuServer).register(mux, cfg.AllowedWebOrigin)
+	newOsuPlaybackHandler().register(mux, cfg.AllowedWebOrigin)
 	mux.Handle("/ingest/batch", withCORS(cfg.AllowedWebOrigin, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -203,6 +205,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))
 	mux.Handle("/robots.txt", newRobotsHandler(cfg.WebAppOrigin))
 	mux.Handle("/sitemap.xml", newSitemapHandler(cfg.WebAppOrigin))
+	mux.Handle("/social-preview.png", newSocialPreviewHandler(hub.Store()))
 	if hasLLMManifest(cfg) {
 		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))
 	}

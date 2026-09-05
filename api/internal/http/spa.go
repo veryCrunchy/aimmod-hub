@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"regexp"
@@ -21,11 +22,12 @@ import (
 )
 
 var (
-	reProfile    = regexp.MustCompile(`^/profiles/([^/]+)`)
-	reScenario   = regexp.MustCompile(`^/scenarios/([^/]+)$`)
-	reRun        = regexp.MustCompile(`^/runs/([^/]+)$`)
-	reLearn      = regexp.MustCompile(`^/learn/([^/]+)$`)
-	reLearnTopic = regexp.MustCompile(`^/learn/topics/([^/]+)$`)
+	reProfile      = regexp.MustCompile(`^/profiles/([^/]+)`)
+	reScenario     = regexp.MustCompile(`^/scenarios/([^/]+)$`)
+	reRun          = regexp.MustCompile(`^/runs/([^/]+)$`)
+	reLearn        = regexp.MustCompile(`^/learn/([^/]+)$`)
+	reLearnTopic   = regexp.MustCompile(`^/learn/topics/([^/]+)$`)
+	reSocialDetail = regexp.MustCompile(`^/(?:osu/(?:learn|replays|profiles)|learn(?:/topics)?|profiles|runs|scenarios)/[^/]+$`)
 )
 
 type pageMeta struct {
@@ -40,6 +42,7 @@ func (m pageMeta) inject(indexHTML string) string {
 	t := html.EscapeString(m.Title)
 	d := html.EscapeString(m.Description)
 	c := html.EscapeString(m.Canonical)
+	preview := html.EscapeString(m.socialImage())
 	block := fmt.Sprintf(
 		`<title>%s</title>
     <meta name="description" content="%s" />
@@ -49,17 +52,17 @@ func (m pageMeta) inject(indexHTML string) string {
     <meta property="og:type" content="%s" />
     <meta property="og:url" content="%s" />
     <meta property="og:site_name" content="AimMod Hub" />
-    <meta property="og:image" content="https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" />
+    <meta property="og:image" content="%s" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:alt" content="AimMod wordmark and forward-leaning monogram" />
+    <meta property="og:image:alt" content="%s" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" />
-    <meta name="twitter:image:alt" content="AimMod wordmark and forward-leaning monogram" />
+    <meta name="twitter:image" content="%s" />
+    <meta name="twitter:image:alt" content="%s" />
     <meta name="twitter:title" content="%s" />
     <meta name="twitter:description" content="%s" />`,
-		t, d, c, t, d, html.EscapeString(m.OGType), c, t, d,
+		t, d, c, t, d, html.EscapeString(m.OGType), c, preview, t, preview, t, t, d,
 	)
 	robots := "index, follow"
 	if m.NoIndex {
@@ -116,6 +119,24 @@ func (m pageMeta) inject(indexHTML string) string {
 		}
 		output.WriteString(raw)
 	}
+}
+
+func (m pageMeta) socialImage() string {
+	const brand = "https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png"
+	canonical, err := url.Parse(m.Canonical)
+	if err != nil || m.NoIndex || canonical.Host == "" {
+		return brand
+	}
+	route := strings.TrimRight(canonical.Path, "/")
+	if route == "" || route == "/app" || route == "/search" {
+		return brand
+	}
+	_, published := seo.Published.Routes[route]
+	detail := reSocialDetail.MatchString(route)
+	if !published && !detail {
+		return brand
+	}
+	return canonical.Scheme + "://" + canonical.Host + "/social-preview.png?path=" + url.QueryEscape(route) + "&v=1"
 }
 
 func isStaticAssetPath(p string) bool {

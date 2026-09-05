@@ -1,0 +1,53 @@
+import { createRequire } from "node:module";
+import { mkdirSync } from "node:fs";
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { playbackBeatmap } from "../tests/fixtures/osuPlaybackFixture";
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright");
+const rosu = require("rosu-pp-js");
+const base = process.env.PP_QA_URL || "http://127.0.0.1:5192";
+const browser = await chromium.launch({ channel: "chrome", headless: true });
+mkdirSync("../.qa/pp-targets", { recursive: true });
+try {
+  for (const width of [1440, 390]) {
+    const context = await browser.newContext({ viewport: { width, height: 950 } });
+    await context.addInitScript((base: string) => { (window as any).__AIMMOD_HUB__ = { apiBaseUrl: base }; }, base);
+    let files = 0;
+    await context.route("**/SearchBeatmapItems", (route: any) => route.fulfill({ json: { providers: [{ provider: 1, available: true }], items: [{ provider: 1, sourceId: "12" }] } }));
+    await context.route("**/GetBeatmapItem", (route: any) => route.fulfill({ json: { item: { sourceId: "12", difficulties: [{ beatmapId: "42", beatmapsetId: "12", checksum: createHash("md5").update(playbackBeatmap).digest("hex"), name: "Curves and repeats", title: "Playback verification", artist: "AimMod", creator: "AimMod", stars: 4, ruleset: 1, bpm: 120, lengthSeconds: 9 }] } } }));
+    await context.route("**/playback/beatmaps/42/file?*", (route: any) => { files++; return route.fulfill({ body: playbackBeatmap, contentType: "text/plain" }); });
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on("pageerror", (error: Error) => errors.push(error.message));
+    await page.goto(`${base}/osu/pp-targets`);
+    await page.getByText("Calculating difficulty", { exact: false }).waitFor({ state: "hidden", timeout: 30000 });
+    await page.locator("article dd").first().filter({ hasText: /pp$/ }).waitFor({ timeout: 30000 });
+    const map = new rosu.Beatmap(playbackBeatmap);
+    const calc = new rosu.Performance({ accuracy: 98, lazer: true, misses: 0 });
+    const result = calc.calculate(map);
+    assert.equal(await page.locator("article dd").first().innerText(), `${Math.round(result.pp)}pp`);
+    result.free(); calc.free(); map.free();
+    const count = files;
+    await page.reload();
+    await page.locator("article dd").first().filter({ hasText: /pp$/ }).waitFor({ timeout: 30000 });
+    assert.equal(files, count, "Reopening must reuse persistent calculation cache");
+    await page.getByRole("slider", { name: /Accuracy/ }).fill("99");
+    await page.getByRole("slider", { name: /Accuracy/ }).fill("97");
+    await page.locator("article dt").first().filter({ hasText: "97.0% FC" }).waitFor();
+    await page.waitForTimeout(1200);
+    assert.ok(!(await page.locator("article dd").first().innerText()).includes("Pending"));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.screenshot({ path: `../.qa/pp-targets/${width}.png`, fullPage: true });
+    assert.deepEqual(errors, []);
+    await page.goto(`${base}/osu/learn`);
+    await page.getByRole("searchbox", { name: "Find a guide" }).fill("overshoots");
+    assert.equal(await page.locator("article").count(), 1);
+    await page.getByRole("searchbox", { name: "Find a guide" }).fill("");
+    await page.getByLabel("With video resources").check();
+    assert.equal(await page.locator("article").count(), 3);
+    await page.screenshot({ path: `../.qa/pp-targets/knowledge-${width}.png`, fullPage: true });
+    await context.close();
+  }
+  console.log("PP targets: exact WASM/Node parity, persistent cache, rapid filter changes, mobile layout, knowledge filters PASS");
+} finally { await browser.close(); }

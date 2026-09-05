@@ -1,6 +1,7 @@
 {
   "updatedAt": "2026-09-05",
   "routes": {
+    "/osu/pp-targets": {"title":"osu! PP Targets · AimMod Hub","description":"Find ranked osu! difficulties and compare full-combo PP at your chosen accuracy and mods. Open maps in AimMod for personal skill compatibility."},
     "/": {"title":"KovaaK's Analysis and Community · AimMod Hub","description":"Explore shared KovaaK's practice runs, scenarios, benchmarks and aim training guides on AimMod Hub."},
     "/app": {"title":"Download AimMod · AimMod Hub","description":"Choose AimMod for osu! or KovaaK's: replay analysis, coaching and practice tools for your game."},
     "/app/kovaaks": {"title":"Download AimMod for KovaaK's · AimMod Hub","description":"Get AimMod for KovaaK's to review practice runs, inspect aim metrics and track your training."},
@@ -21,6 +22,44 @@
     "/osu/learn": {"title":"osu! Knowledge Base · AimMod Hub","description":"Practical osu! guides to PP, difficulty, replay review, pattern practice, mods and score comparison."}
   },
   "guides": [
+    {
+      "slug":"aim-misses-and-cursor-control",
+      "title":"Missing jumps? Separate aim errors from early and late taps",
+      "description":"Diagnose overshoots, undershoots and aim-tap coordination, then choose a focused practice exercise.",
+      "sections":[
+        {"title":"Start with three misses, not your worst miss","body":"Choose three recent attempts on one difficulty with identical mods and rate. Review a few objects before each miss at reduced playback speed. Record the object time, cursor position at the input and whether the cursor entered the target before or after that input. A miss alone cannot tell you whether spacing, timing or reading caused the error. If the replay cannot resolve the input clearly, mark it uncertain rather than prescribing an aim fix."},
+        {"title":"Find the mistake you actually repeat","body":"If the cursor is short of the target at the tap and reaches it afterwards, compare early tapping with incomplete movement. If it travels beyond the target, inspect whether the tap happened during the crossing or after leaving. If the cursor reaches the target but departs before the tap, work on coordination rather than simply moving faster. These are observations about cursor and input order; they do not establish what your eyes or hands intended."},
+        {"title":"Practice: controlled arrivals","body":"Suggested drill: choose a short jump section whose rhythm you can already tap comfortably. Play three attempts, concentrating on arriving at each target in time for the tap rather than rushing toward the next object. Reduce rate or spacing if nearly every jump breaks down, but change only one demand. Review the same misses afterwards. Count cursor-outside-at-input events as well as misses: a lucky pass is not the same as repeatable control."},
+        {"title":"Check transfer before increasing difficulty","body":"Replay the original section at its original settings, then try a second map with comparable spacing and rhythm. Compare several attempts rather than only the best one. If the practised section improves but the second map does not, keep the drill but add more pattern variety. If inputs remain early despite more controlled arrivals, switch your next practice focus to timing instead of continuing to increase spacing."},
+        {"title":"Watch and apply","body":"Tonehh's aim guide is an optional companion video. After watching, choose one idea to test against your own replay evidence. The exercises here are AimMod practice suggestions, not a transcript of the video or a guarantee that one aiming style works for everyone."}
+      ],
+      "sources":[{"title":"Watch: Tonehh - osu! How to ACTUALLY improve your aim, Part 1","url":"https://www.youtube.com/watch?v=WvF0TRXvsdA"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"}]
+    },
+    {
+      "slug":"streams-bursts-and-tapping-control",
+      "title":"Streams and bursts: find where your tapping breaks down",
+      "description":"Separate starting a burst, maintaining rhythm and aiming a stream before increasing speed or length.",
+      "sections":[
+        {"title":"Compare the beginning and end of the pattern","body":"Review several bursts at the same rate. Does the first tap miss, does accuracy drift through the middle, or do extra taps continue after the pattern ends? Also check whether the cursor remains on the objects. A late first input followed by steady spacing is a different problem from inputs that progressively fall behind. Do not label every stream miss as insufficient speed."},
+        {"title":"Use note spacing, not BPM alone","body":"BPM describes the musical tempo, not how many notes you must tap each second. Note subdivision matters: a quarter-beat stream and a half-beat pattern at the same BPM require different tapping rates. Compare subdivision, burst length, spacing and rate-changing mods together. Start with patterns you can distinguish visually and rhythmically before using them to assess sustained tapping."},
+        {"title":"Practice: change length before speed","body":"Suggested drill: select short bursts at a comfortable fixed rate. Play a few attempts with attention to starting and stopping at the intended notes. Then compare slightly longer bursts at the same rate. If short bursts are consistent but longer ones deteriorate, work on maintaining the rhythm over length. If both fail at their first note, review the transition into the burst before increasing duration. Keep breaks between sets; stop a session rather than trying to push through discomfort."},
+        {"title":"Keep a useful result log","body":"Record the map difficulty, rate, approximate burst length, accuracy and where the first error occurred. Compare a handful of fresh attempts on another day, not just repetitions immediately after memorising the section. Success means the same demand is more consistent across different patterns. A single high-speed pass or an improvement on only one memorised stream is not enough to establish that."}
+      ],
+      "sources":[{"title":"osu! wiki: Stream","url":"https://osu.ppy.sh/wiki/en/Beatmap/Pattern/osu!/Stream"},{"title":"Watch: osu! phd: a comprehensive introduction to every skill","url":"https://www.youtube.com/watch?v=uc99yWeP1h4"}]
+    },
+    {
+      "slug":"build-a-practice-session",
+      "title":"Turn your replay mistakes into a useful practice session",
+      "description":"Choose one recurring weakness, practise it in context and check improvement without chasing only your best score.",
+      "sections":[
+        {"title":"Choose one question for today","body":"Use recent plays that reflect your current ability. Pick a recurring observation across multiple attempts: leaving circles before tapping, losing rhythm after a burst, or breaking down when a pattern becomes denser. Write a testable question such as: can I keep inputs on target through this transition? Avoid goals like improve everything or gain a fixed amount of PP in one session."},
+        {"title":"Establish a baseline","body":"Choose two or three relevant maps and keep their difficulty, client, mods and rate fixed. Record a few attempts including failures. Note section misses and accuracy, not only the final score. Different patterns with similar stars are not interchangeable, so choose maps that actually contain the demand you want to test."},
+        {"title":"Repeat the section with its lead-in","body":"Suggested drill: practise the difficult section with enough preceding objects to preserve the transition and rhythm. Use a short group of repetitions with breaks rather than immediately retrying indefinitely. Change one variable, such as rate, only when you cannot complete enough of the pattern to learn from it. Do not remove every lead-in object: hitting an isolated pattern is not the same task as entering it during a full play."},
+        {"title":"Finish with a transfer check","body":"Return to the original settings for a complete attempt, then test a different map with the same demand. Compare the repeated error and the judgement breakdown with your baseline. Keep the exercise if both show improvement across attempts. If only the rehearsed section improves, add variation next time. If the error changes, update your practice question rather than repeating an exercise just because it once helped."},
+        {"title":"Review the week, not only the personal best","body":"Compare recent sessions using the same settings and retain unsuccessful attempts. Look for fewer repeated errors and more consistent results before raising the challenge. Keep score targets separate from practice targets: one seeks a strong result with existing skills; the other deliberately exposes a weakness. Use PP as one result measure, not the only definition of a productive session."}
+      ],
+      "sources":[{"title":"Watch: osu! phd: a comprehensive introduction to every skill","url":"https://www.youtube.com/watch?v=uc99yWeP1h4"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"},{"title":"osu! wiki: Game modifier","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier"}]
+    },
     {
       "slug":"performance-points-and-difficulty",
       "title":"osu! PP and star rating: what each number means",

@@ -1,0 +1,204 @@
+import { useEffect, useRef, useState } from "react";
+import { createReplaySession, type CoreSession, type SkinAssets } from "replayviewer-js";
+import { Play, Pause, RotateCcw, Maximize } from "lucide-react";
+import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackBeatmapUrl, playbackTimeLabel } from "../lib/osuPlayback";
+import { createAimModPlaybackSkin, disposeAimModPlaybackSkin } from "../lib/osuPlaybackSkin";
+import "./OsuReplayPlayer.css";
+
+export interface OsuReplayPlayerProps {
+  replayUrl: string;
+  beatmapId: number;
+  beatmapUrl?: string;
+  title?: string;
+  audioUrl?: string;
+  backgroundUrl?: string;
+  seekToMs?: number;
+  onTimeChange?: (beatmapMs: number) => void;
+}
+
+export function OsuReplayPlayer(props: OsuReplayPlayerProps) {
+  // A different play must not inherit a locally-selected song or beatmap file.
+  return <OsuReplayPlayerSession key={`${props.replayUrl}|${props.beatmapId}`} {...props} />;
+}
+
+function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapUrl, title = "Replay", audioUrl, backgroundUrl,
+  seekToMs, onTimeChange }: OsuReplayPlayerProps) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const root = useRef<HTMLElement>(null);
+  const session = useRef<CoreSession | null>(null);
+  const context = useRef<AudioContext | null>(null);
+  const callback = useRef(onTimeChange);
+  callback.current = onTimeChange;
+  const [attempt, setAttempt] = useState(0);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [stage, setStage] = useState("Loading replay and beatmap");
+  const [error, setError] = useState("");
+  const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(1);
+  const [rate, setRate] = useState(1);
+  const [volume, setVolume] = useState(.65);
+  const [audioAvailable, setAudioAvailable] = useState(false);
+  const [localAudio, setLocalAudio] = useState<File | null>(null);
+  const [localMap, setLocalMap] = useState<File | null>(null);
+  const [controlError, setControlError] = useState("");
+  const generation = useRef(0);
+
+  const pause = () => {
+    generation.current++;
+    session.current?.player.pause();
+    session.current?.audioSync.pause();
+    setPlaying(false);
+  };
+
+  useEffect(() => {
+    const abort = new AbortController();
+    let owned: CoreSession | null = null;
+    let skin: SkinAssets | null = null;
+    let background: ImageBitmap | null = null;
+    let frame = 0;
+    let audio: AudioContext | null = null;
+    setState("loading"); setError(""); setPlaying(false); setPosition(0); setControlError("");
+    setStage("Loading replay and beatmap");
+    const alive = () => !abort.signal.aborted;
+    const run = async () => {
+      const mapSource = localMap
+        ? localMap.size <= 4 * 1024 * 1024 ? localMap.arrayBuffer() : Promise.reject(new Error("The beatmap file exceeds the size limit."))
+        : fetchPlaybackBytes(beatmapUrl || osuPlaybackBeatmapUrl(beatmapId), 4 * 1024 * 1024, abort.signal);
+      const [replayBytes, mapBytes] = await Promise.all([
+        fetchPlaybackBytes(replayUrl, 64 * 1024 * 1024, abort.signal), mapSource,
+      ]);
+      if (!alive()) return;
+      setStage("Decoding replay inputs");
+      const parsed = await decodeOsuPlayback(replayBytes, mapBytes, abort.signal);
+      if (!alive()) return;
+      setStage("Preparing playback");
+      audio = new AudioContext(); context.current = audio;
+      skin = await createAimModPlaybackSkin();
+      let song: AudioBuffer | null = null;
+      if (localAudio || audioUrl) {
+        try {
+          const bytes = localAudio
+            ? localAudio.size <= 64 * 1024 * 1024 ? await localAudio.arrayBuffer() : null
+            : await fetchPlaybackBytes(audioUrl!, 64 * 1024 * 1024, abort.signal);
+          if (bytes) song = await audio.decodeAudioData(bytes);
+        } catch { if (alive()) setControlError("Song audio could not be opened. Choose another audio file."); }
+      }
+      if (backgroundUrl) {
+        try {
+          const bytes = await fetchPlaybackBytes(backgroundUrl, 8 * 1024 * 1024, abort.signal);
+          background = await createImageBitmap(new Blob([bytes]));
+        } catch { /* The play remains watchable without artwork. */ }
+      }
+      if (!alive()) return;
+      owned = await createReplaySession({ canvas: canvas.current!, audioContext: audio, replay: parsed.replay,
+        beatmapSet: { beatmap: parsed.beatmap, songBuffer: song, background, beatmapSounds: new Map() }, skin,
+        lazerDefaultsUrl: "/playback/aimmod-sounds", userRate: 1 });
+      if (!alive()) { owned.audioSync.pause(); owned.destroy(); return; }
+      session.current = owned;
+      owned.renderer.options.backgroundDim = .78;
+      owned.renderer.options.showURBar = true;
+      owned.renderer.options.showKeyOverlay = true;
+      owned.player.setClockFn(owned.audioSync.clockFn);
+      owned.audioSync.setSongVolume(.65); owned.audioSync.setEffectsVolume(.35);
+      owned.renderer.start();
+      setRate(1); setVolume(.65); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
+      let last = 0;
+      const tick = (time: number) => {
+        if (!alive() || !owned) return;
+        const current = owned.player.currentTimeMs;
+        if (current >= owned.player.durationMs) { owned.player.pause(); owned.audioSync.pause(); setPlaying(false); }
+        if (time - last > 80) { setPosition(current); callback.current?.(owned.timeMapper.toMapTime(current)); last = time; }
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    };
+    const hidden = () => {
+      if (document.hidden) {
+        generation.current++; owned?.player.pause(); owned?.audioSync.pause(); setPlaying(false);
+        void audio?.suspend().catch(() => undefined);
+      }
+    };
+    document.addEventListener("visibilitychange", hidden);
+    void run().catch(reason => {
+      if (alive()) { setError(reason instanceof Error ? reason.message : "This replay could not be opened."); setState("error"); }
+    }).finally(() => {
+      if (!alive()) { owned?.audioSync.pause(); owned?.destroy(); if (skin) disposeAimModPlaybackSkin(skin); background?.close(); }
+    });
+    return () => {
+      abort.abort(); generation.current++; cancelAnimationFrame(frame); document.removeEventListener("visibilitychange", hidden);
+      owned?.player.pause(); owned?.audioSync.pause(); owned?.destroy();
+      if (skin) disposeAimModPlaybackSkin(skin);
+      background?.close();
+      if (audio && audio.state !== "closed") void audio.close().catch(() => undefined);
+      if (session.current === owned) session.current = null;
+      if (context.current === audio) context.current = null;
+    };
+  }, [replayUrl, beatmapId, beatmapUrl, audioUrl, backgroundUrl, localMap, localAudio, attempt]);
+
+  const seek = async (time: number) => {
+    const current = session.current;
+    if (!current) return;
+    const token = ++generation.current;
+    current.player.seek(time); setPosition(time);
+    await current.audioSync.seekTo(time);
+    if (token !== generation.current || session.current !== current) return;
+    current.player.seek(time);
+  };
+
+  useEffect(() => {
+    const current = session.current;
+    if (state === "ready" && current && seekToMs != null && Number.isFinite(seekToMs)) {
+      void seek(Math.max(0, Math.min(current.player.durationMs, (seekToMs - current.introOffsetMs) / current.speed)))
+        .catch(() => setControlError("This replay could not seek to that moment."));
+    }
+  }, [seekToMs, state]);
+
+  const toggle = async () => {
+    const current = session.current;
+    if (!current) return;
+    if (current.player.isPlaying) { pause(); return; }
+    const token = ++generation.current;
+    try {
+      const start = current.player.currentTimeMs >= current.player.durationMs ? 0 : current.player.currentTimeMs;
+      await context.current?.resume();
+      await current.audioSync.playFrom(start);
+      if (token !== generation.current || session.current !== current) return;
+      current.player.seek(start); current.player.play(); setPlaying(true); setControlError("");
+    } catch { if (session.current === current) setControlError("Playback could not start. Try Play again."); }
+  };
+
+  return <section className="osu-replay-player" ref={root} aria-label={`${title} playback`} data-state={state}>
+    <div className="osu-replay-player__stage">
+      <canvas ref={canvas} aria-label="osu! replay playfield" />
+      {state !== "ready" ? <div className="osu-replay-player__overlay" role={state === "error" ? "alert" : "status"}>
+        <strong>{state === "error" ? "Playback unavailable" : stage}</strong>
+        {state === "loading" ? <progress aria-label={stage} /> : <><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>Try again</button>
+          <label className="osu-replay-player__file">Choose original .osu<input type="file" accept=".osu" onChange={event => setLocalMap(event.target.files?.[0] ?? null)} /></label></>}
+      </div> : null}
+    </div>
+    <div className="osu-replay-player__controls">
+      <div className="osu-replay-player__transport">
+        <button type="button" className="osu-replay-player__icon" disabled={state !== "ready"} onClick={() => void toggle()} aria-label={playing ? "Pause replay" : "Play replay"} title={playing ? "Pause replay" : "Play replay"}>{playing ? <Pause size={18} /> : <Play size={18} />}</button>
+        <button type="button" className="osu-replay-player__icon" aria-label="Restart replay" disabled={state !== "ready"} onClick={() => { pause(); void seek(0).catch(() => setControlError("Could not restart replay.")); }} title="Restart replay"><RotateCcw size={17} /></button>
+        <span className="osu-replay-player__time"><output aria-label="Replay position">{playbackTimeLabel(position)}</output> / {playbackTimeLabel(duration)}</span>
+        <label className="osu-replay-player__speed"><span>Speed</span><select value={rate} disabled={state !== "ready"} onChange={event => {
+          const value = Number(event.target.value); setRate(value);
+          const current = session.current;
+          if (current) { const time = current.player.currentTimeMs; current.audioSync.setUserRate(value); void seek(time).catch(() => setControlError("Could not change playback speed.")); }
+        }}>{[.25, .5, .75, 1, 1.25, 1.5, 2].map(value => <option key={value} value={value}>{value}x</option>)}</select></label>
+        <button type="button" className="osu-replay-player__fullscreen osu-replay-player__icon" aria-label="Fullscreen replay" title="Fullscreen replay" onClick={() => void (document.fullscreenElement ? document.exitFullscreen() : root.current?.requestFullscreen())?.catch(() => setControlError("Fullscreen is unavailable in this browser."))}><Maximize size={17} /></button>
+      </div>
+      <input aria-label="Replay timeline" className="osu-replay-player__timeline" type="range" min="0" max={duration} step="10" value={Math.min(position, duration)} disabled={state !== "ready"}
+        onChange={event => void seek(Number(event.target.value)).catch(() => setControlError("Could not seek replay."))} />
+      <div className="osu-replay-player__sound">
+        <span>{audioAvailable ? "Song + hitsounds" : "Hitsounds only"}</span>
+        <label>Volume<input aria-label="Playback volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={event => {
+          const value = Number(event.target.value); setVolume(value); session.current?.audioSync.setSongVolume(value); session.current?.audioSync.setEffectsVolume(value * .55);
+        }} /></label>
+        <label className="osu-replay-player__file">{audioAvailable ? "Change song" : "Add song audio"}<input type="file" accept="audio/*" onChange={event => setLocalAudio(event.target.files?.[0] ?? null)} /></label>
+      </div>
+      {controlError ? <p role="status" className="osu-replay-player__notice">{controlError}</p> : null}
+    </div>
+  </section>;
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -88,6 +89,10 @@ func (s *Server) SearchSkins(ctx context.Context, req *connect.Request[osuv1.Sea
 			}
 			if providerErr != nil {
 				result.status = baseSkinProviderStatus(provider)
+				result.status.Retryable = true
+				if provider == osuv1.SkinProvider_SKIN_PROVIDER_OSUCK {
+					result.status.BrowserUrl = "https://skins.osuck.net/search?query=" + url.QueryEscape(req.Msg.GetQuery())
+				}
 				result.status.Message = providerErr.Error()
 			} else {
 				result.status = s.skinProviderStatus(ctx, provider)
@@ -104,6 +109,7 @@ func (s *Server) SearchSkins(ctx context.Context, req *connect.Request[osuv1.Sea
 			response.NextPageTokens = append(response.NextPageTokens, &osuv1.SkinProviderCursor{Provider: result.provider, PageToken: result.next})
 		}
 	}
+	response.Items = deduplicateSkins(response.Items)
 	return connect.NewResponse(response), nil
 }
 
@@ -127,6 +133,7 @@ func (s *Server) GetSkin(ctx context.Context, req *connect.Request[osuv1.GetSkin
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, err)
 	}
+	normalizeSkinSources(item)
 	return connect.NewResponse(&osuv1.GetSkinResponse{Item: item, Provider: s.skinProviderStatus(ctx, provider)}), nil
 }
 
@@ -146,7 +153,11 @@ func (s *Server) GetSkinDownloadHandoff(ctx context.Context, req *connect.Reques
 		if !osuSkinsIDPattern.MatchString(sourceID) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("osuskins.net source_id must contain seven ASCII letters or digits"))
 		}
-		handoff = unavailableSkinHandoff(true, "osuskins.net requires an interactive Cloudflare Turnstile check before download. AimMod Hub does not bypass it.")
+		item, detailErr := s.osuSkins.detail(ctx, sourceID)
+		if detailErr != nil {
+			return nil, connect.NewError(connect.CodeUnavailable, detailErr)
+		}
+		handoff = item.DownloadHandoff
 	case osuv1.SkinProvider_SKIN_PROVIDER_OSUCK:
 		handoff, err = s.osuck.downloadHandoff(ctx, sourceID)
 	}
@@ -179,7 +190,13 @@ func (s *Server) skinProviderStatus(ctx context.Context, provider osuv1.SkinProv
 }
 
 func baseSkinProviderStatus(provider osuv1.SkinProvider) *osuv1.SkinProviderStatus {
-	return &osuv1.SkinProviderStatus{Provider: provider, CheckedAtIso: time.Now().UTC().Format(time.RFC3339)}
+	status := &osuv1.SkinProviderStatus{Provider: provider, CheckedAtIso: time.Now().UTC().Format(time.RFC3339)}
+	if provider == osuv1.SkinProvider_SKIN_PROVIDER_OSUCK {
+		status.BrowserUrl = "https://skins.osuck.net/"
+	} else if provider == osuv1.SkinProvider_SKIN_PROVIDER_OSU_SKINS {
+		status.BrowserUrl = "https://osuskins.net/"
+	}
+	return status
 }
 
 func requestedSkinProviders(input []osuv1.SkinProvider) ([]osuv1.SkinProvider, error) {

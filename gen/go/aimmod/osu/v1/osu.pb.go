@@ -388,6 +388,8 @@ const (
 	SkinDownloadHandoffKind_SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED SkinDownloadHandoffKind = 0
 	SkinDownloadHandoffKind_SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL  SkinDownloadHandoffKind = 1
 	SkinDownloadHandoffKind_SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE SkinDownloadHandoffKind = 2
+	// An interactive provider page, never an importable archive URL.
+	SkinDownloadHandoffKind_SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL SkinDownloadHandoffKind = 3
 )
 
 // Enum value maps for SkinDownloadHandoffKind.
@@ -396,11 +398,13 @@ var (
 		0: "SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED",
 		1: "SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL",
 		2: "SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE",
+		3: "SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL",
 	}
 	SkinDownloadHandoffKind_value = map[string]int32{
 		"SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED": 0,
 		"SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL":  1,
 		"SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE": 2,
+		"SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL": 3,
 	}
 )
 
@@ -1856,6 +1860,8 @@ type SkinProviderStatus struct {
 	ContractIsDocumented                    bool                   `protobuf:"varint,8,opt,name=contract_is_documented,json=contractIsDocumented,proto3" json:"contract_is_documented,omitempty"`
 	Message                                 string                 `protobuf:"bytes,9,opt,name=message,proto3" json:"message,omitempty"`
 	CheckedAtIso                            string                 `protobuf:"bytes,10,opt,name=checked_at_iso,json=checkedAtIso,proto3" json:"checked_at_iso,omitempty"`
+	BrowserUrl                              string                 `protobuf:"bytes,11,opt,name=browser_url,json=browserUrl,proto3" json:"browser_url,omitempty"`
+	Retryable                               bool                   `protobuf:"varint,12,opt,name=retryable,proto3" json:"retryable,omitempty"`
 	unknownFields                           protoimpl.UnknownFields
 	sizeCache                               protoimpl.SizeCache
 }
@@ -1958,6 +1964,20 @@ func (x *SkinProviderStatus) GetCheckedAtIso() string {
 		return x.CheckedAtIso
 	}
 	return ""
+}
+
+func (x *SkinProviderStatus) GetBrowserUrl() string {
+	if x != nil {
+		return x.BrowserUrl
+	}
+	return ""
+}
+
+func (x *SkinProviderStatus) GetRetryable() bool {
+	if x != nil {
+		return x.Retryable
+	}
+	return false
 }
 
 type SkinSearchFilters struct {
@@ -2249,6 +2269,8 @@ type SkinItem struct {
 	DownloadHandoff       *SkinDownloadHandoff   `protobuf:"bytes,17,opt,name=download_handoff,json=downloadHandoff,proto3" json:"download_handoff,omitempty"`
 	CountsAreApproximate  bool                   `protobuf:"varint,18,opt,name=counts_are_approximate,json=countsAreApproximate,proto3" json:"counts_are_approximate,omitempty"`
 	FileSizeIsApproximate bool                   `protobuf:"varint,19,opt,name=file_size_is_approximate,json=fileSizeIsApproximate,proto3" json:"file_size_is_approximate,omitempty"`
+	NormalizedId          string                 `protobuf:"bytes,20,opt,name=normalized_id,json=normalizedId,proto3" json:"normalized_id,omitempty"`
+	Sources               []*SkinSource          `protobuf:"bytes,21,rep,name=sources,proto3" json:"sources,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -2416,6 +2438,97 @@ func (x *SkinItem) GetFileSizeIsApproximate() bool {
 	return false
 }
 
+func (x *SkinItem) GetNormalizedId() string {
+	if x != nil {
+		return x.NormalizedId
+	}
+	return ""
+}
+
+func (x *SkinItem) GetSources() []*SkinSource {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+type SkinSource struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Provider        SkinProvider           `protobuf:"varint,1,opt,name=provider,proto3,enum=aimmod.osu.v1.SkinProvider" json:"provider,omitempty"`
+	SourceId        string                 `protobuf:"bytes,2,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	PageUrl         string                 `protobuf:"bytes,3,opt,name=page_url,json=pageUrl,proto3" json:"page_url,omitempty"`
+	DownloadHandoff *SkinDownloadHandoff   `protobuf:"bytes,4,opt,name=download_handoff,json=downloadHandoff,proto3" json:"download_handoff,omitempty"`
+	// Preserve provider variant identity; an empty value means unspecified.
+	Variant       string `protobuf:"bytes,5,opt,name=variant,proto3" json:"variant,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SkinSource) Reset() {
+	*x = SkinSource{}
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SkinSource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SkinSource) ProtoMessage() {}
+
+func (x *SkinSource) ProtoReflect() protoreflect.Message {
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SkinSource.ProtoReflect.Descriptor instead.
+func (*SkinSource) Descriptor() ([]byte, []int) {
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *SkinSource) GetProvider() SkinProvider {
+	if x != nil {
+		return x.Provider
+	}
+	return SkinProvider_SKIN_PROVIDER_UNSPECIFIED
+}
+
+func (x *SkinSource) GetSourceId() string {
+	if x != nil {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (x *SkinSource) GetPageUrl() string {
+	if x != nil {
+		return x.PageUrl
+	}
+	return ""
+}
+
+func (x *SkinSource) GetDownloadHandoff() *SkinDownloadHandoff {
+	if x != nil {
+		return x.DownloadHandoff
+	}
+	return nil
+}
+
+func (x *SkinSource) GetVariant() string {
+	if x != nil {
+		return x.Variant
+	}
+	return ""
+}
+
 type GetSkinProviderStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Providers     []SkinProvider         `protobuf:"varint,1,rep,packed,name=providers,proto3,enum=aimmod.osu.v1.SkinProvider" json:"providers,omitempty"`
@@ -2425,7 +2538,7 @@ type GetSkinProviderStatusRequest struct {
 
 func (x *GetSkinProviderStatusRequest) Reset() {
 	*x = GetSkinProviderStatusRequest{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[22]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2437,7 +2550,7 @@ func (x *GetSkinProviderStatusRequest) String() string {
 func (*GetSkinProviderStatusRequest) ProtoMessage() {}
 
 func (x *GetSkinProviderStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[22]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2450,7 +2563,7 @@ func (x *GetSkinProviderStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinProviderStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetSkinProviderStatusRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{22}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetSkinProviderStatusRequest) GetProviders() []SkinProvider {
@@ -2469,7 +2582,7 @@ type GetSkinProviderStatusResponse struct {
 
 func (x *GetSkinProviderStatusResponse) Reset() {
 	*x = GetSkinProviderStatusResponse{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[23]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2481,7 +2594,7 @@ func (x *GetSkinProviderStatusResponse) String() string {
 func (*GetSkinProviderStatusResponse) ProtoMessage() {}
 
 func (x *GetSkinProviderStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[23]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2494,7 +2607,7 @@ func (x *GetSkinProviderStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinProviderStatusResponse.ProtoReflect.Descriptor instead.
 func (*GetSkinProviderStatusResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{23}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetSkinProviderStatusResponse) GetProviders() []*SkinProviderStatus {
@@ -2518,7 +2631,7 @@ type SearchSkinsRequest struct {
 
 func (x *SearchSkinsRequest) Reset() {
 	*x = SearchSkinsRequest{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[24]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2530,7 +2643,7 @@ func (x *SearchSkinsRequest) String() string {
 func (*SearchSkinsRequest) ProtoMessage() {}
 
 func (x *SearchSkinsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[24]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2543,7 +2656,7 @@ func (x *SearchSkinsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchSkinsRequest.ProtoReflect.Descriptor instead.
 func (*SearchSkinsRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{24}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SearchSkinsRequest) GetQuery() string {
@@ -2599,7 +2712,7 @@ type SearchSkinsResponse struct {
 
 func (x *SearchSkinsResponse) Reset() {
 	*x = SearchSkinsResponse{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[25]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2611,7 +2724,7 @@ func (x *SearchSkinsResponse) String() string {
 func (*SearchSkinsResponse) ProtoMessage() {}
 
 func (x *SearchSkinsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[25]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2737,7 @@ func (x *SearchSkinsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchSkinsResponse.ProtoReflect.Descriptor instead.
 func (*SearchSkinsResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{25}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SearchSkinsResponse) GetItems() []*SkinItem {
@@ -2658,7 +2771,7 @@ type GetSkinRequest struct {
 
 func (x *GetSkinRequest) Reset() {
 	*x = GetSkinRequest{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[26]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2670,7 +2783,7 @@ func (x *GetSkinRequest) String() string {
 func (*GetSkinRequest) ProtoMessage() {}
 
 func (x *GetSkinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[26]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2683,7 +2796,7 @@ func (x *GetSkinRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinRequest.ProtoReflect.Descriptor instead.
 func (*GetSkinRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{26}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetSkinRequest) GetProvider() SkinProvider {
@@ -2710,7 +2823,7 @@ type GetSkinResponse struct {
 
 func (x *GetSkinResponse) Reset() {
 	*x = GetSkinResponse{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[27]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2722,7 +2835,7 @@ func (x *GetSkinResponse) String() string {
 func (*GetSkinResponse) ProtoMessage() {}
 
 func (x *GetSkinResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[27]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2735,7 +2848,7 @@ func (x *GetSkinResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinResponse.ProtoReflect.Descriptor instead.
 func (*GetSkinResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{27}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetSkinResponse) GetItem() *SkinItem {
@@ -2762,7 +2875,7 @@ type GetSkinDownloadHandoffRequest struct {
 
 func (x *GetSkinDownloadHandoffRequest) Reset() {
 	*x = GetSkinDownloadHandoffRequest{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[28]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2774,7 +2887,7 @@ func (x *GetSkinDownloadHandoffRequest) String() string {
 func (*GetSkinDownloadHandoffRequest) ProtoMessage() {}
 
 func (x *GetSkinDownloadHandoffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[28]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2787,7 +2900,7 @@ func (x *GetSkinDownloadHandoffRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinDownloadHandoffRequest.ProtoReflect.Descriptor instead.
 func (*GetSkinDownloadHandoffRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{28}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetSkinDownloadHandoffRequest) GetProvider() SkinProvider {
@@ -2814,7 +2927,7 @@ type GetSkinDownloadHandoffResponse struct {
 
 func (x *GetSkinDownloadHandoffResponse) Reset() {
 	*x = GetSkinDownloadHandoffResponse{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[29]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2826,7 +2939,7 @@ func (x *GetSkinDownloadHandoffResponse) String() string {
 func (*GetSkinDownloadHandoffResponse) ProtoMessage() {}
 
 func (x *GetSkinDownloadHandoffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[29]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2839,7 +2952,7 @@ func (x *GetSkinDownloadHandoffResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSkinDownloadHandoffResponse.ProtoReflect.Descriptor instead.
 func (*GetSkinDownloadHandoffResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{29}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GetSkinDownloadHandoffResponse) GetHandoff() *SkinDownloadHandoff {
@@ -2868,7 +2981,7 @@ type OfficialUserTeam struct {
 
 func (x *OfficialUserTeam) Reset() {
 	*x = OfficialUserTeam{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[30]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2880,7 +2993,7 @@ func (x *OfficialUserTeam) String() string {
 func (*OfficialUserTeam) ProtoMessage() {}
 
 func (x *OfficialUserTeam) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[30]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2893,7 +3006,7 @@ func (x *OfficialUserTeam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfficialUserTeam.ProtoReflect.Descriptor instead.
 func (*OfficialUserTeam) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{30}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *OfficialUserTeam) GetId() uint64 {
@@ -2937,7 +3050,7 @@ type OfficialUserGradeCounts struct {
 
 func (x *OfficialUserGradeCounts) Reset() {
 	*x = OfficialUserGradeCounts{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[31]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2949,7 +3062,7 @@ func (x *OfficialUserGradeCounts) String() string {
 func (*OfficialUserGradeCounts) ProtoMessage() {}
 
 func (x *OfficialUserGradeCounts) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[31]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2962,7 +3075,7 @@ func (x *OfficialUserGradeCounts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfficialUserGradeCounts.ProtoReflect.Descriptor instead.
 func (*OfficialUserGradeCounts) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{31}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *OfficialUserGradeCounts) GetSsh() uint32 {
@@ -3020,7 +3133,7 @@ type OfficialUserStatistics struct {
 
 func (x *OfficialUserStatistics) Reset() {
 	*x = OfficialUserStatistics{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[32]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3032,7 +3145,7 @@ func (x *OfficialUserStatistics) String() string {
 func (*OfficialUserStatistics) ProtoMessage() {}
 
 func (x *OfficialUserStatistics) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[32]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3045,7 +3158,7 @@ func (x *OfficialUserStatistics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfficialUserStatistics.ProtoReflect.Descriptor instead.
 func (*OfficialUserStatistics) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{32}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *OfficialUserStatistics) GetPp() float64 {
@@ -3153,7 +3266,7 @@ type OfficialUserProfile struct {
 
 func (x *OfficialUserProfile) Reset() {
 	*x = OfficialUserProfile{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[33]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3165,7 +3278,7 @@ func (x *OfficialUserProfile) String() string {
 func (*OfficialUserProfile) ProtoMessage() {}
 
 func (x *OfficialUserProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[33]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3178,7 +3291,7 @@ func (x *OfficialUserProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfficialUserProfile.ProtoReflect.Descriptor instead.
 func (*OfficialUserProfile) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{33}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *OfficialUserProfile) GetUserId() uint64 {
@@ -3283,7 +3396,7 @@ type GetOfficialUserProfileRequest struct {
 
 func (x *GetOfficialUserProfileRequest) Reset() {
 	*x = GetOfficialUserProfileRequest{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[34]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3295,7 +3408,7 @@ func (x *GetOfficialUserProfileRequest) String() string {
 func (*GetOfficialUserProfileRequest) ProtoMessage() {}
 
 func (x *GetOfficialUserProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[34]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3308,7 +3421,7 @@ func (x *GetOfficialUserProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOfficialUserProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetOfficialUserProfileRequest) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{34}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetOfficialUserProfileRequest) GetIdentifier() string {
@@ -3342,7 +3455,7 @@ type GetOfficialUserProfileResponse struct {
 
 func (x *GetOfficialUserProfileResponse) Reset() {
 	*x = GetOfficialUserProfileResponse{}
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[35]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3354,7 +3467,7 @@ func (x *GetOfficialUserProfileResponse) String() string {
 func (*GetOfficialUserProfileResponse) ProtoMessage() {}
 
 func (x *GetOfficialUserProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[35]
+	mi := &file_aimmod_osu_v1_osu_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3367,7 +3480,7 @@ func (x *GetOfficialUserProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOfficialUserProfileResponse.ProtoReflect.Descriptor instead.
 func (*GetOfficialUserProfileResponse) Descriptor() ([]byte, []int) {
-	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{35}
+	return file_aimmod_osu_v1_osu_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *GetOfficialUserProfileResponse) GetProfile() *OfficialUserProfile {
@@ -3520,7 +3633,7 @@ const file_aimmod_osu_v1_osu_proto_rawDesc = "" +
 	"\x12SkinProviderCursor\x127\n" +
 	"\bprovider\x18\x01 \x01(\x0e2\x1b.aimmod.osu.v1.SkinProviderR\bprovider\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\"\xfd\x03\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\"\xbc\x04\n" +
 	"\x12SkinProviderStatus\x127\n" +
 	"\bprovider\x18\x01 \x01(\x0e2\x1b.aimmod.osu.v1.SkinProviderR\bprovider\x12\x1c\n" +
 	"\tavailable\x18\x02 \x01(\bR\tavailable\x12'\n" +
@@ -3532,7 +3645,10 @@ const file_aimmod_osu_v1_osu_proto_rawDesc = "" +
 	"\x16contract_is_documented\x18\b \x01(\bR\x14contractIsDocumented\x12\x18\n" +
 	"\amessage\x18\t \x01(\tR\amessage\x12$\n" +
 	"\x0echecked_at_iso\x18\n" +
-	" \x01(\tR\fcheckedAtIso\"\xf6\x01\n" +
+	" \x01(\tR\fcheckedAtIso\x12\x1f\n" +
+	"\vbrowser_url\x18\v \x01(\tR\n" +
+	"browserUrl\x12\x1c\n" +
+	"\tretryable\x18\f \x01(\bR\tretryable\"\xf6\x01\n" +
 	"\x11SkinSearchFilters\x122\n" +
 	"\brulesets\x18\x01 \x03(\x0e2\x16.aimmod.osu.v1.RulesetR\brulesets\x12!\n" +
 	"\faspect_ratio\x18\x02 \x01(\tR\vaspectRatio\x12\x18\n" +
@@ -3557,7 +3673,7 @@ const file_aimmod_osu_v1_osu_proto_rawDesc = "" +
 	"!requires_interactive_verification\x18\b \x01(\bR\x1frequiresInteractiveVerification\x12$\n" +
 	"\x0eexpires_at_iso\x18\t \x01(\tR\fexpiresAtIso\x12\x18\n" +
 	"\amessage\x18\n" +
-	" \x01(\tR\amessage\"\xa8\x06\n" +
+	" \x01(\tR\amessage\"\x82\a\n" +
 	"\bSkinItem\x127\n" +
 	"\bprovider\x18\x01 \x01(\x0e2\x1b.aimmod.osu.v1.SkinProviderR\bprovider\x12\x1b\n" +
 	"\tsource_id\x18\x02 \x01(\tR\bsourceId\x12\x12\n" +
@@ -3579,9 +3695,18 @@ const file_aimmod_osu_v1_osu_proto_rawDesc = "" +
 	"\vscreenshots\x18\x10 \x03(\v2\x1d.aimmod.osu.v1.SkinScreenshotR\vscreenshots\x12M\n" +
 	"\x10download_handoff\x18\x11 \x01(\v2\".aimmod.osu.v1.SkinDownloadHandoffR\x0fdownloadHandoff\x124\n" +
 	"\x16counts_are_approximate\x18\x12 \x01(\bR\x14countsAreApproximate\x127\n" +
-	"\x18file_size_is_approximate\x18\x13 \x01(\bR\x15fileSizeIsApproximateB\f\n" +
+	"\x18file_size_is_approximate\x18\x13 \x01(\bR\x15fileSizeIsApproximate\x12#\n" +
+	"\rnormalized_id\x18\x14 \x01(\tR\fnormalizedId\x123\n" +
+	"\asources\x18\x15 \x03(\v2\x19.aimmod.osu.v1.SkinSourceR\asourcesB\f\n" +
 	"\n" +
-	"_sensitive\"Y\n" +
+	"_sensitive\"\xe6\x01\n" +
+	"\n" +
+	"SkinSource\x127\n" +
+	"\bprovider\x18\x01 \x01(\x0e2\x1b.aimmod.osu.v1.SkinProviderR\bprovider\x12\x1b\n" +
+	"\tsource_id\x18\x02 \x01(\tR\bsourceId\x12\x19\n" +
+	"\bpage_url\x18\x03 \x01(\tR\apageUrl\x12M\n" +
+	"\x10download_handoff\x18\x04 \x01(\v2\".aimmod.osu.v1.SkinDownloadHandoffR\x0fdownloadHandoff\x12\x18\n" +
+	"\avariant\x18\x05 \x01(\tR\avariant\"Y\n" +
 	"\x1cGetSkinProviderStatusRequest\x129\n" +
 	"\tproviders\x18\x01 \x03(\x0e2\x1b.aimmod.osu.v1.SkinProviderR\tproviders\"`\n" +
 	"\x1dGetSkinProviderStatusResponse\x12?\n" +
@@ -3700,11 +3825,12 @@ const file_aimmod_osu_v1_osu_proto_rawDesc = "" +
 	"\rSortDirection\x12\x1e\n" +
 	"\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18SORT_DIRECTION_ASCENDING\x10\x01\x12\x1d\n" +
-	"\x19SORT_DIRECTION_DESCENDING\x10\x02*\x9c\x01\n" +
+	"\x19SORT_DIRECTION_DESCENDING\x10\x02*\xc8\x01\n" +
 	"\x17SkinDownloadHandoffKind\x12*\n" +
 	"&SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED\x10\x00\x12)\n" +
 	"%SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL\x10\x01\x12*\n" +
-	"&SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE\x10\x02*\x89\x01\n" +
+	"&SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE\x10\x02\x12*\n" +
+	"&SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL\x10\x03*\x89\x01\n" +
 	"\x15OfficialUserLookupKey\x12(\n" +
 	"$OFFICIAL_USER_LOOKUP_KEY_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bOFFICIAL_USER_LOOKUP_KEY_ID\x10\x01\x12%\n" +
@@ -3734,7 +3860,7 @@ func file_aimmod_osu_v1_osu_proto_rawDescGZIP() []byte {
 }
 
 var file_aimmod_osu_v1_osu_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
-var file_aimmod_osu_v1_osu_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
+var file_aimmod_osu_v1_osu_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_aimmod_osu_v1_osu_proto_goTypes = []any{
 	(Provider)(0),                          // 0: aimmod.osu.v1.Provider
 	(SkinProvider)(0),                      // 1: aimmod.osu.v1.SkinProvider
@@ -3767,20 +3893,21 @@ var file_aimmod_osu_v1_osu_proto_goTypes = []any{
 	(*SkinScreenshot)(nil),                 // 28: aimmod.osu.v1.SkinScreenshot
 	(*SkinDownloadHandoff)(nil),            // 29: aimmod.osu.v1.SkinDownloadHandoff
 	(*SkinItem)(nil),                       // 30: aimmod.osu.v1.SkinItem
-	(*GetSkinProviderStatusRequest)(nil),   // 31: aimmod.osu.v1.GetSkinProviderStatusRequest
-	(*GetSkinProviderStatusResponse)(nil),  // 32: aimmod.osu.v1.GetSkinProviderStatusResponse
-	(*SearchSkinsRequest)(nil),             // 33: aimmod.osu.v1.SearchSkinsRequest
-	(*SearchSkinsResponse)(nil),            // 34: aimmod.osu.v1.SearchSkinsResponse
-	(*GetSkinRequest)(nil),                 // 35: aimmod.osu.v1.GetSkinRequest
-	(*GetSkinResponse)(nil),                // 36: aimmod.osu.v1.GetSkinResponse
-	(*GetSkinDownloadHandoffRequest)(nil),  // 37: aimmod.osu.v1.GetSkinDownloadHandoffRequest
-	(*GetSkinDownloadHandoffResponse)(nil), // 38: aimmod.osu.v1.GetSkinDownloadHandoffResponse
-	(*OfficialUserTeam)(nil),               // 39: aimmod.osu.v1.OfficialUserTeam
-	(*OfficialUserGradeCounts)(nil),        // 40: aimmod.osu.v1.OfficialUserGradeCounts
-	(*OfficialUserStatistics)(nil),         // 41: aimmod.osu.v1.OfficialUserStatistics
-	(*OfficialUserProfile)(nil),            // 42: aimmod.osu.v1.OfficialUserProfile
-	(*GetOfficialUserProfileRequest)(nil),  // 43: aimmod.osu.v1.GetOfficialUserProfileRequest
-	(*GetOfficialUserProfileResponse)(nil), // 44: aimmod.osu.v1.GetOfficialUserProfileResponse
+	(*SkinSource)(nil),                     // 31: aimmod.osu.v1.SkinSource
+	(*GetSkinProviderStatusRequest)(nil),   // 32: aimmod.osu.v1.GetSkinProviderStatusRequest
+	(*GetSkinProviderStatusResponse)(nil),  // 33: aimmod.osu.v1.GetSkinProviderStatusResponse
+	(*SearchSkinsRequest)(nil),             // 34: aimmod.osu.v1.SearchSkinsRequest
+	(*SearchSkinsResponse)(nil),            // 35: aimmod.osu.v1.SearchSkinsResponse
+	(*GetSkinRequest)(nil),                 // 36: aimmod.osu.v1.GetSkinRequest
+	(*GetSkinResponse)(nil),                // 37: aimmod.osu.v1.GetSkinResponse
+	(*GetSkinDownloadHandoffRequest)(nil),  // 38: aimmod.osu.v1.GetSkinDownloadHandoffRequest
+	(*GetSkinDownloadHandoffResponse)(nil), // 39: aimmod.osu.v1.GetSkinDownloadHandoffResponse
+	(*OfficialUserTeam)(nil),               // 40: aimmod.osu.v1.OfficialUserTeam
+	(*OfficialUserGradeCounts)(nil),        // 41: aimmod.osu.v1.OfficialUserGradeCounts
+	(*OfficialUserStatistics)(nil),         // 42: aimmod.osu.v1.OfficialUserStatistics
+	(*OfficialUserProfile)(nil),            // 43: aimmod.osu.v1.OfficialUserProfile
+	(*GetOfficialUserProfileRequest)(nil),  // 44: aimmod.osu.v1.GetOfficialUserProfileRequest
+	(*GetOfficialUserProfileResponse)(nil), // 45: aimmod.osu.v1.GetOfficialUserProfileResponse
 }
 var file_aimmod_osu_v1_osu_proto_depIdxs = []int32{
 	0,  // 0: aimmod.osu.v1.ProviderCursor.provider:type_name -> aimmod.osu.v1.Provider
@@ -3822,53 +3949,56 @@ var file_aimmod_osu_v1_osu_proto_depIdxs = []int32{
 	3,  // 36: aimmod.osu.v1.SkinItem.rulesets:type_name -> aimmod.osu.v1.Ruleset
 	28, // 37: aimmod.osu.v1.SkinItem.screenshots:type_name -> aimmod.osu.v1.SkinScreenshot
 	29, // 38: aimmod.osu.v1.SkinItem.download_handoff:type_name -> aimmod.osu.v1.SkinDownloadHandoff
-	1,  // 39: aimmod.osu.v1.GetSkinProviderStatusRequest.providers:type_name -> aimmod.osu.v1.SkinProvider
-	26, // 40: aimmod.osu.v1.GetSkinProviderStatusResponse.providers:type_name -> aimmod.osu.v1.SkinProviderStatus
-	1,  // 41: aimmod.osu.v1.SearchSkinsRequest.providers:type_name -> aimmod.osu.v1.SkinProvider
-	27, // 42: aimmod.osu.v1.SearchSkinsRequest.filters:type_name -> aimmod.osu.v1.SkinSearchFilters
-	5,  // 43: aimmod.osu.v1.SearchSkinsRequest.sort:type_name -> aimmod.osu.v1.SkinSort
-	6,  // 44: aimmod.osu.v1.SearchSkinsRequest.direction:type_name -> aimmod.osu.v1.SortDirection
-	25, // 45: aimmod.osu.v1.SearchSkinsRequest.page_tokens:type_name -> aimmod.osu.v1.SkinProviderCursor
-	30, // 46: aimmod.osu.v1.SearchSkinsResponse.items:type_name -> aimmod.osu.v1.SkinItem
-	25, // 47: aimmod.osu.v1.SearchSkinsResponse.next_page_tokens:type_name -> aimmod.osu.v1.SkinProviderCursor
-	26, // 48: aimmod.osu.v1.SearchSkinsResponse.providers:type_name -> aimmod.osu.v1.SkinProviderStatus
-	1,  // 49: aimmod.osu.v1.GetSkinRequest.provider:type_name -> aimmod.osu.v1.SkinProvider
-	30, // 50: aimmod.osu.v1.GetSkinResponse.item:type_name -> aimmod.osu.v1.SkinItem
-	26, // 51: aimmod.osu.v1.GetSkinResponse.provider:type_name -> aimmod.osu.v1.SkinProviderStatus
-	1,  // 52: aimmod.osu.v1.GetSkinDownloadHandoffRequest.provider:type_name -> aimmod.osu.v1.SkinProvider
-	29, // 53: aimmod.osu.v1.GetSkinDownloadHandoffResponse.handoff:type_name -> aimmod.osu.v1.SkinDownloadHandoff
-	26, // 54: aimmod.osu.v1.GetSkinDownloadHandoffResponse.provider:type_name -> aimmod.osu.v1.SkinProviderStatus
-	40, // 55: aimmod.osu.v1.OfficialUserStatistics.grade_counts:type_name -> aimmod.osu.v1.OfficialUserGradeCounts
-	3,  // 56: aimmod.osu.v1.OfficialUserProfile.default_ruleset:type_name -> aimmod.osu.v1.Ruleset
-	41, // 57: aimmod.osu.v1.OfficialUserProfile.statistics:type_name -> aimmod.osu.v1.OfficialUserStatistics
-	39, // 58: aimmod.osu.v1.OfficialUserProfile.team:type_name -> aimmod.osu.v1.OfficialUserTeam
-	8,  // 59: aimmod.osu.v1.GetOfficialUserProfileRequest.lookup_key:type_name -> aimmod.osu.v1.OfficialUserLookupKey
-	3,  // 60: aimmod.osu.v1.GetOfficialUserProfileRequest.ruleset:type_name -> aimmod.osu.v1.Ruleset
-	42, // 61: aimmod.osu.v1.GetOfficialUserProfileResponse.profile:type_name -> aimmod.osu.v1.OfficialUserProfile
-	10, // 62: aimmod.osu.v1.GetOfficialUserProfileResponse.provider:type_name -> aimmod.osu.v1.ProviderStatus
-	11, // 63: aimmod.osu.v1.OsuService.GetProviderStatus:input_type -> aimmod.osu.v1.GetProviderStatusRequest
-	19, // 64: aimmod.osu.v1.OsuService.SearchBeatmapItems:input_type -> aimmod.osu.v1.SearchBeatmapItemsRequest
-	21, // 65: aimmod.osu.v1.OsuService.GetBeatmapItem:input_type -> aimmod.osu.v1.GetBeatmapItemRequest
-	23, // 66: aimmod.osu.v1.OsuService.GetDownloadHandoff:input_type -> aimmod.osu.v1.GetDownloadHandoffRequest
-	31, // 67: aimmod.osu.v1.OsuService.GetSkinProviderStatus:input_type -> aimmod.osu.v1.GetSkinProviderStatusRequest
-	33, // 68: aimmod.osu.v1.OsuService.SearchSkins:input_type -> aimmod.osu.v1.SearchSkinsRequest
-	35, // 69: aimmod.osu.v1.OsuService.GetSkin:input_type -> aimmod.osu.v1.GetSkinRequest
-	37, // 70: aimmod.osu.v1.OsuService.GetSkinDownloadHandoff:input_type -> aimmod.osu.v1.GetSkinDownloadHandoffRequest
-	43, // 71: aimmod.osu.v1.OsuService.GetOfficialUserProfile:input_type -> aimmod.osu.v1.GetOfficialUserProfileRequest
-	12, // 72: aimmod.osu.v1.OsuService.GetProviderStatus:output_type -> aimmod.osu.v1.GetProviderStatusResponse
-	20, // 73: aimmod.osu.v1.OsuService.SearchBeatmapItems:output_type -> aimmod.osu.v1.SearchBeatmapItemsResponse
-	22, // 74: aimmod.osu.v1.OsuService.GetBeatmapItem:output_type -> aimmod.osu.v1.GetBeatmapItemResponse
-	24, // 75: aimmod.osu.v1.OsuService.GetDownloadHandoff:output_type -> aimmod.osu.v1.GetDownloadHandoffResponse
-	32, // 76: aimmod.osu.v1.OsuService.GetSkinProviderStatus:output_type -> aimmod.osu.v1.GetSkinProviderStatusResponse
-	34, // 77: aimmod.osu.v1.OsuService.SearchSkins:output_type -> aimmod.osu.v1.SearchSkinsResponse
-	36, // 78: aimmod.osu.v1.OsuService.GetSkin:output_type -> aimmod.osu.v1.GetSkinResponse
-	38, // 79: aimmod.osu.v1.OsuService.GetSkinDownloadHandoff:output_type -> aimmod.osu.v1.GetSkinDownloadHandoffResponse
-	44, // 80: aimmod.osu.v1.OsuService.GetOfficialUserProfile:output_type -> aimmod.osu.v1.GetOfficialUserProfileResponse
-	72, // [72:81] is the sub-list for method output_type
-	63, // [63:72] is the sub-list for method input_type
-	63, // [63:63] is the sub-list for extension type_name
-	63, // [63:63] is the sub-list for extension extendee
-	0,  // [0:63] is the sub-list for field type_name
+	31, // 39: aimmod.osu.v1.SkinItem.sources:type_name -> aimmod.osu.v1.SkinSource
+	1,  // 40: aimmod.osu.v1.SkinSource.provider:type_name -> aimmod.osu.v1.SkinProvider
+	29, // 41: aimmod.osu.v1.SkinSource.download_handoff:type_name -> aimmod.osu.v1.SkinDownloadHandoff
+	1,  // 42: aimmod.osu.v1.GetSkinProviderStatusRequest.providers:type_name -> aimmod.osu.v1.SkinProvider
+	26, // 43: aimmod.osu.v1.GetSkinProviderStatusResponse.providers:type_name -> aimmod.osu.v1.SkinProviderStatus
+	1,  // 44: aimmod.osu.v1.SearchSkinsRequest.providers:type_name -> aimmod.osu.v1.SkinProvider
+	27, // 45: aimmod.osu.v1.SearchSkinsRequest.filters:type_name -> aimmod.osu.v1.SkinSearchFilters
+	5,  // 46: aimmod.osu.v1.SearchSkinsRequest.sort:type_name -> aimmod.osu.v1.SkinSort
+	6,  // 47: aimmod.osu.v1.SearchSkinsRequest.direction:type_name -> aimmod.osu.v1.SortDirection
+	25, // 48: aimmod.osu.v1.SearchSkinsRequest.page_tokens:type_name -> aimmod.osu.v1.SkinProviderCursor
+	30, // 49: aimmod.osu.v1.SearchSkinsResponse.items:type_name -> aimmod.osu.v1.SkinItem
+	25, // 50: aimmod.osu.v1.SearchSkinsResponse.next_page_tokens:type_name -> aimmod.osu.v1.SkinProviderCursor
+	26, // 51: aimmod.osu.v1.SearchSkinsResponse.providers:type_name -> aimmod.osu.v1.SkinProviderStatus
+	1,  // 52: aimmod.osu.v1.GetSkinRequest.provider:type_name -> aimmod.osu.v1.SkinProvider
+	30, // 53: aimmod.osu.v1.GetSkinResponse.item:type_name -> aimmod.osu.v1.SkinItem
+	26, // 54: aimmod.osu.v1.GetSkinResponse.provider:type_name -> aimmod.osu.v1.SkinProviderStatus
+	1,  // 55: aimmod.osu.v1.GetSkinDownloadHandoffRequest.provider:type_name -> aimmod.osu.v1.SkinProvider
+	29, // 56: aimmod.osu.v1.GetSkinDownloadHandoffResponse.handoff:type_name -> aimmod.osu.v1.SkinDownloadHandoff
+	26, // 57: aimmod.osu.v1.GetSkinDownloadHandoffResponse.provider:type_name -> aimmod.osu.v1.SkinProviderStatus
+	41, // 58: aimmod.osu.v1.OfficialUserStatistics.grade_counts:type_name -> aimmod.osu.v1.OfficialUserGradeCounts
+	3,  // 59: aimmod.osu.v1.OfficialUserProfile.default_ruleset:type_name -> aimmod.osu.v1.Ruleset
+	42, // 60: aimmod.osu.v1.OfficialUserProfile.statistics:type_name -> aimmod.osu.v1.OfficialUserStatistics
+	40, // 61: aimmod.osu.v1.OfficialUserProfile.team:type_name -> aimmod.osu.v1.OfficialUserTeam
+	8,  // 62: aimmod.osu.v1.GetOfficialUserProfileRequest.lookup_key:type_name -> aimmod.osu.v1.OfficialUserLookupKey
+	3,  // 63: aimmod.osu.v1.GetOfficialUserProfileRequest.ruleset:type_name -> aimmod.osu.v1.Ruleset
+	43, // 64: aimmod.osu.v1.GetOfficialUserProfileResponse.profile:type_name -> aimmod.osu.v1.OfficialUserProfile
+	10, // 65: aimmod.osu.v1.GetOfficialUserProfileResponse.provider:type_name -> aimmod.osu.v1.ProviderStatus
+	11, // 66: aimmod.osu.v1.OsuService.GetProviderStatus:input_type -> aimmod.osu.v1.GetProviderStatusRequest
+	19, // 67: aimmod.osu.v1.OsuService.SearchBeatmapItems:input_type -> aimmod.osu.v1.SearchBeatmapItemsRequest
+	21, // 68: aimmod.osu.v1.OsuService.GetBeatmapItem:input_type -> aimmod.osu.v1.GetBeatmapItemRequest
+	23, // 69: aimmod.osu.v1.OsuService.GetDownloadHandoff:input_type -> aimmod.osu.v1.GetDownloadHandoffRequest
+	32, // 70: aimmod.osu.v1.OsuService.GetSkinProviderStatus:input_type -> aimmod.osu.v1.GetSkinProviderStatusRequest
+	34, // 71: aimmod.osu.v1.OsuService.SearchSkins:input_type -> aimmod.osu.v1.SearchSkinsRequest
+	36, // 72: aimmod.osu.v1.OsuService.GetSkin:input_type -> aimmod.osu.v1.GetSkinRequest
+	38, // 73: aimmod.osu.v1.OsuService.GetSkinDownloadHandoff:input_type -> aimmod.osu.v1.GetSkinDownloadHandoffRequest
+	44, // 74: aimmod.osu.v1.OsuService.GetOfficialUserProfile:input_type -> aimmod.osu.v1.GetOfficialUserProfileRequest
+	12, // 75: aimmod.osu.v1.OsuService.GetProviderStatus:output_type -> aimmod.osu.v1.GetProviderStatusResponse
+	20, // 76: aimmod.osu.v1.OsuService.SearchBeatmapItems:output_type -> aimmod.osu.v1.SearchBeatmapItemsResponse
+	22, // 77: aimmod.osu.v1.OsuService.GetBeatmapItem:output_type -> aimmod.osu.v1.GetBeatmapItemResponse
+	24, // 78: aimmod.osu.v1.OsuService.GetDownloadHandoff:output_type -> aimmod.osu.v1.GetDownloadHandoffResponse
+	33, // 79: aimmod.osu.v1.OsuService.GetSkinProviderStatus:output_type -> aimmod.osu.v1.GetSkinProviderStatusResponse
+	35, // 80: aimmod.osu.v1.OsuService.SearchSkins:output_type -> aimmod.osu.v1.SearchSkinsResponse
+	37, // 81: aimmod.osu.v1.OsuService.GetSkin:output_type -> aimmod.osu.v1.GetSkinResponse
+	39, // 82: aimmod.osu.v1.OsuService.GetSkinDownloadHandoff:output_type -> aimmod.osu.v1.GetSkinDownloadHandoffResponse
+	45, // 83: aimmod.osu.v1.OsuService.GetOfficialUserProfile:output_type -> aimmod.osu.v1.GetOfficialUserProfileResponse
+	75, // [75:84] is the sub-list for method output_type
+	66, // [66:75] is the sub-list for method input_type
+	66, // [66:66] is the sub-list for extension type_name
+	66, // [66:66] is the sub-list for extension extendee
+	0,  // [0:66] is the sub-list for field type_name
 }
 
 func init() { file_aimmod_osu_v1_osu_proto_init() }
@@ -3885,7 +4015,7 @@ func file_aimmod_osu_v1_osu_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aimmod_osu_v1_osu_proto_rawDesc), len(file_aimmod_osu_v1_osu_proto_rawDesc)),
 			NumEnums:      9,
-			NumMessages:   36,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

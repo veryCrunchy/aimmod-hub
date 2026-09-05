@@ -49,7 +49,7 @@ type osuSkinsArticle struct {
 }
 
 func newOsuSkinsAdapter(client *upstreamClient) *osuSkinsAdapter {
-	return &osuSkinsAdapter{client: client}
+	return &osuSkinsAdapter{client: skinUpstreamClient(client)}
 }
 
 func (a *osuSkinsAdapter) status(ctx context.Context) *osuv1.SkinProviderStatus {
@@ -142,7 +142,12 @@ func (a *osuSkinsAdapter) detail(ctx context.Context, sourceID string) (*osuv1.S
 	if err != nil {
 		return nil, err
 	}
-	return parseOsuSkinsDetail(body, sourceID)
+	item, err := parseOsuSkinsDetail(body, sourceID)
+	if err != nil {
+		return nil, err
+	}
+	a.resolvePublishedDownloads(ctx, body, item)
+	return item, nil
 }
 
 func (a *osuSkinsAdapter) resolveDirectoryID(ctx context.Context, kind, wanted string) (string, error) {
@@ -202,7 +207,7 @@ func parseOsuSkinsSearch(body []byte, requestedRulesets []osuv1.Ruleset) ([]*osu
 			Name:                 strings.TrimSpace(htmlText(nameNode)),
 			ThumbnailUrl:         htmlAttribute(imageNode, "src"),
 			Rulesets:             append([]osuv1.Ruleset(nil), requestedRulesets...),
-			DownloadHandoff:      unavailableSkinHandoff(true, "osuskins.net requires an interactive Cloudflare Turnstile check before download. AimMod Hub does not bypass it."),
+			DownloadHandoff:      browserSkinHandoff(skinPageURL(osuv1.SkinProvider_SKIN_PROVIDER_OSU_SKINS, sourceID), "Complete the provider's download verification in your browser."),
 			CountsAreApproximate: true,
 		}
 		item.DownloadCount = osuSkinsMarkedCount(node, "#arrowDown")
@@ -249,7 +254,7 @@ func parseOsuSkinsDetail(body []byte, sourceID string) (*osuv1.SkinItem, error) 
 		ThumbnailUrl:    article.Image,
 		SubmittedAtIso:  normalizeTimestamp(article.DatePublished),
 		UpdatedAtIso:    normalizeTimestamp(article.DateModified),
-		DownloadHandoff: unavailableSkinHandoff(true, "osuskins.net requires an interactive Cloudflare Turnstile check before download. AimMod Hub does not bypass it."),
+		DownloadHandoff: browserSkinHandoff(skinPageURL(osuv1.SkinProvider_SKIN_PROVIDER_OSU_SKINS, sourceID), "Complete the provider's download verification in your browser."),
 	}
 	if len(article.Author) > 0 {
 		item.Creator = strings.TrimSpace(article.Author[0].Name)

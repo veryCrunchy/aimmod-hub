@@ -342,7 +342,7 @@ func TestOsuSkinsSearchDetailAndTurnstileBoundary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if handoff.Msg.GetHandoff().GetAvailable() || !handoff.Msg.GetHandoff().GetRequiresInteractiveVerification() || handoff.Msg.GetHandoff().GetUri() != "" {
+	if !handoff.Msg.GetHandoff().GetAvailable() || handoff.Msg.GetHandoff().GetKind() != osuv1.SkinDownloadHandoffKind_SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL || !handoff.Msg.GetHandoff().GetRequiresInteractiveVerification() || handoff.Msg.GetHandoff().GetUri() != "https://osuskins.net/skin/Abc1234" {
 		t.Fatalf("unexpected Turnstile handoff: %+v", handoff.Msg.GetHandoff())
 	}
 }

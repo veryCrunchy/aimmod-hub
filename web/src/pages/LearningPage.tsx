@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
+import { socialPreviewImage } from "../lib/socialPreview";
 import { Link, useParams } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
@@ -317,7 +318,7 @@ export function LearningPage() {
         schema={entry ? { "@context": "https://schema.org", "@type": "Article", headline: entry.title, description: entry.summary,
           mainEntityOfPage: `https://aimmod.app/learn/${encodeURIComponent(entry.id)}`, dateModified: data?.updatedAtIso,
           author: { "@type": "Organization", name: "AimMod Hub", url: "https://aimmod.app" },
-          image: "https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" } : undefined} />
+          image: socialPreviewImage(`/learn/${encodeURIComponent(entry.id)}`) } : undefined} />
 
       {error ? (
         <PageSection>

@@ -19,13 +19,18 @@ function render(route: string, page = createElement(OsuLearningPage)) {
   return { body: rendered.body, head: rendered.head, scripts: rendered.head.match(/<script\b[^>]*>[\s\S]*?<\/script>/)?.[0] ?? "" };
 }
 
-test("six sourced osu guides render real content, one H1 and one article schema", () => {
-  assert.equal(content.guides.length, 6);
-  assert.equal(new Set(content.guides.map(g => g.slug)).size, 6);
+test("sourced osu guides render real content, one H1 and one article schema", () => {
+  assert.ok(content.guides.length >= 9);
+  assert.equal(new Set(content.guides.map(g => g.slug)).size, content.guides.length);
   for (const guide of content.guides) {
     assert.ok(guide.sections.reduce((length, section) => length + section.body.split(/\s+/).length, 0) >= 120);
     assert.ok(guide.sources.length >= 2);
-    for (const source of guide.sources) assert.equal(new URL(source.url).hostname, "osu.ppy.sh");
+    for (const source of guide.sources) {
+      const url = new URL(source.url);
+      assert.equal(url.protocol, "https:");
+      assert.ok(["osu.ppy.sh", "www.youtube.com"].includes(url.hostname));
+      if (url.hostname === "www.youtube.com") assert.match(url.searchParams.get("v") ?? "", /^[\w-]{11}$/);
+    }
     const page = render(`/osu/learn/${guide.slug}`);
     assert.equal((page.body.match(/<h1\b/g) ?? []).length, 1);
     assert.ok(page.body.includes(guide.sections[0].body));
@@ -46,6 +51,16 @@ test("knowledge index links every guide and missing guide is noindex without Art
   const missing = render("/osu/learn/missing");
   assert.ok(missing.head.includes("noindex, nofollow"));
   assert.equal(missing.scripts, "");
+});
+
+test("knowledge offers search, video filtering and section navigation", () => {
+  const index = render("/osu/learn");
+  assert.ok(index.body.includes('type="search"'));
+  assert.ok(index.body.includes("With video resources"));
+  const article = render("/osu/learn/aim-misses-and-cursor-control");
+  assert.ok(article.body.includes('href="#section-1"'));
+  assert.ok(article.body.includes('id="section-1"'));
+  assert.ok(article.body.includes("Community coaching"));
 });
 
 test("SEO canonical drops queries and trailing slash and private pages emit no schema", () => {

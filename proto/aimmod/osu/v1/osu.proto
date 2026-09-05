@@ -56,6 +56,8 @@ enum SkinDownloadHandoffKind {
   SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED = 0;
   SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL = 1;
   SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE = 2;
+  // An interactive provider page, never an importable archive URL.
+  SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL = 3;
 }
 
 enum OfficialUserLookupKey {
@@ -220,6 +222,8 @@ message SkinProviderStatus {
   bool contract_is_documented = 8;
   string message = 9;
   string checked_at_iso = 10;
+  string browser_url = 11;
+  bool retryable = 12;
 }
 
 message SkinSearchFilters {
@@ -271,6 +275,17 @@ message SkinItem {
   SkinDownloadHandoff download_handoff = 17;
   bool counts_are_approximate = 18;
   bool file_size_is_approximate = 19;
+  string normalized_id = 20;
+  repeated SkinSource sources = 21;
+}
+
+message SkinSource {
+  SkinProvider provider = 1;
+  string source_id = 2;
+  string page_url = 3;
+  SkinDownloadHandoff download_handoff = 4;
+  // Preserve provider variant identity; an empty value means unspecified.
+  string variant = 5;
 }
 
 message GetSkinProviderStatusRequest {

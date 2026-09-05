@@ -115,6 +115,8 @@ type OsuReplayUploadTarget struct {
 }
 
 type OsuPublicReplay struct {
+	OnlineScoreID     int64           `json:"onlineScoreId"`
+	BeatmapChecksum   string          `json:"beatmapChecksum,omitempty"`
 	ShareID           string          `json:"shareId"`
 	Visibility        string          `json:"visibility"`
 	HubHandle         string          `json:"hubHandle"`
@@ -267,7 +269,9 @@ func (s *Store) SaveOsuSync(ctx context.Context, userID int64, input OsuSyncInpu
 		if !strings.EqualFold(existingHash, input.ContentHash) {
 			return OsuSyncResult{}, fmt.Errorf("client score id is already associated with different content")
 		}
-		if _, err := tx.Exec(ctx, `UPDATE osu_scores SET visibility = $1, updated_at = NOW() WHERE id = $2`, input.Visibility, scoreID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE osu_scores SET visibility = $1,
+			performance_points = COALESCE(performance_points, $3),
+			updated_at = NOW() WHERE id = $2`, input.Visibility, scoreID, input.Score.PerformancePoints); err != nil {
 			return OsuSyncResult{}, fmt.Errorf("update osu score visibility: %w", err)
 		}
 	} else {
@@ -385,6 +389,28 @@ func (s *Store) ListOsuCommunity(ctx context.Context, limit int) ([]OsuPublicRep
 	return collectOsuPublicReplays(rows)
 }
 
+// Numeric osu IDs are a separate namespace from Hub handles, including numeric
+// handles. Only a profile with an existing public score can be resolved here.
+func (s *Store) GetOsuPublicProfileByOsuUserID(ctx context.Context, osuUserID int64, limit int) (OsuPublicProfile, error) {
+	if osuUserID <= 0 {
+		return OsuPublicProfile{}, fmt.Errorf("invalid osu user ID")
+	}
+	var handle string
+	err := s.pool.QueryRow(ctx, `
+		SELECT hui.user_handle
+		FROM hub_user_identity hui
+		JOIN osu_profiles p ON p.user_id = hui.user_id
+		WHERE p.osu_user_id = $1
+		  AND EXISTS (SELECT 1 FROM osu_scores s WHERE s.user_id = hui.user_id AND s.visibility = 'public')
+		ORDER BY hui.user_id
+		LIMIT 1
+	`, osuUserID).Scan(&handle)
+	if err != nil {
+		return OsuPublicProfile{}, fmt.Errorf("resolve public osu profile: %w", err)
+	}
+	return s.GetOsuPublicProfile(ctx, handle, limit)
+}
+
 func (s *Store) GetOsuPublicProfile(ctx context.Context, handle string, limit int) (OsuPublicProfile, error) {
 	var profile OsuPublicProfile
 	if err := s.pool.QueryRow(ctx, `
@@ -411,7 +437,7 @@ func (s *Store) GetOsuPublicProfile(ctx context.Context, handle string, limit in
 		WHERE s.visibility = 'public' AND LOWER(hui.user_handle) = LOWER($1)
 		ORDER BY s.played_at DESC, s.id DESC
 		LIMIT $2
-	`, handle, limit)
+	`, profile.HubHandle, limit)
 	if err != nil {
 		return OsuPublicProfile{}, fmt.Errorf("list osu profile replays: %w", err)
 	}
@@ -444,7 +470,7 @@ const osuPublicReplayColumns = `
 		d.version, d.ruleset, d.star_rating, d.bpm, d.length_ms,
 		s.played_at, s.total_score, s.performance_points, s.accuracy, s.max_combo,
 		s.count_300, s.count_100, s.count_50, s.count_miss, s.mods, s.passed,
-		COALESCE(f.byte_size, 0) > 0
+		COALESCE(f.byte_size, 0) > 0, s.online_score_id, d.checksum
 `
 
 const osuPublicReplayJoins = `
@@ -484,6 +510,7 @@ func scanOsuPublicReplay(row rowScanner) (OsuPublicReplay, error) {
 		&replay.TotalScore, &replay.PerformancePoints, &replay.Accuracy,
 		&replay.MaxCombo, &replay.Count300, &replay.Count100, &replay.Count50,
 		&replay.CountMiss, &replay.Mods, &replay.Passed, &replay.HasReplayFile,
+		&replay.OnlineScoreID, &replay.BeatmapChecksum,
 		&replay.AnalysisSchema, &replay.AnalysisEngine, &analysisText); err != nil {
 		return OsuPublicReplay{}, fmt.Errorf("scan osu public replay: %w", err)
 	}

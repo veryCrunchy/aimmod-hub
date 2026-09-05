@@ -83,7 +83,8 @@ func TestBrandSPAHTTPMetadata(t *testing.T) {
 			if meta["twitter:card"][0] != "summary_large_image" {
 				t.Fatal(meta["twitter:card"])
 			}
-			if meta["og:image"][0] != "https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" || meta["og:image"][0] != meta["twitter:image"][0] {
+			expectedImage := (pageMeta{Canonical: "https://aimmod.app" + route}).socialImage()
+			if meta["og:image"][0] != expectedImage || meta["og:image"][0] != meta["twitter:image"][0] {
 				t.Fatal("incorrect social image")
 			}
 			canonicalPath := strings.TrimRight(route, "/")

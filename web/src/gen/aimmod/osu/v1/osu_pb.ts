@@ -242,12 +242,20 @@ export enum SkinDownloadHandoffKind {
    * @generated from enum value: SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE = 2;
    */
   UNAVAILABLE = 2,
+
+  /**
+   * An interactive provider page, never an importable archive URL.
+   *
+   * @generated from enum value: SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL = 3;
+   */
+  BROWSER_URL = 3,
 }
 // Retrieve enum metadata with: proto3.getEnumType(SkinDownloadHandoffKind)
 proto3.util.setEnumType(SkinDownloadHandoffKind, "aimmod.osu.v1.SkinDownloadHandoffKind", [
   { no: 0, name: "SKIN_DOWNLOAD_HANDOFF_KIND_UNSPECIFIED" },
   { no: 1, name: "SKIN_DOWNLOAD_HANDOFF_KIND_DIRECT_URL" },
   { no: 2, name: "SKIN_DOWNLOAD_HANDOFF_KIND_UNAVAILABLE" },
+  { no: 3, name: "SKIN_DOWNLOAD_HANDOFF_KIND_BROWSER_URL" },
 ]);
 
 /**
@@ -1421,6 +1429,16 @@ export class SkinProviderStatus extends Message<SkinProviderStatus> {
    */
   checkedAtIso = "";
 
+  /**
+   * @generated from field: string browser_url = 11;
+   */
+  browserUrl = "";
+
+  /**
+   * @generated from field: bool retryable = 12;
+   */
+  retryable = false;
+
   constructor(data?: PartialMessage<SkinProviderStatus>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1439,6 +1457,8 @@ export class SkinProviderStatus extends Message<SkinProviderStatus> {
     { no: 8, name: "contract_is_documented", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 9, name: "message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 10, name: "checked_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "browser_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "retryable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SkinProviderStatus {
@@ -1770,6 +1790,16 @@ export class SkinItem extends Message<SkinItem> {
    */
   fileSizeIsApproximate = false;
 
+  /**
+   * @generated from field: string normalized_id = 20;
+   */
+  normalizedId = "";
+
+  /**
+   * @generated from field: repeated aimmod.osu.v1.SkinSource sources = 21;
+   */
+  sources: SkinSource[] = [];
+
   constructor(data?: PartialMessage<SkinItem>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1797,6 +1827,8 @@ export class SkinItem extends Message<SkinItem> {
     { no: 17, name: "download_handoff", kind: "message", T: SkinDownloadHandoff },
     { no: 18, name: "counts_are_approximate", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 19, name: "file_size_is_approximate", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 20, name: "normalized_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 21, name: "sources", kind: "message", T: SkinSource, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SkinItem {
@@ -1813,6 +1845,69 @@ export class SkinItem extends Message<SkinItem> {
 
   static equals(a: SkinItem | PlainMessage<SkinItem> | undefined, b: SkinItem | PlainMessage<SkinItem> | undefined): boolean {
     return proto3.util.equals(SkinItem, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.osu.v1.SkinSource
+ */
+export class SkinSource extends Message<SkinSource> {
+  /**
+   * @generated from field: aimmod.osu.v1.SkinProvider provider = 1;
+   */
+  provider = SkinProvider.UNSPECIFIED;
+
+  /**
+   * @generated from field: string source_id = 2;
+   */
+  sourceId = "";
+
+  /**
+   * @generated from field: string page_url = 3;
+   */
+  pageUrl = "";
+
+  /**
+   * @generated from field: aimmod.osu.v1.SkinDownloadHandoff download_handoff = 4;
+   */
+  downloadHandoff?: SkinDownloadHandoff;
+
+  /**
+   * Preserve provider variant identity; an empty value means unspecified.
+   *
+   * @generated from field: string variant = 5;
+   */
+  variant = "";
+
+  constructor(data?: PartialMessage<SkinSource>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.osu.v1.SkinSource";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "provider", kind: "enum", T: proto3.getEnumType(SkinProvider) },
+    { no: 2, name: "source_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "page_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "download_handoff", kind: "message", T: SkinDownloadHandoff },
+    { no: 5, name: "variant", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SkinSource {
+    return new SkinSource().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SkinSource {
+    return new SkinSource().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SkinSource {
+    return new SkinSource().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SkinSource | PlainMessage<SkinSource> | undefined, b: SkinSource | PlainMessage<SkinSource> | undefined): boolean {
+    return proto3.util.equals(SkinSource, a, b);
   }
 }
 

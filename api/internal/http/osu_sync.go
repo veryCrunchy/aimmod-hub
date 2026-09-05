@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/media"
+	osuservice "github.com/veryCrunchy/aimmod-hub/api/internal/osu"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
 
@@ -36,12 +37,21 @@ type osuSyncStore interface {
 }
 
 type osuSyncHandler struct {
-	store osuSyncStore
-	media media.Storage
+	store    osuSyncStore
+	media    media.Storage
+	official replayScoreProvider
 }
 
-func newOsuSyncHandler(dataStore osuSyncStore, mediaStorage media.Storage) *osuSyncHandler {
-	return &osuSyncHandler{store: dataStore, media: mediaStorage}
+type replayScoreProvider interface {
+	GetPublicScore(context.Context, int64) (osuservice.OfficialScoreDetail, error)
+}
+
+func newOsuSyncHandler(dataStore osuSyncStore, mediaStorage media.Storage, official ...replayScoreProvider) *osuSyncHandler {
+	h := &osuSyncHandler{store: dataStore, media: mediaStorage}
+	if len(official) > 0 {
+		h.official = official[0]
+	}
+	return h
 }
 
 func (h *osuSyncHandler) register(mux *http.ServeMux, origin string) {
@@ -155,6 +165,16 @@ func (h *osuSyncHandler) handleReplay(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "private, no-store")
 	} else {
 		w.Header().Set("Cache-Control", "public, max-age=30")
+	}
+	if replay.PerformancePoints == nil && replay.OnlineScoreID > 0 && h.official != nil {
+		detail, err := h.official.GetPublicScore(r.Context(), replay.OnlineScoreID)
+		if err == nil && detail.Status == "available" && detail.Item != nil {
+			score := detail.Item
+			if score.OnlineScoreID == replay.OnlineScoreID && score.OsuUserID == replay.OsuUserID && score.BeatmapID == replay.BeatmapID && score.Ruleset == replay.Ruleset && score.PerformancePoints != nil && !math.IsNaN(*score.PerformancePoints) && !math.IsInf(*score.PerformancePoints, 0) && *score.PerformancePoints >= 0 {
+				pp := *score.PerformancePoints
+				replay.PerformancePoints = &pp
+			}
+		}
 	}
 	writeJSON(w, http.StatusOK, replay)
 }

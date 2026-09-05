@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { formatOsuAccuracy, formatOsuMods, type OsuSharedReplay } from "../lib/osuCommunity";
+import { formatOsuAccuracy, formatOsuMods, osuScorePath, type OsuSharedReplay } from "../lib/osuCommunity";
 
 export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
   const pp = replay.performancePoints == null ? "PP pending" : `${Math.round(replay.performancePoints)}pp`;
   return (
     <Link
-      to={`/osu/replays/${replay.shareId}`}
+      to={osuScorePath(replay)}
       className="hub-replay-row"
     >
       {replay.coverUrl ? <img src={replay.coverUrl} className="hub-replay-cover" alt="" loading="lazy" /> : <span className="hub-replay-cover" aria-hidden="true" />}

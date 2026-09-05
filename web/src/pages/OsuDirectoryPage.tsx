@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Helmet } from "../lib/helmet";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { osuClient } from "../lib/osuCatalog";
 import { useOsuDirectory } from "../hooks/useOsuDirectory";
 import { groupOsuPlays } from "../lib/osuDirectory";
 import { OsuReplayRow } from "../components/OsuReplayRow";
@@ -13,6 +14,9 @@ import { PageStack } from "../components/ui/Stack";
 
 export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "beatmaps" | "players" }) {
   const { items, error, retry } = useOsuDirectory();
+  const navigate = useNavigate();
+  const [finding, setFinding] = useState(false);
+  const [lookupError, setLookupError] = useState("");
   const [params, setParams] = useSearchParams();
   const query = params.get("q") ?? "";
   const sort = params.get("sort") ?? "recent";
@@ -45,7 +49,17 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
         <label>{view === "players" ? "Find a player" : "Find a beatmap"}<input type="search" value={query} placeholder={view === "players" ? "Player name or handle" : "Title, difficulty, artist, or mapper"} onChange={e => update("q",e.target.value)} /></label>
         <label>Sort by<select value={sort} onChange={e => update("sort",e.target.value)}><option value="recent">Latest activity</option><option value="plays">Most shared plays</option><option value="pp">Best shared PP</option></select></label>
         {(query || sort !== "recent") && <Button onClick={() => setParams({})}>Reset filters</Button>}
+        {view === "players" && <Button disabled={finding || !query.trim()} onClick={async () => {
+          setFinding(true); setLookupError("");
+          try {
+            const response = await osuClient.getOfficialUserProfile({ identifier: query.trim(), ruleset: 1 }, { signal: AbortSignal.timeout(15000) });
+            if (!response.profile?.userId) throw new Error("Player not found or osu! is unavailable.");
+            navigate(`/osu/profiles/${response.profile.userId}`);
+          } catch { setLookupError("Could not find this osu! player. Check the username or user ID and try again."); }
+          finally { setFinding(false); }
+        }}>{finding ? "Finding player..." : "Find on osu!"}</Button>}
       </div>}
+      {lookupError && <p role="alert" className="py-3 text-muted">{lookupError}</p>}
       {error ? <EmptyState title="Community activity is unavailable" body="Please try again in a moment."><Button onClick={retry}>Try again</Button></EmptyState>
         : !items ? <div role="status"><p className="mb-4 text-muted">Loading osu! activity...</p><Skeleton className="h-64" /></div>
         : <>

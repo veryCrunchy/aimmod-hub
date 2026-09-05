@@ -33,6 +33,12 @@ export type OsuReplayAnalysis = {
 };
 
 export type OsuSharedReplay = {
+  source?: "local" | "official" | "merged";
+  officialScoreId?: string;
+  officialScoreUrl?: string;
+  ppSource?: string;
+  onlineScoreId?: number;
+  officialReplayExists?: boolean;
   shareId: string;
   visibility: "public" | "unlisted";
   hubHandle: string;
@@ -107,12 +113,38 @@ export async function fetchOsuReplay(shareId: string): Promise<OsuSharedReplay> 
   return normalizeReplay(await fetchJSON<OsuSharedReplay>(`/api/osu/v1/replays/${encodeURIComponent(shareId)}`));
 }
 
+export type OsuScoreHistory = {
+  profile: OsuPublicProfile;
+  items: OsuSharedReplay[];
+  coverage: { best: { status: string; fetched: number }; recent: { status: string; fetched: number }; completeHistory: false };
+  hasMore: boolean;
+};
+export async function fetchOsuScoreHistory(handle: string, mode = "osu"): Promise<OsuScoreHistory> {
+  const history = await fetchJSON<OsuScoreHistory>(`/api/osu/v1/profile-scores/${encodeURIComponent(handle)}?mode=${encodeURIComponent(mode)}&limit=100`);
+  return { ...history, items: (history.items ?? []).map(normalizeReplay) };
+}
+export async function fetchOsuOfficialScore(id: string): Promise<OsuSharedReplay> {
+  const response = await fetchJSON<{ item?: OsuSharedReplay; replay?: { exists: boolean } }>(`/api/osu/v1/official-scores/${encodeURIComponent(id)}`);
+  if (!response.item) throw new Error("This score is unavailable.");
+  return normalizeReplay({ ...response.item, officialReplayExists: response.replay?.exists === true });
+}
+
+export function osuScorePath(replay: OsuSharedReplay): string {
+  return replay.source === "official" && replay.officialScoreId
+    ? `/osu/scores/${encodeURIComponent(replay.officialScoreId)}`
+    : `/osu/replays/${encodeURIComponent(replay.shareId)}`;
+}
+
 function normalizeReplay(replay: OsuSharedReplay): OsuSharedReplay {
   return { ...replay, analysis: normalizeOsuReplayAnalysis(replay.analysis) };
 }
 
 export function osuReplayDownloadUrl(shareId: string): string {
   return `${API_BASE_URL}/media/osu-replays/${encodeURIComponent(shareId)}.osr`;
+}
+
+export function osuOfficialReplayDownloadUrl(id: string): string {
+  return `${API_BASE_URL}/api/osu/v1/official-scores/${encodeURIComponent(id)}/replay`;
 }
 
 export function formatOsuAccuracy(value: number): string {

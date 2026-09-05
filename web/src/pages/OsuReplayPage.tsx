@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
+import { OsuReplayPlayer } from "../components/OsuReplayPlayer";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -9,16 +10,18 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { formatOsuMissReason } from "../lib/osuReplayAnalysis";
 import {
   fetchOsuReplay,
+  fetchOsuOfficialScore,
   formatOsuAccuracy,
   formatOsuDuration,
   formatOsuMods,
   osuReplayDownloadUrl,
+  osuOfficialReplayDownloadUrl,
   type OsuReplayJudgement,
   type OsuSharedReplay,
 } from "../lib/osuCommunity";
 
 export function OsuReplayPage() {
-  const { shareId = "" } = useParams();
+  const { shareId = "", officialScoreId = "" } = useParams();
   const [replay, setReplay] = useState<OsuSharedReplay | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -27,11 +30,11 @@ export function OsuReplayPage() {
     let cancelled = false;
     setReplay(null);
     setError(null);
-    void fetchOsuReplay(shareId)
+    void (officialScoreId ? fetchOsuOfficialScore(officialScoreId) : fetchOsuReplay(shareId))
       .then((value) => { if (!cancelled) setReplay(value); })
       .catch((reason) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load this replay."); });
     return () => { cancelled = true; };
-  }, [shareId, attempt]);
+  }, [shareId, officialScoreId, attempt]);
 
   const misses = useMemo(
     () => replay?.analysis?.judgements?.filter((item) => item.result?.toLowerCase() === "miss") ?? [],
@@ -72,16 +75,21 @@ export function OsuReplayPage() {
             <h1 className="mt-2 break-words text-2xl md:text-3xl leading-tight">{replay.artist} - {replay.title}</h1>
             <p className="mt-2 text-[13px] text-muted">[{replay.difficulty}] by {replay.creator}</p>
             <p className="mt-3 text-[12px] text-muted">
-              Shared by <Link className="text-cyan hover:text-text" to={`/osu/profiles/${replay.hubHandle}`}>{replay.osuUsername}</Link>
+              Played by <Link className="text-cyan hover:text-text" to={`/osu/profiles/${replay.hubHandle || replay.osuUserId}`}>{replay.osuUsername}</Link>
               {replay.visibility === "unlisted" ? " · Unlisted" : " · Public"}
             </p>
           </div>
           <div className="flex items-end gap-2 md:items-start">
+            {officialScoreId && <Button href={`https://osu.ppy.sh/scores/${officialScoreId}`} target="_blank" rel="noreferrer">View score on osu!</Button>}
             {replay.hasReplayFile ? <Button href={osuReplayDownloadUrl(replay.shareId)} variant="primary">Download replay</Button> : null}
             {replay.beatmapSetId > 0 ? <Button href={`https://osu.ppy.sh/beatmapsets/${replay.beatmapSetId}#osu/${replay.beatmapId}`} target="_blank" rel="noreferrer">Open beatmap</Button> : null}
           </div>
         </div>
       </PageSection>
+
+      {replay.hasReplayFile && replay.shareId && replay.ruleset === "osu" && <OsuReplayPlayer key={replay.shareId} replayUrl={osuReplayDownloadUrl(replay.shareId)} beatmapId={replay.beatmapId} title={replay.title} />}
+      {officialScoreId && replay.officialReplayExists && replay.ruleset === "osu" && <OsuReplayPlayer key={officialScoreId} replayUrl={osuOfficialReplayDownloadUrl(officialScoreId)} beatmapId={replay.beatmapId} title={replay.title} />}
+      {officialScoreId && !replay.officialReplayExists && <p className="text-sm text-muted">osu! does not list a replay file for this score.</p>}
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">
         <Metric label="Accuracy" value={formatOsuAccuracy(replay.accuracy)} accent="cyan" />

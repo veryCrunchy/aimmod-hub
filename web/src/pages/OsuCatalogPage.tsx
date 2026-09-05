@@ -8,7 +8,7 @@ import { PageStack } from "../components/ui/Stack";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useCatalogRequest } from "../hooks/useCatalogRequest";
 import { beatmapLinks, mediaUrl, modeName, numberRange, osuClient, rulesets, skinLinks, skinSource, sliderRangeValue } from "../lib/osuCatalog";
-import { BeatmapSearchFilters, Provider, ProviderCursor, Ruleset, SearchBeatmapItemsRequest, SearchSkinsRequest, SkinItem, SkinProvider, SkinProviderCursor, SkinSort, SortDirection } from "../gen/aimmod/osu/v1/osu_pb";
+import { BeatmapSearchFilters, Provider, ProviderCursor, Ruleset, SearchBeatmapItemsRequest, SearchSkinsRequest, SkinDownloadHandoffKind, SkinItem, SkinProvider, SkinProviderCursor, SkinSort, SortDirection } from "../gen/aimmod/osu/v1/osu_pb";
 import "./osuCatalog.css";
 
 const ranges = [["stars", "Stars", 10, 0.1], ["bpm", "BPM", 300, 1], ["lengthSeconds", "Length", 600, 5], ["approachRate", "AR", 11, 0.1], ["circleSize", "CS", 10, 0.1], ["overallDifficulty", "OD", 11, 0.1]] as const;
@@ -19,7 +19,7 @@ function Select({ label, value, options, onChange }: { label: string; value: str
   return <label>{label}<select value={value} onChange={event => onChange(event.target.value)}>{options.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>;
 }
 
-function RangeSlider({ name, label, limit, step, minimum, maximum, onChange }: {
+export function RangeSlider({ name, label, limit, step, minimum, maximum, onChange }: {
   name: string; label: string; limit: number; step: number; minimum: string; maximum: string;
   onChange: (endpoint: "Min" | "Max", value: string) => void;
 }) {
@@ -79,7 +79,6 @@ function CatalogLoading({ skins = false }: { skins?: boolean }) {
   return <div role="status" aria-label={skins ? "Loading skins" : "Loading beatmaps"}><p className="hub-results">Loading {skins ? "skins" : "beatmaps"}...</p><div aria-hidden="true" className={skins ? "catalog-skins" : "catalog-list"}>{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className={skins ? "h-56" : "mb-3 h-24"} />)}</div></div>;
 }
 function Unavailable({ retry, source, name }: { retry: () => void; source: string; name: string }) {
-  if (source === "https://skins.osuck.net") return <div className="catalog-notice" role="status"><p>Browse skins.osuck.net in your browser. Its catalog cannot currently be searched from AimMod Hub.</p><div className="catalog-actions"><External href="https://skins.osuck.net/skins?l=en&s=1">Browse on skins.osuck.net</External><Button to="/osu/skins?provider=1">Search osuskins.net</Button></div></div>;
   return <div className="catalog-notice" role="status"><p>{name} is unavailable. Please try again.</p><div className="catalog-actions"><Button onClick={retry}>Try again</Button><External href={source}>Browse {name}</External></div></div>;
 }
 function Cover({ src, name, className = "" }: { src: string; name: string; className?: string }) {
@@ -224,7 +223,9 @@ function SkinDetail({ provider, id, close }: { provider: SkinProvider; id: strin
       {item.fileSizeBytes > 0n && <p>{item.fileSizeIsApproximate ? "About " : ""}{(Number(item.fileSizeBytes) / 1_000_000).toFixed(1)} MB</p>}
       {!!item.players.length && <p>Players: {item.players.join(", ")}</p>}
       <p>Source: <a href={links?.source ?? source.url} target="_blank" rel="noopener noreferrer" className="text-cyan underline">{source.name}</a></p>
-      <div className="catalog-actions">{links && <Button href={links.aimmod}>Open in AimMod</Button>}<Button to="/app/osu">Get AimMod</Button><External href={links?.source ?? source.url}>View and download on {source.name}</External></div>
+      <div className="catalog-actions">{links && <Button href={links.aimmod}>Open in AimMod</Button>}<External href={links?.source ?? source.url}>View on {source.name}</External></div>
+      <h3>Downloads</h3>
+      <div className="catalog-actions">{(item.sources.length ? item.sources.map(source => ({ handoff: source.downloadHandoff, variant: source.variant })) : [{ handoff: item.downloadHandoff, variant: "" }]).filter((entry, index, all) => entry.handoff?.available && mediaUrl(entry.handoff.uri) && all.findIndex(other => other.handoff?.uri === entry.handoff?.uri && other.variant === entry.variant) === index).map(({ handoff, variant }) => <External key={`${handoff!.uri}:${variant}`} href={handoff!.uri}>{handoff!.kind === SkinDownloadHandoffKind.DIRECT_URL ? "Download .osk" : "Download on host"}{variant ? ` · ${variant}` : ""}</External>)}</div>
       {item.downloadHandoff?.requiresInteractiveVerification && <p className="text-muted">Complete download verification on {source.name}.</p>}
       {!!item.tags.length && <p className="catalog-tags text-muted">{item.tags.join(" · ")}</p>}
     </>}

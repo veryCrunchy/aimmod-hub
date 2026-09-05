@@ -8,23 +8,26 @@ import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Button } from "../components/ui/Button";
-import { fetchOsuProfile, type OsuPublicProfile } from "../lib/osuCommunity";
+import { fetchOsuScoreHistory, type OsuScoreHistory, type OsuPublicProfile } from "../lib/osuCommunity";
 
 export function OsuProfilePage() {
   const { handle = "" } = useParams();
   const [profile, setProfile] = useState<OsuPublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [history, setHistory] = useState<OsuScoreHistory | null>(null);
+  const [mode, setMode] = useState("osu");
 
   useEffect(() => {
     let cancelled = false;
     setProfile(null);
+    setHistory(null);
     setError(null);
-    void fetchOsuProfile(handle)
-      .then((value) => { if (!cancelled) setProfile(value); })
+    void fetchOsuScoreHistory(handle, mode)
+      .then((value) => { if (!cancelled) { setHistory(value); setProfile({ ...value.profile, recentReplays: value.items }); } })
       .catch((reason) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load this osu! profile."); });
     return () => { cancelled = true; };
-  }, [handle, attempt]);
+  }, [handle, attempt, mode]);
 
   if (error) {
     return <PageStack><PageSeo title="Profile unavailable · AimMod Hub" description="This profile is unavailable." noindex /><PageSection><EmptyState title="Profile unavailable" body="The profile may be private, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/players">Browse players</Button></EmptyState></PageSection></PageStack>;
@@ -49,10 +52,12 @@ export function OsuProfilePage() {
           </div>
         </div>
       </PageSection>
+      <label className="flex items-center gap-3 text-sm">Ruleset<select className="rounded border border-line bg-panel p-2" value={mode} onChange={event => setMode(event.target.value)}><option value="osu">osu!</option><option value="taiko">osu!taiko</option><option value="fruits">osu!catch</option><option value="mania">osu!mania</option></select></label>
+      {history && <div className="text-sm text-muted"><p>Official best and recent scores, combined with public uploads. This is not a complete play history. {history.coverage.best.fetched} best / {history.coverage.recent.fetched} recent scores fetched.{history.hasMore ? " Showing the first 100 matching plays." : ""}</p>{[history.coverage.best, history.coverage.recent].some(source => !["available", "page_limit"].includes(source.status)) && <p role="status" className="mt-2">Some official scores could not be loaded. <button className="text-cyan underline" onClick={() => setAttempt(value => value + 1)}>Try again</button></p>}</div>}
       <PageSection className="p-0 overflow-hidden">
         {profile.recentReplays.length > 0
-          ? profile.recentReplays.map((replay) => <OsuReplayRow key={replay.shareId} replay={replay} />)
-          : <EmptyState title="No public replay analysis" body="This profile has not made any osu! plays public." />}
+          ? profile.recentReplays.map((replay) => <OsuReplayRow key={replay.shareId || replay.officialScoreId} replay={replay} />)
+          : <EmptyState title="No scores to display" body="No plays were returned for this ruleset. Check source availability or choose another ruleset." />}
       </PageSection>
     </PageStack>
   );
