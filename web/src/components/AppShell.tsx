@@ -93,6 +93,11 @@ export function AppShell({ children }: PropsWithChildren) {
         </select>
         <div className="hub-header-search"><HeaderSearch key={game} ref={searchRef} game={game} /></div>
         <div className="hub-account">
+          <a className="hub-discord" href="/join" target="_blank" rel="noopener noreferrer" aria-label="Join AimMod on Discord" title="Join Discord">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+              <path d="M20.317 4.37a19.792 19.792 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.211.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.078.078 0 0 0-.079-.037A19.737 19.737 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.319 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.042-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.1.246.198.372.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.699.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.003-3.03.077.077 0 0 0 .031-.055c.5-5.177-.838-9.674-3.548-13.66a.061.061 0 0 0-.031-.029ZM8.02 15.331c-1.182 0-2.157-1.086-2.157-2.419s.956-2.419 2.157-2.419c1.211 0 2.176 1.096 2.157 2.419 0 1.333-.956 2.419-2.157 2.419Zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419s.955-2.419 2.157-2.419c1.21 0 2.175 1.096 2.157 2.419 0 1.333-.947 2.419-2.157 2.419Z" />
+            </svg>
+          </a>
           {auth.loading ? <span role="status" className="text-muted text-sm">Connecting...</span> : auth.authenticated && auth.user ? (
             <Link to={auth.user.profileHandle ? `/profiles/${auth.user.profileHandle}` : "/account"} className="hub-user">{auth.user.profileDisplayName || auth.user.displayName || auth.user.username}</Link>
           ) : <Button href={discordStartUrl("/account")}>Sign in</Button>}

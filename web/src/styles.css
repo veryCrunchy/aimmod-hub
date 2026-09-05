@@ -49,7 +49,10 @@
 .hub-brand-label { color: var(--color-muted); font-size: 15px; font-weight: 400; }
 .hub-brand-mark { display: none; width: 44px; height: 31px; object-fit: contain; flex-shrink: 0; }
 .hub-header-search { flex: 1; max-width: 620px; min-width: 0; }
-.hub-account { margin-left: auto; min-width: 0; }
+.hub-account { margin-left: auto; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.hub-discord { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 5px; color: var(--color-muted); }
+.hub-discord:hover { color: var(--color-text); background: var(--color-panel); }
+.hub-discord:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
 .hub-game-selector { min-height: 40px; max-width: 140px; border: 1px solid var(--color-line); border-radius: 5px; background: var(--color-panel); color: var(--color-text); padding: 8px 28px 8px 10px; font-size: 13px; }
 .hub-shell[data-game="osu"] { --color-mint: #efa6c8; }
 .hub-user { display: block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
