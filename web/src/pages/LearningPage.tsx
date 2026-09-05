@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Helmet } from "../lib/helmet";
+import { PageSeo } from "../components/PageSeo";
 import { Link, useParams } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
@@ -302,9 +302,7 @@ export function LearningPage() {
   if (data && !entry) {
     return (
       <PageStack>
-        <Helmet>
-          <title>Aim Training Guide · AimMod Hub</title>
-        </Helmet>
+        <PageSeo title="Aim Training Guide · AimMod Hub" description="This guide is unavailable." noindex />
         <PageSection>
           <SectionHeader eyebrow="Learn" title="Could not load this guide" body="The learning entry payload was missing required content." />
           <Button to="/learn">Back to learning pages</Button>
@@ -315,12 +313,11 @@ export function LearningPage() {
 
   return (
     <PageStack>
-      <Helmet>
-        <title>{metaTitle}</title>
-        <meta name="description" content={metaDescription} />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={metaDescription} />
-      </Helmet>
+      <PageSeo title={metaTitle} description={metaDescription} type="article" noindex={Boolean(error) || !entry}
+        schema={entry ? { "@context": "https://schema.org", "@type": "Article", headline: entry.title, description: entry.summary,
+          mainEntityOfPage: `https://aimmod.app/learn/${encodeURIComponent(entry.id)}`, dateModified: data?.updatedAtIso,
+          author: { "@type": "Organization", name: "AimMod Hub", url: "https://aimmod.app" },
+          image: "https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" } : undefined} />
 
       {error ? (
         <PageSection>

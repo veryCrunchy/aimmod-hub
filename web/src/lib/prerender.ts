@@ -1,4 +1,5 @@
 import type { LearnEntryResponse, LearnIndexResponse, LearnTopicResponse } from "./api";
+import { GetLearningEntryResponse, GetLearningIndexResponse, GetLearningTopicResponse } from "../gen/aimmod/hub/v1/hub_pb";
 
 export type PrerenderPayload = {
   learningIndex?: LearnIndexResponse | null;
@@ -23,15 +24,19 @@ export function getPrerenderPayload(): PrerenderPayload | null {
 }
 
 export function getPrerenderLearningIndex(): LearnIndexResponse | null {
-  return getGlobalPayload()?.learningIndex ?? null;
+  const value = getGlobalPayload()?.learningIndex;
+  return value ? GetLearningIndexResponse.fromJsonString(JSON.stringify(value), { ignoreUnknownFields: true }) : null;
 }
 
 export function getPrerenderLearningEntry(entryId: string): LearnEntryResponse | null {
-  return getGlobalPayload()?.learningEntries?.[entryId] ?? null;
+  const value = getGlobalPayload()?.learningEntries?.[entryId];
+  // Restore the same nested defaults supplied by live protobuf responses.
+  return value ? GetLearningEntryResponse.fromJsonString(JSON.stringify(value), { ignoreUnknownFields: true }) : null;
 }
 
 export function getPrerenderLearningTopic(topic: string): LearnTopicResponse | null {
-  return getGlobalPayload()?.learningTopics?.[topic] ?? null;
+  const value = getGlobalPayload()?.learningTopics?.[topic];
+  return value ? GetLearningTopicResponse.fromJsonString(JSON.stringify(value), { ignoreUnknownFields: true }) : null;
 }
 
 export function serializePrerenderPayload(payload: PrerenderPayload): string {

@@ -13,6 +13,7 @@ const kovaaksGroups = [
 ];
 
 const osuGroups = [
+  { label: "Improve", links: [["/osu/learn", "Knowledge base"]] },
   { label: "osu!", links: [["/osu", "Overview"], ["/osu/beatmaps", "Beatmaps"], ["/osu/skins", "Skins"], ["/osu/players", "Players"], ["/osu/replays", "Replay library"], ["/osu/community", "Community activity"]] },
   { label: "AimMod", links: [["/app/osu", "Get AimMod for osu!"], ["/app", "All downloads"]] },
 ];

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Helmet } from "../lib/helmet";
+import { PageSeo } from "../components/PageSeo";
 import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
@@ -193,13 +193,9 @@ export function LearningHubPage() {
 
   return (
     <PageStack>
-      <Helmet>
-        <title>Aim Training Learning Pages · AimMod Hub</title>
-        <meta
-          name="description"
-          content="Browse AimMod's coaching knowledge as learning pages covering aim flaws, mechanics, scenarios, sensitivity, and improvement methods."
-        />
-      </Helmet>
+      <PageSeo title="KovaaK's Aim Training Knowledge Base · AimMod Hub"
+        description="Read aim training guides on mechanics, practice routines, common mistakes and scenario selection." noindex={Boolean(error)} />
+      <Link className="text-sm text-cyan" to="/osu/learn">Looking for osu! guides? Visit the osu! knowledge base.</Link>
 
       <PageSection className="relative overflow-hidden border-cyan/18 bg-[radial-gradient(circle_at_top_left,rgba(94,233,255,0.12),transparent_24%),radial-gradient(circle_at_82%_12%,rgba(121,201,151,0.12),transparent_22%),linear-gradient(135deg,rgba(8,18,20,0.98),rgba(7,13,16,0.96)_52%,rgba(5,8,11,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
         <div className="text-[11px] uppercase tracking-[0.1em] text-cyan/80">AimMod Learn</div>

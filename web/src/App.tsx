@@ -1,10 +1,12 @@
 import { Suspense, lazy, type ComponentType, type PropsWithChildren } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Link, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AuthProvider } from "./lib/AuthContext";
 import { LearningHubPage } from "./pages/LearningHubPage";
 import LearningPage from "./pages/LearningPage";
 import LearningTopicPage from "./pages/LearningTopicPage";
+import { OsuLearningPage } from "./pages/OsuLearningPage";
+import { RouteSeo } from "./components/PageSeo";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
@@ -50,12 +52,15 @@ type AppProps = {
 function AppRoutes() {
   return (
     <AppShell>
+      <RouteSeo />
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/app" element={<ProductsPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />
           <Route path="/osu/community" element={<OsuCommunityPage />} />
+          <Route path="/osu/learn" element={<OsuLearningPage />} />
+          <Route path="/osu/learn/:slug" element={<OsuLearningPage />} />
           <Route path="/osu/beatmaps" element={<OsuCatalogPage key="beatmaps" />} />
           <Route path="/osu/skins" element={<OsuCatalogPage key="skins" skins />} />
           <Route path="/osu/players" element={<OsuDirectoryPage view="players" />} />
@@ -87,7 +92,7 @@ function AppRoutes() {
           <Route path="/u/:steamId" element={<ExternalProfilePage />} />
           <Route path="/u/:steamId/benchmarks/:benchmarkId" element={<ExternalBenchmarkPage />} />
           <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<section className="py-8"><h1 className="text-2xl">Page not found</h1><Link className="text-cyan" to="/">Return to AimMod Hub</Link></section>} />
         </Routes>
       </Suspense>
     </AppShell>

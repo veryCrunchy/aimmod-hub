@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "../lib/helmet";
+import { PageSeo } from "../components/PageSeo";
 import { Link, useParams } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { Breadcrumb } from "../components/ui/Breadcrumb";
@@ -111,12 +111,7 @@ export function LearningTopicPage() {
 
   return (
     <PageStack>
-      <Helmet>
-        <title>{metaTitle}</title>
-        <meta name="description" content={metaDescription} />
-        <meta property="og:title" content={metaTitle} />
-        <meta property="og:description" content={metaDescription} />
-      </Helmet>
+      <PageSeo title={metaTitle} description={metaDescription} noindex={Boolean(error) || !data} />
 
       {error ? (
         <PageSection>

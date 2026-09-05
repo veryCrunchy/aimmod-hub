@@ -4,9 +4,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
+	"github.com/veryCrunchy/aimmod-hub/api/internal/seo"
 )
 
 type sitemapURLSet struct {
@@ -50,11 +52,19 @@ func newSitemapHandler(origin string) http.Handler {
 			return
 		}
 
-		urls := []sitemapURL{
-			{Loc: origin + "/", LastMod: index.UpdatedAtISO},
-			{Loc: origin + "/app", LastMod: index.UpdatedAtISO},
-			{Loc: origin + "/community", LastMod: index.UpdatedAtISO},
-			{Loc: origin + "/learn", LastMod: index.UpdatedAtISO},
+		urls := []sitemapURL{}
+		paths := []string{}
+		for route := range seo.Published.Routes {
+			if route != "/search" {
+				paths = append(paths, route)
+			}
+		}
+		sort.Strings(paths)
+		for _, route := range paths {
+			urls = append(urls, sitemapURL{Loc: origin + route})
+		}
+		for _, guide := range seo.Published.Guides {
+			urls = append(urls, sitemapURL{Loc: origin + "/osu/learn/" + guide.Slug, LastMod: seo.Published.UpdatedAt})
 		}
 		for _, entry := range index.Entries {
 			urls = append(urls, sitemapURL{

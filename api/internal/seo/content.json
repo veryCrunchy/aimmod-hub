@@ -1,0 +1,91 @@
+{
+  "updatedAt": "2026-09-05",
+  "routes": {
+    "/": {"title":"KovaaK's Analysis and Community · AimMod Hub","description":"Explore shared KovaaK's practice runs, scenarios, benchmarks and aim training guides on AimMod Hub."},
+    "/app": {"title":"Download AimMod · AimMod Hub","description":"Choose AimMod for osu! or KovaaK's: replay analysis, coaching and practice tools for your game."},
+    "/app/kovaaks": {"title":"Download AimMod for KovaaK's · AimMod Hub","description":"Get AimMod for KovaaK's to review practice runs, inspect aim metrics and track your training."},
+    "/app/osu": {"title":"Download AimMod for osu! · AimMod Hub","description":"Download AimMod for osu! on Windows and Linux for replay analysis, coaching and practice."},
+    "/community": {"title":"KovaaK's Community · AimMod Hub","description":"Explore shared KovaaK's runs, active players and popular practice scenarios."},
+    "/replays": {"title":"KovaaK's Replay Library · AimMod Hub","description":"Browse shared KovaaK's replays and review practice performance across scenarios."},
+    "/live": {"title":"Live KovaaK's Activity · AimMod Hub","description":"Follow recent public KovaaK's practice activity on AimMod Hub."},
+    "/benchmarks": {"title":"Aim Training Benchmarks · AimMod Hub","description":"Explore aim training benchmarks and compare public results across benchmark scenarios."},
+    "/leaderboard": {"title":"KovaaK's Leaderboards · AimMod Hub","description":"Compare public scores and discover leading practice runs across KovaaK's scenarios."},
+    "/search": {"title":"Search AimMod Hub","description":"Search for players, scenarios and shared practice runs on AimMod Hub."},
+    "/learn": {"title":"KovaaK's Aim Training Knowledge Base · AimMod Hub","description":"Read aim training guides on mechanics, practice routines, common mistakes and scenario selection."},
+    "/osu": {"title":"osu! Analysis and Community · AimMod Hub","description":"Explore osu! beatmaps, skins, public players and shared replay analysis."},
+    "/osu/beatmaps": {"title":"osu! Beatmaps · AimMod Hub","description":"Browse osu! beatmaps and difficulties, filter map statistics and open maps in AimMod."},
+    "/osu/skins": {"title":"osu! Skins · AimMod Hub","description":"Browse osu! skin previews and follow provider links to find your next skin."},
+    "/osu/players": {"title":"osu! Players · AimMod Hub","description":"Discover public osu! players and their shared replay analysis on AimMod Hub."},
+    "/osu/replays": {"title":"osu! Replay Library · AimMod Hub","description":"Browse public osu! replays, score summaries and shared miss analysis."},
+    "/osu/community": {"title":"osu! Community Activity · AimMod Hub","description":"Follow public osu! scores and replay analysis shared by the AimMod community."},
+    "/osu/learn": {"title":"osu! Knowledge Base · AimMod Hub","description":"Practical osu! guides to PP, difficulty, replay review, pattern practice, mods and score comparison."}
+  },
+  "guides": [
+    {
+      "slug":"performance-points-and-difficulty",
+      "title":"osu! PP and star rating: what each number means",
+      "description":"Separate map difficulty, score PP and weighted profile PP when choosing your next osu! practice target.",
+      "sections":[
+        {"title":"Difficulty is not a predicted result","body":"Star rating describes calculated beatmap difficulty. Performance points evaluate a score using the map and the performance achieved on it. A star rating alone does not say whether you can play the map accurately. Two maps with similar stars can ask for different combinations of cursor movement, tapping and reading."},
+        {"title":"A score's PP is not its profile gain","body":"Profile PP weights scores according to their position among your best performances. A new 200 PP score does not necessarily add 200 PP to your profile. Difficulty and performance calculations can also change after official updates; compare estimates made with the same calculator version and mod settings."},
+        {"title":"Review exercise","body":"Choose two maps near your comfortable star range. Compare note rate, spacing and the sections where you lose accuracy, then play both with the same mods. Keep the better-matched map as a score target and the other as a specific practice task. Treat an SS calculation as a scenario, not a promise of the result you will achieve."}
+      ],
+      "sources":[{"title":"osu! wiki: Performance points","url":"https://osu.ppy.sh/wiki/en/Performance_points"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"}]
+    },
+    {
+      "slug":"reviewing-replay-mistakes",
+      "title":"Review osu! replay mistakes without guessing the cause",
+      "description":"Check cursor position, tap timing and slider events before turning an osu! replay miss into a practice decision.",
+      "sections":[
+        {"title":"Start with the event","body":"A replay lets you revisit a play rather than relying on memory. For a missed circle, inspect where the cursor was when the tap happened and whether the tap was inside the judgement window. A cursor passing through the circle at some other time is not enough to establish a successful hit."},
+        {"title":"Separate slider parts","body":"A slider has a head and additional events along its path. A failed slider event is not automatically a missed head. Compare the relevant event and scoring rules before counting it as an aim or timing mistake. An analysis label such as overshoot or late click is a hypothesis about that event, not a complete explanation of your technique."},
+        {"title":"Review exercise","body":"Pick three mistakes, including one from a failed attempt. Watch the lead-in, the input and the next object. Write one observation for each: cursor outside on tap, no observed tap, or late input, for example. When the evidence is ambiguous, leave the cause unknown. Compare several similar sections before choosing a practice focus."}
+      ],
+      "sources":[{"title":"osu! wiki: Replay","url":"https://osu.ppy.sh/wiki/en/Gameplay/Replay"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"}]
+    },
+    {
+      "slug":"jump-stream-and-burst-practice",
+      "title":"Choose osu! pattern practice by spacing and rhythm",
+      "description":"Compare jumps, bursts and streams using spacing, note intervals and repeated replay evidence instead of stars alone.",
+      "sections":[
+        {"title":"Name the demand, not just the map","body":"Streams are sequences of closely timed objects. Within a sequence, spacing and direction can still vary. A short fast burst and a long stream need not expose the same difficulty for you. For practice selection, record the duration of the difficult section as well as how quickly notes arrive and how far the cursor must travel."},
+        {"title":"Compare like with like","body":"Keep the ruleset and rate settings fixed when comparing attempts. A comfortable jump map is not proof that you can maintain accuracy on a dense stream at the same star rating. Look for repeated success and repeated misses on similar sections across different maps, rather than treating your best play as your typical result."},
+        {"title":"Review exercise","body":"Select a small group of maps with a shared pattern demand. Play a baseline attempt, choose one observable problem and review another attempt after practice. Change one demand at a time: spacing, note rate or section length. Keep failed attempts in the comparison. This is a way to structure your review, not a guarantee of a particular improvement rate."}
+      ],
+      "sources":[{"title":"osu! wiki: Stream","url":"https://osu.ppy.sh/wiki/en/Beatmap/Pattern/osu!/Stream"},{"title":"osu! wiki: Star rating","url":"https://osu.ppy.sh/wiki/en/Beatmap/Star_rating"}]
+    },
+    {
+      "slug":"stable-lazer-and-classic",
+      "title":"Compare osu! stable, lazer and Classic scores fairly",
+      "description":"Keep client, slider judgement and mod settings in view when comparing osu! stable and lazer performance.",
+      "sections":[
+        {"title":"Record the rules used","body":"Stable and lazer are not interchangeable labels for an identical scoring environment. The official migration guide documents gameplay differences, including slider behaviour, grading and input handling. Classic can restore selected legacy behaviours; it is not a reason to assume every setting or result is identical to stable."},
+        {"title":"Use matched comparisons","body":"When accuracy changes after switching clients, first check the beatmap version, mods and their settings. Compare the judgement breakdown and slider-head results before concluding that your timing has become worse. Keep each score's original client and ruleset context with your notes."},
+        {"title":"Review exercise","body":"Choose a familiar map and record the settings for each play. Review circles and slider heads separately where the available analysis supports that distinction. Do not average unlike score totals into a single improvement claim. Consult the official upgrading guide for current compatibility and migration details rather than relying on an old feature checklist."}
+      ],
+      "sources":[{"title":"osu! help centre: Upgrading to lazer","url":"https://osu.ppy.sh/wiki/en/Help_centre/Upgrading_to_lazer"},{"title":"osu! wiki: Lazer release stream","url":"https://osu.ppy.sh/wiki/en/Client/Release_stream/Lazer"}]
+    },
+    {
+      "slug":"mods-and-practice-settings",
+      "title":"Keep osu! mods and rate settings in your practice notes",
+      "description":"Understand why mod acronyms alone are not enough to compare osu! practice attempts and difficulty estimates.",
+      "sections":[
+        {"title":"Mods change the task","body":"Game modifiers can alter beatmap settings and gameplay. A rate-changing setup changes the time available between objects; visibility or difficulty settings can change a different part of the task. Do not treat an identical beatmap title as evidence that two attempts presented identical demands."},
+        {"title":"Save settings, not only acronyms","body":"Lazer supports settings within mods. When a custom setting is used, keep its value alongside the acronym. Compare difficulty and performance estimates under the same effective setup, and check the client for the current scoring eligibility of that combination. An estimate is not confirmation that a score will be submitted or ranked."},
+        {"title":"Review exercise","body":"Start with your usual setup and change one setting. Note the exact rate, then compare the same section for accuracy and miss location. Keep the original attempt as the baseline. If a slower attempt becomes cleaner, test again at the original rate before concluding that the practice transfers to your score target."}
+      ],
+      "sources":[{"title":"osu! wiki: Game modifier","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier"},{"title":"osu! wiki: Game modifier (lazer)","url":"https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier_(lazer)"}]
+    },
+    {
+      "slug":"accuracy-combo-and-score",
+      "title":"Read osu! accuracy, combo and score together",
+      "description":"Use judgement counts and scoring context to compare osu! attempts without confusing score, accuracy, combo and PP.",
+      "sections":[
+        {"title":"Each number answers a different question","body":"Accuracy summarizes judgement quality. Combo records a consecutive sequence, while total score follows the scoring system in use. PP is a separate performance calculation. A larger score total alone is not enough to conclude that every part of the play improved."},
+        {"title":"Check the breakdown","body":"Compare the counts of 300s, 100s, 50s and misses, then inspect where those results occurred. Keep slider events and the client context in mind. A whole-play percentage can conceal a short difficult section, and a failed attempt may only contain evidence for the portion that was played."},
+        {"title":"Review exercise","body":"Place two attempts on the same map and setup side by side. Record accuracy, miss count, maximum combo and whether the play reached the end. Identify one section that improved and one that still breaks down. Keep unknown completion or missing analysis explicitly unknown instead of filling the gap with a favourable assumption."}
+      ],
+      "sources":[{"title":"osu! wiki: Score","url":"https://osu.ppy.sh/wiki/en/Gameplay/Score"},{"title":"osu! wiki: osu! judgement system","url":"https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!"}]
+    }
+  ]
+}

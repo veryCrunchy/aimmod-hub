@@ -86,7 +86,11 @@ func TestBrandSPAHTTPMetadata(t *testing.T) {
 			if meta["og:image"][0] != "https://aimmod.app/brand/aimmod-v9/share-card-1200x630.png" || meta["og:image"][0] != meta["twitter:image"][0] {
 				t.Fatal("incorrect social image")
 			}
-			if meta["canonical"][0] != "https://aimmod.app"+route {
+			canonicalPath := strings.TrimRight(route, "/")
+			if canonicalPath == "" {
+				canonicalPath = "/"
+			}
+			if meta["canonical"][0] != "https://aimmod.app"+canonicalPath {
 				t.Fatal("incorrect canonical URL")
 			}
 			if strings.Contains(route, "/osu") && (!strings.Contains(meta["title"][0], "osu!") || strings.Contains(meta["description"][0], "KovaaK")) {

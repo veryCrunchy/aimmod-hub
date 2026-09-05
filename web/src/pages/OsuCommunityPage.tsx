@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "../lib/helmet";
 import { useSearchParams } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { OsuReplayRow } from "../components/OsuReplayRow";

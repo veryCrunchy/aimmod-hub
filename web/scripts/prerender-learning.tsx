@@ -7,6 +7,8 @@ import type { FilledContext } from "react-helmet-async";
 import { HelmetProvider } from "../src/lib/helmet";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../src/App";
+import seoContent from "../../api/internal/seo/content.json";
+import { extractRenderedHead } from "./rendered-head";
 import { serializePrerenderPayload, type PrerenderPayload } from "../src/lib/prerender";
 
 type Drill = {
@@ -345,15 +347,17 @@ function routeOutputPath(routePath: string): string {
 }
 
 function injectRenderedMarkup(baseHtml: string, appHtml: string, payload: PrerenderPayload, helmet: FilledContext["helmet"]) {
+  const rendered = extractRenderedHead(appHtml);
   const titleMarkup = helmet?.title?.toString() || "<title>AimMod Hub</title>";
   const metaMarkup = helmet?.meta?.toString() || "";
   const linkMarkup = helmet?.link?.toString() || "";
+  const scriptMarkup = helmet?.script?.toString() || "";
   const initialDataScript = `<script>window.__AIMMOD_HUB_PRERENDER__=${serializePrerenderPayload(payload)};globalThis.__AIMMOD_HUB_PRERENDER__=window.__AIMMOD_HUB_PRERENDER__;</script>`;
 
-  let html = baseHtml.replace(/<title>[\s\S]*?<\/title>/i, titleMarkup);
-  html = html.replace(/<meta name="description" content="[^"]*"\s*\/?>/i, "");
-  html = html.replace("</head>", `${metaMarkup}${linkMarkup}</head>`);
-  html = html.replace('<div id="root"></div>', `<div id="root">${appHtml}</div>\n    ${initialDataScript}`);
+  let html = baseHtml.replace(/<title>[\s\S]*?<\/title>/i, rendered.head ? "" : titleMarkup);
+  html = html.replace(/<meta\b[^>]*(?:name|property)=["'](?:description|robots|og:[^"']+|twitter:[^"']+)["'][^>]*>/gi, "");
+  html = html.replace("</head>", `${rendered.head || metaMarkup + linkMarkup + scriptMarkup}</head>`);
+  html = html.replace('<div id="root"></div>', `<div id="root">${rendered.body}</div>\n    ${initialDataScript}`);
   return html;
 }
 
@@ -423,7 +427,11 @@ async function main() {
     await renderRoute(baseHtml, route.path, route.payload);
   }
 
-  console.log(`Prerendered ${routes.length} learning routes.`);
+  for (const route of ["/osu/learn", ...seoContent.guides.map(guide => `/osu/learn/${guide.slug}`)]) {
+    await renderRoute(baseHtml, route, {});
+  }
+
+  console.log(`Prerendered ${routes.length} KovaaK's and ${seoContent.guides.length + 1} osu! learning routes.`);
 }
 
 void main().catch((error) => {

@@ -16,6 +16,7 @@ import (
 	htmlparser "golang.org/x/net/html"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/coaching"
+	"github.com/veryCrunchy/aimmod-hub/api/internal/seo"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 )
 
@@ -32,6 +33,7 @@ type pageMeta struct {
 	Description string
 	OGType      string
 	Canonical   string
+	NoIndex     bool
 }
 
 func (m pageMeta) inject(indexHTML string) string {
@@ -59,6 +61,11 @@ func (m pageMeta) inject(indexHTML string) string {
     <meta name="twitter:description" content="%s" />`,
 		t, d, c, t, d, html.EscapeString(m.OGType), c, t, d,
 	)
+	robots := "index, follow"
+	if m.NoIndex {
+		robots = "noindex, nofollow"
+	}
+	block += fmt.Sprintf(`<meta name="robots" content="%s" />`, robots)
 	// Replace owned head metadata rather than appending conflicting defaults.
 	// Tokenization preserves unrelated markup, scripts and favicon links verbatim.
 	z := htmlparser.NewTokenizer(strings.NewReader(indexHTML))
@@ -94,7 +101,7 @@ func (m pageMeta) inject(indexHTML string) string {
 				for _, attr := range token.Attr {
 					value := strings.ToLower(strings.TrimSpace(attr.Val))
 					if token.Data == "meta" && (attr.Key == "name" || attr.Key == "property") {
-						owned = owned || value == "description" || strings.HasPrefix(value, "og:") || strings.HasPrefix(value, "twitter:")
+						owned = owned || value == "description" || value == "robots" || strings.HasPrefix(value, "og:") || strings.HasPrefix(value, "twitter:")
 					}
 					if token.Data == "link" && attr.Key == "rel" {
 						for _, rel := range strings.Fields(value) {
@@ -130,6 +137,9 @@ func isStaticAssetPath(p string) bool {
 }
 
 func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Store) pageMeta {
+	if strings.Trim(path, "/") != "" {
+		canonical = strings.TrimRight(canonical, "/")
+	}
 	fallback := pageMeta{
 		Title:       "AimMod Hub",
 		Description: "AimMod analysis and coaching for osu! and KovaaK's, plus shared practice data.",
@@ -138,9 +148,38 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	}
 
 	cleanPath := strings.TrimSuffix(path, "/")
+	if cleanPath == "" {
+		cleanPath = "/"
+	}
+	if page, ok := seo.Published.Routes[cleanPath]; ok {
+		return pageMeta{Title: page.Title, Description: page.Description, OGType: "website", Canonical: canonical, NoIndex: cleanPath == "/search"}
+	}
+	if strings.HasPrefix(cleanPath, "/osu/learn/") {
+		for _, guide := range seo.Published.Guides {
+			if cleanPath == "/osu/learn/"+guide.Slug {
+				return pageMeta{Title: guide.Title + " · AimMod Hub", Description: guide.Description, OGType: "article", Canonical: canonical}
+			}
+		}
+		fallback.Title, fallback.NoIndex = "Guide unavailable · AimMod Hub", true
+		return fallback
+	}
+	if strings.HasPrefix(cleanPath, "/osu/replays/") || strings.HasPrefix(cleanPath, "/osu/profiles/") {
+		if st == nil {
+			return unavailableOsuMeta(canonical)
+		}
+		return resolveOsuDetailMeta(ctx, cleanPath, canonical, st)
+	}
+	for _, prefix := range []string{"/admin", "/account", "/link-device", "/auth"} {
+		if cleanPath == prefix || strings.HasPrefix(cleanPath, prefix+"/") {
+			fallback.NoIndex = true
+			return fallback
+		}
+	}
 	if cleanPath == "/osu" || strings.HasPrefix(cleanPath, "/osu/") || cleanPath == "/app/osu" {
 		fallback.Title = "osu! Analysis and Community · AimMod Hub"
 		fallback.Description = "Explore osu! beatmaps, skins, player profiles and shared replays with AimMod analysis and coaching."
+		// Published routes and valid detail routes were resolved above.
+		fallback.NoIndex = true
 		switch cleanPath {
 		case "/osu/beatmaps":
 			fallback.Title = "osu! Beatmaps · AimMod Hub"
@@ -286,6 +325,10 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 }
 
 func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
+	origin = strings.TrimRight(strings.TrimSpace(origin), "/")
+	if origin == "" {
+		origin = "https://aimmod.app"
+	}
 	raw, err := os.ReadFile(dir + "/index.html")
 	if err != nil {
 		log.Fatalf("spa: read index.html from %q: %v", dir, err)
@@ -323,8 +366,14 @@ func NewSPAHandler(dir string, st *store.Store, origin string) http.Handler {
 		// SPA fallback: serve index.html with injected meta.
 		canonical := origin + r.URL.Path
 		meta := resolvePageMeta(r.Context(), r.URL.Path, canonical, st)
+		if meta.NoIndex {
+			w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-store")
+		if meta.NoIndex && strings.HasPrefix(r.URL.Path, "/osu/learn/") {
+			w.WriteHeader(http.StatusNotFound)
+		}
 		_, _ = w.Write([]byte(meta.inject(indexHTML)))
 	})
 }

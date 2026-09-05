@@ -295,3 +295,13 @@ The intent is:
 - let a local model use that knowledge without forcing desktop app updates for every coaching-data tweak
 
 Normalized coaching authoring lives under `api/internal/coaching/content/`, with more detail in [docs/coaching-knowledge.md](./docs/coaching-knowledge.md).
+
+## Public knowledge bases and search
+
+The website includes KovaaK's learning pages at `/learn` and an osu! knowledge
+base at `/osu/learn`. Both are prerendered during the web build. Public route
+metadata and osu! articles share `api/internal/seo/content.json`; the server
+publishes `/sitemap.xml` and keeps restricted pages out of search indexes.
+
+See [search and knowledge publishing](./docs/search-and-knowledge.md) for content,
+privacy and deployment checks.

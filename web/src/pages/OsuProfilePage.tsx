@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { PageSeo } from "../components/PageSeo";
 import { useParams } from "react-router-dom";
 import { OsuReplayRow } from "../components/OsuReplayRow";
 import { SectionHeader } from "../components/SectionHeader";
@@ -27,18 +27,16 @@ export function OsuProfilePage() {
   }, [handle, attempt]);
 
   if (error) {
-    return <PageStack><PageSection><EmptyState title="Profile unavailable" body="The profile may be private, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/players">Browse players</Button></EmptyState></PageSection></PageStack>;
+    return <PageStack><PageSeo title="Profile unavailable · AimMod Hub" description="This profile is unavailable." noindex /><PageSection><EmptyState title="Profile unavailable" body="The profile may be private, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/players">Browse players</Button></EmptyState></PageSection></PageStack>;
   }
   if (!profile) {
-    return <PageStack><PageSection role="status" aria-label="Loading player profile"><p className="mb-3 text-muted">Loading player profile...</p><Skeleton className="h-28" /></PageSection><PageSection><Skeleton className="h-72" /></PageSection></PageStack>;
+    return <PageStack><PageSeo title="osu! player · AimMod Hub" description="Loading public player." noindex /><PageSection role="status" aria-label="Loading player profile"><p className="mb-3 text-muted">Loading player profile...</p><Skeleton className="h-28" /></PageSection><PageSection><Skeleton className="h-72" /></PageSection></PageStack>;
   }
 
   return (
     <PageStack>
-      <Helmet>
-        <title>{profile.osuUsername} · osu! · AimMod Hub</title>
-        <meta name="description" content={`${profile.osuUsername}'s public osu! replay analysis and performance history on AimMod Hub.`} />
-      </Helmet>
+      <PageSeo title={`${profile.osuUsername} · osu! · AimMod Hub`} type="profile"
+        description={`${profile.osuUsername}'s public osu! replay analysis and performance history on AimMod Hub.`} />
       <PageSection className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-5 max-[560px]:grid-cols-1">
         {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="h-20 w-20 rounded-md object-cover" /> : <div className="h-20 w-20 rounded-md bg-white/5" />}
         <div className="min-w-0">

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { PageSeo } from "../components/PageSeo";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -47,10 +47,10 @@ export function OsuReplayPage() {
   }, [misses]);
 
   if (error) {
-    return <PageStack><PageSection><EmptyState title="Replay unavailable" body="The replay may no longer be shared, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/replays">Browse replays</Button></EmptyState></PageSection></PageStack>;
+    return <PageStack><PageSeo title="Replay unavailable · AimMod Hub" description="This replay is unavailable." noindex /><PageSection><EmptyState title="Replay unavailable" body="The replay may no longer be shared, or the service may be temporarily unavailable."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button><Button to="/osu/replays">Browse replays</Button></EmptyState></PageSection></PageStack>;
   }
   if (!replay) {
-    return <PageStack><PageSection role="status" aria-label="Loading replay"><p className="mb-3 text-muted">Loading replay...</p><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
+    return <PageStack><PageSeo title="osu! replay · AimMod Hub" description="Loading shared replay." noindex /><PageSection role="status" aria-label="Loading replay"><p className="mb-3 text-muted">Loading replay...</p><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
   }
 
   const pp = replay.performancePoints == null ? "Unavailable" : `${Math.round(replay.performancePoints)}pp`;
@@ -61,10 +61,9 @@ export function OsuReplayPage() {
 
   return (
     <PageStack>
-      <Helmet>
-        <title>{replay.artist} - {replay.title} · osu! replay · AimMod Hub</title>
-        <meta name="description" content={`${formatOsuAccuracy(replay.accuracy)} on ${replay.difficulty}, shared by ${replay.osuUsername}.`} />
-      </Helmet>
+      <PageSeo title={replay.visibility === "public" ? `${replay.artist} - ${replay.title} · osu! replay · AimMod Hub` : "osu! shared replay · AimMod Hub"}
+        description={replay.visibility === "public" ? `${formatOsuAccuracy(replay.accuracy)} on ${replay.difficulty}, shared by ${replay.osuUsername}.` : "View an osu! replay shared by link."}
+        noindex={replay.visibility !== "public"} />
       <PageSection className="relative overflow-hidden p-0">
         {replay.coverUrl ? <img src={replay.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" /> : null}
         <div className="relative grid gap-5 bg-black/60 px-5 py-6 md:grid-cols-[minmax(0,1fr)_auto] md:px-7 md:py-7">
