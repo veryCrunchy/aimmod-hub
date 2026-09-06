@@ -15,9 +15,9 @@
       "deployOutputs": [
         {
           "include": [
-            "out",
-            "web/dist/**",
-            "docker-entrypoint.sh"
+            "/app/out",
+            "/app/web/dist",
+            "/app/docker-entrypoint.sh"
           ]
         }
       ]
@@ -30,21 +30,18 @@
         {
           "local": true,
           "include": [
-            "pp/**"
-          ],
-          "exclude": [
-            "pp/bin/**",
-            "pp/obj/**"
+            "pp"
           ]
         }
       ],
       "commands": [
-        "dotnet publish pp/AimMod.Pp.csproj -c Release -o pp-runtime"
+        "test -f /app/pp/AimMod.Pp.csproj",
+        "dotnet publish /app/pp/AimMod.Pp.csproj -c Release -o /app/pp-runtime"
       ],
       "deployOutputs": [
         {
           "include": [
-            "pp-runtime/**"
+            "/app/pp-runtime"
           ]
         }
       ]
