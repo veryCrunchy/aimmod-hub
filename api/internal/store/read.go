@@ -2498,17 +2498,20 @@ func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (Leader
 
 	// Records: best score per scenario (DISTINCT ON scenario_name)
 	recordRows, err := s.pool.Query(ctx, `
-		SELECT DISTINCT ON (sr.scenario_name)
+		SELECT
 			sr.scenario_name, sr.scenario_type, sr.score, sr.accuracy,
 			sr.duration_ms, sr.played_at,
 			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
 			COALESCE(la.username, hu.external_id),
 			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
-		FROM scenario_runs sr
+		FROM (
+            SELECT DISTINCT ON (scenario_name) * FROM scenario_runs
+            WHERE ($1 = '' OR scenario_type = $1)
+            ORDER BY scenario_name, score DESC, played_at DESC, session_id
+        ) sr
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE ($1 = '' OR sr.scenario_type = $1)
-		ORDER BY sr.scenario_name, sr.score DESC
+		ORDER BY sr.scenario_name
 	`, scenarioType)
 	if err != nil {
 		return result, err
@@ -2524,12 +2527,17 @@ func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (Leader
 			&rp.RunId, &rp.SessionId,
 			&rp.UserHandle, &rp.UserDisplayName,
 		); err != nil {
-			continue
+			return result, err
 		}
 		rp.DurationMs = uint64(durationMs)
 		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
 		result.Records = append(result.Records, &rp)
 	}
+
+	if err := recordRows.Err(); err != nil {
+		return result, err
+	}
+	recordRows.Close()
 
 	// Top scores: overall top 100, ordered by score DESC
 	topRows, err := s.pool.Query(ctx, `
@@ -2539,12 +2547,15 @@ func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (Leader
 			COALESCE(sr.public_run_id, sr.session_id), sr.session_id,
 			COALESCE(la.username, hu.external_id),
 			COALESCE(NULLIF(la.display_name, ''), COALESCE(la.username, hu.external_id))
-		FROM scenario_runs sr
+		FROM (
+            SELECT * FROM scenario_runs
+            WHERE ($1 = '' OR scenario_type = $1)
+            ORDER BY score DESC, played_at DESC, session_id
+            LIMIT 100
+        ) sr
 		JOIN hub_users hu ON hu.id = sr.user_id
 		LEFT JOIN linked_accounts la ON la.user_id = hu.id AND la.provider = 'discord'
-		WHERE ($1 = '' OR sr.scenario_type = $1)
-		ORDER BY sr.score DESC
-		LIMIT 100
+		ORDER BY sr.score DESC, sr.played_at DESC, sr.session_id
 	`, scenarioType)
 	if err != nil {
 		return result, err
@@ -2560,13 +2571,16 @@ func (s *Store) GetLeaderboard(ctx context.Context, scenarioType string) (Leader
 			&rp.RunId, &rp.SessionId,
 			&rp.UserHandle, &rp.UserDisplayName,
 		); err != nil {
-			continue
+			return result, err
 		}
 		rp.DurationMs = uint64(durationMs)
 		rp.PlayedAtIso = playedAt.UTC().Format(time.RFC3339)
 		result.TopScores = append(result.TopScores, &rp)
 	}
 
+	if err := topRows.Err(); err != nil {
+		return result, err
+	}
 	return result, nil
 }
 

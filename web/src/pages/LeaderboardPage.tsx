@@ -13,18 +13,16 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
-import { hubClient, formatRelativeTime, slugifyScenarioName } from "../lib/api";
-import { GetLeaderboardRequest } from "../gen/aimmod/hub/v1/hub_pb";
+import { fetchLeaderboard, formatRelativeTime, slugifyScenarioName } from "../lib/api";
 
 type Tab = "records" | "top";
 
-function fetchLeaderboard(scenarioType: string) {
-  return hubClient.getLeaderboard(new GetLeaderboardRequest({ scenarioType }));
-}
+const PAGE_SIZE = 100;
 
 export function LeaderboardPage() {
   const [data, setData] = useState<GetLeaderboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({ key: "", page: 0 });
   const [params, setParams] = useSearchParams();
   const tab = filterChoice<Tab>(params.get("tab"), ["records", "top"], "records");
   const setTab = (tab: Tab) => setParams(current => updateFilterQuery(current, { tab }), { replace: true });
@@ -61,6 +59,10 @@ export function LeaderboardPage() {
   }, [data, typeFilter]);
 
   const activeList = tab === "records" ? filteredRecords : filteredTop;
+  const paginationKey = `${tab}:${typeFilter ?? ""}`;
+  const pageCount = Math.max(1, Math.ceil(activeList.length / PAGE_SIZE));
+  const page = Math.min(pagination.key === paginationKey ? pagination.page : 0, pageCount - 1);
+  const visibleRows = activeList.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   if (error) {
     return (
@@ -132,7 +134,7 @@ export function LeaderboardPage() {
         )}
 
         {activeList.length > 0 ? (
-          <ScrollArea className="max-h-[min(72vh,900px)] overflow-auto rounded-[18px] border border-line bg-white/2">
+          <ScrollArea key={`${paginationKey}:${page}`} className="max-h-[min(72vh,900px)] overflow-auto rounded-[18px] border border-line bg-white/2">
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
                 <tr>
@@ -148,8 +150,8 @@ export function LeaderboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {activeList.map((entry, idx) => {
-                  const rank = idx + 1;
+                {visibleRows.map((entry, idx) => {
+                  const rank = page * PAGE_SIZE + idx + 1;
                   const rankColor =
                     rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
                   return (
@@ -207,6 +209,13 @@ export function LeaderboardPage() {
         ) : (
           <EmptyState title="No entries" body="No scores match this filter." />
         )}
+        {pageCount > 1 && <nav aria-label="Leaderboard pages" className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <span className="text-muted" aria-live="polite">Page {page + 1} of {pageCount} · {activeList.length.toLocaleString()} records</span>
+          <div className="flex gap-2">
+            <button className="rounded-lg border border-line px-4 py-2 disabled:opacity-40" disabled={page === 0} onClick={() => setPagination({ key: paginationKey, page: page - 1 })}>Previous</button>
+            <button className="rounded-lg border border-line px-4 py-2 disabled:opacity-40" disabled={page === pageCount - 1} onClick={() => setPagination({ key: paginationKey, page: page + 1 })}>Next</button>
+          </div>
+        </nav>}
       </PageSection>
     </PageStack>
   );

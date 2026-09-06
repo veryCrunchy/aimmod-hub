@@ -9,7 +9,7 @@ export function useAutoRefresh(refresh: () => void, intervalMs = 30_000) {
   const ref = useRef(refresh);
   ref.current = refresh;
   useEffect(() => {
-    const id = setInterval(() => ref.current(), intervalMs);
+    const id = setInterval(() => { if (document.visibilityState === "visible") ref.current(); }, intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
 }

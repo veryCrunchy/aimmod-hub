@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -20,6 +22,7 @@ const (
 )
 
 type Client struct {
+	requests          singleflight.Group
 	baseURL           string
 	http              *http.Client
 	observeBenchmarks func(context.Context, string, []uint32)
@@ -867,24 +870,41 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 		endpoint += "?" + encoded
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return fmt.Errorf("build benchmark request: %w", err)
+	result := c.requests.DoChan(endpoint, func() (any, error) {
+		sharedCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancel()
+		req, err := http.NewRequestWithContext(sharedCtx, http.MethodGet, endpoint, nil)
+		if err != nil {
+			return nil, fmt.Errorf("build benchmark request: %w", err)
+		}
+		req.Header.Set("accept", "application/json")
+		resp, err := c.http.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("request benchmarks: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return nil, fmt.Errorf("benchmark request failed: %s", resp.Status)
+		}
+		var raw json.RawMessage
+		if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+			return nil, fmt.Errorf("decode benchmark response: %w", err)
+		}
+		return raw, nil
+	})
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case result := <-result:
+		if result.Err != nil {
+			return result.Err
+		}
+		if err := json.Unmarshal(result.Val.(json.RawMessage), out); err != nil {
+			return fmt.Errorf("decode benchmark response: %w", err)
+		}
+		return nil
 	}
-	req.Header.Set("accept", "application/json")
 
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return fmt.Errorf("request benchmarks: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("benchmark request failed: %s", resp.Status)
-	}
-	if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
-		return fmt.Errorf("decode benchmark response: %w", err)
-	}
-	return nil
 }
 
 // computeScenarioRankIndex returns the highest rank index the player achieves

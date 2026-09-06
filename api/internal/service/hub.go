@@ -18,10 +18,12 @@ import (
 )
 
 type HubServer struct {
-	version    string
-	store      *store.Store
-	benchmarks *kovaaksbenchmarks.Client
-	events     *EventBroker
+	version          string
+	store            *store.Store
+	benchmarks       *kovaaksbenchmarks.Client
+	events           *EventBroker
+	benchmarkCatalog publicResultCache[[]*hubv1.BenchmarkListItem]
+	leaderboards     publicResultCache[store.LeaderboardRecord]
 }
 
 const optionalBenchmarkTimeout = 1500 * time.Millisecond
@@ -661,9 +663,9 @@ func (s *HubServer) GetBenchmarkPage(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("benchmark_id is required"))
 	}
 
-	profile, err := s.store.GetProfile(ctx, handle)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+	profile, err := s.store.GetProfileMeta(ctx, handle)
+	if err != nil || profile == nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("profile not found"))
 	}
 
 	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
@@ -671,10 +673,9 @@ func (s *HubServer) GetBenchmarkPage(
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
-	_, preloaded, err := s.fetchProfileBenchmarks(ctx, handle)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
+	// A missing or temporarily unavailable player list can still use another
+	// public player's metadata and this player's local scores.
+	preloaded, _ := s.benchmarks.ListPlayerBenchmarks(ctx, identity.KovaaksUsername)
 
 	var summary *kovaaksbenchmarks.ProfileBenchmarkSummary
 	for i := range preloaded {
@@ -726,8 +727,8 @@ func (s *HubServer) GetBenchmarkPage(
 	}
 
 	return connect.NewResponse(&hubv1.GetBenchmarkPageResponse{
-		UserHandle:       profile.UserHandle,
-		UserDisplayName:  profile.UserDisplayName,
+		UserHandle:       profile.Handle,
+		UserDisplayName:  profile.DisplayName,
 		BenchmarkId:      summary.BenchmarkID,
 		BenchmarkName:    summary.BenchmarkName,
 		BenchmarkIconUrl: summary.BenchmarkIconURL,
@@ -739,6 +740,10 @@ func (s *HubServer) GetBenchmarkPage(
 }
 
 func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
+	return s.benchmarkCatalog.get(ctx, "catalog", time.Minute, s.loadBenchmarkList, 4*time.Minute)
+}
+
+func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
 	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
 	if err != nil {
 		return nil, err
@@ -757,7 +762,11 @@ func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkL
 		wg.Add(1)
 		go func(u store.BenchmarkUserIdentity) {
 			defer wg.Done()
-			sem <- struct{}{}
+			select {
+			case sem <- struct{}{}:
+			case <-ctx.Done():
+				return
+			}
 			defer func() { <-sem }()
 			items, _ := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
 			listCh <- listResult{steamID: u.SteamID, items: items}
@@ -805,7 +814,11 @@ func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkL
 		wg2.Add(1)
 		go func(p verifyWork) {
 			defer wg2.Done()
-			sem <- struct{}{}
+			select {
+			case sem <- struct{}{}:
+			case <-ctx.Done():
+				return
+			}
 			defer func() { <-sem }()
 			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, p.benchmarkID, p.steamID)
 			if err != nil || detail == nil || detail.OverallRank == 0 {
@@ -891,7 +904,11 @@ func (s *HubServer) GetBenchmarkLeaderboard(
 		wg.Add(1)
 		go func(u store.BenchmarkUserIdentity) {
 			defer wg.Done()
-			sem <- struct{}{}
+			select {
+			case sem <- struct{}{}:
+			case <-ctx.Done():
+				return
+			}
 			defer func() { <-sem }()
 			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, benchmarkID, u.SteamID)
 			if err != nil || detail == nil || detail.OverallRank == 0 {
@@ -1136,7 +1153,10 @@ func (h *HubServer) GetLeaderboard(
 	ctx context.Context,
 	req *connect.Request[hubv1.GetLeaderboardRequest],
 ) (*connect.Response[hubv1.GetLeaderboardResponse], error) {
-	board, err := h.store.GetLeaderboard(ctx, req.Msg.GetScenarioType())
+	scenarioType := strings.TrimSpace(req.Msg.GetScenarioType())
+	board, err := h.leaderboards.get(ctx, scenarioType, 15*time.Second, func(ctx context.Context) (store.LeaderboardRecord, error) {
+		return h.store.GetLeaderboard(ctx, scenarioType)
+	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

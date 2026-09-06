@@ -1,8 +1,10 @@
 import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { API_BASE_URL } from "./config";
+import { createPublicQuery } from "./publicQuery";
 import {
   GetBenchmarkLeaderboardRequest,
+  GetLeaderboardRequest,
   GetLearningEntryRequest,
   GetLearningEntryResponse as ProtoGetLearningEntryResponse,
   GetLearningIndexRequest,
@@ -35,6 +37,11 @@ const transport = createConnectTransport({
 });
 
 export const hubClient = createClient(HubService, transport);
+
+const benchmarkListQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.listBenchmarks>>>(60_000);
+const leaderboardQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getLeaderboard>>>(10_000);
+const profileQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getProfile>>>();
+const benchmarkPageQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getBenchmarkPage>>>();
 
 async function fetchRestJSON<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -501,15 +508,19 @@ export async function fetchScenarioPage(slug: string) {
 }
 
 export async function fetchProfile(handle: string) {
-  return hubClient.getProfile(new GetProfileRequest({ handle }));
+  return profileQuery(handle, () => hubClient.getProfile(new GetProfileRequest({ handle })));
 }
 
 export async function fetchBenchmarkPage(handle: string, benchmarkId: number) {
-  return hubClient.getBenchmarkPage(new GetBenchmarkPageRequest({ handle, benchmarkId }));
+  return benchmarkPageQuery(JSON.stringify([handle, benchmarkId]), () => hubClient.getBenchmarkPage(new GetBenchmarkPageRequest({ handle, benchmarkId })));
 }
 
 export async function fetchBenchmarkList() {
-  return hubClient.listBenchmarks(new ListBenchmarksRequest());
+  return benchmarkListQuery("all", () => hubClient.listBenchmarks(new ListBenchmarksRequest()));
+}
+
+export function fetchLeaderboard(scenarioType = "") {
+  return leaderboardQuery(scenarioType, () => hubClient.getLeaderboard(new GetLeaderboardRequest({ scenarioType })));
 }
 
 export async function fetchBenchmarkLeaderboard(benchmarkId: number) {
