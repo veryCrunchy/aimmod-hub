@@ -47,4 +47,6 @@ test("replay visibility stays page-owned and unknown routes are noindex", () => 
   assert.ok(head("/osu/replays/shared", true, true).includes('content="noindex, nofollow"'));
   assert.ok(head("/osu/replays/shared", true).includes('content="index, follow"'));
   assert.ok(head("/not-a-page").includes('content="noindex, nofollow"'));
+  assert.ok(head("/profiles/example/invalid").includes('content="noindex, nofollow"'));
+  assert.ok(head("/profiles/example/benchmarks/123").includes('content="index, follow"'));
 });

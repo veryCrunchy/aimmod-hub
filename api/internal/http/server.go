@@ -210,7 +210,9 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/api/coaching/", withCORS(cfg.AllowedWebOrigin, coachingHandler))
 	mux.Handle("/robots.txt", newRobotsHandler(cfg.WebAppOrigin))
 	mux.Handle("/join", newDiscordJoinHandler("https://discord.com/api/guilds/1477238446706917389/widget.json"))
-	mux.Handle("/sitemap.xml", newSitemapHandler(cfg.WebAppOrigin))
+	sitemaps := newSitemapHandler(cfg.WebAppOrigin, hub.Store())
+	mux.Handle("/sitemap.xml", sitemaps)
+	mux.Handle("/sitemaps/", sitemaps)
 	mux.Handle("/social-preview.png", newSocialPreviewHandler(hub.Store()))
 	if hasLLMManifest(cfg) {
 		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))

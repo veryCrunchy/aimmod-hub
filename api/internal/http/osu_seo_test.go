@@ -74,7 +74,7 @@ func TestSEOPrivateRoutesAndCanonical(t *testing.T) {
 
 func TestSEOSitemapIncludesPublishedGuidesAndExcludesPrivateRoutes(t *testing.T) {
 	r := httptest.NewRecorder()
-	newSitemapHandler("https://aimmod.app/").ServeHTTP(r, httptest.NewRequest("GET", "/sitemap.xml", nil))
+	newStaticSitemapHandler("https://aimmod.app/").ServeHTTP(r, httptest.NewRequest("GET", "/sitemap.xml", nil))
 	if r.Code != 200 {
 		t.Fatal(r.Body.String())
 	}

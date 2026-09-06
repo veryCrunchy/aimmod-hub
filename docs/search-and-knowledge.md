@@ -17,8 +17,28 @@ build. The existing KovaaK's knowledge base continues using its coaching data.
 The web build prerenders both knowledge bases into HTML. The Go server serves
 those files directly, so article content and metadata are available without
 JavaScript. Other pages receive server-generated metadata; client navigation
-updates the document head. Public static routes and knowledge articles are
-included in `/sitemap.xml`, advertised by `/robots.txt`.
+updates the document head. `/sitemap.xml` is a sitemap index advertised by
+`/robots.txt`. `/sitemaps/pages.xml` contains public static routes and knowledge
+articles. Database-backed sections contain profiles, runs, scenarios,
+player-scenario pages, benchmark pages, public osu! profiles/replays and known
+public official score IDs. Cached external players are included too.
+
+Each database section uses numbered shards of at most 5,000 URLs, sorted by
+path segments. The index obtains current counts from the database, so new pages
+are discoverable without a rebuild. Responses revalidate after five minutes;
+database failures return an uncached 503 instead of a misleading empty sitemap.
+Dynamic pages omit `lastmod` because an ingestion/cache timestamp does not prove
+that the visible page changed.
+
+Successful public KovaaK's benchmark lookups retain their discovered IDs in
+`sitemap_benchmarks`; the table is created by normal startup schema initialization.
+Those pages become discoverable as provider results are fetched by the site.
+The sitemap does not invent every possible external player or benchmark URL,
+or contact third-party providers during a crawl. Beatmap/skin filters stay on
+their catalog canonical URLs because they have no separate detail-page routes.
+
+The public web origin must send `/robots.txt`, `/sitemap.xml` and `/sitemaps/*`
+to the Go server, including deployments with a separate frontend proxy.
 
 Search/filter parameters are not separate canonical pages. Account, admin,
 device-link and search-result pages are non-indexable. Unlisted replay access
@@ -71,3 +91,18 @@ push does not prove that a page is live or indexed.
 
 - [Google: robots metadata](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag)
 - [Google: article structured data](https://developers.google.com/search/docs/appearance/structured-data/article)
+- [Google: build and submit a sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+- [Google: JavaScript SEO](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
+
+## Google Search Console setup
+
+1. Verify the `aimmod.app` Domain property with the DNS TXT record supplied by
+   Search Console, or use an existing verified property covering the HTTPS site.
+2. After deployment, submit `https://aimmod.app/sitemap.xml` under Sitemaps.
+   Submit the index once; Google discovers its child sitemaps automatically.
+3. Use URL Inspection's live test on the home page, a guide, a public profile,
+   a public replay and a benchmark page. Check the selected canonical, HTTP
+   response and rendered content. Request indexing for representative pages.
+4. Monitor sitemap fetch errors and Page indexing reports after recrawling.
+   Private, unlisted, account and search pages should remain excluded. Sitemap
+   submission helps discovery; it does not guarantee indexing or rankings.

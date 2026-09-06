@@ -37,7 +37,7 @@ export function RouteSeo() {
   // These pages own their complete head, including loading/error visibility states.
   if (/^\/(learn(?:\/|$)|osu\/(pp-targets$|learn(?:\/|$)|(?:replays|profiles|scores)\/))/.test(route)) return null;
   const restricted = restrictedRoute.test(route);
-  const dynamic = /^\/(profiles|runs|scenarios|u|benchmarks)\//.test(route);
+  const dynamic = /^\/(?:profiles\/[^/]+(?:\/benchmarks(?:\/[1-9][0-9]*)?|\/scenarios\/[^/]+)?|(?:runs|scenarios)\/[^/]+|benchmarks\/[^/]+|u\/[^/]+(?:\/benchmarks\/[^/]+)?|u\/kovaaks\/[^/]+)$/.test(route);
   const existingTitle = Boolean(page && route !== "/benchmarks") || dynamic;
   if (!existingTitle) return <PageSeo title={page?.title ?? "AimMod Hub"} description={page?.description ?? "AimMod analysis, shared practice data and coaching guides."} noindex={restricted || !page} />;
   const existingDescription = !["/osu", "/osu/players", "/osu/beatmaps", "/osu/skins"].includes(route) && !/^\/(u|benchmarks)\//.test(route);

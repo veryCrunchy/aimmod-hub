@@ -206,6 +206,13 @@ CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_username
 CREATE INDEX IF NOT EXISTS idx_kovaaks_user_cache_display_name
   ON kovaaks_user_cache (LOWER(steam_display_name));
 
+-- Public provider results retained so sitemap requests need no external calls.
+CREATE TABLE IF NOT EXISTS sitemap_benchmarks (
+  username TEXT NOT NULL,
+  benchmark_id BIGINT NOT NULL CHECK (benchmark_id > 0),
+  PRIMARY KEY (username, benchmark_id)
+);
+
 CREATE TABLE IF NOT EXISTS coaching_queries (
   id BIGSERIAL PRIMARY KEY,
   scenario_name TEXT NOT NULL DEFAULT '',

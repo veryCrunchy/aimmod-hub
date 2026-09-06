@@ -35,7 +35,7 @@ func newRobotsHandler(origin string) http.Handler {
 	})
 }
 
-func newSitemapHandler(origin string) http.Handler {
+func newStaticSitemapHandler(origin string) http.Handler {
 	origin = strings.TrimRight(strings.TrimSpace(origin), "/")
 	if origin == "" {
 		origin = "https://aimmod.app"
@@ -79,9 +79,7 @@ func newSitemapHandler(origin string) http.Handler {
 			})
 		}
 
-		w.Header().Set("Content-Type", "application/xml; charset=utf-8")
-		w.Header().Set("Cache-Control", "public, max-age=3600")
-		_ = xml.NewEncoder(w).Encode(sitemapURLSet{
+		writeSitemap(w, r, sitemapURLSet{
 			Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
 			URLs:  urls,
 		})

@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	reProfile      = regexp.MustCompile(`^/profiles/([^/]+)`)
+	reProfile      = regexp.MustCompile(`^/profiles/([^/]+)(?:/benchmarks(?:/([1-9][0-9]*))?|/scenarios/([^/]+))?$`)
 	reScenario     = regexp.MustCompile(`^/scenarios/([^/]+)$`)
 	reRun          = regexp.MustCompile(`^/runs/([^/]+)$`)
 	reLearn        = regexp.MustCompile(`^/learn/([^/]+)$`)
@@ -41,6 +41,7 @@ type pageMeta struct {
 	OGType      string
 	Canonical   string
 	NoIndex     bool
+	NotFound    bool
 }
 
 type publicScoreMetadataProvider interface {
@@ -197,6 +198,11 @@ func isStaticAssetPath(p string) bool {
 	if strings.HasPrefix(p, "assets/") {
 		return true
 	}
+	// Dots in player handles and other route parameters are not file extensions.
+	route := "/" + strings.TrimSuffix(p, "/")
+	if reProfile.MatchString(route) || reScenario.MatchString(route) || reRun.MatchString(route) || reSocialDetail.MatchString(route) || reClientDetail.MatchString(route) {
+		return false
+	}
 	if path.Ext(p) != "" {
 		return true
 	}
@@ -223,6 +229,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	if cleanPath == "" {
 		cleanPath = "/"
 	}
+	path = cleanPath
 	if seo.IsPrivateRoute(cleanPath) {
 		fallback.NoIndex = true
 		return fallback
@@ -257,6 +264,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 		fallback.Description = "Explore osu! beatmaps, skins, player profiles and shared replays with AimMod analysis and coaching."
 		// Published routes and valid detail routes were resolved above.
 		fallback.NoIndex = true
+		fallback.NotFound = true
 		switch cleanPath {
 		case "/osu/beatmaps":
 			fallback.Title = "osu! Beatmaps · AimMod Hub"
@@ -278,13 +286,32 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	}
 
 	if m := reProfile.FindStringSubmatch(path); m != nil {
+		if st == nil {
+			fallback.NoIndex = true
+			return fallback
+		}
 		meta, err := st.GetProfileMeta(ctx, m[1])
 		if err != nil || meta == nil {
-			return pageMeta{Title: m[1] + " · AimMod Hub", Description: fallback.Description, OGType: "profile", Canonical: canonical}
+			return pageMeta{Title: "Profile unavailable · AimMod Hub", Description: fallback.Description, OGType: "profile", Canonical: canonical, NoIndex: true}
 		}
 		name := meta.DisplayName
 		if name == "" {
 			name = meta.Handle
+		}
+		if strings.HasPrefix(path, "/profiles/"+m[1]+"/benchmarks") {
+			title := "Benchmarks"
+			if m[2] != "" {
+				title = "Benchmark " + m[2]
+			}
+			return pageMeta{Title: fmt.Sprintf("%s by %s · AimMod Hub", title, name), Description: fmt.Sprintf("Explore %s's KovaaK's benchmark ranks and scenario results on AimMod Hub.", name), OGType: "website", Canonical: canonical}
+		}
+		if m[3] != "" {
+			scenario, err := st.GetScenarioMeta(ctx, m[3])
+			if err != nil {
+				fallback.NoIndex = true
+				return fallback
+			}
+			return pageMeta{Title: fmt.Sprintf("%s by %s · AimMod Hub", scenario.Name, name), Description: fmt.Sprintf("Explore %s's scores, practice history and progress in %s.", name, scenario.Name), OGType: "website", Canonical: canonical}
 		}
 		return pageMeta{
 			Title:       fmt.Sprintf("%s (@%s) · AimMod Hub", name, meta.Handle),
@@ -295,9 +322,13 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	}
 
 	if m := reScenario.FindStringSubmatch(path); m != nil {
+		if st == nil {
+			fallback.NoIndex = true
+			return fallback
+		}
 		meta, err := st.GetScenarioMeta(ctx, m[1])
 		if err != nil {
-			return pageMeta{Title: m[1] + " · AimMod Hub", Description: fallback.Description, OGType: "website", Canonical: canonical}
+			return pageMeta{Title: "Scenario unavailable · AimMod Hub", Description: fallback.Description, OGType: "website", Canonical: canonical, NoIndex: true}
 		}
 		return pageMeta{
 			Title:       fmt.Sprintf("%s · AimMod Hub", meta.Name),
@@ -308,8 +339,13 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 	}
 
 	if m := reRun.FindStringSubmatch(path); m != nil {
+		if st == nil {
+			fallback.NoIndex = true
+			return fallback
+		}
 		meta, err := st.GetRunMeta(ctx, m[1])
 		if err != nil {
+			fallback.NoIndex = true
 			return fallback
 		}
 		name := meta.UserDisplayName
@@ -400,6 +436,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 
 	// These existing public routes hydrate their detail metadata in the client.
 	fallback.NoIndex = !reClientDetail.MatchString(cleanPath)
+	fallback.NotFound = fallback.NoIndex
 	return fallback
 }
 
@@ -433,7 +470,7 @@ func NewSPAHandler(dir string, st *store.Store, origin string, providers ...publ
 			rawRouteHTML, readErr := fs.ReadFile(fsys, indexPath)
 			if readErr == nil {
 				if seo.IsPrivateRoute(r.URL.Path) || strings.HasPrefix(r.URL.Path, "/osu/scores/") {
-					meta := resolvePageMeta(r.Context(), r.URL.Path, origin+r.URL.Path, st, providers...)
+					meta := resolvePageMeta(r.Context(), r.URL.Path, origin+r.URL.EscapedPath(), st, providers...)
 					rawRouteHTML = []byte(meta.inject(string(rawRouteHTML)))
 					if meta.NoIndex {
 						w.Header().Set("X-Robots-Tag", "noindex, nofollow")
@@ -451,14 +488,14 @@ func NewSPAHandler(dir string, st *store.Store, origin string, providers ...publ
 		}
 
 		// SPA fallback: serve index.html with injected meta.
-		canonical := origin + r.URL.Path
+		canonical := origin + r.URL.EscapedPath()
 		meta := resolvePageMeta(r.Context(), r.URL.Path, canonical, st, providers...)
 		if meta.NoIndex {
 			w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-store")
-		if meta.NoIndex && strings.HasPrefix(r.URL.Path, "/osu/learn/") {
+		if meta.NotFound || (meta.NoIndex && strings.HasPrefix(r.URL.Path, "/osu/learn/")) {
 			w.WriteHeader(http.StatusNotFound)
 		}
 		_, _ = w.Write([]byte(meta.inject(indexHTML)))

@@ -29,10 +29,19 @@ const optionalProfileBenchmarkTimeout = 4 * time.Second
 
 func NewHubServer(version string, store *store.Store) *HubServer {
 	return &HubServer{
-		version:    version,
-		store:      store,
-		benchmarks: kovaaksbenchmarks.NewClient(),
-		events:     NewEventBroker(),
+		version: version,
+		store:   store,
+		benchmarks: kovaaksbenchmarks.NewClient(func(ctx context.Context, username string, ids []uint32) {
+			if store == nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(ctx, time.Second)
+			defer cancel()
+			if err := store.SaveSitemapBenchmarks(ctx, username, ids); err != nil {
+				log.Print("sitemap: could not retain public benchmark catalog")
+			}
+		}),
+		events: NewEventBroker(),
 	}
 }
 

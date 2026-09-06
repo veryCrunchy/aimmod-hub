@@ -20,8 +20,9 @@ const (
 )
 
 type Client struct {
-	baseURL string
-	http    *http.Client
+	baseURL           string
+	http              *http.Client
+	observeBenchmarks func(context.Context, string, []uint32)
 
 	mu           sync.RWMutex
 	listCache    map[string]cachedProfileBenchmarks
@@ -184,9 +185,14 @@ type benchmarkRankRecord struct {
 	Frame string `json:"frame"`
 }
 
-func NewClient() *Client {
+func NewClient(observers ...func(context.Context, string, []uint32)) *Client {
+	var observer func(context.Context, string, []uint32)
+	if len(observers) > 0 {
+		observer = observers[0]
+	}
 	return &Client{
-		baseURL: "https://kovaaks.com/webapp-backend/benchmarks",
+		observeBenchmarks: observer,
+		baseURL:           "https://kovaaks.com/webapp-backend/benchmarks",
 		http: &http.Client{
 			Timeout: 10 * time.Second,
 		},
@@ -249,6 +255,13 @@ func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]P
 	}
 	c.mu.Unlock()
 
+	if c.observeBenchmarks != nil {
+		ids := make([]uint32, 0, len(items))
+		for _, item := range items {
+			ids = append(ids, item.BenchmarkID)
+		}
+		c.observeBenchmarks(ctx, normalized, ids)
+	}
 	return items, nil
 }
 
