@@ -42,7 +42,7 @@ export type OsuSharedReplay = {
   mapObjectCount?: number;
   ppCalculation?: ScorePpInput;
   ppCalculationStatus?: "pending" | "available" | "unavailable";
-  ppCalculationState?: "queued" | "calculating" | "unavailable";
+  ppCalculationState?: "queued" | "calculating" | "unavailable" | "unsupported";
   ppCalculationError?: string;
   onlineScoreId?: number;
   officialReplayExists?: boolean;

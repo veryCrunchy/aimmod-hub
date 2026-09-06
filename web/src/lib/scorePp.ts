@@ -30,6 +30,10 @@ export function validScorePp(pp: unknown): pp is number {
   return typeof pp === "number" && Number.isFinite(pp) && pp >= 0;
 }
 
+export function isUnsupportedScorePpRuleset(input: ScorePpInput): boolean {
+  return [1, 2, 3].includes(input.rulesetId);
+}
+
 export function scorePpValidationReason(input: ScorePpInput): string | null {
   try {
     if (!input || input.version !== 1 || input.rulesetId !== 0) return "Only supported osu!standard score inputs can be calculated";

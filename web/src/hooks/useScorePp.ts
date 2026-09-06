@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { OsuSharedReplay } from "../lib/osuCommunity";
 import { API_BASE_URL } from "../lib/config";
-import { getCachedScorePpResult, setCachedScorePpResult, type ScorePpResult, scorePpCacheKey, scorePpValidationReason } from "../lib/scorePp";
+import { getCachedScorePpResult, setCachedScorePpResult, type ScorePpResult, scorePpCacheKey, scorePpValidationReason, isUnsupportedScorePpRuleset } from "../lib/scorePp";
 
 const empty: OsuSharedReplay[] = [];
 export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
@@ -95,6 +95,7 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
   const items = useMemo(() => input.map(score => {
     if (score.performancePoints != null) return score;
     if (!score.ppCalculation) return { ...score, ppCalculationState: score.ppCalculationStatus === "pending" && !score.ppCalculationError ? "queued" as const : "unavailable" as const };
+    if (isUnsupportedScorePpRuleset(score.ppCalculation)) return { ...score, ppCalculationState: "unsupported" as const, ppCalculationError: undefined };
     const invalid = scorePpValidationReason(score.ppCalculation);
     if (invalid) return { ...score, ppCalculationState: "unavailable" as const, ppCalculationError: invalid };
     const key = scorePpCacheKey(score.ppCalculation);

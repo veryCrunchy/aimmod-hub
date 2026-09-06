@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ScorePpCache, scorePpCacheKey, scorePpPerformanceArgs, scorePpValidationReason, canCalculateScorePp, validateScorePpObjectCount, scorePpTTL, type ScorePpInput } from "../src/lib/scorePp";
+import { ScorePpCache, scorePpCacheKey, scorePpPerformanceArgs, scorePpValidationReason, canCalculateScorePp, validateScorePpObjectCount, scorePpTTL, isUnsupportedScorePpRuleset, type ScorePpInput } from "../src/lib/scorePp";
 
 function input(overrides: Partial<ScorePpInput> = {}): ScorePpInput {
   return { version: 1, beatmapId: 123, beatmapChecksum: "a".repeat(32), rulesetId: 0,
@@ -12,6 +12,16 @@ function storage() {
   return { entries, get length() { return entries.size; }, key: (i: number) => [...entries.keys()][i] ?? null,
     getItem: (key: string) => entries.get(key) ?? null, setItem: (key: string, value: string) => { entries.set(key, value); }, removeItem: (key: string) => { entries.delete(key); } };
 }
+
+test("unsupported modes are distinguished from invalid standard score data", () => {
+  for (const rulesetId of [1, 2, 3]) {
+    assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId })), true);
+    assert.equal(canCalculateScorePp(input({ rulesetId })), false);
+  }
+  assert.equal(isUnsupportedScorePpRuleset(input()), false);
+  assert.equal(isUnsupportedScorePpRuleset(input({ version: 2 })), false);
+  assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId: 99 })), false);
+});
 
 test("stable actual-score args preserve counts and combo without accuracy or FC substitution", () => {
   assert.deepEqual(scorePpPerformanceArgs(input()), { mods: [], lazer: false, combo: 42, n300: 90, n100: 5, n50: 2, misses: 3, legacyTotalScore: 123456 });

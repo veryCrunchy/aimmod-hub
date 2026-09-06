@@ -8,7 +8,9 @@ export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
   const baseDifficulty = replay.calculatedStarRating == null && replay.source === "official";
   const judged = replay.count300 + replay.count100 + replay.count50 + replay.countMiss;
   const accuracy = judged === 0 && !replay.passed ? "—" : formatOsuAccuracy(replay.accuracy);
-  const ppLabel = replay.ppSource === "calculated" ? replay.passed ? "calculated PP" : "partial play PP" : "performance";
+  const unsupported = replay.ppCalculationState === "unsupported";
+  const ppReason = unsupported ? "PP calculation is available for osu!standard only." : replay.ppCalculationError;
+  const ppLabel = unsupported ? "PP · unsupported mode" : replay.ppSource === "calculated" ? replay.passed ? "calculated PP" : "partial play PP" : "performance";
   return (
     <Link
       to={osuScorePath(replay)}
@@ -27,13 +29,13 @@ export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
         <span className="hub-replay-mobile">
           <span className="text-gold">{stars.toFixed(2)}★{baseDifficulty ? " base" : ""}</span>
           <span>{accuracy}</span>
-          <span className="text-[#ff78b4]">{pp}</span>
+          <span className="text-[#ff78b4]" title={ppReason}>{unsupported ? "PP unavailable for this mode" : pp}</span>
           <span>{formatOsuMods(replay.mods)}</span>
         </span>
       </div>
       <Metric value={`${stars.toFixed(2)}★`} label={baseDifficulty ? "base difficulty" : "difficulty"} className="text-gold" />
       <Metric value={accuracy} label="accuracy" className="text-cyan" />
-      <Metric value={pp} label={ppLabel} title={replay.ppCalculationError} className="text-[#ff78b4]" />
+      <Metric value={pp} label={ppLabel} title={ppReason} className="text-[#ff78b4]" />
       <Metric value={formatOsuMods(replay.mods)} label="mods" />
     </Link>
   );
