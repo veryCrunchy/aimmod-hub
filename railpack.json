@@ -10,7 +10,8 @@
         "npm install -g corepack",
         "corepack enable",
         "pnpm install --no-frozen-lockfile",
-        "pnpm build:web"
+        "pnpm build:web",
+        "chmod +x /app/docker-entrypoint.sh"
       ],
       "deployOutputs": [
         {
@@ -56,6 +57,6 @@
     "base": {
       "image": "mcr.microsoft.com/dotnet/aspnet:8.0"
     },
-    "startCommand": "sh /app/docker-entrypoint.sh"
+    "startCommand": "/app/docker-entrypoint.sh"
   }
 }
