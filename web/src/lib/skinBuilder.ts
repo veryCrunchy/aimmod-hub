@@ -14,7 +14,8 @@ export const skinGuides = [
 ] as const;
 export const skinCursorSizes = [{ id: '0.75', name: 'Small' }, { id: '1', name: 'Normal' }, { id: '1.25', name: 'Large' }, { id: '1.5', name: 'Extra large' }] as const;
 export const skinCursors = [
-  { id: 'yellow', name: 'Classic yellow', icon: '●', description: 'A bright yellow cursor with a dark edge and matching trail.' },
+  { id: 'yellow', name: 'Classic yellow', icon: '●', description: 'A white centre, bright yellow rim and soft halo.' },
+  { id: 'yellow-glow', name: 'Yellow glow', icon: '●', description: 'A soft yellow core with a diffuse glow.' },
   { id: 'white', name: 'Classic white', icon: '●', description: 'A clean white cursor with a dark edge and matching trail.' },
   { id: 'ring', name: 'Ring', icon: '⊙', description: 'An open ring with a bright centre.' },
   { id: 'dot', name: 'Dot', icon: '●', description: 'A solid point with a dark edge.' },
