@@ -1,7 +1,9 @@
 import { loadRosu } from "virtual:rosu-browser";
 import { md5 } from "replayviewer-js";
 import type { Beatmap } from "rosu-pp-js";
-import { scorePpPerformanceArgs, validateScorePpObjectCount, validScorePp, type ScorePpWorkerRequest, type ScorePpWorkerResponse } from "./scorePp";
+import { scorePpPerformanceArgs, type ScorePpWorkerRequest, type ScorePpWorkerResponse } from "./scorePp";
+
+import { calculateScorePp } from "./scorePpCalculation";
 
 const maps = new Map<string, Beatmap>();
 const maxMapBytes = 4 * 1024 * 1024;
@@ -15,7 +17,7 @@ async function calculate(request: ScorePpWorkerRequest) {
   const reply = (value: ScorePpWorkerResponse) => self.postMessage(value);
   try {
     if (typeof id !== "string") throw new Error("Invalid calculation request");
-    const params = scorePpPerformanceArgs(input);
+    scorePpPerformanceArgs(input);
     const checksum = input.beatmapChecksum;
     const url = new URL(request.url, self.location.origin);
     if (!["https:", "http:"].includes(url.protocol) || url.username || url.password || !/^\/api\/osu\/v1\/playback\/beatmaps\/[1-9]\d*\/file$/.test(url.pathname)) throw new Error("Invalid beatmap file URL");
@@ -55,15 +57,7 @@ async function calculate(request: ScorePpWorkerRequest) {
       maps.delete(key);
       maps.set(key, map);
     }
-    validateScorePpObjectCount(input, map.nObjects);
-    const performance = new rosu.Performance(params);
-    try {
-      const result = performance.calculate(map);
-      try {
-        if (!validScorePp(result.pp)) throw new Error("Calculation returned invalid PP");
-        reply({ id, pp: result.pp });
-      } finally { result.free(); }
-    } finally { performance.free(); }
+    reply({ id, ...calculateScorePp(rosu, map, input) });
   } catch (error) {
     reply({ id, error: error instanceof Error ? error.message : "Score PP calculation unavailable" });
   }

@@ -38,6 +38,8 @@ export type OsuSharedReplay = {
   officialScoreId?: string;
   officialScoreUrl?: string;
   ppSource?: string;
+  calculatedStarRating?: number;
+  mapObjectCount?: number;
   ppCalculation?: ScorePpInput;
   ppCalculationStatus?: "pending" | "available" | "unavailable";
   ppCalculationState?: "queued" | "calculating" | "unavailable";

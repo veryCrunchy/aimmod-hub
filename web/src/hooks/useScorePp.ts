@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import type { OsuSharedReplay } from "../lib/osuCommunity";
 import { API_BASE_URL } from "../lib/config";
-import { getCachedScorePp, setCachedScorePp, scorePpCacheKey, scorePpValidationReason } from "../lib/scorePp";
+import { getCachedScorePpResult, setCachedScorePpResult, type ScorePpResult, scorePpCacheKey, scorePpValidationReason } from "../lib/scorePp";
 
 const empty: OsuSharedReplay[] = [];
 export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
   const original = source ?? empty;
   const [metadata, setMetadata] = useState<Record<string, Partial<OsuSharedReplay>>>({});
-  const [results, setResults] = useState<Record<string, { pp?: number; error?: string }>>({});
+  const [results, setResults] = useState<Record<string, Partial<ScorePpResult> & { error?: string }>>({});
   const [activeKey, setActiveKey] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -53,16 +53,16 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
         if (!key) continue;
         if (seen.has(key)) continue;
         seen.add(key);
-        let pp = getCachedScorePp(calculation);
-        if (pp !== undefined) {
-          setResults(previous => ({ ...previous, [key]: { pp } }));
+        let result = getCachedScorePpResult(calculation);
+        if (result !== undefined) {
+          setResults(previous => ({ ...previous, [key]: result! }));
           continue;
         }
         setActiveKey(key);
         try {
           worker ??= new Worker(new URL("../lib/scorePpWorker.ts", import.meta.url), { type: "module" });
-          pp = await new Promise<number>((resolve, reject) => {
-            const finish = (error?: Error, value?: number) => {
+          result = await new Promise<ScorePpResult>((resolve, reject) => {
+            const finish = (error?: Error, value?: ScorePpResult) => {
               clearTimeout(timer); cancelPending = undefined;
               if (worker) { worker.onmessage = null; worker.onerror = null; }
               if (error) reject(error); else resolve(value!);
@@ -72,15 +72,15 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
             worker!.onerror = () => { worker?.terminate(); worker = undefined; finish(new Error("PP calculation could not start. Please retry.")); };
             worker!.onmessage = event => {
               if (event.data?.id !== key) return;
-              if (typeof event.data.pp === "number" && Number.isFinite(event.data.pp) && event.data.pp >= 0) finish(undefined, event.data.pp);
+              if (typeof event.data.pp === "number" && Number.isFinite(event.data.pp) && event.data.pp >= 0) finish(undefined, { pp: event.data.pp, stars: event.data.stars, objectCount: event.data.objectCount });
               else finish(new Error(event.data.error || "PP calculation unavailable."));
             };
             try { worker!.postMessage({ id: key, input: calculation, url: `${API_BASE_URL}/api/osu/v1/playback/beatmaps/${calculation.beatmapId}/file?checksum=${encodeURIComponent(calculation.beatmapChecksum)}` }); }
             catch { finish(new Error("PP calculation could not start. Please retry.")); }
           });
           if (!active) break;
-          setCachedScorePp(calculation, pp);
-          setResults(previous => ({ ...previous, [key]: { pp } }));
+          setCachedScorePpResult(calculation, result);
+          setResults(previous => ({ ...previous, [key]: result! }));
         } catch (error) {
           if (active) setResults(previous => ({ ...previous, [key]: { error: error instanceof Error ? error.message : "PP calculation unavailable." } }));
         }
@@ -99,7 +99,7 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
     if (invalid) return { ...score, ppCalculationState: "unavailable" as const, ppCalculationError: invalid };
     const key = scorePpCacheKey(score.ppCalculation);
     const result = results[key];
-    if (result?.pp !== undefined) return { ...score, performancePoints: result.pp, ppSource: "calculated" };
+    if (result?.pp !== undefined) return { ...score, performancePoints: result.pp, calculatedStarRating: result.stars, mapObjectCount: result.objectCount, ppSource: "calculated" };
     return { ...score, ppCalculationState: result?.error ? "unavailable" as const : key === activeKey ? "calculating" as const : "queued" as const, ppCalculationError: result?.error };
   }), [input, results, activeKey]);
   const pending = items.filter(score => ["queued", "calculating"].includes(score.ppCalculationState ?? "")).length;

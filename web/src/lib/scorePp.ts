@@ -7,8 +7,9 @@ export type ScorePpInput = {
   maxCombo: number; accuracy: number; passed: boolean; totalScore: number; legacyTotalScore: number | null;
 };
 export type ScorePpWorkerRequest = { id: string; input: ScorePpInput; url: string };
-export type ScorePpWorkerResponse = { id: string; pp: number } | { id: string; error: string };
-export const scorePpVersion = "rosu4.0.1-actual-v1";
+export type ScorePpResult = { pp: number; stars?: number; objectCount?: number };
+export type ScorePpWorkerResponse = ({ id: string } & ScorePpResult) | { id: string; error: string };
+export const scorePpVersion = "rosu4.0.1-actual-v2";
 export const scorePpTTL = 24 * 60 * 60_000;
 const prefix = `aimmod-score-pp-${scorePpVersion}:`;
 
@@ -88,7 +89,8 @@ export function scorePpCacheKey(input: ScorePpInput): string {
 type StorageLike = Pick<Storage, "length" | "key" | "getItem" | "setItem" | "removeItem">;
 export class ScorePpCache {
   constructor(private storage?: StorageLike, private now = Date.now) {}
-  get(calculation: ScorePpInput): number | undefined {
+  get(calculation: ScorePpInput): number | undefined { return this.getResult(calculation)?.pp; }
+  getResult(calculation: ScorePpInput): ScorePpResult | undefined {
     const key = scorePpCacheKey(calculation);
     if (!key) return;
     try {
@@ -99,10 +101,12 @@ export class ScorePpCache {
       if (!validScorePp(value.pp) || !Number.isFinite(value.expires) || value.expires <= this.now() || value.expires > this.now() + scorePpTTL) {
         this.storage?.removeItem(key); return;
       }
-      return value.pp;
+      return { pp: value.pp, stars: validScorePp(value.stars) ? value.stars : undefined, objectCount: Number.isSafeInteger(value.objectCount) && value.objectCount >= 0 ? value.objectCount : undefined };
     } catch { return; }
   }
-  set(calculation: ScorePpInput, pp: number): void {
+  set(calculation: ScorePpInput, pp: number): void { this.setResult(calculation, { pp }); }
+  setResult(calculation: ScorePpInput, result: ScorePpResult): void {
+    const { pp, stars, objectCount } = result;
     const key = scorePpCacheKey(calculation);
     if (!key || !validScorePp(pp) || !this.storage) return;
     try {
@@ -117,7 +121,7 @@ export class ScorePpCache {
         entries.push({ key: other, expires, bytes: (other.length + raw.length) * 2 });
       }
       entries.sort((a, b) => a.expires - b.expires);
-      const raw = JSON.stringify({ pp, expires: this.now() + scorePpTTL });
+      const raw = JSON.stringify({ pp, stars, objectCount, expires: this.now() + scorePpTTL });
       let bytes = entries.reduce((sum, entry) => sum + entry.bytes, (key.length + raw.length) * 2);
       while (entries.length >= 400 || bytes > 2 * 1024 * 1024) {
         const oldest = entries.shift();
@@ -134,3 +138,10 @@ export function browserScorePpCache(): ScorePpCache {
 }
 export function getCachedScorePp(input: ScorePpInput): number | undefined { return browserScorePpCache().get(input); }
 export function setCachedScorePp(input: ScorePpInput, pp: number): void { browserScorePpCache().set(input, pp); }
+
+export function getCachedScorePpResult(input: ScorePpInput): ScorePpResult | undefined { return browserScorePpCache().getResult(input); }
+export function setCachedScorePpResult(input: ScorePpInput, result: ScorePpResult): void { browserScorePpCache().setResult(input, result); }
+
+export function formatScorePp(pp: number): string {
+  return pp > 0 && pp < 1 ? "<1pp" : `${Math.round(pp)}pp`;
+}

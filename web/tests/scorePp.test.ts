@@ -126,3 +126,26 @@ test("actual rosu retains the supplied miss/count state rather than generating a
     } finally { calculator.free(); }
   } finally { map.free(); }
 });
+
+
+test("full modded map stars stay constant across fails while PP follows actual progress", async () => {
+  const rosu = await import("rosu-pp-js");
+  const { calculateScorePp } = await import("../src/lib/scorePpCalculation");
+  const { formatScorePp } = await import("../src/lib/scorePp");
+  const text = "osu file format v14\n\n[General]\nMode:0\n\n[Difficulty]\nHPDrainRate:5\nCircleSize:4\nOverallDifficulty:8\nApproachRate:9\nSliderMultiplier:1.4\nSliderTickRate:1\n\n[TimingPoints]\n0,500,4,2,1,50,1,0\n\n[HitObjects]\n" + Array.from({ length: 100 }, (_, i) => `${64 + i % 2 * 320},192,${1000 + i * 150},1,0,0:0:0:0:`).join("\n");
+  const map = new rosu.Beatmap(text);
+  try {
+    const early = input({ passed: false, maxCombo: 1, statistics: { great: 1 }, mods: [{ acronym: "DT" }], legacyTotalScore: null });
+    const later = { ...early, maxCombo: 90, statistics: { great: 90 } };
+    const first = calculateScorePp(rosu, map, early), last = calculateScorePp(rosu, map, later);
+    const normal = calculateScorePp(rosu, map, { ...later, mods: [] });
+    assert.equal(first.objectCount, 100);
+    assert.equal(first.stars, last.stars);
+    assert.ok(last.stars! > normal.stars!);
+    assert.ok(last.pp > first.pp);
+    assert.equal(formatScorePp(0.2), "<1pp");
+    assert.equal(formatScorePp(0), "0pp");
+    const cache = new ScorePpCache(storage()); cache.setResult(early, first);
+    assert.deepEqual(cache.getResult(early), first);
+  } finally { map.free(); }
+});

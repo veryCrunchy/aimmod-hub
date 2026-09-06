@@ -1,8 +1,14 @@
+import { formatScorePp } from "../lib/scorePp";
 import { Link } from "react-router-dom";
 import { formatOsuAccuracy, formatOsuMods, osuScorePath, type OsuSharedReplay } from "../lib/osuCommunity";
 
 export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
-  const pp = replay.performancePoints == null ? (["queued", "calculating"].includes(replay.ppCalculationState ?? "") ? "Calculating..." : "Unavailable") : `${Math.round(replay.performancePoints)}pp`;
+  const pp = replay.performancePoints == null ? (["queued", "calculating"].includes(replay.ppCalculationState ?? "") ? "Calculating..." : "Unavailable") : formatScorePp(replay.performancePoints);
+  const stars = replay.calculatedStarRating ?? replay.starRating;
+  const baseDifficulty = replay.calculatedStarRating == null && replay.source === "official";
+  const judged = replay.count300 + replay.count100 + replay.count50 + replay.countMiss;
+  const accuracy = judged === 0 && !replay.passed ? "—" : formatOsuAccuracy(replay.accuracy);
+  const ppLabel = replay.ppSource === "calculated" ? replay.passed ? "calculated PP" : "partial play PP" : "performance";
   return (
     <Link
       to={osuScorePath(replay)}
@@ -14,16 +20,20 @@ export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
         <span className="mt-1 block truncate text-[11px] text-muted">
           [{replay.difficulty}] by {replay.creator} · {replay.osuUsername || replay.hubHandle}
         </span>
+        <span className="mt-1 block text-[10px] text-muted">
+          {replay.passed ? "Passed" : "Failed / stopped"} · {replay.maxCombo}x combo · {replay.countMiss} misses
+          {!replay.passed ? ` · ${judged} objects judged${replay.mapObjectCount ? ` / ${replay.mapObjectCount}` : ""}` : ""}
+        </span>
         <span className="hub-replay-mobile">
-          <span className="text-gold">{replay.starRating.toFixed(2)}★</span>
-          <span>{formatOsuAccuracy(replay.accuracy)}</span>
+          <span className="text-gold">{stars.toFixed(2)}★{baseDifficulty ? " base" : ""}</span>
+          <span>{accuracy}</span>
           <span className="text-[#ff78b4]">{pp}</span>
           <span>{formatOsuMods(replay.mods)}</span>
         </span>
       </div>
-      <Metric value={`${replay.starRating.toFixed(2)}★`} label="difficulty" className="text-gold" />
-      <Metric value={formatOsuAccuracy(replay.accuracy)} label="accuracy" className="text-cyan" />
-      <Metric value={pp} label={replay.ppSource === "calculated" ? "calculated PP" : "performance"} title={replay.ppCalculationError} className="text-[#ff78b4]" />
+      <Metric value={`${stars.toFixed(2)}★`} label={baseDifficulty ? "base difficulty" : "difficulty"} className="text-gold" />
+      <Metric value={accuracy} label="accuracy" className="text-cyan" />
+      <Metric value={pp} label={ppLabel} title={replay.ppCalculationError} className="text-[#ff78b4]" />
       <Metric value={formatOsuMods(replay.mods)} label="mods" />
     </Link>
   );

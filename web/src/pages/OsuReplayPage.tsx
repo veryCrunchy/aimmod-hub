@@ -1,3 +1,4 @@
+import { formatScorePp } from "../lib/scorePp";
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
 import { useScorePp } from "../hooks/useScorePp";
@@ -69,7 +70,7 @@ export function OsuReplayPage() {
     return <PageStack><PageSeo title="osu! replay · AimMod Hub" description="Loading shared replay." noindex /><PageSection role="status" aria-label="Loading replay"><p className="mb-3 text-muted">Loading replay...</p><Skeleton className="h-44" /></PageSection><PageSection><Skeleton className="h-80" /></PageSection></PageStack>;
   }
 
-  const pp = replay.performancePoints == null ? (calculated.pending ? "Calculating..." : "Unavailable") : `${Math.round(replay.performancePoints)}pp`;
+  const pp = replay.performancePoints == null ? (calculated.pending ? "Calculating..." : "Unavailable") : formatScorePp(replay.performancePoints);
   const sourceScoreId = officialScoreId || replay.officialScoreId;
   const playbackSource = replay.hasReplayFile && replay.shareId ? osuReplayDownloadUrl(replay.shareId)
     : sourceScoreId && replay.officialReplayExists ? osuOfficialReplayDownloadUrl(sourceScoreId) : undefined;
@@ -115,14 +116,15 @@ export function OsuReplayPage() {
       {officialScoreId && !replay.officialReplayExists && <p className="text-sm text-muted">osu! does not list a replay file for this score.</p>}
 
       <PageSection className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-px overflow-hidden p-0 bg-line max-[840px]:grid-cols-3 max-[480px]:grid-cols-2">
-        <Metric label="Accuracy" value={formatOsuAccuracy(replay.accuracy)} accent="cyan" />
-        <Metric label={replay.ppSource === "calculated" ? "Calculated PP" : "Performance"} value={pp} accent="pink" />
+        <Metric label="Accuracy" value={!replay.passed && replay.count300 + replay.count100 + replay.count50 + replay.countMiss === 0 ? "—" : formatOsuAccuracy(replay.accuracy)} accent="cyan" />
+        <Metric label={replay.ppSource === "calculated" ? replay.passed ? "Calculated PP" : "Partial play PP" : "Performance"} value={pp} accent="pink" />
         <Metric label="Score" value={replay.totalScore.toLocaleString()} />
         <Metric label="Combo" value={`${replay.maxCombo}x`} />
-        <Metric label="Difficulty" value={`${replay.starRating.toFixed(2)}★`} accent="gold" />
+        <Metric label={replay.calculatedStarRating == null && replay.source === "official" ? "Base difficulty" : "Difficulty"} value={`${(replay.calculatedStarRating ?? replay.starRating).toFixed(2)}★`} accent="gold" />
         <Metric label="Mods" value={formatOsuMods(replay.mods)} />
       </PageSection>
 
+      {!replay.passed && <p className="text-sm text-muted">Failed or stopped early · {replay.count300 + replay.count100 + replay.count50 + replay.countMiss} objects judged{replay.mapObjectCount ? ` / ${replay.mapObjectCount}` : ""}. {replay.ppSource === "calculated" ? "PP is calculated for the portion played." : ""}</p>}
       <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)] gap-4 max-[900px]:grid-cols-1">
         <PageSection>
           <div className="flex flex-wrap items-start justify-between gap-3">
