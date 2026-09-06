@@ -177,10 +177,23 @@ test('lazer exports restore leaderboard and spectators without losing the custom
     const original = JSON.parse(strFromU8(base['MainHUDComponents.json']));
     const layout = JSON.parse(strFromU8(result['MainHUDComponents.json']));
     assert.deepEqual(layout.DrawableInfo.global, original.DrawableInfo.global);
-    for (const entry of original.DrawableInfo.osu) assert.deepEqual(layout.DrawableInfo.osu.find((item: { Type: string }) => item.Type === entry.Type), entry);
+    for (const entry of original.DrawableInfo.osu) {
+      const expected = structuredClone(entry);
+      if (entry.Settings?.sprite_name === 'aimmod-timing-track') expected.Position.y = -105;
+      if (entry.Type.includes('BarHitErrorMeter')) expected.Position.y = -119.45;
+      assert.deepEqual(layout.DrawableInfo.osu.find((item: { Type: string }) => item.Type === entry.Type), expected);
+    }
     for (const name of ['DrawableGameplayLeaderboard', 'SpectatorList']) {
       assert.equal(layout.DrawableInfo.osu.filter((entry: { Type: string }) => entry.Type === `osu.Game.Screens.Play.HUD.${name}, osu.Game`).length, 1);
     }
+    const leaderboard = layout.DrawableInfo.osu.find((entry: { Type: string }) => entry.Type.includes('DrawableGameplayLeaderboard'));
+    assert.equal(leaderboard.Scale.x, 0.8);
+    const track = layout.DrawableInfo.osu.find((entry: { Settings: { sprite_name?: string } }) => entry.Settings.sprite_name === 'aimmod-timing-track');
+    const meter = layout.DrawableInfo.osu.find((entry: { Type: string }) => entry.Type.includes('BarHitErrorMeter'));
+    assert.ok(Math.abs(track.Position.y - meter.Position.y - 14.45) < 0.001);
+    // Native spinner RPM begins at 445/480 of window height. The timing
+    // display (including a conservative 20px extent) must finish above it.
+    assert.ok(768 + track.Position.y + 20 < 445 / 480 * 768);
     // Other rulesets retain their own default layout rather than inheriting osu! positioning.
     for (const mode of ['taiko', 'fruits', 'mania']) assert.equal(layout.DrawableInfo[mode], undefined);
     for (const name of ['sliderendcircle.png', 'sliderendcircleoverlay.png', 'hit300.png', 'scoreentry-0@2x.png']) assert.deepEqual(result[name], base[name]);

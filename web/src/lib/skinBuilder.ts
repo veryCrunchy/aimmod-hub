@@ -150,7 +150,7 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
     const layout = JSON.parse(strFromU8(files['MainHUDComponents.json']));
     const components = layout.DrawableInfo.osu;
     for (const [component, x, y, anchor, scale] of [
-      ['DrawableGameplayLeaderboard', 12, 0, 'CentreLeft', 0.65],
+      ['DrawableGameplayLeaderboard', 12, 0, 'CentreLeft', 0.8],
       ['SpectatorList', 28, -108, 'BottomLeft', 0.8],
     ] as const) {
       const type = `osu.Game.Screens.Play.HUD.${component}, osu.Game`;
@@ -158,6 +158,13 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
         Type: type, Position: { x, y }, Rotation: 0, Scale: { x: scale, y: scale },
         Anchor: anchor, Origin: anchor, UsesFixedAnchor: true, Settings: {}, Children: [],
       });
+    }
+    // Spinner RPM is fixed near the bottom of the window by lazer. Keep both
+    // halves of the timing display above it, preserving their alignment offset.
+    for (const entry of components) {
+      if (entry.Settings?.sprite_name === 'aimmod-timing-track') entry.Position.y = -105;
+      if (entry.Type === 'osu.Game.Screens.Play.HUD.HitErrorMeters.BarHitErrorMeter, osu.Game') entry.Position.y = -119.45;
+      if (entry.Type === 'osu.Game.Screens.Play.HUD.DrawableGameplayLeaderboard, osu.Game') entry.Scale = { x: 0.8, y: 0.8 };
     }
     files['MainHUDComponents.json'] = strToU8(JSON.stringify(layout, null, 2));
   }

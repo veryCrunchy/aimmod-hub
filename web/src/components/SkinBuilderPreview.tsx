@@ -81,7 +81,8 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
           spinnerLayer('spinner-approachcircle', 0, 350 * state.approachScale);
           ctx.save(); ctx.globalAlpha = state.cleared ? 1 : state.promptAlpha;
           image(state.cleared ? 'spinner-clear' : 'spinner-spin', 430, state.cleared ? 115 : 458, 100); ctx.restore();
-          image('spinner-rpm', 402, 501, 156); digits(String(state.rpm), 552, 500, 24);
+          image('spinner-rpm', 371, 556, 219); digits(String(state.rpm), 580, 560, 28);
+          if (state.cleared) { ctx.save(); ctx.globalAlpha = state.flash; digits('1000', 520, 397, 36); ctx.restore(); }
           drawTrail(time => { const angle = spinnerPreviewState(time).rotation; return [480 + Math.cos(angle) * 110, 295 + Math.sin(angle) * 110]; });
           const width = 24 * Number(choice.cursorSize);
           image(`cursor-${choice.cursor}`, 480 + Math.cos(rotation) * 110 - width/2, 295 + Math.sin(rotation) * 110 - width/2, width);
@@ -126,7 +127,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         image(`cursor-${choice.cursor}`, cursorX - cursorWidth / 2, cursorY - cursorWidth / 2, cursorWidth);
         }
         digits('128', 92, 539, 31, 'aimmod-combo-');
-        if (choice.client === 'lazer') { image('aimmod-timing-track', 330, 548, 300); image('aimmod-duration-face', 853, 501, 68); }
+        if (choice.client === 'lazer') { image('aimmod-timing-track', 330, 514, 300); image('aimmod-duration-face', 853, 501, 68); }
         ctx.strokeStyle = theme.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(887, 535, 20, -Math.PI / 2, Math.PI * (.3 + t)); if (choice.client === 'lazer') ctx.stroke();
         for (let i = 0; i < 3; i++) { digits(String([126, 130, 0][i]), 918, 205 + i * 48, 19); ctx.fillStyle = theme.accent; ctx.fillRect(896, 231 + i * 48, 22, 2); }
         if (playing) frame = requestAnimationFrame(draw);
