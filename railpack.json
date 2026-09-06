@@ -52,11 +52,21 @@
     "variables": {
       "AIMMOD_HUB_STATIC_DIR": "/app/web/dist",
       "AIMMOD_HUB_BINARY": "/app/out",
-      "AIMMOD_PP_DLL": "/app/pp-runtime/AimMod.Pp.dll"
+      "AIMMOD_PP_DLL": "/app/pp-runtime/AimMod.Pp.dll",
+      "AIMMOD_PP_DOTNET": "/usr/share/dotnet/dotnet"
     },
-    "base": {
-      "image": "mcr.microsoft.com/dotnet/aspnet:8.0"
-    },
-    "startCommand": "/app/docker-entrypoint.sh"
+    "startCommand": "/app/docker-entrypoint.sh",
+    "inputs": [
+      "...",
+      {
+        "image": "mcr.microsoft.com/dotnet/aspnet:8.0",
+        "include": [
+          "/usr/share/dotnet"
+        ]
+      }
+    ],
+    "aptPackages": [
+      "libicu72"
+    ]
   }
 }

@@ -11,7 +11,7 @@ window.__AIMMOD_HUB__ = window.__AIMMOD_HUB__ || {};
 window.__AIMMOD_HUB__.apiBaseUrl = "$ESCAPED";
 EOF
 
-dotnet "${AIMMOD_PP_DLL:-/app/pp/AimMod.Pp.dll}" &
+"${AIMMOD_PP_DOTNET:-dotnet}" "${AIMMOD_PP_DLL:-/app/pp/AimMod.Pp.dll}" &
 PP_PID=$!
 "${AIMMOD_HUB_BINARY:-/app/aimmod-hub}" "$@" &
 HUB_PID=$!
