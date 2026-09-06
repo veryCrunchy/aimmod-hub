@@ -169,3 +169,22 @@ test('compact numbers keep combo and leaderboard heights separate from score fon
   assert.equal(height('aimmod-score-0@2x.png'), 80);
  }
 });
+
+test('lazer exports restore leaderboard and spectators without losing the custom HUD or intentional blanks', () => {
+  for (const theme of skinThemes) {
+    const base = asset(`${theme.id}/base.zip`);
+    const result = assembleSkin(base, asset(`${theme.id}/subtle.zip`), sounds.soft, { ...defaultSkinChoice, theme: theme.id }, id, {}, asset(`${theme.id}/cursor-ring.zip`));
+    const original = JSON.parse(strFromU8(base['MainHUDComponents.json']));
+    const layout = JSON.parse(strFromU8(result['MainHUDComponents.json']));
+    assert.deepEqual(layout.DrawableInfo.global, original.DrawableInfo.global);
+    for (const entry of original.DrawableInfo.osu) assert.deepEqual(layout.DrawableInfo.osu.find((item: { Type: string }) => item.Type === entry.Type), entry);
+    for (const name of ['DrawableGameplayLeaderboard', 'SpectatorList']) {
+      assert.equal(layout.DrawableInfo.osu.filter((entry: { Type: string }) => entry.Type === `osu.Game.Screens.Play.HUD.${name}, osu.Game`).length, 1);
+    }
+    // Other rulesets retain their own default layout rather than inheriting osu! positioning.
+    for (const mode of ['taiko', 'fruits', 'mania']) assert.equal(layout.DrawableInfo[mode], undefined);
+    for (const name of ['sliderendcircle.png', 'sliderendcircleoverlay.png', 'hit300.png', 'scoreentry-0@2x.png']) assert.deepEqual(result[name], base[name]);
+    const again = assembleSkin(result, asset(`${theme.id}/subtle.zip`), sounds.soft, { ...defaultSkinChoice, theme: theme.id }, id, {}, asset(`${theme.id}/cursor-ring.zip`));
+    assert.deepEqual(JSON.parse(strFromU8(again['MainHUDComponents.json'])), layout);
+  }
+});

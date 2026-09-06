@@ -145,6 +145,21 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
   } else {
     const gameplay = /^(hit|approachcircle|slider|reversearrow|followpoint|cursor|default-|scoreentry-|aimmod-|scorebar-|inputoverlay-|spinner|star2|lighting|particle)/;
     for (const name of Object.keys(files)) if (/\.png$/i.test(name) && !gameplay.test(name)) delete files[name];
+    // A per-ruleset layout replaces lazer's entire default HUD, including its
+    // leaderboard and spectators. Restore those without changing custom counters.
+    const layout = JSON.parse(strFromU8(files['MainHUDComponents.json']));
+    const components = layout.DrawableInfo.osu;
+    for (const [component, x, y, anchor, scale] of [
+      ['DrawableGameplayLeaderboard', 12, 0, 'CentreLeft', 0.65],
+      ['SpectatorList', 28, -108, 'BottomLeft', 0.8],
+    ] as const) {
+      const type = `osu.Game.Screens.Play.HUD.${component}, osu.Game`;
+      if (!components.some((entry: { Type: string }) => entry.Type === type)) components.push({
+        Type: type, Position: { x, y }, Rotation: 0, Scale: { x: scale, y: scale },
+        Anchor: anchor, Origin: anchor, UsesFixedAnchor: true, Settings: {}, Children: [],
+      });
+    }
+    files['MainHUDComponents.json'] = strToU8(JSON.stringify(layout, null, 2));
   }
   if (Object.keys(spinner).length) {
     for (const part of ['top', 'bottom', 'middle', 'middle2', 'glow', 'approachcircle', 'spin', 'clear', 'rpm']) {
