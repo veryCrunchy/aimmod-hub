@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { SKIN_ASSETS, skinThemes, type SkinChoice } from '../lib/skinBuilder';
 
 const previewNames = ['hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'cursor', 'scorebar-bg', 'scorebar-colour',
-  'aimmod-timing-track', 'aimmod-duration-face', ...[1, 2, 3, 4].map(n => `default-${n}`),
+  'spinner-bottom', 'spinner-top', 'spinner-middle', 'spinner-middle2', 'spinner-glow', 'spinner-approachcircle', 'spinner-spin', 'spinner-clear', 'aimmod-timing-track', 'aimmod-duration-face', ...[1, 2, 3, 4].map(n => `default-${n}`),
   ...Array.from({ length: 10 }, (_, n) => `aimmod-score-${n}`), 'aimmod-score-dot', 'aimmod-score-percent', 'aimmod-score-pp'];
 
-export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinChoice; playing: boolean; pattern: 'jumps' | 'sliders' }) {
+export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinChoice; playing: boolean; pattern: 'jumps' | 'sliders' | 'spinner' }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState(false);
   const [ready, setReady] = useState(false);
@@ -16,7 +16,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
     const names = [...previewNames, `guide-${choice.guide}`, `cursor-${choice.cursor}`];
     Promise.all(names.map(name => new Promise<void>((resolve, reject) => {
       const img = new Image(); img.onload = () => { images.set(name, img); resolve(); }; img.onerror = reject;
-      img.src = `${SKIN_ASSETS}/${choice.theme}/${name}@2x.png`;
+      img.src = `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
     }))).then(() => {
       if (disposed) return;
       setReady(true);
@@ -40,6 +40,16 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         };
         image('scorebar-bg', 22, 12, 260); image('scorebar-colour', 29, 19, 242);
         if (choice.client === 'lazer') digits('214pp', 495, 24, 25); digits('98.72%', 697, 24, 25); digits('00428160', 929, 24, 25);
+        if (pattern === 'spinner') {
+          const rotation = playing ? (now - start) / 650 : .45;
+          const spinnerLayer = (name: string, angle: number, width = 350) => { ctx.save(); ctx.translate(480, 295); ctx.rotate(angle); image(name, -width / 2, -width / 2, width); ctx.restore(); };
+          spinnerLayer('spinner-glow', 0); spinnerLayer('spinner-bottom', 0);
+          spinnerLayer('spinner-top', rotation); spinnerLayer('spinner-middle2', rotation * 1.4); spinnerLayer('spinner-middle', 0);
+          ctx.globalAlpha = .5; spinnerLayer('spinner-approachcircle', 0, 360 + (1-t) * 75); ctx.globalAlpha = 1;
+          image(t > .82 ? 'spinner-clear' : 'spinner-spin', 430, 470, 100);
+          const width = 24 * Number(choice.cursorSize);
+          image(`cursor-${choice.cursor}`, 480 + Math.cos(rotation) * 110 - width/2, 295 + Math.sin(rotation) * 110 - width/2, width);
+        } else {
         const points = pattern === 'jumps' ? [[282, 230], [670, 390], [305, 402], [665, 218]] : [[285, 280], [560, 235], [670, 395], [430, 400]];
         if (choice.guide !== 'jumps') for (let i = 0; i < 3; i++) {
           const [x1, y1] = points[i], [x2, y2] = points[i + 1];
@@ -68,6 +78,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         const cursorX = points[0][0] + (points[1][0] - points[0][0]) * t, cursorY = points[0][1] + (points[1][1] - points[0][1]) * t;
         const cursorWidth = 24 * Number(choice.cursorSize);
         image(`cursor-${choice.cursor}`, cursorX - cursorWidth / 2, cursorY - cursorWidth / 2, cursorWidth);
+        }
         digits('128', 115, 529, 42);
         if (choice.client === 'lazer') { image('aimmod-timing-track', 330, 548, 300); image('aimmod-duration-face', 853, 501, 68); }
         ctx.strokeStyle = theme.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(887, 535, 20, -Math.PI / 2, Math.PI * (.3 + t)); if (choice.client === 'lazer') ctx.stroke();
@@ -77,7 +88,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
       draw(performance.now());
     }).catch(() => { if (!disposed) setError(true); });
     return () => { disposed = true; cancelAnimationFrame(frame); };
-  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, playing, pattern]);
+  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, playing, pattern]);
   return <div className="skin-scene">
     <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.guide} followpoints, ${pattern} pattern`} />
     {!ready && <div className="skin-scene-status" role={error ? 'alert' : 'status'}>{error ? 'Preview unavailable. Choose a colour to retry.' : 'Loading preview…'}</div>}

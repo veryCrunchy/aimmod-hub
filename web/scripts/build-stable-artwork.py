@@ -227,3 +227,7 @@ for theme,accent in THEMES.items():
                 tint=Image.new('RGBA',note.size,col);tint.putalpha(note.getchannel('A'));canvas.alpha_composite(tint,(230+i*146,267));put('taikohitcircleoverlay',(230+i*146,267),(88,88))
         canvas.convert('RGB').save(OUT/theme/f'preview-{scene}.png')
     print(theme+': '+str(len(files))+' stable assets; all documented static assets covered.',flush=True)
+
+# Apply the shared modern spinner after the general artwork pass.
+import runpy
+runpy.run_path(str(HERE/'build-spinner.py'))

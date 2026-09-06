@@ -10,7 +10,7 @@ const id = '00000000-0000-4000-8000-000000000001';
 
 test('URL choices are allowlisted and default to the subtle lazer pack', () => {
   assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=../../other&sound=unknown&client=unknown&cursor=unknown')), defaultSkinChoice);
-  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1' });
+  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1', spinner: 'orbit' });
 });
 
 test('every built-in combination retains its chosen cursor, guides, audio and correct client layout', () => {
@@ -21,7 +21,7 @@ test('every built-in combination retains its chosen cursor, guides, audio and co
       for (const cursor of skinCursors) {
         const cursors = asset(`${theme.id}/cursor-${cursor.id}.zip`);
         for (const sound of ['soft', 'clicky'] as const) for (const client of ['lazer', 'stable'] as const) {
-          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', sound, client }, id, stable, cursors);
+          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', spinner: 'orbit', sound, client }, id, stable, cursors);
           assert.deepEqual(result['cursor.png'], cursors['cursor.png']);
           assert.deepEqual(result['followpoint.png'], guides['followpoint.png']);
           assert.deepEqual(result['normal-hitnormal.wav'], sounds[sound]['normal-hitnormal.wav']);
@@ -47,7 +47,10 @@ test('every built-in combination retains its chosen cursor, guides, audio and co
 test('all documented stable static artwork is present in the full skin', () => {
   const catalog = JSON.parse(readFileSync(new URL('../scripts/stable-skin-assets.json', import.meta.url), 'utf8'));
   const result = assembleSkin(asset('flow/base.zip'), asset('flow/subtle.zip'), sounds.soft, { ...defaultSkinChoice, client: 'stable' }, id, asset('flow/stable.zip'), asset('flow/cursor-ring.zip'));
-  for (const name of Object.keys(catalog)) assert.ok(result[name], name);
+  for (const name of Object.keys(catalog)) {
+    if (/^spinner-(background|metre|osu)(@2x)?\.png$/.test(name)) continue; // Mutually exclusive old spinner style.
+    assert.ok(result[name], name);
+  }
 });
 
 test('community samples replace competing encodings but never import community artwork', () => {
@@ -101,4 +104,25 @@ test('selected combo break replaces every encoding and missing cues fall back', 
   assert.deepEqual(selectComboBreak({}), {});
   const fallback = assembleSkin(base, asset('flow/subtle.zip'), { 'normal-hitnormal.wav': selected['normal-hitnormal.wav'] }, defaultSkinChoice, id, {}, asset('flow/cursor-yellow.zip'));
   assert.deepEqual(fallback['combobreak.wav'], base['combobreak.wav']);
+});
+
+test('both clients use the complete modern spinner without forcing the old style', () => {
+  for (const theme of skinThemes) for (const client of ['lazer', 'stable'] as const) {
+    const result = assembleSkin(asset(`${theme.id}/base.zip`), asset(`${theme.id}/subtle.zip`), sounds.soft, { ...defaultSkinChoice, theme: theme.id, client }, id, asset(`${theme.id}/stable.zip`), asset(`${theme.id}/cursor-ring.zip`));
+    for (const name of ['bottom','top','middle','middle2','glow','approachcircle','spin','clear','rpm']) for (const suffix of ['.png','@2x.png']) assert.ok(result[`spinner-${name}${suffix}`]);
+    assert.equal(result['spinner-background.png'], undefined);
+    assert.equal(result['spinner-background@2x.png'], undefined);
+  }
+});
+
+test('all spinner choices survive export in both clients and invalid URLs use Orbit', () => {
+  assert.equal(parseSkinChoice(new URLSearchParams('spinner=../unknown')).spinner, 'orbit');
+  for (const theme of skinThemes) for (const spinner of ['orbit', 'split', 'halo'] as const) for (const client of ['lazer', 'stable'] as const) {
+    const patch = asset(`${theme.id}/spinner-${spinner}.zip`);
+    const result = assembleSkin(asset(`${theme.id}/base.zip`), asset(`${theme.id}/subtle.zip`), sounds.soft, { ...defaultSkinChoice, theme: theme.id, spinner, client }, id, asset(`${theme.id}/stable.zip`), asset(`${theme.id}/cursor-ring.zip`), patch);
+    assert.deepEqual(result['spinner-top@2x.png'], patch['spinner-top@2x.png']);
+    assert.deepEqual(result['spinner-glow@2x.png'], patch['spinner-glow@2x.png']);
+    assert.equal(result['spinner-background.png'], undefined);
+    assert.ok(strFromU8(result['skin.ini']).includes(spinner));
+  }
 });
