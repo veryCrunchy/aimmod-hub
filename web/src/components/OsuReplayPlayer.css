@@ -32,3 +32,10 @@
 .osu-replay-player:fullscreen { display: flex; flex-direction: column; justify-content: center; border: 0; border-radius: 0; }
 .osu-replay-player:fullscreen .osu-replay-player__stage { flex: 1; min-height: 0; }
 @media (max-width: 540px) { .osu-replay-player__controls { padding: 10px; } .osu-replay-player__overlay { gap: 8px; padding: 12px; } .osu-replay-player__overlay strong { font-size: 16px; } .osu-replay-player__fullscreen { display: none; } .osu-replay-player__transport { gap: 8px; } .osu-replay-player__speed span { display: none; } .osu-replay-player__overlay p { font-size: 11px; margin: 0; } }
+
+.osu-replay-player__skins { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #303136; font-size: 12px; }
+.osu-replay-player__skins label { display: inline-flex; align-items: center; gap: 8px; }
+.osu-replay-player__skins select { max-width: 220px; }
+.osu-replay-player__skins a { color: #a5c9d3; }
+.osu-replay-player__skins .osu-replay-player__file { margin-left: auto; }
+.osu-replay-player__skins [role=status] { color: #bdc6c8; }

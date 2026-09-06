@@ -1,12 +1,15 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { createReplaySession, type CoreSession, type SkinAssets } from "replayviewer-js";
+import { configureWorkers, createReplaySession, type CoreSession, type SkinAssets } from "replayviewer-js";
 import { Play, Pause, RotateCcw, Maximize, Settings2, Volume2 } from "lucide-react";
 import { decodeOsuPlayback, fetchPlaybackBytes, osuPlaybackAudioUrl, osuPlaybackBeatmapUrl, playbackTimeLabel } from "../lib/osuPlayback";
-import { createAimModPlaybackSkin, disposeAimModPlaybackSkin } from "../lib/osuPlaybackSkin";
+import { createAimModPlaybackSkin, disposeAimModPlaybackSkin, playbackSkins, savedPlaybackSkin, loadPlaybackSkin, composePlaybackSkin } from "../lib/osuPlaybackSkin";
 import { playbackAnalysis } from "../lib/osuPlaybackAnalysis";
 import type { OsuReplayAnalysis } from "../lib/osuCommunity";
 import type { ParsedOsuPlayback } from "../lib/osuPlayback";
 import "./OsuReplayPlayer.css";
+import stretchWorkerUrl from "replayviewer-js/stretch-worker.js?url";
+
+configureWorkers({ stretch: stretchWorkerUrl });
 
 export interface OsuReplayPlayerProps {
   replayUrl: string;
@@ -61,7 +64,20 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
   const [dim, setDim] = useState(.65);
   const [keysVisible, setKeysVisible] = useState(true);
   const [timingVisible, setTimingVisible] = useState(true);
+  const [followpointsVisible, setFollowpointsVisible] = useState(true);
+  const [judgementsVisible, setJudgementsVisible] = useState(true);
+  const [skinId, setSkinId] = useState(savedPlaybackSkin);
+  const [skinBusy, setSkinBusy] = useState(false);
+  const [skinError, setSkinError] = useState("");
+  const [customSkinName, setCustomSkinName] = useState("");
+  const [renderQuality, setRenderQuality] = useState(0);
+  const renderQualityRef = useRef(renderQuality);
+  renderQualityRef.current = renderQuality;
+  const swapSkin = useRef<((id: string, file?: File, quality?: number) => Promise<void>) | null>(null);
+  const preferences = useRef({ rate, songVolume, hitsoundVolume });
+  preferences.current = { rate, songVolume, hitsoundVolume };
   const generation = useRef(0);
+  const appliedSeek = useRef<number | undefined>(undefined);
 
   const pause = () => {
     generation.current++;
@@ -74,9 +90,13 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
     const abort = new AbortController();
     let owned: CoreSession | null = null;
     let skin: SkinAssets | null = null;
+    let overlay: SkinAssets | null = null;
     let background: ImageBitmap | null = null;
     let frame = 0;
+    let switching = false;
     let audio: AudioContext | null = null;
+    appliedSeek.current = undefined;
+    setSkinBusy(false); setSkinError(""); setSkinId(savedPlaybackSkin());
     setState("loading"); setError(""); setPlaying(false); setPosition(0); setControlError(""); setSongError("");
     setStage("Loading replay and beatmap");
     const alive = () => !abort.signal.aborted;
@@ -92,29 +112,38 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
       const parsed = await decodeOsuPlayback(replayBytes, mapBytes, abort.signal);
       if (!alive()) return;
       verifiedCallback.current?.(parsed);
-      setStage("Preparing playback");
+      setStage("Loading replay skin");
       audio = new AudioContext(); context.current = audio;
       skin = await createAimModPlaybackSkin();
+      if (!alive()) return;
       let song: AudioBuffer | null = null;
       const songUrl = audioUrl || osuPlaybackAudioUrl(beatmapId, beatmapsetId, parsed.replay.beatmapHash);
-      if (songUrl) {
-        setStage("Loading song audio");
-        try {
-          const bytes = await fetchPlaybackBytes(songUrl, 64 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(60000)]));
-          song = await audio.decodeAudioData(bytes);
-        } catch { if (alive()) setSongError("The matching song is unavailable. Replay hitsounds remain enabled."); }
-      }
-      if (backgroundUrl) {
-        try {
-          const bytes = await fetchPlaybackBytes(backgroundUrl, 8 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(10000)]));
-          background = await createImageBitmap(new Blob([bytes]));
-        } catch { /* The play remains watchable without artwork. */ }
-      }
+      setStage("Loading song and skin");
+      await Promise.all([
+        (async () => {
+          try { overlay = await loadPlaybackSkin(savedPlaybackSkin(), audio!, AbortSignal.any([abort.signal, AbortSignal.timeout(12000)])); }
+          catch { if (alive()) { setSkinId("classic"); setSkinError("The selected skin is unavailable. AimMod Classic is ready to use."); } }
+        })(),
+        (async () => {
+          if (!songUrl) return;
+          try {
+            const bytes = await fetchPlaybackBytes(songUrl, 64 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(60000)]));
+            song = await audio!.decodeAudioData(bytes);
+          } catch { if (alive()) setSongError("The matching song is unavailable. Replay hitsounds remain enabled."); }
+        })(),
+        (async () => {
+          if (!backgroundUrl) return;
+          try {
+            const bytes = await fetchPlaybackBytes(backgroundUrl, 8 * 1024 * 1024, AbortSignal.any([abort.signal, AbortSignal.timeout(10000)]));
+            background = await createImageBitmap(new Blob([bytes]));
+          } catch { /* The play remains watchable without artwork. */ }
+        })(),
+      ]);
       if (!alive()) return;
       owned = await createReplaySession({ canvas: canvas.current!, audioContext: audio, replay: parsed.replay,
-        beatmapSet: { beatmap: parsed.beatmap, songBuffer: song, background, beatmapSounds: new Map() }, skin,
+        beatmapSet: { beatmap: parsed.beatmap, songBuffer: song, background, beatmapSounds: new Map() }, skin: composePlaybackSkin(skin, overlay),
         lazerDefaultsUrl: "/playback/aimmod-sounds", userRate: 1 });
-      if (!alive()) { owned.audioSync.pause(); owned.destroy(); return; }
+      if (!alive()) return;
       session.current = owned;
       analysisCallback.current?.(playbackAnalysis(owned.renderer.hitResults, parsed.beatmap));
       owned.renderer.options.backgroundDim = .65;
@@ -123,7 +152,55 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
       owned.player.setClockFn(owned.audioSync.clockFn);
       owned.audioSync.setSongVolume(.65); owned.audioSync.setEffectsVolume(.35);
       owned.renderer.start();
-      setRate(1); setSongVolume(.65); setHitsoundVolume(.35); setDim(.65); setKeysVisible(true); setTimingVisible(true); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
+      swapSkin.current = async (id, file, quality) => {
+        if (!owned || !audio || !skin || switching) return;
+        switching = true;
+        setSkinBusy(true); setSkinError("");
+        const previous = owned;
+        const wasPlaying = previous.player.isPlaying;
+        const switchToken = ++generation.current;
+        previous.player.pause(); previous.audioSync.pause(); setPlaying(false);
+        const time = previous.player.currentTimeMs;
+        const reuseSkin = quality !== undefined;
+        const nextQuality = quality ?? renderQualityRef.current;
+        let nextOverlay: SkinAssets | null = null;
+        let next: CoreSession | null = null;
+        try {
+          nextOverlay = reuseSkin ? overlay : await loadPlaybackSkin(id, audio, abort.signal, file);
+          if (!alive()) return;
+          previous.renderer.stop();
+          next = await createReplaySession({ canvas: canvas.current!, audioContext: audio, replay: previous.replay,
+            beatmapSet: previous.assets, skin: composePlaybackSkin(skin, nextOverlay),
+            lazerDefaultsUrl: "/playback/aimmod-sounds", userRate: preferences.current.rate,
+            pageZoom: nextQuality ? nextQuality / Math.max(1, window.devicePixelRatio || 1) : 1 });
+          if (!alive()) return;
+          Object.assign(next.renderer.options, previous.renderer.options);
+          next.player.setClockFn(next.audioSync.clockFn);
+          next.audioSync.setSongVolume(preferences.current.songVolume);
+          next.audioSync.setEffectsVolume(preferences.current.hitsoundVolume);
+          next.player.seek(time);
+          previous.destroy();
+          if (overlay && !reuseSkin) disposeAimModPlaybackSkin(overlay);
+          overlay = nextOverlay; nextOverlay = null;
+          owned = next; session.current = next; next = null;
+          owned.renderer.start();
+          setRenderQuality(nextQuality);
+          if (!reuseSkin) { setSkinId(id); setCustomSkinName(file?.name.replace(/\.osk$/i, "") ?? ""); }
+          if (id !== "custom") { try { localStorage.setItem("osu-replay-skin", id); } catch { /* Optional preference. */ } }
+          if (wasPlaying && !document.hidden && switchToken === generation.current) {
+            await owned.audioSync.playFrom(time);
+            if (alive() && !document.hidden && switchToken === generation.current) { owned.player.play(); setPlaying(true); } else { owned.audioSync.pause(); }
+          }
+        } catch {
+          if (alive()) { owned?.renderer.start(); setSkinError("This skin could not be opened. Your current skin is still available."); }
+        } finally {
+          next?.destroy();
+          if (nextOverlay && !reuseSkin) disposeAimModPlaybackSkin(nextOverlay);
+          switching = false;
+          if (alive()) setSkinBusy(false);
+        }
+      };
+      setRenderQuality(0); setRate(1); setSongVolume(.65); setHitsoundVolume(.35); setDim(.65); setKeysVisible(true); setTimingVisible(true); setFollowpointsVisible(true); setJudgementsVisible(true); setDuration(owned.player.durationMs); setAudioAvailable(song !== null); setState("ready");
       let last = 0;
       const tick = (time: number) => {
         if (!alive() || !owned) return;
@@ -144,13 +221,15 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
     void run().catch(reason => {
       if (alive()) { const message = reason instanceof Error ? reason.message : "This replay could not be opened."; setError(message); setState("error"); errorCallback.current?.(message); }
     }).finally(() => {
-      if (!alive()) { owned?.audioSync.pause(); owned?.destroy(); if (skin) disposeAimModPlaybackSkin(skin); background?.close(); }
+      if (!alive()) { owned?.audioSync.pause(); owned?.destroy(); if (skin) { disposeAimModPlaybackSkin(skin); skin = null; } if (overlay) { disposeAimModPlaybackSkin(overlay); overlay = null; } background?.close(); background = null; }
     });
     return () => {
       abort.abort(); generation.current++; cancelAnimationFrame(frame); document.removeEventListener("visibilitychange", hidden);
+      swapSkin.current = null;
       owned?.player.pause(); owned?.audioSync.pause(); owned?.destroy();
-      if (skin) disposeAimModPlaybackSkin(skin);
-      background?.close();
+      if (skin) { disposeAimModPlaybackSkin(skin); skin = null; }
+      if (overlay) { disposeAimModPlaybackSkin(overlay); overlay = null; }
+      background?.close(); background = null;
       if (audio && audio.state !== "closed") void audio.close().catch(() => undefined);
       if (session.current === owned) session.current = null;
       if (context.current === audio) context.current = null;
@@ -169,11 +248,12 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
 
   useEffect(() => {
     const current = session.current;
-    if (state === "ready" && current && seekToMs != null && Number.isFinite(seekToMs)) {
+    if (state === "ready" && !skinBusy && current && seekToMs != null && seekToMs !== appliedSeek.current && Number.isFinite(seekToMs)) {
+      appliedSeek.current = seekToMs;
       void seek(Math.max(0, Math.min(current.player.durationMs, (seekToMs - current.introOffsetMs) / current.speed)))
         .catch(() => setControlError("This replay could not seek to that moment."));
     }
-  }, [seekToMs, state]);
+  }, [seekToMs, state, skinBusy]);
 
   const toggle = async () => {
     const current = session.current;
@@ -200,17 +280,17 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
     </div>
     <div className="osu-replay-player__controls">
       <div className="osu-replay-player__transport">
-        <button type="button" className="osu-replay-player__icon" disabled={state !== "ready"} onClick={() => void toggle()} aria-label={playing ? "Pause replay" : "Play replay"} title={playing ? "Pause replay" : "Play replay"}>{playing ? <Pause size={18} /> : <Play size={18} />}</button>
-        <button type="button" className="osu-replay-player__icon" aria-label="Restart replay" disabled={state !== "ready"} onClick={() => { pause(); void seek(0).catch(() => setControlError("Could not restart replay.")); }} title="Restart replay"><RotateCcw size={17} /></button>
+        <button type="button" className="osu-replay-player__icon" disabled={state !== "ready" || skinBusy} onClick={() => void toggle()} aria-label={playing ? "Pause replay" : "Play replay"} title={playing ? "Pause replay" : "Play replay"}>{playing ? <Pause size={18} /> : <Play size={18} />}</button>
+        <button type="button" className="osu-replay-player__icon" aria-label="Restart replay" disabled={state !== "ready" || skinBusy} onClick={() => { pause(); void seek(0).catch(() => setControlError("Could not restart replay.")); }} title="Restart replay"><RotateCcw size={17} /></button>
         <span className="osu-replay-player__time"><output aria-label="Replay position">{playbackTimeLabel(position)}</output> / {playbackTimeLabel(duration)}</span>
-        <label className="osu-replay-player__speed"><span>Speed</span><select value={rate} disabled={state !== "ready"} onChange={event => {
+        <label className="osu-replay-player__speed"><span>Speed</span><select value={rate} disabled={state !== "ready" || skinBusy} onChange={event => {
           const value = Number(event.target.value); setRate(value);
           const current = session.current;
           if (current) { const time = current.player.currentTimeMs; current.audioSync.setUserRate(value); void seek(time).catch(() => setControlError("Could not change playback speed.")); }
         }}>{[.25, .5, .75, 1, 1.25, 1.5, 2].map(value => <option key={value} value={value}>{value}x</option>)}</select></label>
         <button type="button" className="osu-replay-player__fullscreen osu-replay-player__icon" aria-label="Fullscreen replay" title="Fullscreen replay" onClick={() => void (document.fullscreenElement ? document.exitFullscreen() : root.current?.requestFullscreen())?.catch(() => setControlError("Fullscreen is unavailable in this browser."))}><Maximize size={17} /></button>
       </div>
-      <input aria-label="Replay timeline" className="osu-replay-player__timeline" type="range" min="0" max={duration} step="10" value={Math.min(position, duration)} disabled={state !== "ready"}
+      <input aria-label="Replay timeline" className="osu-replay-player__timeline" type="range" min="0" max={duration} step="10" value={Math.min(position, duration)} disabled={state !== "ready" || skinBusy}
         onChange={event => void seek(Number(event.target.value)).catch(() => setControlError("Could not seek replay."))} />
       <div className="osu-replay-player__sound">
         <span>{audioAvailable ? "Song + hitsounds" : "Hitsounds only"}</span>
@@ -222,8 +302,23 @@ function OsuReplayPlayerSession({ replayUrl, beatmapId, beatmapsetId, beatmapUrl
         }} /></label>
         <button type="button" className="osu-replay-player__settings-button osu-replay-player__icon" aria-label="Replay display settings" title="Replay display settings" aria-expanded={showSettings} aria-controls={settingsId} onClick={() => setShowSettings(value => !value)}><Settings2 size={17} /></button>
       </div>
+      <div className="osu-replay-player__skins">
+        <label>Skin <select aria-label="Replay skin" value={skinId} disabled={state !== "ready" || skinBusy} onChange={event => void swapSkin.current?.(event.target.value)}>
+          {playbackSkins.map(skin => <option key={skin.id} value={skin.id}>{skin.name}</option>)}
+          {skinId === "custom" ? <option value="custom">{customSkinName || "Custom skin"}</option> : null}
+        </select></label>
+        {playbackSkins.find(skin => skin.id === skinId)?.source ? <a href={playbackSkins.find(skin => skin.id === skinId)!.source} target="_blank" rel="noreferrer">by {playbackSkins.find(skin => skin.id === skinId)!.creator}</a> : null}
+        <label className="osu-replay-player__file">Choose .osk<input type="file" accept=".osk,.zip" aria-label="Choose custom skin" disabled={state !== "ready" || skinBusy} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void swapSkin.current?.("custom", file); }} /></label>
+        {skinBusy ? <span role="status">Loading skin…</span> : null}
+      </div>
+      {skinError ? <p role="status" className="osu-replay-player__notice">{skinError}</p> : null}
       {showSettings ? <div id={settingsId} className="osu-replay-player__settings">
+        <label>Render detail <select aria-label="Render detail" value={renderQuality} disabled={state !== "ready" || skinBusy} onChange={event => void swapSkin.current?.(skinId, undefined, Number(event.target.value))}>
+          <option value={0}>Automatic</option><option value={1}>720p</option><option value={1.5}>1080p</option><option value={2}>1440p</option>
+        </select></label>
         <label>Background dim <output>{Math.round(dim * 100)}%</output><input aria-label="Background dim" type="range" min="0" max="1" step="0.05" value={dim} onChange={event => { const value = Number(event.target.value); setDim(value); if (session.current) session.current.renderer.options.backgroundDim = value; }} /></label>
+        <label><input type="checkbox" checked={followpointsVisible} onChange={event => { setFollowpointsVisible(event.target.checked); if (session.current) session.current.renderer.options.showFollowpoints = event.target.checked; }} /> Follow points</label>
+        <label><input type="checkbox" checked={judgementsVisible} onChange={event => { setJudgementsVisible(event.target.checked); if (session.current) session.current.renderer.options.showJudgement = event.target.checked; }} /> Hit results</label>
         <label><input type="checkbox" checked={keysVisible} onChange={event => { setKeysVisible(event.target.checked); if (session.current) session.current.renderer.options.showKeyOverlay = event.target.checked; }} /> Key presses</label>
         <label><input type="checkbox" checked={timingVisible} onChange={event => { setTimingVisible(event.target.checked); if (session.current) session.current.renderer.options.showURBar = event.target.checked; }} /> Hit timing</label>
       </div> : null}
