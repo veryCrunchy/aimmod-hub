@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"sort"
 	"strings"
@@ -749,11 +750,21 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 		return nil, err
 	}
 
+	return loadBenchmarkCatalog(ctx, users, s.benchmarks)
+}
+
+type benchmarkCatalogProvider interface {
+	ListPlayerBenchmarkCatalog(context.Context, string) ([]kovaaksbenchmarks.ProfileBenchmarkSummary, error)
+	GetBenchmarkDetail(context.Context, uint32, string) (*kovaaksbenchmarks.BenchmarkDetail, error)
+}
+
+func loadBenchmarkCatalog(ctx context.Context, users []store.BenchmarkUserIdentity, provider benchmarkCatalogProvider) ([]*hubv1.BenchmarkListItem, error) {
 	// Phase 1: collect the set of benchmarks each user participates in via the
 	// cheap list endpoint (one call per user, paginated).
 	type listResult struct {
 		steamID string
 		items   []kovaaksbenchmarks.ProfileBenchmarkSummary
+		err     error
 	}
 	listCh := make(chan listResult, len(users))
 	sem := make(chan struct{}, 8)
@@ -768,8 +779,8 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 				return
 			}
 			defer func() { <-sem }()
-			items, _ := s.benchmarks.ListPlayerBenchmarks(ctx, u.KovaaksUsername)
-			listCh <- listResult{steamID: u.SteamID, items: items}
+			items, err := provider.ListPlayerBenchmarkCatalog(ctx, u.KovaaksUsername)
+			listCh <- listResult{steamID: u.SteamID, items: items, err: err}
 		}(u)
 	}
 	go func() { wg.Wait(); close(listCh) }()
@@ -779,17 +790,32 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 		steamIDs []string
 	}
 	byID := map[uint32]*aggEntry{}
+	var loadErr error
 	for r := range listCh {
+		if r.err != nil {
+			loadErr = r.err
+			continue
+		}
 		for _, b := range r.items {
 			if b.BenchmarkID == 0 {
 				continue
 			}
-			if e, ok := byID[b.BenchmarkID]; ok {
+			e := byID[b.BenchmarkID]
+			if e == nil {
+				e = &aggEntry{summary: b}
+				byID[b.BenchmarkID] = e
+			}
+			if name := strings.TrimSpace(b.OverallRankName); name != "" && !strings.EqualFold(name, "No Rank") {
 				e.steamIDs = append(e.steamIDs, r.steamID)
-			} else {
-				byID[b.BenchmarkID] = &aggEntry{summary: b, steamIDs: []string{r.steamID}}
 			}
 		}
+	}
+
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if loadErr != nil {
+		return nil, fmt.Errorf("incomplete benchmark catalog: %w", loadErr)
 	}
 
 	// Phase 2: verify each (benchmarkID, steamID) pair via GetBenchmarkDetail so
@@ -801,6 +827,7 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 	type verifyResult struct {
 		benchmarkID uint32
 		counted     bool
+		err         error
 	}
 	var pairs []verifyWork
 	for id, e := range byID {
@@ -820,8 +847,15 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 				return
 			}
 			defer func() { <-sem }()
-			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, p.benchmarkID, p.steamID)
-			if err != nil || detail == nil || detail.OverallRank == 0 {
+			detail, err := provider.GetBenchmarkDetail(ctx, p.benchmarkID, p.steamID)
+			if err != nil || detail == nil {
+				if err == nil {
+					err = errors.New("benchmark detail unavailable")
+				}
+				verifyCh <- verifyResult{benchmarkID: p.benchmarkID, err: err}
+				return
+			}
+			if detail.OverallRank == 0 {
 				verifyCh <- verifyResult{benchmarkID: p.benchmarkID, counted: false}
 				return
 			}
@@ -837,17 +871,25 @@ func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkLi
 
 	counts := map[uint32]uint32{}
 	for r := range verifyCh {
+		if r.err != nil {
+			loadErr = r.err
+			continue
+		}
 		if r.counted {
 			counts[r.benchmarkID]++
 		}
 	}
 
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if loadErr != nil {
+		return nil, fmt.Errorf("incomplete benchmark rank verification: %w", loadErr)
+	}
+
 	out := make([]*hubv1.BenchmarkListItem, 0, len(byID))
 	for id, e := range byID {
 		c := counts[id]
-		if c == 0 {
-			continue // skip benchmarks with no verified ranked players
-		}
 		out = append(out, &hubv1.BenchmarkListItem{
 			BenchmarkId:      e.summary.BenchmarkID,
 			BenchmarkName:    e.summary.BenchmarkName,

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	listPageSize = 20
+	listPageSize = 300
 	cacheTTL     = 15 * time.Minute
 )
 
@@ -207,7 +207,23 @@ func NewClient(observers ...func(context.Context, string, []uint32)) *Client {
 	}
 }
 
+// ListPlayerBenchmarks retains the ranked-player view used by profile pages.
 func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]ProfileBenchmarkSummary, error) {
+	catalog, err := c.ListPlayerBenchmarkCatalog(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	ranked := make([]ProfileBenchmarkSummary, 0, len(catalog))
+	for _, item := range catalog {
+		if item.OverallRankName != "" && !strings.EqualFold(item.OverallRankName, "No Rank") {
+			ranked = append(ranked, item)
+		}
+	}
+	return ranked, nil
+}
+
+// ListPlayerBenchmarkCatalog includes definitions even before a player earns a rank.
+func (c *Client) ListPlayerBenchmarkCatalog(ctx context.Context, username string) ([]ProfileBenchmarkSummary, error) {
 	normalized := strings.TrimSpace(username)
 	if normalized == "" {
 		return nil, nil
@@ -221,7 +237,11 @@ func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]P
 	c.mu.RUnlock()
 
 	items := make([]ProfileBenchmarkSummary, 0, listPageSize)
-	for page := 0; page < 10; page++ {
+	seen := make(map[uint32]bool)
+	for page := 0; ; page++ {
+		if page >= 1000 {
+			return nil, fmt.Errorf("benchmark pagination limit exceeded")
+		}
 		var payload benchmarkListEnvelope
 		if err := c.getJSON(ctx, "/player-progress-rank", url.Values{
 			"max":      {strconv.Itoa(listPageSize)},
@@ -230,11 +250,16 @@ func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]P
 		}, &payload); err != nil {
 			return nil, err
 		}
+		if payload.Data == nil {
+			return nil, fmt.Errorf("benchmark catalog response missing data")
+		}
+		previousCount := len(seen)
 		for _, item := range payload.Data {
 			rankName := strings.TrimSpace(item.RankName)
-			if rankName == "" || strings.EqualFold(rankName, "No Rank") {
+			if item.BenchmarkID == 0 || seen[item.BenchmarkID] {
 				continue
 			}
+			seen[item.BenchmarkID] = true
 			items = append(items, ProfileBenchmarkSummary{
 				BenchmarkID:      item.BenchmarkID,
 				BenchmarkName:    strings.TrimSpace(item.BenchmarkName),
@@ -246,8 +271,20 @@ func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]P
 				OverallRankColor: strings.TrimSpace(item.RankColor),
 			})
 		}
-		if len(payload.Data) < listPageSize {
+		pageSize := listPageSize
+		if payload.Max > 0 {
+			pageSize = payload.Max
+		}
+		// Continue until the actual page is exhausted; do not silently truncate
+		// a large catalog at a fixed number of pages or a provider-specific total.
+		if len(payload.Data) < pageSize {
 			break
+		}
+		if len(seen) == previousCount {
+			return nil, fmt.Errorf("benchmark pagination made no progress")
+		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
 		}
 	}
 
