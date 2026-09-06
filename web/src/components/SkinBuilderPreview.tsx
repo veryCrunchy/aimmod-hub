@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { spinnerPreviewState, sliderPreviewPosition } from '../lib/skinPreview';
-import { SKIN_ASSETS, skinThemes, type SkinChoice } from '../lib/skinBuilder';
+import { SKIN_ASSETS, skinThemes, trailColour, type SkinChoice } from '../lib/skinBuilder';
 
 const previewNames = ['hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'sliderb0', 'cursor', 'scorebar-bg', 'scorebar-colour',
   'spinner-bottom', 'spinner-top', 'spinner-middle', 'spinner-middle2', 'spinner-glow', 'spinner-approachcircle', 'spinner-spin', 'spinner-clear', 'spinner-rpm', 'aimmod-timing-track', 'aimmod-duration-face', ...[1, 2, 3, 4].map(n => `default-${n}`),
-  ...Array.from({ length: 10 }, (_, n) => `aimmod-score-${n}`), 'aimmod-score-dot', 'aimmod-score-percent', 'aimmod-score-pp'];
+  ...Array.from({ length: 10 }, (_, n) => `aimmod-combo-${n}`), ...Array.from({ length: 10 }, (_, n) => `aimmod-score-${n}`), 'aimmod-score-dot', 'aimmod-score-percent', 'aimmod-score-pp'];
 
 export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinChoice; playing: boolean; pattern: 'jumps' | 'sliders' | 'spinner' }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -15,10 +15,10 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
     let disposed = false, frame = 0, animationStarted: number | null = null;
     const images = new Map<string, HTMLImageElement>();
     setReady(false); setError(false);
-    const names = [...previewNames, `guide-${choice.guide}`, `cursor-${choice.cursor}`];
+    const names = [...previewNames, `guide-${choice.guide}`, `cursor-${choice.cursor}`, 'cursor-trail'];
     Promise.all(names.map(name => new Promise<void>((resolve, reject) => {
       const img = new Image(); img.onload = () => { void img.decode().then(() => { images.set(name, img); resolve(); }, reject); }; img.onerror = reject;
-      img.src = `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
+      img.src = name === 'cursor-trail' ? `${SKIN_ASSETS}/trails/${trailColour(choice)}-${choice.trail}@2x.png` : `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
     }))).then(() => {
       if (disposed) return;
       const el = canvas.current; const ctx = el?.getContext('2d'); if (!el || !ctx) return;
@@ -48,9 +48,22 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         const image = (name: string, x: number, y: number, w: number, h?: number) => {
           const im = tinted.get(name) ?? images.get(name); if (im) ctx.drawImage(im, x, y, w, h ?? w * im.height / im.width);
         };
-        const digits = (value: string, right: number, y: number, height: number) => {
+        const drawTrail = (position: (time: number) => [number, number]) => {
+          if (choice.trail === 'off') return;
+          const life = choice.trail === 'glow' ? .24 : choice.trail === 'dots' ? .13 : .18;
+          const step = choice.trail === 'dots' ? .022 : .006;
+          const width = 24 * Number(choice.cursorSize);
+          ctx.save();
+          for (let age = life; age > 0; age -= step) {
+            const [x, y] = position(Math.max(0, elapsed - age));
+            ctx.globalAlpha = (1 - age / life) * .7;
+            image('cursor-trail', x - width / 2, y - width / 2, width);
+          }
+          ctx.restore();
+        };
+        const digits = (value: string, right: number, y: number, height: number, prefix = 'aimmod-score-') => {
           const parts = value.match(/pp|%|\.|\d/g) ?? [];
-          const sprites = parts.map(p => images.get('aimmod-score-' + ({ '.': 'dot', '%': 'percent' }[p] ?? p))).filter(Boolean) as HTMLImageElement[];
+          const sprites = parts.map(p => images.get(prefix + ({ '.': 'dot', '%': 'percent' }[p] ?? p))).filter(Boolean) as HTMLImageElement[];
           let x = right - sprites.reduce((sum, im) => sum + height * im.width / im.height - 1, 0);
           for (const im of sprites) { const width = height * im.width / im.height; ctx.drawImage(im, x, y, width, height); x += width - 1; }
         };
@@ -69,6 +82,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
           ctx.save(); ctx.globalAlpha = state.cleared ? 1 : state.promptAlpha;
           image(state.cleared ? 'spinner-clear' : 'spinner-spin', 430, state.cleared ? 115 : 458, 100); ctx.restore();
           image('spinner-rpm', 402, 501, 156); digits(String(state.rpm), 552, 500, 24);
+          drawTrail(time => { const angle = spinnerPreviewState(time).rotation; return [480 + Math.cos(angle) * 110, 295 + Math.sin(angle) * 110]; });
           const width = 24 * Number(choice.cursorSize);
           image(`cursor-${choice.cursor}`, 480 + Math.cos(rotation) * 110 - width/2, 295 + Math.sin(rotation) * 110 - width/2, width);
         } else {
@@ -79,7 +93,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
           const length = Math.hypot(x2 - x1, y2 - y1), angle = Math.atan2(y2 - y1, x2 - x1);
           for (let distance = 78; distance < length - 66; distance += 37) {
             ctx.save(); ctx.translate(x1 + (x2 - x1) * distance / length, y1 + (y2 - y1) * distance / length); ctx.rotate(angle); ctx.globalAlpha = .68;
-            const width = choice.guide === 'arrows' ? 23 : 18; image(`guide-${choice.guide}`, -width / 2, -4, width, 8); ctx.restore();
+            const width = choice.guide === 'line' ? 37 : choice.guide === 'arrows' ? 23 : 18; image(`guide-${choice.guide}`, -width / 2, -4, width, 8); ctx.restore();
           }
         }
         if (pattern === 'sliders') {
@@ -103,10 +117,15 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
           ? sliderPreviewPosition(t < .5 ? t * 2 : 2 - t * 2)
           : [points[0][0] + (points[1][0] - points[0][0]) * t, points[0][1] + (points[1][1] - points[0][1]) * t];
         if (pattern === 'sliders') image('sliderb0', cursorX - 59, cursorY - 59, 118);
+        drawTrail(time => {
+          const phase = (time % 2.4) / 2.4;
+          return pattern === 'sliders' ? sliderPreviewPosition(phase < .5 ? phase * 2 : 2 - phase * 2)
+            : [points[0][0] + (points[1][0] - points[0][0]) * phase, points[0][1] + (points[1][1] - points[0][1]) * phase];
+        });
         const cursorWidth = 24 * Number(choice.cursorSize);
         image(`cursor-${choice.cursor}`, cursorX - cursorWidth / 2, cursorY - cursorWidth / 2, cursorWidth);
         }
-        digits('128', 115, 529, 42);
+        digits('128', 92, 539, 31, 'aimmod-combo-');
         if (choice.client === 'lazer') { image('aimmod-timing-track', 330, 548, 300); image('aimmod-duration-face', 853, 501, 68); }
         ctx.strokeStyle = theme.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(887, 535, 20, -Math.PI / 2, Math.PI * (.3 + t)); if (choice.client === 'lazer') ctx.stroke();
         for (let i = 0; i < 3; i++) { digits(String([126, 130, 0][i]), 918, 205 + i * 48, 19); ctx.fillStyle = theme.accent; ctx.fillRect(896, 231 + i * 48, 22, 2); }
@@ -115,7 +134,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
       draw(performance.now()); setReady(true);
     }).catch(() => { if (!disposed) setError(true); });
     return () => { if (playing && animationStarted !== null) elapsedRef.current += (performance.now() - animationStarted) / 1000; disposed = true; cancelAnimationFrame(frame); };
-  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, playing, pattern]);
+  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, choice.trail, playing, pattern]);
   return <div className="skin-scene">
     <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.guide} followpoints, ${pattern} pattern`} />
     {!ready && <div className="skin-scene-status" role={error ? 'alert' : 'status'}>{error ? 'Preview unavailable. Choose a colour to retry.' : 'Loading preview…'}</div>}

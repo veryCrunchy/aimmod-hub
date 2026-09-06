@@ -8,11 +8,13 @@ export const skinThemes = [
   { id: 'glacier', name: 'Glacier', accent: '#6acdff', edge: '#98dbf8', description: 'Cool blue with icy edges.' },
 ] as const;
 export const skinGuides = [
+  { id: 'line', name: 'Line', description: 'A thin straight guide without arrowheads.' },
   { id: 'subtle', name: 'Subtle', description: 'Short, faint strokes. A little guidance.' },
   { id: 'arrows', name: 'Arrows', description: 'Clear direction between notes.' },
   { id: 'jumps', name: 'Jumps', description: 'No followpoints. Keep the playfield clear.' },
 ] as const;
 export const skinSpinners = [{ id: 'orbit', name: 'Orbit', description: 'One clean ring with a quiet moving highlight.' }, { id: 'split', name: 'Split', description: 'Three rounded arcs around a fine inner ring.' }, { id: 'halo', name: 'Halo', description: 'A softly lit ring with a fine outer outline.' }] as const;
+export const skinTrails = [{ id: 'off', name: 'Off' }, { id: 'soft', name: 'Soft' }, { id: 'dots', name: 'Dots' }, { id: 'glow', name: 'Glow' }] as const;
 export const skinCursorSizes = [{ id: '0.75', name: 'Small' }, { id: '1', name: 'Normal' }, { id: '1.25', name: 'Large' }, { id: '1.5', name: 'Extra large' }] as const;
 export const skinCursors = [
   { id: 'yellow', name: 'Classic yellow', icon: '●', description: 'A white centre, bright yellow rim and soft halo.' },
@@ -33,9 +35,9 @@ export const skinSounds = [
 export type SkinTheme = typeof skinThemes[number]['id'];
 export type SkinGuide = typeof skinGuides[number]['id'];
 export type SkinSound = typeof skinSounds[number]['id'];
-export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; cursor: typeof skinCursors[number]['id']; cursorSize: typeof skinCursorSizes[number]['id']; spinner: typeof skinSpinners[number]['id'] };
+export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; cursor: typeof skinCursors[number]['id']; cursorSize: typeof skinCursorSizes[number]['id']; spinner: typeof skinSpinners[number]['id']; trail: typeof skinTrails[number]['id'] };
 export type SkinFiles = Record<string, Uint8Array>;
-export const defaultSkinChoice: SkinChoice = { theme: 'flow', guide: 'subtle', sound: 'rafis', client: 'lazer', cursor: 'ring', cursorSize: '1', spinner: 'orbit' };
+export const defaultSkinChoice: SkinChoice = { theme: 'flow', guide: 'subtle', sound: 'rafis', client: 'lazer', cursor: 'ring', cursorSize: '1', spinner: 'orbit', trail: 'soft' };
 
 export function parseSkinChoice(params: URLSearchParams): SkinChoice {
   return {
@@ -43,6 +45,7 @@ export function parseSkinChoice(params: URLSearchParams): SkinChoice {
     guide: skinGuides.find(t => t.id === params.get('guide'))?.id ?? defaultSkinChoice.guide,
     sound: skinSounds.find(t => t.id === params.get('sound'))?.id ?? defaultSkinChoice.sound,
     client: params.get('client') === 'stable' ? 'stable' : 'lazer',
+    trail: skinTrails.find(t => t.id === params.get('trail'))?.id ?? 'soft',
     spinner: skinSpinners.find(s => s.id === params.get('spinner'))?.id ?? 'orbit',
     cursorSize: skinCursorSizes.find(s => s.id === params.get('cursorSize'))?.id ?? '1',
     cursor: skinCursors.find(c => c.id === params.get('cursor'))?.id ?? 'ring',
@@ -100,7 +103,7 @@ export function selectComboBreak(files: SkinFiles): SkinFiles {
   return {};
 }
 
-export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFiles, choice: SkinChoice, id: string, stable: SkinFiles = {}, cursor: SkinFiles = {}, spinner: SkinFiles = {}): SkinFiles {
+export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFiles, choice: SkinChoice, id: string, stable: SkinFiles = {}, cursor: SkinFiles = {}, spinner: SkinFiles = {}, trail: SkinFiles = {}): SkinFiles {
   const files: SkinFiles = {};
   for (const [name, data] of Object.entries(base)) {
     if (safeAsset.test(name) && (/\.(png|wav|ogg|mp3)$/i.test(name) || ['skin.ini', 'MainHUDComponents.json'].includes(name))) files[name] = data;
@@ -124,6 +127,11 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
   } else if (choice.spinner !== 'orbit') throw new Error('The spinner could not be loaded. Try again.');
   if (!cursor['cursor.png'] || !cursor['cursor@2x.png']) throw new Error('The cursor could not be loaded. Try again.');
   for (const [name, data] of Object.entries(cursor)) if (/^cursor(?:middle|trail)?(?:@2x)?\.png$/.test(name)) files[name] = data;
+  if (Object.keys(trail).length) {
+    if (!trail['cursortrail.png'] || !trail['cursortrail@2x.png']) throw new Error('The cursor trail could not be loaded. Try again.');
+    for (const name of Object.keys(files)) if (/^cursor(trail|middle)(@2x)?\.png$/.test(name)) delete files[name];
+    for (const [name, data] of Object.entries(trail)) if (/^cursor(trail|middle)(@2x)?\.png$/.test(name)) files[name] = data;
+  } else if (choice.trail !== 'soft') throw new Error('The cursor trail could not be loaded. Try again.');
   for (const key of Object.keys(files)) if (/^followpoint.*\.png$/i.test(key)) delete files[key];
   if (!guides['followpoint.png'] || !guides['followpoint@2x.png']) throw new Error('The followpoints could not be loaded. Try again.');
   for (const [name, data] of Object.entries(guides)) if (/^followpoint(?:-\d+)?(?:@2x)?\.png$/.test(name)) files[name] = data;
@@ -142,7 +150,7 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
   const theme = skinThemes.find(t => t.id === choice.theme)!;
   const guide = skinGuides.find(t => t.id === choice.guide)!;
   const sound = skinSounds.find(t => t.id === choice.sound)!;
-  const name = `AimMod ${theme.name} · ${guide.name} · ${choice.cursor} ${choice.cursorSize}x · ${choice.spinner} · ${sound.name} · ${choice.client}`;
+  const name = `AimMod ${theme.name} · ${guide.name} · ${choice.cursor} ${choice.cursorSize}x · ${choice.spinner} · ${choice.trail} trail · ${sound.name} · ${choice.client}`;
   files['skin.ini'] = strToU8(strFromU8(files['skin.ini']).replace(/^Name\s*:.*$/m, `Name: ${name}`));
   if (choice.client === 'lazer') files['skininfo.json'] = strToU8(JSON.stringify({ ID: id, Name: name, Creator: 'AimMod', InstantiationInfo: 'osu.Game.Skinning.LegacySkin, osu.Game' }, null, 2));
   files['README.txt'] = strToU8(`${name}\n\nImport this .osk into osu!${choice.client === 'lazer' ? 'lazer' : 'stable'}, then select it in skin settings. Enable the key overlay and turn off beatmap skin/colour overrides to use your chosen appearance. Turn off beatmap hitsounds to hear this set.\n\nThis skin does not enable Hidden or Double Time. Followpoints: ${guide.name}. Standard 300 judgements are hidden; 100, 50 and MISS use 80% opacity.\n${choice.client === 'stable' ? 'Includes standard, taiko, catch and mania artwork. PP and the lazer HUD layout are not available in stable.\n' : ''}`);
@@ -154,4 +162,8 @@ export function encodeSkin(files: SkinFiles): Promise<Uint8Array> {
   const data: Zippable = {};
   for (const [name, bytes] of Object.entries(files)) data[name] = [bytes, { mtime: new Date('2026-01-01T00:00:00Z') }];
   return new Promise((resolve, reject) => zip(data, { level: 6 }, (error, bytes) => error ? reject(error) : resolve(bytes)));
+}
+
+export function trailColour(choice: SkinChoice): string {
+  return choice.cursor === 'yellow' || choice.cursor === 'yellow-glow' ? 'yellow' : choice.cursor === 'white' ? 'white' : choice.theme;
 }

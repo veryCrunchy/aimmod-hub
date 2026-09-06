@@ -231,3 +231,4 @@ for theme,accent in THEMES.items():
 # Apply the shared modern spinner after the general artwork pass.
 import runpy
 runpy.run_path(str(HERE/'build-spinner.py'))
+runpy.run_path(str(HERE/'compact-skin-numbers.py'))

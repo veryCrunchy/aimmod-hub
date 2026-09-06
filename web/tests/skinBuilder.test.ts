@@ -10,7 +10,7 @@ const id = '00000000-0000-4000-8000-000000000001';
 
 test('URL choices are allowlisted and default to the subtle lazer pack', () => {
   assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=../../other&sound=unknown&client=unknown&cursor=unknown')), defaultSkinChoice);
-  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1', spinner: 'orbit' });
+  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1', spinner: 'orbit', trail: 'soft' });
 });
 
 test('every built-in combination retains its chosen cursor, guides, audio and correct client layout', () => {
@@ -21,7 +21,7 @@ test('every built-in combination retains its chosen cursor, guides, audio and co
       for (const cursor of skinCursors) {
         const cursors = asset(`${theme.id}/cursor-${cursor.id}.zip`);
         for (const sound of ['soft', 'clicky'] as const) for (const client of ['lazer', 'stable'] as const) {
-          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', spinner: 'orbit', sound, client }, id, stable, cursors);
+          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', spinner: 'orbit', trail: 'soft', sound, client }, id, stable, cursors);
           assert.deepEqual(result['cursor.png'], cursors['cursor.png']);
           assert.deepEqual(result['followpoint.png'], guides['followpoint.png']);
           assert.deepEqual(result['normal-hitnormal.wav'], sounds[sound]['normal-hitnormal.wav']);
@@ -136,4 +136,24 @@ test('slider ends are explicitly transparent while slider starts and reverse ind
     assert.deepEqual(result['reversearrow@2x.png'], base['reversearrow@2x.png']);
     assert.ok(result['hitcircle@2x.png'].length > blank.length);
   }
+});
+
+test('trail patches override cursor trails, with explicit Off and independent dot mode', () => {
+ for (const client of ['lazer','stable'] as const) for (const trail of ['off','soft','dots','glow'] as const) {
+  const patch = asset(`trails/yellow-${trail}-1.zip`);
+  const result = assembleSkin(asset('flow/base.zip'), asset('flow/subtle.zip'), sounds.soft, { ...defaultSkinChoice, client, trail, cursor: 'yellow' }, id, asset('flow/stable.zip'), asset('flow/cursor-yellow.zip'), asset('flow/spinner-orbit.zip'), patch);
+  assert.deepEqual(result['cursortrail.png'], patch['cursortrail.png']);
+  assert.deepEqual(result['cursormiddle.png'], patch['cursormiddle.png']);
+  if (trail === 'dots') assert.equal(result['cursormiddle@2x.png'], undefined);
+ }
+ assert.equal(parseSkinChoice(new URLSearchParams('trail=bad')).trail, 'soft');
+});
+test('compact numbers keep combo and leaderboard heights separate from score font', () => {
+ for (const theme of skinThemes) {
+  const base = asset(`${theme.id}/base.zip`);
+  const height = (name: string) => new DataView(base[name].buffer, base[name].byteOffset).getUint32(20);
+  assert.equal(height('aimmod-combo-0@2x.png'), 90);
+  assert.equal(height('scoreentry-0@2x.png'), 38);
+  assert.equal(height('aimmod-score-0@2x.png'), 80);
+ }
 });
