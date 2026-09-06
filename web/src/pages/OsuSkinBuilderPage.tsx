@@ -2,13 +2,21 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from '../lib/helmet';
 import { SkinBuilderPreview } from '../components/SkinBuilderPreview';
-import { assembleSkin, encodeSkin, isSilentWav, parseSkinChoice, selectComboBreak, selectHitSamples, skinCursors, skinCursorSizes, skinGuides, skinSounds, skinSpinners, skinThemes, skinTrails, trailColour, SKIN_ASSETS, type SkinChoice, type SkinFiles } from '../lib/skinBuilder';
+import { assembleSkin, encodeSkin, isSilentAudio, selectComboBreak, selectHitSamples, skinCursors, skinCursorSizes, skinGuides, skinSounds, skinSpinners, skinThemes, skinTrails, trailColour, SKIN_ASSETS, type SkinChoice, type SkinFiles } from '../lib/skinBuilder';
 import { loadBuilderArchive, soundArchiveURL } from '../lib/skinBuilderLoader';
+import { readSkinChoice, resolveSkinChoice, saveSkinChoice, skinChoiceStorage } from '../lib/skinChoiceStorage';
 import './skinBuilder.css';
 
 export function OsuSkinBuilderPage() {
   const [params, setParams] = useSearchParams();
-  const choice = parseSkinChoice(params);
+  const [savedChoice, setSavedChoice] = useState(() => readSkinChoice(skinChoiceStorage()));
+  const choice = resolveSkinChoice(params, savedChoice);
+  const choiceJSON = JSON.stringify(choice);
+  useEffect(() => {
+    const next: SkinChoice = JSON.parse(choiceJSON);
+    saveSkinChoice(next, skinChoiceStorage());
+    setSavedChoice(previous => JSON.stringify(previous) === choiceJSON ? previous : next);
+  }, [choiceJSON]);
   const theme = skinThemes.find(t => t.id === choice.theme)!;
   const sound = skinSounds.find(s => s.id === choice.sound)!;
   const [playing, setPlaying] = useState(false);
@@ -59,7 +67,7 @@ export function OsuSkinBuilderPage() {
         if (!Object.keys(files).length) files = selectComboBreak(await loadBuilderArchive(`${SKIN_ASSETS}/soft.zip`, controller.signal));
       }
       const names = breakCue ? [Object.keys(files)[0]] : ['hitnormal', 'hitclap', 'hitfinish', 'hitwhistle'].map(kind => Object.keys(files).find(n => n.startsWith(`normal-${kind}.`)) ?? Object.keys(files).find(n => n.includes(`-${kind}.`)));
-      const buffers = await Promise.all(names.map(async n => n && !isSilentWav(files[n]) ? context.decodeAudioData(files[n].slice().buffer as ArrayBuffer) : null));
+      const buffers = await Promise.all(names.map(async n => n && !isSilentAudio(files[n]) ? context.decodeAudioData(files[n].slice().buffer as ArrayBuffer) : null));
       controller.signal.throwIfAborted();
       const times = breakCue ? [0] : [0, .36, .72, .84, .96, 1.44, 1.8, 1.92, 2.04];
       const start = context.currentTime + .05;

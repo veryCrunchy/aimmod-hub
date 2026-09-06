@@ -29,7 +29,9 @@ export const skinSounds = [
   { id: 'clicky', name: 'AimMod Clicky', description: 'A crisp attack with a rounded body.', creator: 'AimMod', source: '' },
   { id: 'soft', name: 'AimMod Soft', description: 'Low, rounded and restrained.', creator: 'AimMod', source: '' },
   { id: 'rafis', name: 'Rafis HDDT', description: 'The classic 2018 HDDT set.', creator: 'DDK RPK / Rafis', source: 'https://gist.github.com/thomazgg/5fbaf92bed0eac290a7123f5b308dcb0' },
-  { id: 'whitecat', name: 'WhiteCat', description: 'Hitsounds from WhiteCat 1.0 NM.', creator: 'cyperdark', source: 'https://osu.ppy.sh/community/forums/topics/986201' },
+  { id: 'whitecat', name: 'WhiteCat 1.0', description: 'Hitsounds from WhiteCat 1.0 NM.', creator: 'cyperdark', source: 'https://osu.ppy.sh/community/forums/topics/986201' },
+  { id: 'whitecat21', name: 'WhiteCat 2.1 CK', description: 'The WhiteCat 2.1 CK Old sound set.', creator: 'cyperdark', source: 'https://osu.ppy.sh/community/forums/topics/1279815' },
+  { id: 'flyingtuna', name: 'FlyingTuna', description: 're;owoTuna 1.1 Selyu hitsounds.', creator: 'Mekami & cyperdark', source: 'https://www.reddit.com/r/OsuSkins/comments/hys4dz/' },
   { id: 'yugen', name: 'YUGEN', description: 'The familiar Garin sound set.', creator: 'Garin', source: 'https://osu.ppy.sh/community/forums/topics/365036' },
 ] as const;
 export type SkinTheme = typeof skinThemes[number]['id'];
@@ -67,6 +69,32 @@ export function isSilentWav(bytes: Uint8Array): boolean {
   return false;
 }
 
+/** Header-only Vorbis files are also used to mute layers in community skins. */
+export function isSilentAudio(bytes: Uint8Array): boolean {
+  if (isSilentWav(bytes)) return true;
+  let packet = 0, prefix: number[] = [], pending = false;
+  for (let at = 0; at < bytes.length;) {
+    if (at + 27 > bytes.length || strFromU8(bytes.subarray(at, at + 4)) !== 'OggS' || bytes[at + 4] !== 0) return false;
+    const count = bytes[at + 26];
+    let data = at + 27 + count;
+    if (data > bytes.length || Boolean(bytes[at + 5] & 1) !== pending) return false;
+    for (let segment = 0; segment < count; segment++) {
+      const size = bytes[at + 27 + segment];
+      if (data + size > bytes.length) return false;
+      for (let i = 0; i < size && prefix.length < 7; i++) prefix.push(bytes[data + i]);
+      data += size;
+      pending = size === 255;
+      if (!pending) {
+        if (packet >= 3 || prefix[0] !== [1, 3, 5][packet] || strFromU8(new Uint8Array(prefix.slice(1))) !== 'vorbis') return false;
+        packet++;
+        prefix = [];
+      }
+    }
+    at = data;
+  }
+  return packet === 3 && !pending;
+}
+
 /** Reject oversized entries before inflating. Only server-pinned/public product archives are loaded. */
 export function unpackSkin(bytes: Uint8Array, soundsOnly = false): SkinFiles {
   if (bytes.length > 32 * 1024 * 1024) throw new Error('This sound pack is too large. Choose another set.');
@@ -98,7 +126,7 @@ export function selectHitSamples(files: SkinFiles): SkinFiles {
 export function selectComboBreak(files: SkinFiles): SkinFiles {
   for (const ext of ['wav', 'ogg', 'mp3']) {
     const name = Object.keys(files).find(n => n.toLowerCase() === `combobreak.${ext}`);
-    if (name && files[name].length > 0 && !isSilentWav(files[name])) return { [name.toLowerCase()]: files[name] };
+    if (name && files[name].length > 0 && !isSilentAudio(files[name])) return { [name.toLowerCase()]: files[name] };
   }
   return {};
 }

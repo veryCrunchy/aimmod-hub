@@ -22,6 +22,9 @@ const osuSkinPrefix = "/api/osu/v1/playback/skins/"
 // Fixed, checksum-pinned public releases; this endpoint never accepts a URL.
 // Source and creator credits are also exposed in the replay skin picker.
 var osuSkinSources = map[string]struct{ URL, SHA256 string }{
+	"whitecat21": {"https://media.githubusercontent.com/media/azekyoo/skins/a8cdd2a2ed33dea45d8756d62f9d92426b643979/-%20%20%20%20%20%20%20%20%20%E3%80%8ACK%E3%80%8B%20WhiteCat%202.1%20~%20old.osk", "337bc0db625d885610282558f92d4c8cb6a8c63012101918bdb723e90ee00d7b"},
+	"flyingtuna": {"https://media.githubusercontent.com/media/azekyoo/skins/a8cdd2a2ed33dea45d8756d62f9d92426b643979/-%20%20%20%20%20%20%20%20%23%20re%3BowoTuna%20v1.1%20%E3%80%8ESelyu%E3%80%8F%20%23%20%20%20%20%20%20%20%20-.osk", "9e0c89eaf172baf7dfd0813212259f6594d5e1e31df010fe6c00b8e5d98d0609"},
+
 	"yugen":    {"https://tetsui.s-ul.eu/t3yyAk3g2QugMs9O", "27032e2fb6d6a7b617558f0bf632bcbecf6e1e0ec988da7f16706e75062798cb"},
 	"whitecat": {"https://raw.githubusercontent.com/praeludiumOrbis/whitecat-skins/b926fa5c5ac818596dea456abf342b9fc2aa43dc/-%20%20%20%20%20%20%20%20%23%20WhiteCat%20%281.0%29%20%E3%80%8ENM%E3%80%8F%20%23-/-%20%20%20%20%20%20%20%20%23%20WhiteCat%20%281.0%29%20%E3%80%8ENM%E3%80%8F%20%23-.osk", "6b89cce6249beaf56a8799d32b8d268f54dbfeb0782919ee62e53b9be87dd4d3"},
 	"rafis":    {"https://raw.githubusercontent.com/praeludiumOrbis/whitecat-skins/b926fa5c5ac818596dea456abf342b9fc2aa43dc/Rafis%202018-03-26%20HDDT/Rafis%202018-03-26%20HDDT.osk", "785b299029c06cf828deaf65ad0ec88d154fbacd935ac47577bb30dd999512d9"},

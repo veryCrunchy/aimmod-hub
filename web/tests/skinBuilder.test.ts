@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { strFromU8, strToU8, zipSync, unzipSync } from 'fflate';
-import { assembleSkin, defaultSkinChoice, encodeSkin, isSilentWav, parseSkinChoice, selectHitSamples, selectComboBreak, skinCursors, skinGuides, skinThemes, unpackSkin } from '../src/lib/skinBuilder';
+import { assembleSkin, defaultSkinChoice, encodeSkin, isSilentAudio, isSilentWav, parseSkinChoice, selectHitSamples, selectComboBreak, skinCursors, skinGuides, skinThemes, unpackSkin } from '../src/lib/skinBuilder';
 
 const asset = (path: string) => unpackSkin(new Uint8Array(readFileSync(new URL('../public/skin-builder/v1/' + path, import.meta.url))));
 const sounds = { soft: asset('soft.zip'), clicky: asset('clicky.zip') };
@@ -84,6 +84,18 @@ test('header-only muted WAV samples are silent rather than decoder errors', () =
   new DataView(data.buffer).setUint32(40, 4, true);
   assert.equal(isSilentWav(data), false);
   assert.equal(isSilentWav(new Uint8Array(4)), false);
+});
+
+test('header-only OGG layers skip playback without discarding audible or broken files', () => {
+  const page = new Uint8Array(51);
+  page.set(strToU8('OggS')); page[26] = 3; page.set([7, 7, 7], 27);
+  for (let i = 0; i < 3; i++) { page[30 + i * 7] = 1 + i * 2; page.set(strToU8('vorbis'), 31 + i * 7); }
+  assert.equal(isSilentAudio(page), true);
+  assert.deepEqual(selectComboBreak({ 'combobreak.ogg': page }), {});
+  assert.equal(isSilentAudio(page.subarray(0, 50)), false);
+  const audible = new Uint8Array(80); audible.set(page); audible.set(strToU8('OggS'), 51); audible[77] = 1; audible[78] = 1;
+  assert.equal(isSilentAudio(audible), false);
+  assert.equal(isSilentAudio(new Uint8Array()), false);
 });
 
 test('cursor sizes export real scaled textures and reject invalid URL scales', () => {
