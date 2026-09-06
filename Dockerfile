@@ -21,15 +21,22 @@ RUN go mod download
 COPY . .
 RUN go build -o /aimmod-hub ./cmd/aimmod-hub
 
-# ── 3. Final image ────────────────────────────────────────────────────────────
-FROM alpine:3.20
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS pp
+WORKDIR /src
+COPY pp ./pp
+RUN dotnet publish pp/AimMod.Pp.csproj -c Release -o /pp
 
-RUN apk add --no-cache ca-certificates
+# ── 3. Final image ────────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+
+RUN apk add --no-cache ca-certificates icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 WORKDIR /app
 
 COPY --from=api  /aimmod-hub      ./aimmod-hub
 COPY --from=web  /app/web/dist    ./web/dist
+COPY --from=pp /pp ./pp
 COPY docker-entrypoint.sh         /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh

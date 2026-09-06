@@ -11,8 +11,8 @@ function difficultyColor(stars: number) {
   const colors = ["#69b9ff", "#68ddd0", "#a5df71", "#efdb70", "#f4a06d", "#ee788c", "#cf82d8", "#a194ef", "#c0c7ff"];
   return colors[Math.min(colors.length - 1, Math.max(0, Math.floor(stars)))];
 }
-export function BeatmapCard({ difficulties, accuracy = 98, mods = "NM", showPp = false, status = "Ranked", onDetails }: {
-  difficulties: BeatmapCandidate[]; accuracy?: number; mods?: string; showPp?: boolean; status?: string; onDetails?: () => void;
+export function BeatmapCard({ difficulties, accuracy = 98, mods = "NM", lazer = true, showPp = false, status = "Ranked", onDetails }: {
+  difficulties: BeatmapCandidate[]; accuracy?: number; mods?: string; lazer?: boolean; showPp?: boolean; status?: string; onDetails?: () => void;
 }) {
   const [selectedId, setSelectedId] = useState("");
   if (!difficulties.length) return null;
@@ -33,7 +33,7 @@ export function BeatmapCard({ difficulties, accuracy = 98, mods = "NM", showPp =
             <p className="pp-selected-difficulty" title={map.name}><span style={{ color: difficultyColor(result?.stars ?? map.stars) }}>{(result?.stars ?? map.stars).toFixed(2)} ★</span><span>{map.name}</span></p>
           </div>
           <div className="pp-card-stats"><span>{mods === "NM" ? "No mods" : mods}</span><span>{map.bpm} <small>BPM</small></span><span>{Math.floor(map.lengthSeconds / 60)}:{String(map.lengthSeconds % 60).padStart(2, "0")} <small>length</small></span></div>
-          <div className="pp-card-bottom">{showPp ? <div className="pp-card-value"><span>{accuracy.toFixed(1)}% FC</span><strong>{result?.error ? "Unavailable" : result ? <>{Math.round(result.pp)} <small>pp</small></> : <span className="pp-pending">Calculating…</span>}</strong>{result && !result.error && <span className="pp-ss">SS {Math.round(result.maxPp)} pp</span>}</div> : <div className="beatmap-card-status"><span>{status}</span>{onDetails && <button type="button" onClick={onDetails}>Details & audio</button>}</div>}
+          <div className="pp-card-bottom">{showPp ? <div className="pp-card-value"><span>{accuracy.toFixed(1)}% FC · {lazer ? "Lazer" : "Stable"}</span><strong>{result?.error ? "Unavailable" : result ? <>{Math.round(result.pp)} <small>pp</small></> : <span className="pp-pending">Calculating…</span>}</strong>{result && !result.error && <span className="pp-ss">SS {Math.round(result.maxPp)} pp</span>}</div> : <div className="beatmap-card-status"><span>{status}</span>{onDetails && <button type="button" onClick={onDetails}>Details & audio</button>}</div>}
             {links && <div className="pp-map-actions"><a href={links.osu} className="pp-play"><ArrowDownToLine size={15} /> Play</a><details className="pp-map-more"><summary aria-label={`More ways to open ${map.title}`}>•••</summary><div><a href={links.aimmod}>Open in AimMod</a><a href={links.source} target="_blank" rel="noreferrer">View on osu!</a></div></details></div>}
           </div>
           {showPp && result?.error && <p className="pp-card-error">{result.error}</p>}

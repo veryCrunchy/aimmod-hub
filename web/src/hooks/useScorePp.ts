@@ -67,7 +67,7 @@ export function useScorePp(source: OsuSharedReplay[] | null | undefined) {
               if (worker) { worker.onmessage = null; worker.onerror = null; }
               if (error) reject(error); else resolve(value!);
             };
-            const timer = setTimeout(() => { worker?.terminate(); worker = undefined; finish(new Error("PP calculation timed out. Please retry.")); }, 25000);
+            const timer = setTimeout(() => { worker?.terminate(); worker = undefined; finish(new Error("PP calculation timed out. Please retry.")); }, 45000);
             cancelPending = () => finish(new Error("Cancelled"));
             worker!.onerror = () => { worker?.terminate(); worker = undefined; finish(new Error("PP calculation could not start. Please retry.")); };
             worker!.onmessage = event => {

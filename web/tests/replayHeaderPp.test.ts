@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { replayHeaderScorePp } from "../src/lib/replayHeaderPp";
-import { scorePpPerformanceArgs } from "../src/lib/scorePp";
 
 const header = { mode: 0, gameVersion: 20200101, beatmapHash: "a".repeat(32), count300: 90, count100: 5, count50: 2, countMiss: 3, maxCombo: 42, score: 123456, mods: 8 };
 const context = { beatmapId: 1, objectCount: 100, passed: true };
@@ -22,7 +21,8 @@ test("Nightcore and Perfect do not double-apply their base bit flags", () => {
 test("failed progress preserves header results and does not infer pass from perfect flag", () => {
   const result = replayHeaderScorePp(header, { ...context, passed: false, objectCount: 200 });
   assert.ok(result.input);
-  assert.equal(scorePpPerformanceArgs(result.input).passedObjects, 100);
+  assert.equal(result.input.passed, false);
+  assert.deepEqual(result.input.statistics, { great: 90, ok: 5, meh: 2, miss: 3 });
   assert.equal(replayHeaderScorePp(header, { ...context, objectCount: 200 }).input, undefined);
   assert.equal(replayHeaderScorePp(header, { ...context, passed: false, objectCount: 99 }).input, undefined);
 });

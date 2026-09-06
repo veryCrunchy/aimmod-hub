@@ -58,7 +58,7 @@ export function OsuPpTargetsPage() {
           result = await new Promise<PpResult>((resolve, reject) => {
             const cleanup = () => { clearTimeout(timeout); controller.signal.removeEventListener("abort", abort); worker.onmessage = null; worker.onerror = null; };
             const abort = () => { cleanup(); reject(new DOMException("Cancelled", "AbortError")); };
-            const timeout = setTimeout(() => { cleanup(); worker.terminate(); workers[lane] = undefined; reject(new Error("PP calculation timed out.")); }, 25000);
+            const timeout = setTimeout(() => { cleanup(); worker.terminate(); workers[lane] = undefined; reject(new Error("PP calculation timed out.")); }, 45000);
             worker.onmessage = event => {
               cleanup();
               if (!validPpResult(event.data) && typeof event.data?.error !== "string") reject(new Error("PP unavailable."));
@@ -151,19 +151,19 @@ export function OsuPpTargetsPage() {
       <RangeSlider name="stars" label="Difficulty (no mods)" limit={10} step={0.1} minimum={low} maximum={high} onChange={(endpoint, value) => updateParam(endpoint === "Min" ? "min" : "max", value)} />
       <label>Accuracy<div className="pp-percent"><input aria-label="Target accuracy" type="number" min={80} max={100} step={0.1} key={accuracy} defaultValue={accuracy} onBlur={event => updateParam("acc", event.target.value)} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} /><span>%</span></div></label>
       <label>Mods<select value={mods} onChange={event => updateParam("mods", event.target.value)}>{ppMods.map(mod => <option key={mod} value={mod}>{mod === "NM" ? "No mods" : mod}</option>)}</select></label>
+        <label>Scoring<select aria-label="Scoring" value={String(lazer)} onChange={event => updateParam("scoring", event.target.value === "true" ? "lazer" : "stable")}><option value="true">Lazer</option><option value="false">Stable</option></select></label>
       <label>PP goal<input aria-label="Minimum PP" type="number" min="0" max="10000" step="10" value={params.get("ppMin") ?? ""} onChange={event => updateParam("ppMin", event.target.value)} placeholder="Any PP" /></label>
       <details className="pp-more"><summary><SlidersHorizontal size={16} /> More filters{(goal.max !== undefined || !lazer) && <span className="pp-filter-dot" />}</summary><div className="pp-more-panel">
         <label>Maximum PP<input type="number" min="0" max="10000" step="10" value={params.get("ppMax") ?? ""} onChange={event => updateParam("ppMax", event.target.value)} placeholder="Any" /></label>
-        <label>Scoring<select value={String(lazer)} onChange={event => updateParam("scoring", event.target.value === "true" ? "lazer" : "stable")}><option value="true">Lazer</option><option value="false">Stable</option></select></label>
         <button className="pp-text-button" type="button" onClick={() => setParams({ min: "3", max: "7", acc: "98", mods: "NM", scoring: "lazer", sort: "pp" })}>Reset all filters</button>
       </div></details>
     </div>
-    <div className="pp-context"><span>Full-combo PP · {accuracy.toFixed(1)}% · {lazer ? "Lazer" : "Stable"}{goal.max !== undefined ? ` · Up to ${goal.max} PP` : ""}</span><span>No misses. Not profile PP gain.</span></div>
+    <div className="pp-context"><span>Full-combo estimate · {accuracy.toFixed(1)}% · {lazer ? "Lazer" : "Stable"}{goal.max !== undefined ? ` · Up to ${goal.max} PP` : ""}</span><span>No misses or dropped slider ends.</span></div>
     {error && <div role="alert" className="py-4"><p className="mb-3">{error}</p><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></div>}
     <div className="pp-results-heading"><div><h2>{sets.size} beatmaps <span>· {visible.length} difficulties</span></h2>{busy && <span role="status">{rows.length ? `Calculating PP · ${progress}/${rows.length}` : "Finding beatmaps…"}</span>}</div><div className="pp-result-tools"><select aria-label="Sort beatmaps" value={sort} onChange={event => updateParam("sort", event.target.value)}><option value="pp">Highest PP</option><option value="max">Highest SS PP</option><option value="stars">Highest difficulty</option></select><button type="button" aria-label="Refresh results" title="Refresh results" disabled={busy} onClick={() => { browserPpCache().deleteCandidates(candidateKey({ query, low, high })); setAttempt(value => value + 1); }}><RotateCw size={16} /></button></div></div>
     {busy && !visible.length && !error && <div className="pp-loading" role="status">{goal.min !== undefined || goal.max !== undefined ? "Checking maps against your PP goal…" : "Looking for ranked beatmaps…"}<div className="pp-loading-line" /></div>}
     {!busy && !error && !visible.length && <div className="pp-empty"><h3>No beatmaps match these filters</h3><p>Try a wider star or PP range, or another song.</p><Button onClick={() => setParams({ min: "3", max: "7", acc: "98", mods: "NM", scoring: "lazer", sort: "pp" })}>Reset filters</Button></div>}
-    <div className="pp-results card-grid">{[...sets].map(([setId, difficulties]) => <BeatmapCard key={setId} difficulties={difficulties} accuracy={accuracy} mods={mods} showPp />)}</div>
+    <div className="pp-results card-grid">{[...sets].map(([setId, difficulties]) => <BeatmapCard key={setId} difficulties={difficulties} accuracy={accuracy} mods={mods} lazer={lazer} showPp />)}</div>
     <p className="pp-footnote">From up to 12 popular matching sets. Change your search to explore more.</p>
   </div>;
 }

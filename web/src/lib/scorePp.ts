@@ -1,4 +1,3 @@
-import type { PerformanceArgs } from "rosu-pp-js";
 
 export type ScorePpInput = {
   version: number; beatmapId: number; beatmapChecksum: string; rulesetId: number;
@@ -9,7 +8,7 @@ export type ScorePpInput = {
 export type ScorePpWorkerRequest = { id: string; input: ScorePpInput; url: string };
 export type ScorePpResult = { pp: number; stars?: number; objectCount?: number };
 export type ScorePpWorkerResponse = ({ id: string } & ScorePpResult) | { id: string; error: string };
-export const scorePpVersion = "rosu4.0.1-actual-v2";
+export const scorePpVersion = "aimmod-osu-2026.730.0-v1-actual";
 export const scorePpTTL = 24 * 60 * 60_000;
 const prefix = `aimmod-score-pp-${scorePpVersion}:`;
 
@@ -44,7 +43,6 @@ export function scorePpValidationReason(input: ScorePpInput): string | null {
     if (typeof input.passed !== "boolean") return "Score completion is unknown";
     const count = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 0xffffffff;
     if (!count(input.maxCombo) || !Number.isSafeInteger(input.totalScore) || input.totalScore < 0 || (input.legacyTotalScore !== null && (!Number.isSafeInteger(input.legacyTotalScore) || input.legacyTotalScore < 0))) return "Score totals are invalid";
-    if (input.legacyTotalScore !== null && input.legacyTotalScore > 0xffffffff) return "The legacy score exceeds this calculation engine's supported range";
     if (!Number.isFinite(input.accuracy) || input.accuracy < 0 || input.accuracy > 1) return "Score accuracy is invalid";
     for (const stats of [input.statistics, input.maximumStatistics]) {
       if (stats === null) continue;
@@ -57,30 +55,13 @@ export function scorePpValidationReason(input: ScorePpInput): string | null {
 export function canCalculateScorePp(input: ScorePpInput): boolean { return scorePpValidationReason(input) === null; }
 
 export function validateScorePpObjectCount(input: ScorePpInput, objectCount: number): void {
-  const args = scorePpPerformanceArgs(input);
-  const judged = args.n300! + args.n100! + args.n50! + args.misses!;
-  if (!Number.isSafeInteger(objectCount) || objectCount < 0 || judged > objectCount || (input.passed && judged !== objectCount)) {
-    throw new Error("Score judgements do not match this beatmap revision");
-  }
-}
-
-export function scorePpPerformanceArgs(input: ScorePpInput): PerformanceArgs {
   const reason = scorePpValidationReason(input);
   if (reason) throw new Error(reason);
   const stats = input.statistics!;
-  // A present official statistics dictionary omits zero counts. Never infer FC or accuracy.
-  const args: PerformanceArgs = {
-    mods: input.mods!, lazer: input.lazer!, combo: input.maxCombo,
-    n300: stats.great ?? 0, n100: stats.ok ?? 0, n50: stats.meh ?? 0, misses: stats.miss ?? 0,
-  };
-  if (!input.passed) args.passedObjects = args.n300! + args.n100! + args.n50! + args.misses!;
-  if (input.lazer) {
-    args.largeTickHits = stats.large_tick_hit ?? 0;
-    args.smallTickHits = stats.small_tick_hit ?? 0;
-    args.sliderEndHits = stats.slider_tail_hit ?? 0;
+  const judged = (stats.great ?? 0) + (stats.ok ?? 0) + (stats.meh ?? 0) + (stats.miss ?? 0);
+  if (!Number.isSafeInteger(objectCount) || objectCount < 0 || judged > objectCount || (input.passed && judged !== objectCount)) {
+    throw new Error("Score judgements do not match this beatmap revision");
   }
-  if (input.legacyTotalScore !== null) args.legacyTotalScore = input.legacyTotalScore;
-  return args;
 }
 
 export function scorePpCacheKey(input: ScorePpInput): string {
