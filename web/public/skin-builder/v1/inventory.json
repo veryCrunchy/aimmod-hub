@@ -1,0 +1,23 @@
+{
+  "revision": 1,
+  "sha256": {
+    "flow/base.zip": "d0343777dcf32ba00c800871c841ca685ec2bdb7dd5d8b37c5b5b20a967054eb",
+    "flow/arrows.zip": "5f3cccb06832faf6c27244e4d4a1d2151f6d7fab5084ead00e336dc921bb186a",
+    "flow/subtle.zip": "ae163ca3bfd78d8e965a9654d766f083a6d31761ccf17412ff4ae6028be9d7b0",
+    "flow/jumps.zip": "cfa2fecf38d128db7c6879917f8615d341b3d5ccf2dc5ec340f1ac319b2f1e99",
+    "hddt/base.zip": "8dcf2c5e7eaf388a3284bbada31c37dcc8e5b8e11aaae966ff58ffc3a8fb7f42",
+    "hddt/arrows.zip": "f04c03d297899de159f3679feb77ae80d0022d23b2bbb5a3b948bb85328fdaed",
+    "hddt/subtle.zip": "a73d31da4e170b802adb0fdf88a87948f5906327fca6c9414044ab2ff56b50b6",
+    "hddt/jumps.zip": "cfa2fecf38d128db7c6879917f8615d341b3d5ccf2dc5ec340f1ac319b2f1e99",
+    "midnight/base.zip": "2d743cb44e84aea8bf64afe5350f191cc8a37928381e454edd8890cc52e9ba04",
+    "midnight/arrows.zip": "01d3f009a51d12fc147ec25c99c044ce8fbac15d990843d4f63148418d8bfd42",
+    "midnight/subtle.zip": "33a8a7b9a734363fe5ad9ad59c272005152cda69639946921bc691d49c4808c7",
+    "midnight/jumps.zip": "cfa2fecf38d128db7c6879917f8615d341b3d5ccf2dc5ec340f1ac319b2f1e99",
+    "glacier/base.zip": "181b1e1bb461863d0c269e910eba2c5e2c94290e8d6a7aa2938f892aa6053730",
+    "glacier/arrows.zip": "b953aee6b4e08d83b12fedd4012ed94d6773f1d46aade5dbc27b8de02ee26c44",
+    "glacier/subtle.zip": "e35415e766b9fd808e5efc73445caa474b02b0d27fee8fb213d110adce029d11",
+    "glacier/jumps.zip": "cfa2fecf38d128db7c6879917f8615d341b3d5ccf2dc5ec340f1ac319b2f1e99",
+    "soft.zip": "744a2649e7c5e159c4de8a31dcf33af17b23ccd2af7df23fdcd2d3789d6e3241",
+    "clicky.zip": "f1c3afcdb6194f585afbb28bbc610eaa02255bd08079bdbefd2aba5a893123ee"
+  }
+}

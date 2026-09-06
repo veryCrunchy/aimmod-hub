@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "../lib/helmet";
 import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
@@ -107,6 +107,7 @@ export function OsuCatalogPage({ skins = false }: { skins?: boolean }) {
   const activeRanges = ranges.slice(1).filter(([key]) => get(`${key}Min`) || get(`${key}Max`)).length;
   return <PageStack className="catalog-workspace"><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection className="catalog-section">
     <SectionHeader level={1} eyebrow="osu!" title={skins ? "Skins" : "Beatmaps"} aside={<External href={skins ? "https://osuskins.net" : "https://osu.ppy.sh/beatmapsets"}>{skins ? "Browse osuskins.net" : "Browse osu!"}</External>} />
+    {skins && <Link className="inline-flex my-3 text-cyan underline underline-offset-4" to="/osu/skin-builder">Build your own AimMod skin →</Link>}
     <div className="hub-filters catalog-filters">
       <label>Search {skins ? "skins" : "beatmaps"}<input type="search" value={get("q")} maxLength={256} placeholder={skins ? "Skin name" : "Title, artist, or mapper"} onChange={event => update("q", event.target.value)} /></label>
       {!skins && <RangeSlider name="stars" label="Stars" limit={10} step={0.1} minimum={get("starsMin")} maximum={get("starsMax")} onChange={(endpoint, value) => update(`stars${endpoint}`, value)} />}

@@ -1,0 +1,1558 @@
+{
+  "menu-background.jpg": {
+    "mode": "Interface",
+    "size": null
+  },
+  "welcome_text.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "menu-snow.png": {
+    "mode": "Interface",
+    "size": [
+      32,
+      32
+    ]
+  },
+  "button-left.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "button-middle.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "button-right.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "cursor.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "cursormiddle.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "cursor-smoke.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "cursortrail.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "cursor-ripple.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "selection-mod-autoplay.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-cinema.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-doubletime.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-easy.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-fadein.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-flashlight.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-halftime.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-hardrock.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-hidden.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key1.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key2.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key3.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key4.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key5.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key6.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key7.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key8.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-key9.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-keycoop.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-mirror.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-nightcore.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-nofail.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-perfect.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-random.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-relax.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-relax2.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-scorev2.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-spunout.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-suddendeath.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-target.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-freemodallowed.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "selection-mod-touchdevice.png": {
+    "mode": "Interface",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "options-offset-tick.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "play-skip.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "play-unranked.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "play-warningarrow.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "arrow-pause.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "arrow-warning.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "masking-border.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "multi-skipped.png": {
+    "mode": "Interface",
+    "size": [
+      60,
+      30
+    ]
+  },
+  "section-fail.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "section-pass.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "count1.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "count2.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "count3.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "go.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ready.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit0.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit50.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit100.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit100k.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit300.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit300g.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "hit300k.png": {
+    "mode": "Interface",
+    "size": [
+      193,
+      55
+    ]
+  },
+  "inputoverlay-background.png": {
+    "mode": "Interface",
+    "size": [
+      193,
+      55
+    ]
+  },
+  "inputoverlay-key.png": {
+    "mode": "Interface",
+    "size": [
+      43,
+      46
+    ]
+  },
+  "pause-overlay.png": {
+    "mode": "Interface",
+    "size": [
+      1366,
+      768
+    ]
+  },
+  "fail-background.png": {
+    "mode": "Interface",
+    "size": [
+      1366,
+      768
+    ]
+  },
+  "pause-back.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "pause-continue.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "pause-replay.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "pause-retry.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-bg.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-colour.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-ki.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-kidanger.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-kidanger2.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "scorebar-marker.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-0.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-1.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-2.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-3.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-4.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-5.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-6.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-7.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-8.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-9.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "score-comma.png": {
+    "mode": "Interface",
+    "size": [
+      5,
+      14
+    ]
+  },
+  "score-dot.png": {
+    "mode": "Interface",
+    "size": [
+      5,
+      14
+    ]
+  },
+  "score-percent.png": {
+    "mode": "Interface",
+    "size": [
+      12,
+      14
+    ]
+  },
+  "score-x.png": {
+    "mode": "Interface",
+    "size": [
+      10,
+      14
+    ]
+  },
+  "score-pp.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-XH.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-XH-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-X.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-X-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-SH.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-SH-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-S.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-S-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-A.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-A-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-B.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-B-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-C.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-C-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-D.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-D-small.png": {
+    "mode": "Interface",
+    "size": [
+      34,
+      40
+    ]
+  },
+  "ranking-accuracy.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-graph.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-maxcombo.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-panel.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-perfect.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-title.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-replay.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-retry.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "ranking-winner.png": {
+    "mode": "Interface",
+    "size": [
+      200,
+      214
+    ]
+  },
+  "scoreentry-0.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-1.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-2.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-3.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-4.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-5.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-6.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-7.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-8.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-9.png": {
+    "mode": "Interface",
+    "size": [
+      11,
+      14
+    ]
+  },
+  "scoreentry-comma.png": {
+    "mode": "Interface",
+    "size": [
+      5,
+      14
+    ]
+  },
+  "scoreentry-dot.png": {
+    "mode": "Interface",
+    "size": [
+      5,
+      14
+    ]
+  },
+  "scoreentry-percent.png": {
+    "mode": "Interface",
+    "size": [
+      12,
+      14
+    ]
+  },
+  "scoreentry-x.png": {
+    "mode": "Interface",
+    "size": [
+      10,
+      14
+    ]
+  },
+  "menu-back.png": {
+    "mode": "Interface",
+    "size": [
+      200,
+      214
+    ]
+  },
+  "menu-button-background.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "rank-forum.png": {
+    "mode": "Interface",
+    "size": [
+      25,
+      25
+    ]
+  },
+  "selection-mode.png": {
+    "mode": "Interface",
+    "size": [
+      92,
+      87
+    ]
+  },
+  "selection-mode-over.png": {
+    "mode": "Interface",
+    "size": [
+      92,
+      87
+    ]
+  },
+  "selection-mods.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-mods-over.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-random.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-random-over.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-options.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-options-over.png": {
+    "mode": "Interface",
+    "size": [
+      77,
+      87
+    ]
+  },
+  "selection-tab.png": {
+    "mode": "Interface",
+    "size": [
+      142,
+      24
+    ]
+  },
+  "songselect-bottom.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "songselect-top.png": {
+    "mode": "Interface",
+    "size": null
+  },
+  "star.png": {
+    "mode": "Interface",
+    "size": [
+      50,
+      50
+    ]
+  },
+  "star2.png": {
+    "mode": "Interface",
+    "size": [
+      24,
+      24
+    ]
+  },
+  "mode-osu.png": {
+    "mode": "Interface",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "mode-taiko.png": {
+    "mode": "Interface",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "mode-fruits.png": {
+    "mode": "Interface",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "mode-mania.png": {
+    "mode": "Interface",
+    "size": [
+      256,
+      256
+    ]
+  },
+  "mode-osu-med.png": {
+    "mode": "Interface",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "mode-taiko-med.png": {
+    "mode": "Interface",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "mode-fruits-med.png": {
+    "mode": "Interface",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "mode-mania-med.png": {
+    "mode": "Interface",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "mode-osu-small.png": {
+    "mode": "Interface",
+    "size": [
+      32,
+      32
+    ]
+  },
+  "mode-taiko-small.png": {
+    "mode": "Interface",
+    "size": [
+      32,
+      32
+    ]
+  },
+  "mode-fruits-small.png": {
+    "mode": "Interface",
+    "size": [
+      32,
+      32
+    ]
+  },
+  "mode-mania-small.png": {
+    "mode": "Interface",
+    "size": [
+      32,
+      32
+    ]
+  },
+  "comboburst.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-0.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-1.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-2.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-3.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-4.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-5.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-6.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-7.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-8.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "default-9.png": {
+    "mode": "osu!",
+    "size": [
+      126,
+      126
+    ]
+  },
+  "approachcircle.png": {
+    "mode": "osu!",
+    "size": [
+      126,
+      126
+    ]
+  },
+  "hitcircle.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "hitcircleoverlay.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "hitcircleselect.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "followpoint.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "lighting.png": {
+    "mode": "osu!",
+    "size": [
+      100,
+      100
+    ]
+  },
+  "sliderstartcircle.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "sliderstartcircleoverlay.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "sliderendcircle.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "sliderendcircleoverlay.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "reversearrow.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "sliderfollowcircle.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "sliderb.png": {
+    "mode": "osu!",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "sliderb-nd.png": {
+    "mode": "osu!",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "sliderb-spec.png": {
+    "mode": "osu!",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "sliderpoint10.png": {
+    "mode": "osu!",
+    "size": [
+      50,
+      30
+    ]
+  },
+  "sliderpoint30.png": {
+    "mode": "osu!",
+    "size": [
+      50,
+      30
+    ]
+  },
+  "sliderscorepoint.png": {
+    "mode": "osu!",
+    "size": [
+      16,
+      16
+    ]
+  },
+  "spinner-approachcircle.png": {
+    "mode": "osu!",
+    "size": [
+      384,
+      384
+    ]
+  },
+  "spinner-rpm.png": {
+    "mode": "osu!",
+    "size": [
+      280,
+      56
+    ]
+  },
+  "spinner-clear.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-spin.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-background.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-circle.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-metre.png": {
+    "mode": "osu!",
+    "size": [
+      1024,
+      692
+    ]
+  },
+  "spinner-osu.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-glow.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-bottom.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-top.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-middle2.png": {
+    "mode": "osu!",
+    "size": null
+  },
+  "spinner-middle.png": {
+    "mode": "osu!",
+    "size": [
+      7,
+      7
+    ]
+  },
+  "particle50.png": {
+    "mode": "osu!",
+    "size": [
+      7,
+      7
+    ]
+  },
+  "particle100.png": {
+    "mode": "osu!",
+    "size": [
+      7,
+      7
+    ]
+  },
+  "particle300.png": {
+    "mode": "osu!",
+    "size": [
+      7,
+      7
+    ]
+  },
+  "fruit-catcher-idle.png": {
+    "mode": "osu!catch",
+    "size": null
+  },
+  "fruit-catcher-fail.png": {
+    "mode": "osu!catch",
+    "size": null
+  },
+  "fruit-catcher-kiai.png": {
+    "mode": "osu!catch",
+    "size": null
+  },
+  "fruit-ryuuta.png": {
+    "mode": "osu!catch",
+    "size": [
+      100,
+      100
+    ]
+  },
+  "comboburst-fruits.png": {
+    "mode": "osu!catch",
+    "size": [
+      100,
+      100
+    ]
+  },
+  "fruit-pear.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-pear-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-grapes.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-grapes-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-apple.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-apple-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-orange.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-orange-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-bananas.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-bananas-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-drop.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "fruit-drop-overlay.png": {
+    "mode": "osu!catch",
+    "size": [
+      128,
+      128
+    ]
+  },
+  "pippidonclear.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "pippidonfail.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "pippidonidle.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "pippidonkiai.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit0.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit100.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit100k.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit300.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit300k.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-hit300g.png": {
+    "mode": "osu!taiko",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "taikobigcircle.png": {
+    "mode": "osu!taiko",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "taikobigcircleoverlay.png": {
+    "mode": "osu!taiko",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "taikohitcircle.png": {
+    "mode": "osu!taiko",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "taikohitcircleoverlay.png": {
+    "mode": "osu!taiko",
+    "size": [
+      118,
+      118
+    ]
+  },
+  "taiko-glow.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "taiko-slider.png": {
+    "mode": "osu!taiko",
+    "size": [
+      776,
+      162
+    ]
+  },
+  "taiko-slider-fail.png": {
+    "mode": "osu!taiko",
+    "size": [
+      776,
+      162
+    ]
+  },
+  "taiko-flower-group.png": {
+    "mode": "osu!taiko",
+    "size": [
+      181,
+      200
+    ]
+  },
+  "taiko-bar-left.png": {
+    "mode": "osu!taiko",
+    "size": [
+      181,
+      200
+    ]
+  },
+  "taiko-drum-inner.png": {
+    "mode": "osu!taiko",
+    "size": [
+      90,
+      200
+    ]
+  },
+  "taiko-drum-outer.png": {
+    "mode": "osu!taiko",
+    "size": [
+      90,
+      200
+    ]
+  },
+  "taiko-bar-right.png": {
+    "mode": "osu!taiko",
+    "size": [
+      843,
+      200
+    ]
+  },
+  "taiko-bar-right-glow.png": {
+    "mode": "osu!taiko",
+    "size": [
+      843,
+      200
+    ]
+  },
+  "taiko-roll-middle.png": {
+    "mode": "osu!taiko",
+    "size": [
+      1,
+      128
+    ]
+  },
+  "taiko-roll-end.png": {
+    "mode": "osu!taiko",
+    "size": [
+      64,
+      128
+    ]
+  },
+  "spinner-warning.png": {
+    "mode": "osu!taiko",
+    "size": null
+  },
+  "mania-hit0.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-hit50.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-hit100.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-hit200.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-hit300.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-hit300g.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "comboburst-mania.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-key1.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-key1D.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-key2.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-key2D.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-keyS.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-keySD.png": {
+    "mode": "osu!mania",
+    "size": [
+      50,
+      107
+    ]
+  },
+  "mania-note1.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note2.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-noteS.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note1H.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note2H.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note1L.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note2L.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-noteSL.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note1T.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-note2T.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-noteST.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-stage-left.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-stage-right.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-stage-bottom.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-stage-light.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-stage-hint.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "mania-warningarrow.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "lightingL.png": {
+    "mode": "osu!mania",
+    "size": null
+  },
+  "lightingN.png": {
+    "mode": "osu!mania",
+    "size": null
+  }
+}

@@ -16,6 +16,7 @@
     "/learn": {"title":"KovaaK's Aim Training Knowledge Base · AimMod Hub","description":"Read aim training guides on mechanics, practice routines, common mistakes and scenario selection."},
     "/osu": {"title":"osu! Analysis and Community · AimMod Hub","description":"Explore osu! beatmaps, skins, public players and shared replay analysis."},
     "/osu/beatmaps": {"title":"osu! Beatmaps · AimMod Hub","description":"Browse osu! beatmaps and difficulties, filter map statistics and open maps in AimMod."},
+    "/osu/skin-builder": {"title":"osu! Skin Builder · AimMod Hub","description":"Build your AimMod osu! skin. Preview colour themes, followpoints and hitsounds, then download for lazer or stable."},
     "/osu/skins": {"title":"osu! Skins · AimMod Hub","description":"Browse osu! skin previews and follow provider links to find your next skin."},
     "/osu/players": {"title":"osu! Players · AimMod Hub","description":"Discover public osu! players and their shared replay analysis on AimMod Hub."},
     "/osu/replays": {"title":"osu! Replay Library · AimMod Hub","description":"Browse public osu! replays, score summaries and shared miss analysis."},

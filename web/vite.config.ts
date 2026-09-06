@@ -8,6 +8,12 @@ export default defineConfig({
   worker: { plugins: () => [rosuBrowser()] },
   envDir: "..",
   server: {
-    port: 5173
+    port: 5173,
+    proxy: process.env.OSU_SKIN_PREVIEW_API ? {
+      '/api/osu/v1/playback/skins/': {
+        target: process.env.OSU_SKIN_PREVIEW_API,
+        changeOrigin: true,
+      },
+    } : undefined,
   }
 });
