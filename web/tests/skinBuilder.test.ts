@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { strFromU8, strToU8, zipSync, unzipSync } from 'fflate';
-import { assembleSkin, defaultSkinChoice, encodeSkin, isSilentWav, parseSkinChoice, selectHitSamples, skinCursors, skinGuides, skinThemes, unpackSkin } from '../src/lib/skinBuilder';
+import { assembleSkin, defaultSkinChoice, encodeSkin, isSilentWav, parseSkinChoice, selectHitSamples, selectComboBreak, skinCursors, skinGuides, skinThemes, unpackSkin } from '../src/lib/skinBuilder';
 
 const asset = (path: string) => unpackSkin(new Uint8Array(readFileSync(new URL('../public/skin-builder/v1/' + path, import.meta.url))));
 const sounds = { soft: asset('soft.zip'), clicky: asset('clicky.zip') };
@@ -10,7 +10,7 @@ const id = '00000000-0000-4000-8000-000000000001';
 
 test('URL choices are allowlisted and default to the subtle lazer pack', () => {
   assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=../../other&sound=unknown&client=unknown&cursor=unknown')), defaultSkinChoice);
-  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot' });
+  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1' });
 });
 
 test('every built-in combination retains its chosen cursor, guides, audio and correct client layout', () => {
@@ -21,7 +21,7 @@ test('every built-in combination retains its chosen cursor, guides, audio and co
       for (const cursor of skinCursors) {
         const cursors = asset(`${theme.id}/cursor-${cursor.id}.zip`);
         for (const sound of ['soft', 'clicky'] as const) for (const client of ['lazer', 'stable'] as const) {
-          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, sound, client }, id, stable, cursors);
+          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', sound, client }, id, stable, cursors);
           assert.deepEqual(result['cursor.png'], cursors['cursor.png']);
           assert.deepEqual(result['followpoint.png'], guides['followpoint.png']);
           assert.deepEqual(result['normal-hitnormal.wav'], sounds[sound]['normal-hitnormal.wav']);
@@ -57,7 +57,7 @@ test('community samples replace competing encodings but never import community a
   assert.ok(!result['normal-hitnormal.wav']);
   assert.deepEqual(result['normal-hitnormal.ogg'], foreign['normal-hitnormal.ogg']);
   assert.deepEqual(result['hitcircle.png'], base['hitcircle.png']);
-  assert.deepEqual(result['combobreak.wav'], base['combobreak.wav']);
+  assert.deepEqual(result['combobreak.wav'], foreign['combobreak.wav']);
   assert.match(strFromU8(result['CREDITS.txt']), /DDK RPK/);
   assert.throws(() => selectHitSamples({ 'hitcircle.png': new Uint8Array(1) }), /no playable hitsounds/);
 });
@@ -81,4 +81,24 @@ test('header-only muted WAV samples are silent rather than decoder errors', () =
   new DataView(data.buffer).setUint32(40, 4, true);
   assert.equal(isSilentWav(data), false);
   assert.equal(isSilentWav(new Uint8Array(4)), false);
+});
+
+test('cursor sizes export real scaled textures and reject invalid URL scales', () => {
+  assert.equal(parseSkinChoice(new URLSearchParams('cursorSize=100')).cursorSize, '1');
+  for (const scale of ['0.75', '1', '1.25', '1.5']) {
+    const patch = asset(`flow/cursor-yellow${scale === '1' ? '' : '-' + scale}.zip`);
+    const bytes = patch['cursor@2x.png'];
+    assert.equal(new DataView(bytes.buffer, bytes.byteOffset).getUint32(16), Math.round(64 * Number(scale)));
+    assert.equal(parseSkinChoice(new URLSearchParams('cursorSize=' + scale)).cursorSize, scale);
+  }
+});
+test('selected combo break replaces every encoding and missing cues fall back', () => {
+  const base = asset('flow/base.zip');
+  const selected = { 'normal-hitnormal.wav': sounds.soft['normal-hitnormal.wav'], 'combobreak.ogg': strToU8('synthetic-break') };
+  const result = assembleSkin(base, asset('flow/subtle.zip'), selected, defaultSkinChoice, id, {}, asset('flow/cursor-yellow.zip'));
+  assert.equal(result['combobreak.wav'], undefined);
+  assert.deepEqual(result['combobreak.ogg'], selected['combobreak.ogg']);
+  assert.deepEqual(selectComboBreak({}), {});
+  const fallback = assembleSkin(base, asset('flow/subtle.zip'), { 'normal-hitnormal.wav': selected['normal-hitnormal.wav'] }, defaultSkinChoice, id, {}, asset('flow/cursor-yellow.zip'));
+  assert.deepEqual(fallback['combobreak.wav'], base['combobreak.wav']);
 });

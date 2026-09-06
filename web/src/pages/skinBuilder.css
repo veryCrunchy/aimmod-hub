@@ -55,3 +55,8 @@
 @media (max-width: 480px) { .skin-controls { display: block; }.skin-preview-toolbar { padding: 10px; }.skin-preview-options button { padding: 6px; }.skin-download-panel { padding: 16px; flex-direction: column; align-items: stretch; }.skin-builder-heading h1 { font-size: 32px; } }
 
 .skin-cursor-grid { grid-template-columns: repeat(4, 1fr); }.skin-cursor-grid button { font-size: 10px; }
+
+.skin-cursor-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.skin-cursor-option { width: 36px; height: 36px; object-fit: contain; margin: 0 auto 6px; }
+.skin-size-label { display: block; margin: 16px 0 8px; font-size: 13px; }
+#cursor-size { width: 100%; padding: 10px; border: 1px solid #34463c; border-radius: 8px; background: #0d1510; color: #e8f5ee; }

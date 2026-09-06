@@ -66,7 +66,8 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         const ring = 128 + (1 - t) * 120; image('approachcircle', points[0][0] - ring / 2, points[0][1] - ring / 2, ring); ctx.globalAlpha = 1;
         if (pattern === 'sliders') { ctx.save(); ctx.translate(points[1][0], points[1][1]); ctx.rotate(Math.atan2(points[0][1] - points[1][1], points[0][0] - points[1][0])); image('reversearrow', -64, -64, 128); ctx.restore(); }
         const cursorX = points[0][0] + (points[1][0] - points[0][0]) * t, cursorY = points[0][1] + (points[1][1] - points[0][1]) * t;
-        image(`cursor-${choice.cursor}`, cursorX - 12, cursorY - 12, 24);
+        const cursorWidth = 24 * Number(choice.cursorSize);
+        image(`cursor-${choice.cursor}`, cursorX - cursorWidth / 2, cursorY - cursorWidth / 2, cursorWidth);
         digits('128', 115, 529, 42);
         if (choice.client === 'lazer') { image('aimmod-timing-track', 330, 548, 300); image('aimmod-duration-face', 853, 501, 68); }
         ctx.strokeStyle = theme.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(887, 535, 20, -Math.PI / 2, Math.PI * (.3 + t)); if (choice.client === 'lazer') ctx.stroke();
@@ -76,7 +77,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
       draw(performance.now());
     }).catch(() => { if (!disposed) setError(true); });
     return () => { disposed = true; cancelAnimationFrame(frame); };
-  }, [choice.theme, choice.guide, choice.client, choice.cursor, playing, pattern]);
+  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, playing, pattern]);
   return <div className="skin-scene">
     <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.guide} followpoints, ${pattern} pattern`} />
     {!ready && <div className="skin-scene-status" role={error ? 'alert' : 'status'}>{error ? 'Preview unavailable. Choose a colour to retry.' : 'Loading preview…'}</div>}

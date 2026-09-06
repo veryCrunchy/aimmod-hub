@@ -12,7 +12,10 @@ export const skinGuides = [
   { id: 'arrows', name: 'Arrows', description: 'Clear direction between notes.' },
   { id: 'jumps', name: 'Jumps', description: 'No followpoints. Keep the playfield clear.' },
 ] as const;
+export const skinCursorSizes = [{ id: '0.75', name: 'Small' }, { id: '1', name: 'Normal' }, { id: '1.25', name: 'Large' }, { id: '1.5', name: 'Extra large' }] as const;
 export const skinCursors = [
+  { id: 'yellow', name: 'Classic yellow', icon: '●', description: 'A bright yellow cursor with a dark edge and matching trail.' },
+  { id: 'white', name: 'Classic white', icon: '●', description: 'A clean white cursor with a dark edge and matching trail.' },
   { id: 'ring', name: 'Ring', icon: '⊙', description: 'An open ring with a bright centre.' },
   { id: 'dot', name: 'Dot', icon: '●', description: 'A solid point with a dark edge.' },
   { id: 'crosshair', name: 'Crosshair', icon: '+', description: 'Four short arms and a centre dot.' },
@@ -28,9 +31,9 @@ export const skinSounds = [
 export type SkinTheme = typeof skinThemes[number]['id'];
 export type SkinGuide = typeof skinGuides[number]['id'];
 export type SkinSound = typeof skinSounds[number]['id'];
-export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; cursor: typeof skinCursors[number]['id'] };
+export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; cursor: typeof skinCursors[number]['id']; cursorSize: typeof skinCursorSizes[number]['id'] };
 export type SkinFiles = Record<string, Uint8Array>;
-export const defaultSkinChoice: SkinChoice = { theme: 'flow', guide: 'subtle', sound: 'clicky', client: 'lazer', cursor: 'ring' };
+export const defaultSkinChoice: SkinChoice = { theme: 'flow', guide: 'subtle', sound: 'rafis', client: 'lazer', cursor: 'ring', cursorSize: '1' };
 
 export function parseSkinChoice(params: URLSearchParams): SkinChoice {
   return {
@@ -38,6 +41,7 @@ export function parseSkinChoice(params: URLSearchParams): SkinChoice {
     guide: skinGuides.find(t => t.id === params.get('guide'))?.id ?? defaultSkinChoice.guide,
     sound: skinSounds.find(t => t.id === params.get('sound'))?.id ?? defaultSkinChoice.sound,
     client: params.get('client') === 'stable' ? 'stable' : 'lazer',
+    cursorSize: skinCursorSizes.find(s => s.id === params.get('cursorSize'))?.id ?? '1',
     cursor: skinCursors.find(c => c.id === params.get('cursor'))?.id ?? 'ring',
   };
 }
@@ -64,7 +68,7 @@ export function unpackSkin(bytes: Uint8Array, soundsOnly = false): SkinFiles {
   const result = unzipSync(bytes, { filter(entry) {
     if (++count > 4096) throw new Error('This skin has too many files.');
     if (!safeAsset.test(entry.name)) return false;
-    if (soundsOnly && !hitSample.test(entry.name.toLowerCase())) return false;
+    if (soundsOnly && !hitSample.test(entry.name.toLowerCase()) && !/^combobreak\.(wav|ogg|mp3)$/.test(entry.name.toLowerCase())) return false;
     if (entry.originalSize > 8 * 1024 * 1024 || (total += entry.originalSize) > 40 * 1024 * 1024) throw new Error('This skin exceeds the download limit.');
     return true;
   } });
@@ -83,6 +87,14 @@ export function selectHitSamples(files: SkinFiles): SkinFiles {
   }
   if (!Object.keys(selected).some(k => /-hitnormal\./.test(k))) throw new Error('This set has no playable hitsounds. Choose another set.');
   return selected;
+}
+
+export function selectComboBreak(files: SkinFiles): SkinFiles {
+  for (const ext of ['wav', 'ogg', 'mp3']) {
+    const name = Object.keys(files).find(n => n.toLowerCase() === `combobreak.${ext}`);
+    if (name && files[name].length > 0 && !isSilentWav(files[name])) return { [name.toLowerCase()]: files[name] };
+  }
+  return {};
 }
 
 export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFiles, choice: SkinChoice, id: string, stable: SkinFiles = {}, cursor: SkinFiles = {}): SkinFiles {
@@ -111,15 +123,20 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
     for (const ext of ['wav', 'ogg', 'mp3']) delete files[stem + '.' + ext];
     files[name] = data;
   }
-  // Preserve the user's latest AimMod break cue and silence for continuous slider layers.
+  const comboBreak = selectComboBreak(sounds);
+  if (Object.keys(comboBreak).length) {
+    for (const ext of ['wav', 'ogg', 'mp3']) delete files['combobreak.' + ext];
+    Object.assign(files, comboBreak);
+  }
+  // Continuous slider layers retain their quiet AimMod defaults.
   const theme = skinThemes.find(t => t.id === choice.theme)!;
   const guide = skinGuides.find(t => t.id === choice.guide)!;
   const sound = skinSounds.find(t => t.id === choice.sound)!;
-  const name = `AimMod ${theme.name} · ${guide.name} · ${choice.cursor} · ${sound.name} · ${choice.client}`;
+  const name = `AimMod ${theme.name} · ${guide.name} · ${choice.cursor} ${choice.cursorSize}x · ${sound.name} · ${choice.client}`;
   files['skin.ini'] = strToU8(strFromU8(files['skin.ini']).replace(/^Name\s*:.*$/m, `Name: ${name}`));
   if (choice.client === 'lazer') files['skininfo.json'] = strToU8(JSON.stringify({ ID: id, Name: name, Creator: 'AimMod', InstantiationInfo: 'osu.Game.Skinning.LegacySkin, osu.Game' }, null, 2));
   files['README.txt'] = strToU8(`${name}\n\nImport this .osk into osu!${choice.client === 'lazer' ? 'lazer' : 'stable'}, then select it in skin settings. Enable the key overlay and turn off beatmap skin/colour overrides to use your chosen appearance. Turn off beatmap hitsounds to hear this set.\n\nThis skin does not enable Hidden or Double Time. Followpoints: ${guide.name}. Standard 300 judgements are hidden; 100, 50 and MISS use 80% opacity.\n${choice.client === 'stable' ? 'Includes standard, taiko, catch and mania artwork. PP and the lazer HUD layout are not available in stable.\n' : ''}`);
-  files['CREDITS.txt'] = strToU8(`Artwork and layout: AimMod.\nHitsounds: ${sound.name} by ${sound.creator}.\n${sound.source ? 'Source: ' + sound.source + '\n' : ''}Combo break, menu sounds and missing-sample fallbacks: AimMod.\n`);
+  files['CREDITS.txt'] = strToU8(`Artwork and layout: AimMod.\nHitsounds: ${sound.name} by ${sound.creator}.\n${sound.source ? 'Source: ' + sound.source + '\n' : ''}Combo break: ${Object.keys(comboBreak).length ? sound.creator : 'AimMod (fallback)'}. Menu sounds and missing-sample fallbacks: AimMod.\n`);
   return files;
 }
 
