@@ -94,6 +94,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle(path, withCORS(cfg.AllowedWebOrigin, handler))
 	osuServer, err := osuservice.NewServer(osuservice.Config{
 		OfficialClientID:          cfg.OsuClientID,
+		PlayerIndex:               hub.Store(),
 		OfficialClientSecret:      cfg.OsuClientSecret,
 		UserAgent:                 "AimMod-Hub/" + cfg.Version + " (https://aimmod.app)",
 		CacheTTL:                  cfg.OsuCacheTTL,
@@ -118,6 +119,10 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	newOsuSyncHandler(hub.Store(), auth.media, osuServer).register(mux, cfg.AllowedWebOrigin)
 	newOsuProfileScoresHandler(hub.Store(), osuServer).register(mux, cfg.AllowedWebOrigin)
+	newOsuPlayersHandler(osuServer).register(mux, cfg.AllowedWebOrigin)
+	if osuServer != nil && hub.Store() != nil && cfg.OsuClientID != "" && cfg.OsuClientSecret != "" {
+		go osuServer.RunPlayerIndexer(context.Background())
+	}
 	var playbackMetadata osuPlaybackMetadataProvider
 	if osuServer != nil {
 		playbackMetadata = osuServer

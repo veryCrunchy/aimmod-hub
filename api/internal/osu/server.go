@@ -17,6 +17,7 @@ import (
 )
 
 type Config struct {
+	PlayerIndex               PlayerIndex
 	OfficialBaseURL           string
 	CollectorBaseURL          string
 	OsuSkinsBaseURL           string

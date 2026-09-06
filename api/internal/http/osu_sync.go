@@ -119,7 +119,28 @@ func (h *osuSyncHandler) handleCommunity(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=30")
-	writeJSON(w, http.StatusOK, map[string]any{"items": sharedScoreItems(r.Context(), h.official, items)})
+	result := sharedScoreItems(r.Context(), h.official, items)
+	if index, ok := h.official.(interface {
+		ListPublicIndexedScores(context.Context, int, bool) ([]osuservice.OfficialPublicScore, error)
+	}); ok {
+		official, indexErr := index.ListPublicIndexedScores(r.Context(), limit, r.URL.Query().Get("replays") == "true")
+		if indexErr == nil {
+			result = osuservice.MergePublicScores(items, official)
+		}
+	}
+	if r.URL.Query().Get("replays") == "true" {
+		filtered := result[:0]
+		for _, item := range result {
+			if item.HasReplayFile || item.OfficialReplayExists {
+				filtered = append(filtered, item)
+			}
+		}
+		result = filtered
+	}
+	if len(result) > limit {
+		result = result[:limit]
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": result})
 }
 
 func (h *osuSyncHandler) handleProfile(w http.ResponseWriter, r *http.Request) {

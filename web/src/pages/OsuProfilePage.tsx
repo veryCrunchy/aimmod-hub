@@ -52,7 +52,7 @@ export function OsuProfilePage() {
       <PageSection className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-5 max-[560px]:grid-cols-1">
         {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="h-20 w-20 rounded-md object-cover" /> : <div className="h-20 w-20 rounded-md bg-white/5" />}
         <div className="min-w-0">
-          <SectionHeader level={1} eyebrow={`@${profile.hubHandle}`} title={profile.osuUsername} body={profile.hubDisplayName} />
+          <SectionHeader level={1} eyebrow={profile.hubHandle ? `@${profile.hubHandle}` : "osu! player"} title={profile.osuUsername} body={profile.hubDisplayName} />
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-muted">
             <Stat label="Performance" value={profile.performancePoints == null ? "Unavailable" : `${Math.round(profile.performancePoints).toLocaleString()}pp`} />
             <Stat label="Global rank" value={profile.globalRank == null ? "Unranked" : `#${profile.globalRank.toLocaleString()}`} />

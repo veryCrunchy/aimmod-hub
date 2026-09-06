@@ -14,10 +14,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	osuv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/osu/v1"
 )
 
 type officialAdapter struct {
+	playerIndex  PlayerIndex
 	client       *upstreamClient
 	http         *http.Client
 	oauthURL     string
@@ -147,6 +149,7 @@ func newOfficialAdapter(cfg Config, httpClient *http.Client, cache *responseCach
 		}
 	}
 	adapter := &officialAdapter{
+		playerIndex:  cfg.PlayerIndex,
 		client:       client,
 		http:         httpClient,
 		oauthURL:     strings.TrimRight(cfg.OfficialBaseURL, "/") + "/oauth/token",
@@ -383,6 +386,7 @@ func (a *officialAdapter) userProfile(ctx context.Context, req *osuv1.GetOfficia
 			FlagUrl:   absolutePreviewURL(user.Team.FlagURL),
 		}
 	}
+	a.retainPlayers(ctx, mode, []store.OsuPublicProfile{publicProfileFromOfficial(profile)})
 	return profile, nil
 }
 

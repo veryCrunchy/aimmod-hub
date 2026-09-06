@@ -267,7 +267,16 @@ func resolveSocialContent(ctx context.Context, route string, st socialPreviewSto
 	} else if handle, ok := strings.CutPrefix(route, "/osu/profiles/"); ok {
 		profile, err := st.GetOsuPublicProfile(ctx, handle, 1)
 		if err != nil || profile.SharedReplayCount <= 0 {
-			return previewContent{}, errPreviewUnavailable
+			index, ok := st.(interface {
+				GetIndexedOsuProfile(context.Context, string, string) (store.OsuPublicProfile, error)
+			})
+			if !ok {
+				return previewContent{}, errPreviewUnavailable
+			}
+			profile, err = index.GetIndexedOsuProfile(ctx, handle, "")
+			if err != nil {
+				return previewContent{}, errPreviewUnavailable
+			}
 		}
 		pp, rank := "Unavailable", "Unranked"
 		if profile.PerformancePoints != nil {

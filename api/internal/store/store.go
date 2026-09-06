@@ -234,6 +234,36 @@ CREATE INDEX IF NOT EXISTS idx_coaching_queries_created_at
 CREATE INDEX IF NOT EXISTS idx_coaching_queries_is_miss
   ON coaching_queries(is_miss, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS osu_public_players (
+  osu_user_id BIGINT NOT NULL CHECK (osu_user_id > 0),
+  ruleset TEXT NOT NULL CHECK (ruleset IN ('osu','taiko','fruits','mania')),
+  username TEXT NOT NULL,
+  profile JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (osu_user_id, ruleset)
+);
+CREATE INDEX IF NOT EXISTS idx_osu_public_players_username ON osu_public_players(lower(username));
+CREATE TABLE IF NOT EXISTS osu_player_index_progress (
+  ruleset TEXT PRIMARY KEY,
+  page INTEGER NOT NULL DEFAULT 1,
+  next_attempt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO osu_player_index_progress(ruleset) VALUES ('osu'),('taiko'),('fruits'),('mania') ON CONFLICT DO NOTHING;
+
+ALTER TABLE osu_public_players ADD COLUMN IF NOT EXISTS scores_next_refresh TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE INDEX IF NOT EXISTS idx_osu_public_players_score_refresh ON osu_public_players(scores_next_refresh);
+CREATE TABLE IF NOT EXISTS osu_public_score_index (
+ score_id BIGINT PRIMARY KEY CHECK(score_id>0),
+ osu_user_id BIGINT NOT NULL,
+ ruleset TEXT NOT NULL,
+ played_at TIMESTAMPTZ NOT NULL,
+ has_replay BOOLEAN NOT NULL,
+ item JSONB NOT NULL,
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_osu_public_score_index_recent ON osu_public_score_index(played_at DESC,score_id DESC);
+CREATE INDEX IF NOT EXISTS idx_osu_public_score_index_player ON osu_public_score_index(osu_user_id,ruleset);
+
 CREATE TABLE IF NOT EXISTS osu_profiles (
   user_id BIGINT PRIMARY KEY REFERENCES hub_users(id) ON DELETE CASCADE,
   osu_user_id BIGINT NOT NULL DEFAULT 0,

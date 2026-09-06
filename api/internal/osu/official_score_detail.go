@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
-	osuv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/osu/v1"
 )
 
 type OfficialReplayAvailability struct {
@@ -86,6 +85,7 @@ func (s *Server) getPublicScore(ctx context.Context, id int64, legacyMode string
 		// OfficialScoreID and its URL still identify the canonical modern score.
 		result.Item.OnlineScoreID = id
 	}
+	_ = s.retainPublicScores(ctx, []OfficialPublicScore{normalizePublicScore(score, scoreMode(*score.RulesetID))})
 	result.Status = "available"
 	result.Replay.Exists = score.HasReplay
 	result.Replay.Status = "not_available"
@@ -242,20 +242,5 @@ func (s *Server) GetPublicScoreProfile(ctx context.Context, id int64, mode strin
 	if s == nil || s.official == nil {
 		return store.OsuPublicProfile{}, fmt.Errorf("official API unavailable")
 	}
-	ruleset := map[string]osuv1.Ruleset{"osu": osuv1.Ruleset_RULESET_OSU, "taiko": osuv1.Ruleset_RULESET_TAIKO, "fruits": osuv1.Ruleset_RULESET_CATCH, "mania": osuv1.Ruleset_RULESET_MANIA}[mode]
-	user, err := s.official.userProfile(ctx, &osuv1.GetOfficialUserProfileRequest{Identifier: strconv.FormatInt(id, 10), LookupKey: osuv1.OfficialUserLookupKey_OFFICIAL_USER_LOOKUP_KEY_ID, Ruleset: ruleset})
-	if err != nil {
-		return store.OsuPublicProfile{}, err
-	}
-	profile := store.OsuPublicProfile{OsuUserID: int64(user.UserId), OsuUsername: user.Username, CountryCode: user.CountryCode, AvatarURL: user.AvatarUrl, RecentReplays: []store.OsuPublicReplay{}}
-	if statistics := user.Statistics; statistics != nil {
-		profile.PerformancePoints = &statistics.Pp
-		if statistics.GlobalRank > 0 {
-			rank := int64(statistics.GlobalRank)
-			profile.GlobalRank = &rank
-		}
-		profile.PlayCount = int64(statistics.PlayCount)
-		profile.PlayTimeSeconds = int64(statistics.PlayTimeSeconds)
-	}
-	return profile, nil
+	return s.ResolvePublicPlayer(ctx, strconv.FormatInt(id, 10), mode)
 }

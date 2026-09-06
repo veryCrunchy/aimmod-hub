@@ -94,7 +94,7 @@ func newSitemapHandler(origin string, st sitemapStore) http.Handler {
 		}
 		// Validate the category without querying counts for every shard request.
 		switch kind {
-		case "profiles", "runs", "scenarios", "player-scenarios", "profile-benchmarks", "osu-profiles", "osu-replays", "external-profiles", "osu-scores", "benchmarks", "player-benchmarks", "external-benchmarks", "kovaaks-profiles":
+		case "profiles", "runs", "scenarios", "player-scenarios", "profile-benchmarks", "osu-profiles", "osu-public-players", "osu-public-scores", "osu-replays", "external-profiles", "osu-scores", "benchmarks", "player-benchmarks", "external-benchmarks", "kovaaks-profiles":
 		default:
 			http.NotFound(w, r)
 			return

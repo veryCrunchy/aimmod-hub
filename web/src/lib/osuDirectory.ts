@@ -3,7 +3,7 @@ import type { OsuSharedReplay } from "./osuCommunity";
 export function groupOsuPlays(items: OsuSharedReplay[], kind: "beatmaps" | "players") {
   const groups = new Map<string, OsuSharedReplay[]>();
   for (const item of items) {
-    const key = kind === "players" ? item.hubHandle : String(item.beatmapId);
+    const key = kind === "players" ? (item.osuUserId > 0 ? String(item.osuUserId) : item.hubHandle) : String(item.beatmapId);
     if (!key || (kind === "beatmaps" && item.beatmapId <= 0)) continue;
     const group = groups.get(key) ?? [];
     group.push(item);

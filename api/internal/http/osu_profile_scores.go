@@ -78,17 +78,19 @@ func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.R
 		profile, err = h.store.GetOsuPublicProfile(r.Context(), handle, 100)
 	}
 	if err != nil {
-		if parseErr != nil || id <= 0 {
-			http.Error(w, "osu profile not found", http.StatusNotFound)
-			return
-		}
 		if h.official == nil {
-			http.Error(w, "official API unavailable", http.StatusServiceUnavailable)
+			http.Error(w, "official API unavailable", 503)
 			return
 		}
-		profile, err = h.official.GetPublicScoreProfile(r.Context(), id, mode)
+		if resolver, ok := h.official.(interface {
+			ResolvePublicPlayer(context.Context, string, string) (store.OsuPublicProfile, error)
+		}); ok {
+			profile, err = resolver.ResolvePublicPlayer(r.Context(), handle, mode)
+		} else if parseErr == nil && id > 0 {
+			profile, err = h.official.GetPublicScoreProfile(r.Context(), id, mode)
+		}
 		if err != nil {
-			http.Error(w, "official profile unavailable", http.StatusBadGateway)
+			http.Error(w, "official profile unavailable", 502)
 			return
 		}
 	}
@@ -108,6 +110,11 @@ func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.R
 			http.Error(w, "official scores unavailable", http.StatusBadGateway)
 			return
 		}
+	}
+	if index, ok := h.official.(interface {
+		IndexPublicScores(context.Context, []osuservice.OfficialPublicScore) error
+	}); ok {
+		_ = index.IndexPublicScores(r.Context(), result.Scores)
 	}
 	items := osuservice.MergePublicScores(local, result.Scores)
 	for i := range items {

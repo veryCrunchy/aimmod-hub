@@ -63,6 +63,7 @@ type OfficialScoresResult struct {
 }
 
 type officialScore struct {
+	User                  officialUser `json:"user"`
 	legacyIdentityPresent bool
 	ID                    int64              `json:"id"`
 	UserID                int64              `json:"user_id"`
@@ -263,6 +264,7 @@ func normalizePublicScore(score officialScore, mode string) OfficialPublicScore 
 	}
 	replay := store.OsuPublicReplay{
 		OnlineScoreID: score.ID, OsuUserID: score.UserID, Visibility: store.OsuVisibilityPublic,
+		OsuUsername: score.User.Username, AvatarURL: absolutePreviewURL(score.User.AvatarURL), CountryCode: score.User.CountryCode,
 		BeatmapID: id, BeatmapSetID: int64(score.Beatmap.BeatmapsetID), BeatmapChecksum: score.Beatmap.Checksum,
 		Title: score.Beatmapset.Title, Artist: score.Beatmapset.Artist, Creator: score.Beatmapset.Creator,
 		CoverURL: score.Beatmapset.Covers.Card, Difficulty: score.Beatmap.Version, Ruleset: mode,

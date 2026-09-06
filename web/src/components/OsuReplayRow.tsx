@@ -12,7 +12,7 @@ export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
       <div className="min-w-0">
         <strong className="block break-words text-[13px] font-semibold text-text">{replay.artist} - {replay.title}</strong>
         <span className="mt-1 block truncate text-[11px] text-muted">
-          [{replay.difficulty}] by {replay.creator} · @{replay.hubHandle}
+          [{replay.difficulty}] by {replay.creator} · {replay.osuUsername || replay.hubHandle}
         </span>
         <span className="hub-replay-mobile">
           <span className="text-gold">{replay.starRating.toFixed(2)}★</span>

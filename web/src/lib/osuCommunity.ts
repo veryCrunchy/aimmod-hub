@@ -104,8 +104,8 @@ async function fetchJSON<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function fetchOsuCommunity(limit = 36): Promise<OsuSharedReplay[]> {
-  const response = await fetchJSON<{ items?: OsuSharedReplay[] }>(`/api/osu/v1/community?limit=${Math.max(1, Math.min(100, limit))}`);
+export async function fetchOsuCommunity(limit = 36, replaysOnly = false): Promise<OsuSharedReplay[]> {
+  const response = await fetchJSON<{ items?: OsuSharedReplay[] }>(`/api/osu/v1/community?limit=${Math.max(1, Math.min(100, limit))}&replays=${replaysOnly}`);
   return (response.items ?? []).map(normalizeReplay);
 }
 

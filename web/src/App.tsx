@@ -42,6 +42,8 @@ const ExternalProfilePage = lazy(() => import("./pages/ExternalProfilePage").the
 const ExternalKovaaksPage = lazy(() => import("./pages/ExternalProfilePage").then((m) => ({ default: m.ExternalKovaaksPage })));
 const ExternalBenchmarkPage = lazy(() => import("./pages/ExternalBenchmarkPage").then((m) => ({ default: m.ExternalBenchmarkPage })));
 
+const OsuPlayersPage = lazy(() => import("./pages/OsuPlayersPage").then(m => ({ default: m.OsuPlayersPage })));
+
 function RouteLoading() {
   return <div role="status" className="flex min-h-64 items-center justify-center border-y border-line px-6 py-10 text-base text-muted">Loading page...</div>;
 }
@@ -70,7 +72,7 @@ function AppRoutes() {
           <Route path="/osu/beatmaps" element={<OsuCatalogPage key="beatmaps" />} />
           <Route path="/osu/pp-targets" element={<OsuPpTargetsPage />} />
           <Route path="/osu/skins" element={<OsuCatalogPage key="skins" skins />} />
-          <Route path="/osu/players" element={<OsuDirectoryPage view="players" />} />
+          <Route path="/osu/players" element={<OsuPlayersPage />} />
           <Route path="/osu/replays" element={<OsuCommunityPage replayLibrary />} />
           <Route path="/osu/profiles/:handle" element={<OsuProfilePage />} />
           <Route path="/osu/replays/:shareId" element={<OsuReplayPage />} />

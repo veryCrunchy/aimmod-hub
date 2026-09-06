@@ -253,7 +253,7 @@ func resolvePageMeta(ctx context.Context, path, canonical string, st *store.Stor
 		fallback.Title, fallback.NoIndex = "Guide unavailable · AimMod Hub", true
 		return fallback
 	}
-	if strings.HasPrefix(cleanPath, "/osu/replays/") || strings.HasPrefix(cleanPath, "/osu/profiles/") {
+	if strings.HasPrefix(cleanPath, "/osu/replays/") || strings.HasPrefix(cleanPath, "/osu/profiles/") || strings.HasPrefix(cleanPath, "/osu/scores/") {
 		if st == nil {
 			return unavailableOsuMeta(canonical)
 		}

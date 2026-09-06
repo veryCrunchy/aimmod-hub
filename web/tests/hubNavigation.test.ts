@@ -28,3 +28,16 @@ test("beatmap directories preserve separate difficulties and missing PP", () => 
   assert.equal(players[0].plays.length, 2);
   assert.equal(plays[0].playedAt, "2026-09-01");
 });
+
+test("public player groups include non-AimMod players and merge linked identities by osu ID", () => {
+ const plays = [
+  { osuUserId:42, hubHandle:"", beatmapId:9, playedAt:"2026-09-01", performancePoints:100 },
+  { osuUserId:42, hubHandle:"example-linked", beatmapId:10, playedAt:"2026-09-02", performancePoints:200 },
+  { osuUserId:43, hubHandle:"", beatmapId:11, playedAt:"2026-09-03", performancePoints:50 },
+ ] as OsuSharedReplay[];
+ const groups=groupOsuPlays(plays,"players");
+ assert.equal(groups.length,2);
+ assert.equal(groups[0].id,"42");
+ assert.equal(groups[0].plays.length,2);
+ assert.equal(groups[1].id,"43");
+});
