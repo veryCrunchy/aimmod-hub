@@ -38,7 +38,7 @@ public sealed record ScoreInput(int Version, int RulesetId, bool? Lazer, JsonEle
 public sealed record CalculationResult(double Pp, double MaxPp, double Stars, int ObjectCount, double Accuracy, bool Lazer, string Engine, int RulesetVersion);
 
 public static class Calculator {
-    public const string Engine = "aimmod-osu-2026.730.0-v1";
+    public const string Engine = "aimmod-osu-2026.730.0-v2";
 
     public static CalculationResult Calculate(CalculationRequest request, CancellationToken token) {
         byte[] bytes;
@@ -47,10 +47,10 @@ public static class Calculator {
         if (bytes.Length == 0 || bytes.Length > 4 * 1024 * 1024 || !Convert.ToHexString(MD5.HashData(bytes)).Equals(request.Checksum, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The exact beatmap revision is unavailable.");
         bool lazer = request.Input?.Lazer ?? request.Lazer ?? true;
-        if (request.Input is { } input && (input.Version != 1 || input.RulesetId != 0 || input.Lazer is null || input.Statistics is null || input.Statistics.Values.Any(n => n < 0) || input.MaxCombo < 0 || !double.IsFinite(input.Accuracy) || input.Accuracy < 0 || input.Accuracy > 1))
-            throw new ArgumentException("Exact osu!standard score inputs are required.");
+        if (request.Input is { } input && (input.Version != 1 || input.RulesetId is < 0 or > 3 || input.Lazer is null || input.Statistics is null || input.Statistics.Values.Any(n => n < 0) || input.MaxCombo < 0 || !double.IsFinite(input.Accuracy) || input.Accuracy < 0 || input.Accuracy > 1))
+            throw new ArgumentException("Exact score inputs are required.");
         if (!double.IsFinite(request.Accuracy) || request.Accuracy < 0 || request.Accuracy > 100) throw new ArgumentException("Accuracy must be between 0 and 100.");
-        var ruleset = new OsuRuleset();
+        var ruleset = ModePerformance.CreateRuleset(request.Input?.RulesetId ?? 0);
         var rawMods = request.Input?.Mods ?? request.Mods;
         if (rawMods.ValueKind != JsonValueKind.Array || rawMods.GetArrayLength() > 16) throw new ArgumentException("Invalid mods.");
         var apiMods = JsonConvert.DeserializeObject<APIMod[]>(rawMods.GetRawText())!;
@@ -58,13 +58,17 @@ public static class Calculator {
         if (mods.Any(mod => mod is UnknownMod)) throw new ArgumentException("This mod is not supported by the calculator.");
         if (mods.Select(mod => mod.Acronym).Distinct().Count() != mods.Length || mods.Any(mod => mod.IncompatibleMods.Any(type => mods.Any(other => other != mod && type.IsInstanceOfType(other)))))
             throw new ArgumentException("The selected mods are incompatible.");
-        if (!lazer && !mods.Any(mod => mod is ModClassic)) mods = [..mods, ruleset.CreateMod<ModClassic>()!];
+        if (!lazer && !mods.Any(mod => mod is ModClassic) && ruleset.CreateMod<ModClassic>() is { } classic) mods = [..mods, classic];
         string path = Path.Combine(Path.GetTempPath(), $"aimmod-pp-{Guid.NewGuid():N}.osu");
         try {
             File.WriteAllBytes(path, bytes);
             var working = new FlatWorkingBeatmap(path);
-            if (working.BeatmapInfo.Ruleset.OnlineID != 0) throw new ArgumentException("Only osu!standard maps are supported.");
+            if (working.BeatmapInfo.Ruleset.OnlineID != 0 && working.BeatmapInfo.Ruleset.OnlineID != ruleset.RulesetInfo.OnlineID) throw new ArgumentException("The score mode does not match this beatmap.");
             if (working.Beatmap.HitObjects.Count > 100000) throw new ArgumentException("The beatmap has too many objects.");
+            if (request.Input is { RulesetId: > 0 } modeInput) {
+                var result = ModePerformance.Calculate(working, ruleset, mods, ActualStatistics(modeInput), modeInput.Accuracy, modeInput.MaxCombo, lazer, modeInput.Passed, modeInput.TotalScore, modeInput.LegacyTotalScore, token);
+                return new(result.Pp, result.MaxPp, result.Stars, result.ObjectCount, modeInput.Accuracy, lazer, Engine, result.RulesetVersion);
+            }
             var difficulty = ruleset.CreateDifficultyCalculator(working);
             var attributes = (OsuDifficultyAttributes)difficulty.Calculate(mods, token);
             int objectCount = attributes.HitCircleCount + attributes.SliderCount + attributes.SpinnerCount;
@@ -85,7 +89,7 @@ public static class Calculator {
                     TotalScore = request.Input?.TotalScore ?? 0, LegacyTotalScore = request.Input?.LegacyTotalScore,
                     Passed = request.Input?.Passed ?? true,
                 };
-                return ruleset.CreatePerformanceCalculator().Calculate(score, difficultyAttributes).Total;
+                return (ruleset.CreatePerformanceCalculator() ?? throw new ArgumentException("This mode has no PP calculator.")).Calculate(score, difficultyAttributes).Total;
             }
             var scoreAttributes = attributes;
             if (request.Input?.Passed == false && judged > 0 && judged < objectCount) {
@@ -100,7 +104,7 @@ public static class Calculator {
         } finally { File.Delete(path); }
     }
 
-    static Dictionary<HitResult,int> ActualStatistics(ScoreInput input) {
+    public static Dictionary<HitResult,int> ActualStatistics(ScoreInput input) {
         var result = new Dictionary<HitResult,int>();
         foreach (var (key, count) in input.Statistics!) {
             if (Enum.TryParse<HitResult>(key.Replace("_", ""), true, out var hit)) result[hit] = count;

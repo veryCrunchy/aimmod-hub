@@ -13,19 +13,19 @@ function storage() {
     getItem: (key: string) => entries.get(key) ?? null, setItem: (key: string, value: string) => { entries.set(key, value); }, removeItem: (key: string) => { entries.delete(key); } };
 }
 
-test("unsupported modes are distinguished from invalid standard score data", () => {
+test("all four modes are supported and unknown modes are rejected", () => {
   for (const rulesetId of [1, 2, 3]) {
-    assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId })), true);
-    assert.equal(canCalculateScorePp(input({ rulesetId })), false);
+    assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId })), false);
+    assert.equal(canCalculateScorePp(input({ rulesetId })), true);
   }
   assert.equal(isUnsupportedScorePpRuleset(input()), false);
   assert.equal(isUnsupportedScorePpRuleset(input({ version: 2 })), false);
-  assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId: 99 })), false);
+  assert.equal(isUnsupportedScorePpRuleset(input({ rulesetId: 99 })), true);
 });
 
 test("unknown scoring, absent statistics, invalid counts and checksum cannot calculate or cache", () => {
   const invalid: Partial<ScorePpInput>[] = [ { lazer: null }, { statistics: null }, { mods: null }, { beatmapChecksum: "" },
-    { rulesetId: 3 }, { version: 2 }, { accuracy: NaN }, { maxCombo: -1 }, { statistics: { great: 1.5 } }, { statistics: { miss: Infinity } } ];
+    { rulesetId: 99 }, { version: 2 }, { accuracy: NaN }, { maxCombo: -1 }, { statistics: { great: 1.5 } }, { statistics: { miss: Infinity } } ];
   for (const patch of invalid) {
     const value = input(patch);
     assert.equal(canCalculateScorePp(value), false);
@@ -70,7 +70,7 @@ test("cache is bounded to 400 entries and rejects malformed, future and engine-m
     assert.equal(cache.get(input()), undefined);
   }
   store.removeItem(key);
-  store.setItem(key.replace("aimmod-osu-2026.730.0-v1", "rosu4.0.1"), JSON.stringify({ pp: 30, expires: 1000 }));
+  store.setItem(key.replace("aimmod-osu-2026.730.0-v2", "rosu4.0.1"), JSON.stringify({ pp: 30, expires: 1000 }));
   assert.equal(cache.get(input()), undefined);
 });
 test("disabled storage is optional", () => {
@@ -91,4 +91,10 @@ test("passed scores must account for every map object and fails cannot exceed ob
   assert.throws(() => validateScorePpObjectCount(input(), 101));
   assert.doesNotThrow(() => validateScorePpObjectCount(input({ passed: false }), 101));
   assert.throws(() => validateScorePpObjectCount(input({ passed: false }), 99));
+});
+
+test("mania and catch counts retain mode-specific judgements", () => {
+  assert.doesNotThrow(() => validateScorePpObjectCount(input({rulesetId:3, statistics:{perfect:60,great:20,good:10,ok:5,meh:2,miss:3}}),100));
+  assert.doesNotThrow(() => validateScorePpObjectCount(input({rulesetId:2, statistics:{great:40,large_tick_hit:10,small_tick_hit:40,small_tick_miss:7,miss:3}}),100));
+  assert.notEqual(scorePpCacheKey(input({rulesetId:1})),scorePpCacheKey(input({rulesetId:3})));
 });

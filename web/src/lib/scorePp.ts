@@ -8,7 +8,7 @@ export type ScorePpInput = {
 export type ScorePpWorkerRequest = { id: string; input: ScorePpInput; url: string };
 export type ScorePpResult = { pp: number; stars?: number; objectCount?: number };
 export type ScorePpWorkerResponse = ({ id: string } & ScorePpResult) | { id: string; error: string };
-export const scorePpVersion = "aimmod-osu-2026.730.0-v1-actual";
+export const scorePpVersion = "aimmod-osu-2026.730.0-v2-actual";
 export const scorePpTTL = 24 * 60 * 60_000;
 const prefix = `aimmod-score-pp-${scorePpVersion}:`;
 
@@ -30,12 +30,12 @@ export function validScorePp(pp: unknown): pp is number {
 }
 
 export function isUnsupportedScorePpRuleset(input: ScorePpInput): boolean {
-  return [1, 2, 3].includes(input.rulesetId);
+  return ![0, 1, 2, 3].includes(input.rulesetId);
 }
 
 export function scorePpValidationReason(input: ScorePpInput): string | null {
   try {
-    if (!input || input.version !== 1 || input.rulesetId !== 0) return "Only supported osu!standard score inputs can be calculated";
+    if (!input || input.version !== 1 || isUnsupportedScorePpRuleset(input)) return "This score mode or input version is not supported";
     if (!/^[a-f0-9]{32}$/i.test(input.beatmapChecksum) || !Number.isSafeInteger(input.beatmapId) || input.beatmapId <= 0) return "The exact beatmap revision is unavailable";
     if (typeof input.lazer !== "boolean") return "The score's stable or lazer rules are unknown";
     if (!Array.isArray(input.mods) || input.mods.some(mod => !mod || typeof mod.acronym !== "string" || !/^[A-Z0-9]{1,8}$/.test(mod.acronym))) return "The score's full mods are unavailable";
@@ -58,7 +58,8 @@ export function validateScorePpObjectCount(input: ScorePpInput, objectCount: num
   const reason = scorePpValidationReason(input);
   if (reason) throw new Error(reason);
   const stats = input.statistics!;
-  const judged = (stats.great ?? 0) + (stats.ok ?? 0) + (stats.meh ?? 0) + (stats.miss ?? 0);
+  const keys = input.rulesetId === 2 ? ["great", "large_tick_hit", "large_tick_miss", "small_tick_hit", "small_tick_miss", "miss"] : input.rulesetId === 3 ? ["perfect", "great", "good", "ok", "meh", "miss"] : ["great", "ok", "meh", "miss"];
+  const judged = keys.reduce((sum, key) => sum + (stats[key] ?? 0), 0);
   if (!Number.isSafeInteger(objectCount) || objectCount < 0 || judged > objectCount || (input.passed && judged !== objectCount)) {
     throw new Error("Score judgements do not match this beatmap revision");
   }

@@ -34,3 +34,35 @@ Reject(() => Run(request with { Input = actual with { Lazer = null } }));
 Reject(() => Run(request with { Accuracy = double.NaN }));
 Reject(() => Run(request with { Mods = JsonSerializer.SerializeToElement(new[] { new { acronym = "DT" }, new { acronym = "HT" } }) }));
 Console.WriteLine($"Passed official PP checks. Ruleset {lazer.RulesetVersion}; synthetic lazer {lazer.Pp:F8}, stable {stable.Pp:F8}, DT {dt.Pp:F8}.");
+
+foreach (int mode in new[] {1, 2, 3}) {
+    var modeBytes = Encoding.UTF8.GetBytes(text.Replace("Mode:0", $"Mode:{mode}"));
+    var path = Path.Combine(Path.GetTempPath(), $"aimmod-mode-test-{Guid.NewGuid():N}.osu");
+    try {
+        File.WriteAllBytes(path, modeBytes);
+        var working = new osu.Game.Beatmaps.FlatWorkingBeatmap(path);
+        var ruleset = ModePerformance.CreateRuleset(mode);
+        foreach (bool isLazer in new[] { true, false }) {
+            osu.Game.Rulesets.Mods.Mod[] mods = [];
+            if (!isLazer && ruleset.CreateMod<osu.Game.Rulesets.Mods.ModClassic>() is {} classic) mods = [classic];
+            using var processor = ruleset.CreateScoreProcessor();
+            processor.Mods.Value = mods;
+            processor.ApplyBeatmap(working.GetPlayableBeatmap(ruleset.RulesetInfo, mods));
+            var maxStatistics = processor.MaximumStatistics;
+            if (mode == 3 && !isLazer) maxStatistics[osu.Game.Rulesets.Scoring.HitResult.Perfect] = working.GetPlayableBeatmap(ruleset.RulesetInfo, mods).HitObjects.Count;
+            var perfect = maxStatistics.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value);
+            Console.WriteLine($"Mode {mode}, lazer {isLazer}: {JsonSerializer.Serialize(perfect)}");
+            var modeScore = actual with { RulesetId = mode, Lazer = isLazer, Mods = request.Mods, Statistics = perfect, Accuracy = 1, MaxCombo = processor.MaximumCombo };
+            var modeRequest = request with { Map = Convert.ToBase64String(modeBytes), Checksum = Convert.ToHexString(MD5.HashData(modeBytes)), Input = modeScore };
+            var result = Run(modeRequest);
+            Check(result.Pp > 0 && Math.Abs(result.Pp-result.MaxPp)<1e-8, "Perfect mode PP mismatch");
+            var missStats = new Dictionary<string,int>(perfect);
+            var hit = mode == 3 ? "Perfect" : "Great";
+            missStats[hit] -= 1; missStats["Miss"] = 1;
+            var missed = Run(modeRequest with { Input = modeScore with { Statistics = missStats, MaxCombo = 1, Accuracy = .98 } });
+            Check(missed.Pp < result.Pp, "Mode misses ignored");
+            Check(Run(modeRequest with { Input = modeScore with { Passed = false, Statistics = new() { [hit] = 1 }, MaxCombo = 1 } }).Pp < result.Pp, "Partial mode score inflated");
+            Reject(() => Run(modeRequest with { Input = modeScore with { Statistics = new() { [hit] = 100001 } } }));
+        }
+    } finally { File.Delete(path); }
+}

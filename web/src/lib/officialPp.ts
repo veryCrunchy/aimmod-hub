@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "./config";
 import type { ScorePpInput } from "./scorePp";
 
-export const ppEngine = "aimmod-osu-2026.730.0-v1";
+export const ppEngine = "aimmod-osu-2026.730.0-v2";
 export async function calculateOfficialPp(bytes: Uint8Array, checksum: string, settings: { accuracy: number; mods: string; lazer: boolean } | ScorePpInput) {
   let binary = "";
   for (let offset = 0; offset < bytes.length; offset += 8192) binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));

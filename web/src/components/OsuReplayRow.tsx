@@ -6,10 +6,12 @@ export function OsuReplayRow({ replay }: { replay: OsuSharedReplay }) {
   const pp = replay.performancePoints == null ? (["queued", "calculating"].includes(replay.ppCalculationState ?? "") ? "Calculating..." : "Unavailable") : formatScorePp(replay.performancePoints);
   const stars = replay.calculatedStarRating ?? replay.starRating;
   const baseDifficulty = replay.calculatedStarRating == null && replay.source === "official";
-  const judged = replay.count300 + replay.count100 + replay.count50 + replay.countMiss;
+  const stats = replay.ppCalculation?.statistics;
+  const keys = replay.ruleset === "fruits" ? ["great", "large_tick_hit", "large_tick_miss", "small_tick_hit", "small_tick_miss", "miss"] : replay.ruleset === "mania" ? ["perfect", "great", "good", "ok", "meh", "miss"] : ["great", "ok", "meh", "miss"];
+  const judged = stats ? keys.reduce((sum, key) => sum + (stats[key] ?? 0), 0) : replay.count300 + replay.count100 + replay.count50 + replay.countMiss;
   const accuracy = judged === 0 && !replay.passed ? "—" : formatOsuAccuracy(replay.accuracy);
   const unsupported = replay.ppCalculationState === "unsupported";
-  const ppReason = unsupported ? "PP calculation is available for osu!standard only." : replay.ppCalculationError;
+  const ppReason = unsupported ? "PP calculation is unavailable for this mode." : replay.ppCalculationError;
   const ppLabel = unsupported ? "PP · unsupported mode" : replay.ppSource === "calculated" ? replay.passed ? "calculated PP" : "partial play PP" : "performance";
   return (
     <Link
