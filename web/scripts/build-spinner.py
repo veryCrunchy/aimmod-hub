@@ -27,23 +27,25 @@ for theme,c in {'flow':(119,189,152),'hddt':(235,242,239),'midnight':(99,210,163
   emit('spinner-bottom',im)
   im=layer()
   if style=='orbit':
-   arc(im,310,140,488,18,(*c,235));arc(im,310,304,319,18,(204,248,224,255))
+   arc(im,310,140,488,18,(*c,235));arc(im,310,294,329,18,(221,255,233,255))
   elif style=='split':
-   for a in [0,120,240]:arc(im,310,a+10,a+110,23,(*c,240))
+   for a in [0,120,240]:arc(im,310,a+10,a+110,23,(*c,180 if a else 245))
+   arc(im,310,15,45,23,(221,255,233,255))
   else:
    d=ImageDraw.Draw(im);d.ellipse((118,118,650,650),outline=(*c,235),width=17)
-   arc(im,266,290,322,17,(207,253,225,255))
+   arc(im,266,285,333,17,(221,255,233,255))
   emit('spinner-top',im);emit('spinner-circle',im)
-  emit('spinner-middle2',layer())
-  im=layer();mark=logo.copy();mark.thumbnail((102,78),Image.Resampling.LANCZOS);tint=Image.new('RGBA',mark.size,(201,235,216));tint.putalpha(mark.getchannel('A'));im.alpha_composite(tint,((768-mark.width)//2,(768-mark.height)//2));emit('spinner-middle',im)
+  # The native fixed middle is hard-tinted red; keep it transparent.
+  emit('spinner-middle',layer())
+  im=layer();mark=logo.copy();mark.thumbnail((102,78),Image.Resampling.LANCZOS);tint=Image.new('RGBA',mark.size,(201,235,216));tint.putalpha(mark.getchannel('A'));im.alpha_composite(tint,((768-mark.width)//2,(768-mark.height)//2));emit('spinner-middle2',im)
   im=layer()
   if style=='halo':
    d=ImageDraw.Draw(im);d.ellipse((115,115,653,653),outline=(150,150,150,65),width=20);im=im.filter(ImageFilter.GaussianBlur(18))
   emit('spinner-glow',im)
   im=layer();d=ImageDraw.Draw(im);d.ellipse((8,8,760,760),outline=(*c,160),width=5);emit('spinner-approachcircle',im)
   for name,label in [('spinner-spin','SPIN'),('spinner-clear','CLEAR'),('spinner-warning','SPIN'),('spinner-rpm','RPM')]:
-   im=Image.new('RGBA',(560,112) if name=='spinner-rpm' else (320,80));d=ImageDraw.Draw(im);scale=.55 if name=='spinner-rpm' else .8
-   x=12 if name=='spinner-rpm' else (im.width-len(label)*50*scale)/2;y=(im.height-64*scale)/2
+   im=Image.new('RGBA',(560,112) if name=='spinner-rpm' else (320,80));d=ImageDraw.Draw(im);scale=.8
+   x=12 if name=='spinner-rpm' else (im.width-len(label)*50*scale)/2;y=10 if name=='spinner-rpm' else (im.height-64*scale)/2
    for ch in label:
     for stroke in glyphs[ch]:d.line([(x+px*scale,y+py*scale) for px,py in stroke],fill=(*c,210),width=2,joint='curve')
     x+=50*scale

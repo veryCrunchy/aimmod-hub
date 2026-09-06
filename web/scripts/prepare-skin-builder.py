@@ -23,7 +23,7 @@ def archive(path, files):
             z.writestr(info, data)
     inventory[str(path.relative_to(output)).replace('\\', '/')] = hashlib.sha256(path.read_bytes()).hexdigest()
 
-preview = {'hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'cursor',
+preview = {'sliderb0', 'hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'cursor',
            'scorebar-bg', 'scorebar-colour', 'aimmod-timing-track', 'aimmod-duration-face', 'inputoverlay-key'}
 preview |= {'default-' + str(i) for i in range(1, 5)}
 preview |= {'aimmod-score-' + str(i) for i in range(10)}
@@ -34,6 +34,9 @@ for theme, name in themes.items():
     files = {p.name: p.read_bytes() for p in source.iterdir() if p.suffix in ['.png', '.wav']}
     files['skin.ini'] = (source / 'skin.ini').read_bytes()
     files['MainHUDComponents.json'] = (source / 'MainHUDComponents.json').read_bytes()
+    # Explicit blank textures prevent the game's hitcircle fallback at slider ends.
+    for stem in ['sliderendcircle', 'sliderendcircleoverlay']:
+        for suffix in ['.png', '@2x.png']: files[stem + suffix] = (output / 'transparent.png').read_bytes()
     archive(output / theme / 'base.zip', files)
     for stem in preview:
         (output / theme / (stem + '@2x.png')).write_bytes(files[stem + '@2x.png'])

@@ -1,36 +1,52 @@
 import { useEffect, useRef, useState } from 'react';
+import { spinnerPreviewState, sliderPreviewPosition } from '../lib/skinPreview';
 import { SKIN_ASSETS, skinThemes, type SkinChoice } from '../lib/skinBuilder';
 
-const previewNames = ['hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'cursor', 'scorebar-bg', 'scorebar-colour',
-  'spinner-bottom', 'spinner-top', 'spinner-middle', 'spinner-middle2', 'spinner-glow', 'spinner-approachcircle', 'spinner-spin', 'spinner-clear', 'aimmod-timing-track', 'aimmod-duration-face', ...[1, 2, 3, 4].map(n => `default-${n}`),
+const previewNames = ['hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'sliderb0', 'cursor', 'scorebar-bg', 'scorebar-colour',
+  'spinner-bottom', 'spinner-top', 'spinner-middle', 'spinner-middle2', 'spinner-glow', 'spinner-approachcircle', 'spinner-spin', 'spinner-clear', 'spinner-rpm', 'aimmod-timing-track', 'aimmod-duration-face', ...[1, 2, 3, 4].map(n => `default-${n}`),
   ...Array.from({ length: 10 }, (_, n) => `aimmod-score-${n}`), 'aimmod-score-dot', 'aimmod-score-percent', 'aimmod-score-pp'];
 
 export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinChoice; playing: boolean; pattern: 'jumps' | 'sliders' | 'spinner' }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const elapsedRef = useRef(2.8);
   const [error, setError] = useState(false);
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    let disposed = false, frame = 0;
+    let disposed = false, frame = 0, animationStarted: number | null = null;
     const images = new Map<string, HTMLImageElement>();
     setReady(false); setError(false);
     const names = [...previewNames, `guide-${choice.guide}`, `cursor-${choice.cursor}`];
     Promise.all(names.map(name => new Promise<void>((resolve, reject) => {
-      const img = new Image(); img.onload = () => { images.set(name, img); resolve(); }; img.onerror = reject;
+      const img = new Image(); img.onload = () => { void img.decode().then(() => { images.set(name, img); resolve(); }, reject); }; img.onerror = reject;
       img.src = `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
     }))).then(() => {
       if (disposed) return;
-      setReady(true);
       const el = canvas.current; const ctx = el?.getContext('2d'); if (!el || !ctx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       el.width = 960 * dpr; el.height = 600 * dpr;
       const theme = skinThemes.find(t => t.id === choice.theme)!;
-      const start = performance.now();
+      const start = performance.now(); animationStarted = start;
+      const initialElapsed = elapsedRef.current;
+      const tinted = new Map<string, HTMLCanvasElement>();
+      const tint = (name: string, colour: string) => {
+        const source = images.get(name)!;
+        const surface = document.createElement('canvas'); surface.width = source.width; surface.height = source.height;
+        const paint = surface.getContext('2d')!; paint.drawImage(source, 0, 0);
+        paint.globalCompositeOperation = 'multiply'; paint.fillStyle = colour; paint.fillRect(0, 0, surface.width, surface.height);
+        paint.globalCompositeOperation = 'destination-in'; paint.drawImage(source, 0, 0);
+        return surface;
+      };
+      tinted.set('hitcircle', tint('hitcircle', theme.edge));
+      tinted.set('approachcircle', tint('approachcircle', theme.edge));
+      tinted.set('spinner-glow-blue', tint('spinner-glow', '#0397ff'));
+
       const draw = (now: number) => {
         if (disposed) return;
-        const t = playing ? ((now - start) % 2400) / 2400 : .35;
+        const elapsed = initialElapsed + (playing ? (now - start) / 1000 : 0);
+        const t = (elapsed % 2.4) / 2.4;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, 960, 600); ctx.fillStyle = '#030605'; ctx.fillRect(0, 0, 960, 600);
         const image = (name: string, x: number, y: number, w: number, h?: number) => {
-          const im = images.get(name); if (im) ctx.drawImage(im, x, y, w, h ?? w * im.height / im.width);
+          const im = tinted.get(name) ?? images.get(name); if (im) ctx.drawImage(im, x, y, w, h ?? w * im.height / im.width);
         };
         const digits = (value: string, right: number, y: number, height: number) => {
           const parts = value.match(/pp|%|\.|\d/g) ?? [];
@@ -41,17 +57,24 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         image('scorebar-bg', 22, 12, 260); image('scorebar-colour', 29, 19, 242);
         if (choice.client === 'lazer') digits('214pp', 495, 24, 25); digits('98.72%', 697, 24, 25); digits('00428160', 929, 24, 25);
         if (pattern === 'spinner') {
-          const rotation = playing ? (now - start) / 650 : .45;
-          const spinnerLayer = (name: string, angle: number, width = 350) => { ctx.save(); ctx.translate(480, 295); ctx.rotate(angle); image(name, -width / 2, -width / 2, width); ctx.restore(); };
-          spinnerLayer('spinner-glow', 0); spinnerLayer('spinner-bottom', 0);
-          spinnerLayer('spinner-top', rotation); spinnerLayer('spinner-middle2', rotation * 1.4); spinnerLayer('spinner-middle', 0);
-          ctx.globalAlpha = .5; spinnerLayer('spinner-approachcircle', 0, 360 + (1-t) * 75); ctx.globalAlpha = 1;
-          image(t > .82 ? 'spinner-clear' : 'spinner-spin', 430, 470, 100);
+          const state = spinnerPreviewState(elapsed);
+          const rotation = state.rotation;
+          const spinnerLayer = (name: string, angle: number, width = 350 * state.scale) => { ctx.save(); ctx.translate(480, 295); ctx.rotate(angle); image(name, -width / 2, -width / 2, width); ctx.restore(); };
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = state.progress;
+          spinnerLayer('spinner-glow-blue', 0);
+          ctx.globalAlpha *= state.flash; spinnerLayer('spinner-glow', 0); ctx.restore();
+          spinnerLayer('spinner-bottom', rotation / 6); spinnerLayer('spinner-top', rotation / 2);
+          spinnerLayer('spinner-middle2', rotation); spinnerLayer('spinner-middle', 0);
+          spinnerLayer('spinner-approachcircle', 0, 350 * state.approachScale);
+          ctx.save(); ctx.globalAlpha = state.cleared ? 1 : state.promptAlpha;
+          image(state.cleared ? 'spinner-clear' : 'spinner-spin', 430, state.cleared ? 115 : 458, 100); ctx.restore();
+          image('spinner-rpm', 402, 501, 156); digits(String(state.rpm), 552, 500, 24);
           const width = 24 * Number(choice.cursorSize);
           image(`cursor-${choice.cursor}`, 480 + Math.cos(rotation) * 110 - width/2, 295 + Math.sin(rotation) * 110 - width/2, width);
         } else {
         const points = pattern === 'jumps' ? [[282, 230], [670, 390], [305, 402], [665, 218]] : [[285, 280], [560, 235], [670, 395], [430, 400]];
         if (choice.guide !== 'jumps') for (let i = 0; i < 3; i++) {
+          if (pattern === 'sliders' && i === 0) continue;
           const [x1, y1] = points[i], [x2, y2] = points[i + 1];
           const length = Math.hypot(x2 - x1, y2 - y1), angle = Math.atan2(y2 - y1, x2 - x1);
           for (let distance = 78; distance < length - 66; distance += 37) {
@@ -62,9 +85,10 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         if (pattern === 'sliders') {
           ctx.beginPath(); ctx.moveTo(...points[0] as [number, number]); ctx.bezierCurveTo(370, 225, 465, 320, ...points[1] as [number, number]);
           ctx.strokeStyle = theme.edge; ctx.lineWidth = 100; ctx.lineCap = 'round'; ctx.stroke();
-          ctx.strokeStyle = '#07100b'; ctx.lineWidth = 88; ctx.stroke();
+          ctx.strokeStyle = '#040d09'; ctx.lineWidth = 88; ctx.stroke();
         }
         for (let i = 3; i >= 0; i--) {
+          if (pattern === 'sliders' && i === 1) continue;
           const [x, y] = points[i]; const opacity = playing ? .55 + .45 * Math.max(0, Math.sin((t + i * .18) * Math.PI)) : 1;
           ctx.globalAlpha = opacity; image('hitcircle', x - 59, y - 59, 118); image('hitcircleoverlay', x - 59, y - 59, 118);
           // A slider's reverse endpoint shows only the reverse indicator.
@@ -75,7 +99,10 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         ctx.globalAlpha = .55;
         const ring = 128 + (1 - t) * 120; image('approachcircle', points[0][0] - ring / 2, points[0][1] - ring / 2, ring); ctx.globalAlpha = 1;
         if (pattern === 'sliders') { ctx.save(); ctx.translate(points[1][0], points[1][1]); ctx.rotate(Math.atan2(points[0][1] - points[1][1], points[0][0] - points[1][0])); image('reversearrow', -64, -64, 128); ctx.restore(); }
-        const cursorX = points[0][0] + (points[1][0] - points[0][0]) * t, cursorY = points[0][1] + (points[1][1] - points[0][1]) * t;
+        const [cursorX, cursorY] = pattern === 'sliders'
+          ? sliderPreviewPosition(t < .5 ? t * 2 : 2 - t * 2)
+          : [points[0][0] + (points[1][0] - points[0][0]) * t, points[0][1] + (points[1][1] - points[0][1]) * t];
+        if (pattern === 'sliders') image('sliderb0', cursorX - 59, cursorY - 59, 118);
         const cursorWidth = 24 * Number(choice.cursorSize);
         image(`cursor-${choice.cursor}`, cursorX - cursorWidth / 2, cursorY - cursorWidth / 2, cursorWidth);
         }
@@ -85,9 +112,9 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         for (let i = 0; i < 3; i++) { digits(String([126, 130, 0][i]), 918, 205 + i * 48, 19); ctx.fillStyle = theme.accent; ctx.fillRect(896, 231 + i * 48, 22, 2); }
         if (playing) frame = requestAnimationFrame(draw);
       };
-      draw(performance.now());
+      draw(performance.now()); setReady(true);
     }).catch(() => { if (!disposed) setError(true); });
-    return () => { disposed = true; cancelAnimationFrame(frame); };
+    return () => { if (playing && animationStarted !== null) elapsedRef.current += (performance.now() - animationStarted) / 1000; disposed = true; cancelAnimationFrame(frame); };
   }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, playing, pattern]);
   return <div className="skin-scene">
     <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.guide} followpoints, ${pattern} pattern`} />

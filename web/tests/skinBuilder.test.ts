@@ -126,3 +126,14 @@ test('all spinner choices survive export in both clients and invalid URLs use Or
     assert.ok(strFromU8(result['skin.ini']).includes(spinner));
   }
 });
+
+test('slider ends are explicitly transparent while slider starts and reverse indicators remain', () => {
+  const blank = new Uint8Array(readFileSync(new URL('../public/skin-builder/v1/transparent.png', import.meta.url)));
+  for (const theme of skinThemes) for (const client of ['lazer', 'stable'] as const) {
+    const base = asset(`${theme.id}/base.zip`);
+    const result = assembleSkin(base, asset(`${theme.id}/subtle.zip`), sounds.soft, { ...defaultSkinChoice, theme: theme.id, client }, id, asset(`${theme.id}/stable.zip`), asset(`${theme.id}/cursor-ring.zip`));
+    for (const name of ['sliderendcircle', 'sliderendcircleoverlay']) for (const suffix of ['.png', '@2x.png']) assert.deepEqual(result[name + suffix], blank);
+    assert.deepEqual(result['reversearrow@2x.png'], base['reversearrow@2x.png']);
+    assert.ok(result['hitcircle@2x.png'].length > blank.length);
+  }
+});
