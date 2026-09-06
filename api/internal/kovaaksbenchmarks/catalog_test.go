@@ -52,3 +52,19 @@ func TestMalformedCatalogResponseCannotBecomeEmptySuccess(t *testing.T) {
 		t.Fatal("malformed response populated cache")
 	}
 }
+
+func TestPublicCatalogDoesNotDependOnPlayerOrRecordSyntheticProfile(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("username") != "AimMod" {
+			t.Error("catalog should not depend on a linked player")
+		}
+		_ = json.NewEncoder(w).Encode(benchmarkListEnvelope{Max: 300, Data: []benchmarkListSummary{{BenchmarkID: 1, RankName: "No Rank"}}})
+	}))
+	defer server.Close()
+	client := NewClient(func(context.Context, string, []uint32) { t.Error("catalog query must not add a profile to sitemap") })
+	client.baseURL = server.URL
+	items, err := client.ListCatalog(context.Background())
+	if err != nil || len(items) != 1 {
+		t.Fatalf("catalog failed: %v", err)
+	}
+}

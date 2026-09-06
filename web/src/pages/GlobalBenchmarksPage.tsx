@@ -36,7 +36,7 @@ function BenchmarkCard({ b }: { b: BenchmarkListItem }) {
         </div>
       </div>
       <div className="mt-auto flex items-center justify-between rounded-xl border border-white/6 bg-black/20 px-3 py-2">
-        <p className="text-[11px] text-muted/60">{b.playerCount} player{b.playerCount !== 1 ? "s" : ""} ranked</p>
+        <p className="text-[11px] text-muted/60">{b.playerCount > 0 ? `${b.playerCount} player${b.playerCount !== 1 ? "s" : ""} ranked` : "View leaderboard"}</p>
         <span className="text-[10px] text-muted/40 group-hover:text-cyan transition-colors">→</span>
       </div>
     </Link>
@@ -73,7 +73,7 @@ function BenchmarkGroupCard({ group }: { group: BenchmarkGroupItem }) {
               {difficulty ?? item.benchmarkName}
             </span>
             <span className="flex-1 text-[11px] text-muted/50 tabular-nums">
-              {item.playerCount} player{item.playerCount !== 1 ? "s" : ""}
+              {item.playerCount > 0 ? `${item.playerCount} player${item.playerCount !== 1 ? "s" : ""}` : "View leaderboard"}
             </span>
             <span className="shrink-0 text-[10px] text-muted/30 group-hover:text-cyan transition-colors">→</span>
           </Link>
@@ -92,7 +92,13 @@ export function GlobalBenchmarksPage() {
     void fetchBenchmarkList()
       .then((res) => { if (!cancelled) setBenchmarks(res.benchmarks ?? []); })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Could not load benchmarks."); });
-    return () => { cancelled = true; };
+    const refresh = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void fetchBenchmarkList().then((res) => {
+        if (!cancelled) { setBenchmarks(res.benchmarks ?? []); setError(null); }
+      }).catch(() => { /* Keep the last complete catalog during a failed refresh. */ });
+    }, 65_000);
+    return () => { cancelled = true; window.clearInterval(refresh); };
   }, []);
 
   if (error) {

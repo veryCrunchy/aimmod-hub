@@ -24,6 +24,7 @@ type HubServer struct {
 	benchmarks       *kovaaksbenchmarks.Client
 	events           *EventBroker
 	benchmarkCatalog publicResultCache[[]*hubv1.BenchmarkListItem]
+	benchmarkCounts  benchmarkCountSnapshot
 	leaderboards     publicResultCache[store.LeaderboardRecord]
 }
 
@@ -741,7 +742,40 @@ func (s *HubServer) GetBenchmarkPage(
 }
 
 func (s *HubServer) buildBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
-	return s.benchmarkCatalog.get(ctx, "catalog", time.Minute, s.loadBenchmarkList, 4*time.Minute)
+	catalog, err := s.benchmarkCatalog.get(ctx, "catalog", 15*time.Minute, func(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
+		items, err := s.benchmarks.ListCatalog(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]*hubv1.BenchmarkListItem, 0, len(items))
+		for _, item := range items {
+			out = append(out, &hubv1.BenchmarkListItem{
+				BenchmarkId: item.BenchmarkID, BenchmarkName: item.BenchmarkName,
+				BenchmarkIconUrl: item.BenchmarkIconURL, BenchmarkAuthor: item.BenchmarkAuthor,
+				BenchmarkType: item.BenchmarkType,
+			})
+		}
+		return out, nil
+	}, time.Hour)
+	if err != nil {
+		return nil, err
+	}
+	counts := s.benchmarkCounts.snapshotAndRefresh(ctx, s.loadBenchmarkList)
+	out := make([]*hubv1.BenchmarkListItem, 0, len(catalog))
+	for _, item := range catalog {
+		out = append(out, &hubv1.BenchmarkListItem{
+			BenchmarkId: item.BenchmarkId, BenchmarkName: item.BenchmarkName,
+			BenchmarkIconUrl: item.BenchmarkIconUrl, BenchmarkAuthor: item.BenchmarkAuthor,
+			BenchmarkType: item.BenchmarkType, PlayerCount: counts[item.BenchmarkId],
+		})
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].PlayerCount != out[j].PlayerCount {
+			return out[i].PlayerCount > out[j].PlayerCount
+		}
+		return out[i].BenchmarkName < out[j].BenchmarkName
+	})
+	return out, nil
 }
 
 func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {

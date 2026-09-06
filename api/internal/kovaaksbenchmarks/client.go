@@ -222,8 +222,18 @@ func (c *Client) ListPlayerBenchmarks(ctx context.Context, username string) ([]P
 	return ranked, nil
 }
 
+// ListCatalog reads the public definitions once, independent of linked players.
+// The provider requires a username even though definitions include unplayed benchmarks.
+func (c *Client) ListCatalog(ctx context.Context) ([]ProfileBenchmarkSummary, error) {
+	return c.listBenchmarkCatalog(ctx, "AimMod", false)
+}
+
 // ListPlayerBenchmarkCatalog includes definitions even before a player earns a rank.
 func (c *Client) ListPlayerBenchmarkCatalog(ctx context.Context, username string) ([]ProfileBenchmarkSummary, error) {
+	return c.listBenchmarkCatalog(ctx, username, true)
+}
+
+func (c *Client) listBenchmarkCatalog(ctx context.Context, username string, observe bool) ([]ProfileBenchmarkSummary, error) {
 	normalized := strings.TrimSpace(username)
 	if normalized == "" {
 		return nil, nil
@@ -295,7 +305,7 @@ func (c *Client) ListPlayerBenchmarkCatalog(ctx context.Context, username string
 	}
 	c.mu.Unlock()
 
-	if c.observeBenchmarks != nil {
+	if observe && c.observeBenchmarks != nil {
 		ids := make([]uint32, 0, len(items))
 		for _, item := range items {
 			ids = append(ids, item.BenchmarkID)
