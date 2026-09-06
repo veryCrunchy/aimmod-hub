@@ -22,7 +22,7 @@ try {
     const response = await fetch(`${api}/api/osu/v1/pp/calculate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ map: Buffer.from(playbackBeatmap).toString("base64"), checksum, lazer, accuracy: 98, mods: [] }) });
     assert.equal(response.ok, true);
     const expected = await response.json() as { pp: number; engine: string };
-    assert.equal(expected.engine, "aimmod-osu-2026.730.0-v1");
+    assert.equal(expected.engine, "aimmod-osu-2026.730.0-v2");
     await page.locator(".pp-card-value strong").filter({ hasText: `${Math.round(expected.pp)} pp` }).first().waitFor({ timeout: 45000 });
     assert.match(await page.locator(".pp-card-value").first().innerText(), lazer ? /Lazer/ : /Stable/);
   }
