@@ -11,9 +11,9 @@ window.__AIMMOD_HUB__ = window.__AIMMOD_HUB__ || {};
 window.__AIMMOD_HUB__.apiBaseUrl = "$ESCAPED";
 EOF
 
-dotnet /app/pp/AimMod.Pp.dll &
+dotnet "${AIMMOD_PP_DLL:-/app/pp/AimMod.Pp.dll}" &
 PP_PID=$!
-/app/aimmod-hub "$@" &
+"${AIMMOD_HUB_BINARY:-/app/aimmod-hub}" "$@" &
 HUB_PID=$!
 trap 'kill "$HUB_PID" "$PP_PID" 2>/dev/null || true' TERM INT EXIT
 wait "$HUB_PID"

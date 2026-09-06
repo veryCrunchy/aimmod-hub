@@ -12,12 +12,53 @@
         "pnpm install --no-frozen-lockfile",
         "pnpm build:web"
       ],
-      "deployOutputs": [{ "include": ["web/dist/**"] }]
+      "deployOutputs": [
+        {
+          "include": [
+            "out",
+            "web/dist/**",
+            "docker-entrypoint.sh"
+          ]
+        }
+      ]
+    },
+    "build-pp": {
+      "inputs": [
+        {
+          "image": "mcr.microsoft.com/dotnet/sdk:8.0"
+        },
+        {
+          "local": true,
+          "include": [
+            "pp/**"
+          ],
+          "exclude": [
+            "pp/bin/**",
+            "pp/obj/**"
+          ]
+        }
+      ],
+      "commands": [
+        "dotnet publish pp/AimMod.Pp.csproj -c Release -o pp-runtime"
+      ],
+      "deployOutputs": [
+        {
+          "include": [
+            "pp-runtime/**"
+          ]
+        }
+      ]
     }
   },
   "deploy": {
     "variables": {
-      "AIMMOD_HUB_STATIC_DIR": "/app/web/dist"
-    }
+      "AIMMOD_HUB_STATIC_DIR": "/app/web/dist",
+      "AIMMOD_HUB_BINARY": "/app/out",
+      "AIMMOD_PP_DLL": "/app/pp-runtime/AimMod.Pp.dll"
+    },
+    "base": {
+      "image": "mcr.microsoft.com/dotnet/aspnet:8.0"
+    },
+    "startCommand": "sh /app/docker-entrypoint.sh"
   }
 }
