@@ -1,3 +1,4 @@
+import { OsuQuickStart } from "./GameSelectionPage";
 import { useMemo, useState } from "react";
 import { Helmet } from "../lib/helmet";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -45,9 +46,9 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
   return <PageStack>
     <Helmet><title>{title} · AimMod Hub</title></Helmet>
     <PageSection>
-      <SectionHeader level={1} eyebrow="osu!" title={title}
-        body={view === "overview" ? "Beatmaps, players, and replays from the community." : view === "players" ? "Find players through their public public plays." : "Explore difficulties played and shared by the community."}
-        aside={<Button to="/app/osu">Get AimMod for osu!</Button>} />
+      {view === "overview" ? <OsuQuickStart /> : <SectionHeader level={1} eyebrow="osu!" title={title}
+        body={view === "players" ? "Find players through their public plays." : "Explore difficulties played and shared by the community."}
+        aside={<Button to="/app/osu">Get AimMod for osu!</Button>} />}
       {view !== "overview" && <div className="hub-filters">
         <label>{view === "players" ? "Find a player" : "Find a beatmap"}<input type="search" value={query} placeholder={view === "players" ? "Player name or handle" : "Title, difficulty, artist, or mapper"} onChange={e => update("q",e.target.value)} /></label>
         <label>Sort by<select value={sort} onChange={e => update("sort",e.target.value)}><option value="recent">Latest activity</option><option value="plays">Most public plays</option><option value="pp">Best shared PP</option></select></label>
@@ -66,7 +67,7 @@ export function OsuDirectoryPage({ view = "overview" }: { view?: "overview" | "b
       {error ? <EmptyState title="Community activity is unavailable" body="Please try again in a moment."><Button onClick={retry}>Try again</Button></EmptyState>
         : !items ? <div role="status"><p className="mb-4 text-muted">Loading osu! activity...</p><Skeleton className="h-64" /></div>
         : <>
-          <p className="hub-results">Based on the latest {items.length} public public plays.</p>
+          <p className="hub-results">Based on the latest {items.length} public plays.</p>
           <ScorePpStatus pending={pp.pending} failed={pp.failed} retry={pp.retry} />
           {view === "overview" ? <>
             <div className="grid grid-cols-3 gap-3 border-y border-line py-5">

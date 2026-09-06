@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { PageSeo } from "../components/PageSeo";
-import { SectionHeader } from "../components/SectionHeader";
+import { BrowseHeader, PlayerIdentity } from "../components/BrowseHeader";
 import { PageStack } from "../components/ui/Stack";
 import { PageSection } from "../components/ui/PageSection";
 import { Button } from "../components/ui/Button";
@@ -35,7 +35,7 @@ export function OsuPlayersPage() {
  return <PageStack>
   <PageSeo title="osu! players · AimMod Hub" description="Find public osu! players, rankings, scores and replays." />
   <PageSection>
-   <SectionHeader level={1} eyebrow="osu!" title="Players" body="Explore public players, rankings, scores and replays." />
+   <BrowseHeader title="Players" description="Find a player. Explore their scores and replays." />
    <form className="hub-filters" onSubmit={event=>{event.preventDefault();update("q",input.trim())}}>
     <label>Find a player<input type="search" placeholder="osu! username or user ID" value={input} maxLength={64} onChange={event=>setInput(event.target.value)}/></label>
     <label>Ruleset<select value={mode} onChange={event=>update("mode",event.target.value)}><option value="osu">osu!</option><option value="taiko">osu!taiko</option><option value="fruits">osu!catch</option><option value="mania">osu!mania</option></select></label>
@@ -45,10 +45,9 @@ export function OsuPlayersPage() {
    {error?<EmptyState title="Players are temporarily unavailable" body="Please try again in a moment."><Button onClick={()=>setAttempt(value=>value+1)}>Try again</Button></EmptyState>
     :!result?<div role="status" aria-label="Loading players"><Skeleton className="h-64"/></div>
     :result.items.length===0?<EmptyState title="No players found" body="Try another username."/>
-    :<div className="divide-y divide-line border-y border-line">{result.items.map(player=><Link key={player.osuUserId} to={`/osu/profiles/${player.osuUserId}?mode=${mode}`} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 py-4 hover:bg-panel">
-     {player.avatarUrl?<img src={player.avatarUrl} alt="" loading="lazy" className="h-12 w-12 rounded-md object-cover"/>:<span className="h-12 w-12 rounded-md bg-white/5"/>}
-     <span className="min-w-0"><strong className="block truncate text-sm">{player.osuUsername}</strong><span className="text-xs text-muted">{player.countryCode}{player.globalRank?` · #${player.globalRank.toLocaleString()}`:""}</span></span>
-     <span className="text-sm text-gold">{player.performancePoints==null?"View profile":`${Math.round(player.performancePoints).toLocaleString()}pp`}</span>
+    :<div className="player-grid">{result.items.map(player=><Link key={player.osuUserId} to={`/osu/profiles/${player.osuUserId}?mode=${mode}`} className="player-card">
+     <PlayerIdentity name={player.osuUsername} avatar={player.avatarUrl} detail={player.countryCode} />
+     <div className="player-card-bottom"><span>{player.globalRank ? `Global #${player.globalRank.toLocaleString()}` : "Unranked"}</span><strong>{player.performancePoints == null ? "View profile" : `${Math.round(player.performancePoints).toLocaleString()} pp`}</strong></div>
     </Link>)}</div>}
    {result&&<nav aria-label="Player pages" className="mt-5 flex items-center gap-4"><Button disabled={page<=1} onClick={()=>update("page",String(page-1))}>Previous</Button><span className="text-sm text-muted">Page {page}</span><Button disabled={!result.nextPage} onClick={()=>update("page",String(result.nextPage))}>Next</Button></nav>}
   </PageSection>

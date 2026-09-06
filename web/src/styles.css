@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./pages/osuLearning.css";
 @import "./pages/branding.css";
+@import "./pages/home.css";
 
 @theme {
   --color-bg: #101113;

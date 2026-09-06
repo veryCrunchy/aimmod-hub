@@ -20,6 +20,7 @@ const BenchmarksPage = lazy(() => import("./pages/BenchmarksPage").then((m) => (
 const GlobalBenchmarksPage = lazy(() => import("./pages/GlobalBenchmarksPage").then((m) => ({ default: m.GlobalBenchmarksPage })));
 const BenchmarkLeaderboardPage = lazy(() => import("./pages/BenchmarkLeaderboardPage").then((m) => ({ default: m.BenchmarkLeaderboardPage })));
 const DeviceLinkPage = lazy(() => import("./pages/DeviceLinkPage").then((m) => ({ default: m.DeviceLinkPage })));
+const GameSelectionPage = lazy(() => import("./pages/GameSelectionPage").then((m) => ({ default: m.GameSelectionPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((m) => ({ default: m.HomePage })));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })));
 const LivePage = lazy(() => import("./pages/LivePage").then((m) => ({ default: m.LivePage })));
@@ -64,7 +65,8 @@ function AppRoutes() {
       <RouteSeo />
       <RouteErrorBoundary><Suspense fallback={<RouteLoading />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<GameSelectionPage />} />
+          <Route path="/kovaaks" element={<HomePage />} />
           <Route path="/app" element={<ProductsPage />} />
           <Route path="/branding" element={<BrandingPage />} />
           <Route path="/app/osu" element={<OsuDownloadPage />} />

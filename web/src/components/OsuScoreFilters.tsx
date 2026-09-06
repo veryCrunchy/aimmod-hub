@@ -3,6 +3,7 @@ import { RotateCcw } from "lucide-react";
 import { RangeSlider } from "../pages/OsuCatalogPage";
 import { scoreFilterKeys } from "../lib/osuScoreFilters";
 import "./OsuScoreFilters.css";
+import "./browse.css";
 
 export function OsuScoreFilters({ defaultReplay = "all" }: { defaultReplay?: string }) {
   const [params, setParams] = useSearchParams();
@@ -25,4 +26,12 @@ export function OsuScoreFilters({ defaultReplay = "all" }: { defaultReplay?: str
     <div className="hub-filters score-filters__selects">{options.map(([key, label, fallback, values]) => <label key={key}>{label}<select value={params.get(key) ?? fallback} onChange={event => update(key, event.target.value)}>{values.map(([id, text]) => <option value={id} key={id}>{text}</option>)}</select></label>)}</div>
     <div className="score-filters__ranges">{([["stars", "Stars", 15, .1], ["acc", "Accuracy (%)", 100, .1], ["pp", "PP", 2000, 5]] as const).map(([name, label, limit, step]) => <RangeSlider key={name} name={name} label={label} limit={limit} step={step} minimum={params.get(`${name}Min`) ?? ""} maximum={params.get(`${name}Max`) ?? ""} onChange={(endpoint, value) => update(`${name}${endpoint}`, value)} />)}</div>
   </div>;
+}
+
+export function ScoreBrowserControls({ title = "Scores & replays", defaultReplay = "all" }: { title?: string; defaultReplay?: string }) {
+  const [params, setParams] = useSearchParams();
+  return <>
+    <div className="profile-plays-heading"><h2>{title}</h2><div className="profile-score-tabs" role="group" aria-label="Score order">{[["recent", "Recent"], ["pp", "Best PP"]].map(([sort, text]) => <button type="button" key={sort} aria-pressed={(params.get("sort") ?? "recent") === sort} onClick={() => setParams(current => { const next = new URLSearchParams(current); next.set("sort", sort); return next; }, { replace: true })}>{text}</button>)}</div></div>
+    <details className="profile-filter-toggle"><summary>Search & filter scores{scoreFilterKeys.some(key => key !== "sort" && params.has(key)) ? " · Filters active" : ""}</summary><OsuScoreFilters defaultReplay={defaultReplay} /></details>
+  </>;
 }

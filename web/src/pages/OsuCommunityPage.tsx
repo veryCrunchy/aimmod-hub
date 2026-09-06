@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Helmet } from "../lib/helmet";
 import { useSearchParams } from "react-router-dom";
-import { SectionHeader } from "../components/SectionHeader";
+import { BrowseHeader } from "../components/BrowseHeader";
 import { OsuReplayRow } from "../components/OsuReplayRow";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -9,7 +9,7 @@ import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useOsuDirectory } from "../hooks/useOsuDirectory";
-import { OsuScoreFilters } from "../components/OsuScoreFilters";
+import { ScoreBrowserControls } from "../components/OsuScoreFilters";
 import { filterOsuScores } from "../lib/osuScoreFilters";
 import { useScorePp } from "../hooks/useScorePp";
 import { ScorePpStatus } from "../components/ScorePpStatus";
@@ -30,9 +30,9 @@ export function OsuCommunityPage({ replayLibrary = false }: { replayLibrary?: bo
         <meta name="description" content="Public osu! scores, replays and player profiles." />
       </Helmet>
       <PageSection>
-        <SectionHeader level={1} eyebrow="osu! community" title={replayLibrary ? "Replay library" : "Public plays"} body="Explore beatmaps, compare scores, and review players' analysis." aside={<Button to="/app/osu">Get AimMod for osu!</Button>} />
+        <BrowseHeader title={replayLibrary ? "Replay library" : "Community activity"} description="Explore public scores and watch how other players play." actions={<Button to="/app/osu">Get AimMod</Button>} />
         {beatmap && <p className="mb-3 text-sm text-muted">Beatmap #{beatmap} · {replays?.find(item => String(item.beatmapId) === beatmap)?.difficulty}</p>}
-        <OsuScoreFilters defaultReplay={replayLibrary ? "file" : "all"} />
+        <ScoreBrowserControls title={replayLibrary ? "Replays" : "Public plays"} defaultReplay={replayLibrary ? "file" : "all"} />
         <ScorePpStatus {...pp} />
         {replays && <p className="hub-results" role="status">{visible.length} of {replays.length} recent public plays</p>}
         {error ? (

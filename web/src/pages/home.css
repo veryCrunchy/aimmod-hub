@@ -1,0 +1,70 @@
+.hub-shell[data-game="choose"] .hub-content { margin-left: 0; }
+.hub-shell[data-game="choose"] .hub-content main { max-width: 1160px; padding: 56px 32px 40px; }
+.hub-home-nav { display: flex; gap: 26px; color: var(--color-muted); font-size: 14px; }
+.hub-home-nav a:hover { color: white; }
+.game-home { font-size: 16px; }
+.home-eyebrow { color: var(--color-muted); font-size: 12px; font-weight: 650; letter-spacing: .13em; }
+.game-home-heading h1 { font-size: clamp(32px, 4.5vw, 52px); font-weight: 650; letter-spacing: -.045em; margin: 12px 0 8px; line-height: 1.15; }
+.game-home-heading p { color: var(--color-muted); font-size: 18px; }
+.game-choices { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; margin-top: 36px; }
+.game-choice { --game-accent: #f5afd1; padding: 30px; border: 1px solid #58404e; border-radius: 18px; background: linear-gradient(140deg, #2c2029, #191b1e 70%); }
+.game-choice-kovaaks { --game-accent: #9ae2ba; border-color: #35433c; background: linear-gradient(140deg, #1e2924, #191b1e 70%); }
+.game-choice-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--game-accent); font-size: 11px; letter-spacing: .08em; }
+.game-emblem { display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; width: 54px; height: 54px; }
+.game-choice h2 { margin: 30px 0 6px; font-size: 48px; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
+.game-choice p { font-size: 21px; margin: 10px 0; }
+.game-description { display: block; color: var(--color-muted); max-width: 380px; min-height: 72px; line-height: 1.6; }
+.home-primary { display: inline-flex; align-items: center; justify-content: center; gap: 14px; padding: 13px 20px; min-height: 48px; border: 0; border-radius: 8px; background: var(--game-accent, #f5afd1); color: #22151c; font-size: 15px; font-weight: 650; transition: filter .15s; }
+.home-primary:hover { filter: brightness(1.1); }
+.game-choice > .home-primary { display: flex; margin-top: 22px; justify-content: space-between; }
+.game-choice-kovaaks > .home-primary { background: #283b30; color: var(--game-accent); }
+.game-shortcuts { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin-top: 24px; font-size: 14px; }
+.game-shortcuts a, .home-bottom a, .home-bottom > span, .osu-start-links a, .home-download { display: inline-flex; align-items: center; gap: 8px; }
+.game-shortcuts a:hover, .osu-start-links a:hover { text-decoration: underline; }
+.home-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin: 28px 0 8px; color: var(--color-muted); font-size: 14px; }
+.home-bottom a { color: var(--color-text); }
+.osu-start { margin-bottom: 36px; padding: 8px 0 28px; border-bottom: 1px solid var(--color-line); }
+.osu-start-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.osu-start h1 { font-size: clamp(27px, 3vw, 38px); font-weight: 650; letter-spacing: -.035em; margin: 10px 0; line-height: 1.2; }
+.osu-start p { color: var(--color-muted); font-size: 16px; }
+.home-download { white-space: nowrap; font-size: 14px; color: var(--color-muted); }
+.osu-quick-search { display: flex; align-items: end; flex-wrap: wrap; gap: 14px; padding: 22px; margin: 24px 0 18px; background: var(--color-panel); border: 1px solid #57414d; border-radius: 12px; }
+.osu-quick-search label { display: grid; gap: 8px; font-size: 14px; color: var(--color-muted); }
+.osu-quick-search .osu-query { flex: 1; min-width: 180px; }
+.osu-query > div { position: relative; }
+.osu-query svg { position: absolute; left: 14px; top: 15px; }
+.osu-quick-search input, .osu-quick-search select { width: 100%; height: 48px; background: var(--color-bg); border: 1px solid var(--color-line); border-radius: 7px; padding: 10px 14px; color: var(--color-text); font-size: 16px; }
+.osu-query input { padding-left: 42px; }
+.osu-start-links { display: flex; align-items: center; flex-wrap: wrap; gap: 22px; font-size: 14px; }
+.osu-start-links > a:first-child { color: #f5afd1; }
+.osu-start-links > span { color: var(--color-muted-2); margin-left: auto; }
+.hub-nav-group a, .hub-nav-group button { font-size: 14px; padding-block: 10px; }
+.hub-nav-label { font-size: 12px; }
+@media (max-width: 760px) {
+  .hub-home-nav { display: none; }
+  .hub-shell[data-game="choose"] .hub-content main { padding: 30px 18px; }
+  .game-choices { grid-template-columns: 1fr; gap: 18px; margin-top: 26px; }
+  .game-choice { padding: 24px; }
+  .game-choice h2 { margin-top: 22px; font-size: 40px; }
+  .game-description { min-height: 0; }
+  .osu-start-heading { align-items: start; flex-direction: column; gap: 16px; }
+  .osu-quick-search { padding: 16px; }
+  .osu-quick-search .home-primary { width: 100%; }
+  .osu-start-links { gap: 16px; }
+  .osu-start-links > span { display: none; }
+}
+.hub-browse-nav { display: flex; gap: 24px; font-size: 14px; color: var(--color-muted); }
+.hub-browse-nav a:hover { color: var(--color-text); }
+.hub-brand { flex-basis: 190px; }
+.hub-brand-wordmark { width: 154px; height: 42px; }
+.hub-brand-label { font-size: 13px; }
+.hub-shell-finder .hub-content main { padding-top: 30px; }
+@media (max-width: 1100px) { .hub-brand { flex-basis: auto; } }
+@media (max-width: 800px) {
+  .hub-browse-nav { display: none; }
+  .hub-shell-finder .hub-header, .hub-shell[data-game="choose"] .hub-header { min-height: 68px; }
+  .hub-shell-finder .hub-game-selector { order: 0; flex: 0 1 auto; max-width: 110px; }
+  .hub-shell-finder .hub-brand { flex: 0 0 auto; }
+  .hub-shell-finder .hub-account { margin-left: auto; }
+  .hub-shell-finder .hub-discord { display: none; }
+}

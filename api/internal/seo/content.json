@@ -3,7 +3,8 @@
   "routes": {
     "/branding": {"title":"AimMod Branding & Assets","description":"Download AimMod logos, icons, banners and social artwork. Brand colours, clear space and logo usage guidelines."},
     "/osu/pp-targets": {"title":"osu! PP Targets · AimMod Hub","description":"Find ranked osu! difficulties and compare full-combo PP at your chosen accuracy and mods. Open maps in AimMod for personal skill compatibility."},
-    "/": {"title":"KovaaK's Analysis and Community · AimMod Hub","description":"Explore shared KovaaK's practice runs, scenarios, benchmarks and aim training guides on AimMod Hub."},
+    "/": {"title":"AimMod · Choose your game","description":"Find osu! beatmaps for PP, explore replays and skins, or improve your KovaaK's practice with AimMod."},
+    "/kovaaks": {"title":"KovaaK's Analysis and Community · AimMod Hub","description":"Explore shared KovaaK's practice runs, scenarios, benchmarks and aim training guides on AimMod Hub."},
     "/app": {"title":"Download AimMod · AimMod Hub","description":"Choose AimMod for osu! or KovaaK's: replay analysis, coaching and practice tools for your game."},
     "/app/kovaaks": {"title":"Download AimMod for KovaaK's · AimMod Hub","description":"Get AimMod for KovaaK's to review practice runs, inspect aim metrics and track your training."},
     "/app/osu": {"title":"Download AimMod for osu! · AimMod Hub","description":"Download AimMod for osu! on Windows and Linux for replay analysis, coaching and practice."},

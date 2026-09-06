@@ -3,10 +3,10 @@ import { PageSeo } from "../components/PageSeo";
 import { useScorePp } from "../hooks/useScorePp";
 import { ScorePpStatus } from "../components/ScorePpStatus";
 import { useParams, useSearchParams } from "react-router-dom";
-import { OsuScoreFilters } from "../components/OsuScoreFilters";
+import { ScoreBrowserControls } from "../components/OsuScoreFilters";
 import { filterOsuScores, scoreFilterKeys } from "../lib/osuScoreFilters";
 import { OsuReplayRow } from "../components/OsuReplayRow";
-import { SectionHeader } from "../components/SectionHeader";
+import { PlayerIdentity, MetricStrip } from "../components/BrowseHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
@@ -49,22 +49,18 @@ export function OsuProfilePage() {
     <PageStack>
       <PageSeo title={`${profile.osuUsername} · osu! · AimMod Hub`} type="profile"
         description={`${profile.osuUsername}'s public osu! replay analysis and performance history on AimMod Hub.`} />
-      <PageSection className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-5 max-[560px]:grid-cols-1">
-        {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="h-20 w-20 rounded-md object-cover" /> : <div className="h-20 w-20 rounded-md bg-white/5" />}
-        <div className="min-w-0">
-          <SectionHeader level={1} eyebrow={profile.hubHandle ? `@${profile.hubHandle}` : "osu! player"} title={profile.osuUsername} body={profile.hubDisplayName} />
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-muted">
-            <Stat label="Performance" value={profile.performancePoints == null ? "Unavailable" : `${Math.round(profile.performancePoints).toLocaleString()}pp`} />
-            <Stat label="Global rank" value={profile.globalRank == null ? "Unranked" : `#${profile.globalRank.toLocaleString()}`} />
-            <Stat label="Play count" value={profile.playCount.toLocaleString()} />
-            <Stat label="Shared replays" value={profile.sharedReplayCount.toLocaleString()} />
-          </div>
-        </div>
-      </PageSection>
-      <label className="flex items-center gap-3 text-sm">Ruleset<select className="rounded border border-line bg-panel p-2" value={mode} onChange={event => setMode(event.target.value)}><option value="osu">osu!</option><option value="taiko">osu!taiko</option><option value="fruits">osu!catch</option><option value="mania">osu!mania</option></select></label>
-      {history && <div className="text-sm text-muted"><p>Official best and recent scores, combined with public uploads. This is not a complete play history. {history.coverage.best.fetched} best / {history.coverage.recent.fetched} recent scores fetched.{history.hasMore ? " Showing the first 100 matching plays." : ""}</p>{[history.coverage.best, history.coverage.recent].some(source => !["available", "page_limit"].includes(source.status)) && <p role="status" className="mt-2">Some official scores could not be loaded. <button className="text-cyan underline" onClick={() => setAttempt(value => value + 1)}>Try again</button></p>}</div>}
+      <section className="profile-heading">
+        <PlayerIdentity name={profile.osuUsername} avatar={profile.avatarUrl} detail={[profile.countryCode, profile.hubHandle ? `@${profile.hubHandle}` : ""].filter(Boolean).join(" · ")} heading />
+        <label className="text-sm text-muted">Ruleset <select value={mode} onChange={event => setMode(event.target.value)}><option value="osu">osu!</option><option value="taiko">osu!taiko</option><option value="fruits">osu!catch</option><option value="mania">osu!mania</option></select></label>
+      </section>
+      <MetricStrip metrics={[
+        { label: "Performance", value: profile.performancePoints == null ? "—" : `${Math.round(profile.performancePoints).toLocaleString()} pp` },
+        { label: "Global rank", value: profile.globalRank == null ? "Unranked" : `#${profile.globalRank.toLocaleString()}` },
+        { label: "Play count", value: profile.playCount.toLocaleString() },
+        { label: "Shared replays", value: profile.sharedReplayCount.toLocaleString() },
+      ]} />
       <PageSection className="p-0 overflow-hidden">
-        <OsuScoreFilters />
+        <ScoreBrowserControls />
         <ScorePpStatus {...pp} />
         <p className="hub-results" role="status">{visible.length} of {profile.recentReplays.length} loaded plays</p>
         {profile.recentReplays.length > 0
@@ -72,10 +68,7 @@ export function OsuProfilePage() {
             : <EmptyState title="No matching plays" body="Try a wider range or clear your filters."><Button onClick={() => setParams(previous => { const next = new URLSearchParams(previous); scoreFilterKeys.forEach(key => next.delete(key)); return next; })}>Clear filters</Button></EmptyState>
           : <EmptyState title="No scores to display" body="No plays were returned for this ruleset. Check source availability or choose another ruleset." />}
       </PageSection>
+      {history && <div className="profile-coverage"><p>{history.coverage.best.fetched} best scores · {history.coverage.recent.fetched} recent scores · Public uploads. This is not a complete play history.{history.hasMore ? " Showing the first 100 matching plays." : ""}</p>{[history.coverage.best, history.coverage.recent].some(source => !["available", "page_limit"].includes(source.status)) && <p role="status">Some scores could not load. <button className="text-cyan underline" onClick={() => setAttempt(value => value + 1)}>Try again</button></p>}</div>}
     </PageStack>
   );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return <span><span className="text-muted-2">{label}</span> <strong className="ml-1 font-semibold text-text tabular-nums">{value}</strong></span>;
 }

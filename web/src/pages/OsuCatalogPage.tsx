@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "../lib/helmet";
-import { SectionHeader } from "../components/SectionHeader";
+import { BrowseHeader } from "../components/BrowseHeader";
+import { BeatmapCard } from "../components/BeatmapCard";
 import { Button } from "../components/ui/Button";
 import { PageSection } from "../components/ui/PageSection";
 import { PageStack } from "../components/ui/Stack";
@@ -105,8 +106,8 @@ export function OsuCatalogPage({ skins = false }: { skins?: boolean }) {
     : new SearchBeatmapItemsRequest({ query: get("q").trim().slice(0, 256), providers: [Provider.OSU_OFFICIAL], filters, sort: get("sort", defaultSort) });
   const key = `${skins ? "skins" : "beatmaps"}:${request.toJsonString()}`;
   const activeRanges = ranges.slice(1).filter(([key]) => get(`${key}Min`) || get(`${key}Max`)).length;
-  return <PageStack className="catalog-workspace"><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection className="catalog-section">
-    <SectionHeader level={1} eyebrow="osu!" title={skins ? "Skins" : "Beatmaps"} aside={<External href={skins ? "https://osuskins.net" : "https://osu.ppy.sh/beatmapsets"}>{skins ? "Browse osuskins.net" : "Browse osu!"}</External>} />
+  return <PageStack className={`catalog-workspace${skins ? "" : " catalog-beatmaps-workspace"}`}><Helmet><title>{skins ? "Skins" : "Beatmaps"} · AimMod Hub</title></Helmet><PageSection className="catalog-section">
+    <BrowseHeader title={skins ? "Skins" : "All beatmaps"} actions={<External href={skins ? "https://osuskins.net" : "https://osu.ppy.sh/beatmapsets"}>{skins ? "Browse osuskins.net" : "Browse osu!"}</External>} />
     {skins && <Link className="inline-flex my-3 text-cyan underline underline-offset-4" to="/osu/skin-builder">Build your own AimMod skin →</Link>}
     <div className="hub-filters catalog-filters">
       <label>Search {skins ? "skins" : "beatmaps"}<input type="search" value={get("q")} maxLength={256} placeholder={skins ? "Skin name" : "Title, artist, or mapper"} onChange={event => update("q", event.target.value)} /></label>
@@ -140,9 +141,10 @@ function BeatmapResults({ request }: { request: SearchBeatmapItemsRequest }) {
     {unavailable && <Unavailable name="osu!" source="https://osu.ppy.sh/beatmapsets" retry={result.retry} />}
     {result.data && <><p className="hub-results">{result.data.items.length} beatmapsets · osu!</p>
       {!result.data.items.length && !unavailable && <p className="catalog-notice" role="status">No beatmaps found. Try another search or reset your filters.</p>}
-      <div className="catalog-layout"><div className="catalog-list" role="region" aria-label="Beatmap results" tabIndex={0}>{result.data.items.map(item => <button className="catalog-map" key={`${item.provider}:${item.sourceId}`} aria-pressed={selected === item.sourceId} onClick={() => select(item.sourceId)}>
-        <Cover src={item.coverUrl} name="" className="catalog-map-cover" /><span className="catalog-item-text"><strong>{item.title}</strong><span>{item.artist} · {item.creator}</span><span>{item.status} · {item.minimumStars.toFixed(1)}{item.minimumStars !== item.maximumStars ? `–${item.maximumStars.toFixed(1)}` : ""} stars · {item.beatmapCount} {item.beatmapCount === 1 ? "difficulty" : "difficulties"}</span></span>
-      </button>)}</div>{selected && beatmapLinks(selected) && <BeatmapDetail key={selected} id={selected} filters={request.filters} close={() => select()} />}</div>
+      <div className="catalog-layout"><div className="card-grid catalog-beatmap-grid" role="region" aria-label="Beatmap results">{result.data.items.map(item => {
+        const difficulties = item.difficulties.filter(diff => (!request.filters?.ruleset || diff.ruleset === request.filters.ruleset) && ranges.every(([key]) => { const range = request.filters?.[key]; return !range || ((range.minimum === undefined || diff[key] >= range.minimum) && (range.maximum === undefined || diff[key] <= range.maximum)); }));
+        return difficulties.length ? <BeatmapCard key={`${item.provider}:${item.sourceId}`} difficulties={difficulties.map(map => ({ map }))} status={item.status} onDetails={() => select(item.sourceId)} /> : <button className="catalog-map" key={`${item.provider}:${item.sourceId}`} onClick={() => select(item.sourceId)}><Cover src={item.coverUrl} name="" className="catalog-map-cover" /><span className="catalog-item-text"><strong>{item.title}</strong><span>{item.artist} · {item.beatmapCount} difficulties</span><span>View details</span></span></button>;
+      })}</div>{selected && beatmapLinks(selected) && <BeatmapDetail key={selected} id={selected} filters={request.filters} close={() => select()} />}</div>
     </>}
     <Pagination page={page} loading={result.loading} hasNext={!!result.data?.nextPageTokens.length} previous={() => changePage(page - 1)} next={() => { if (result.data?.nextPageTokens.length) { setPages([...pages.slice(0, page + 1), result.data.nextPageTokens]); changePage(page + 1); } }} />
   </div>;

@@ -6,8 +6,8 @@ import type { OsuSharedReplay } from "../src/lib/osuCommunity";
 
 test("explicit game routes take precedence and shared account pages remain neutral", () => {
   for (const path of ["/osu", "/osu/replays/a", "/osu/players", "/app/osu"]) assert.equal(gameForPath(path), "osu");
-  for (const path of ["/", "/profiles/a", "/app/kovaaks", "/learn", "/replays"]) assert.equal(gameForPath(path), "kovaaks");
-  for (const path of ["/account", "/app", "/link-device", "/osumaps"]) assert.equal(gameForPath(path), null);
+  for (const path of ["/kovaaks", "/profiles/a", "/app/kovaaks", "/learn", "/replays"]) assert.equal(gameForPath(path), "kovaaks");
+  for (const path of ["/", "/account", "/app", "/link-device", "/osumaps"]) assert.equal(gameForPath(path), null);
 });
 
 test("beatmap directories preserve separate difficulties and missing PP", () => {
