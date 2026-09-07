@@ -17,7 +17,9 @@ test("the public brand directory contains only the selected v9 production export
   assert.deepEqual(readdirSync(assetRoot).sort(), Object.keys(hashes).sort());
   for (const [name, hash] of Object.entries(hashes)) {
     const bytes = readFileSync(new URL(name, assetRoot));
-    assert.equal(createHash("sha256").update(bytes).digest("hex"), hash, name);
+    // Git may check text assets out with CRLF on Windows; verify their canonical LF bytes.
+    const canonical = name.endsWith(".svg") ? bytes.toString("utf8").replace(/\r\n/g, "\n") : bytes;
+    assert.equal(createHash("sha256").update(canonical).digest("hex"), hash, name);
     if (name.endsWith(".svg")) assert.doesNotMatch(bytes.toString(), /<(?:image|text|foreignObject)\b/);
   }
 });

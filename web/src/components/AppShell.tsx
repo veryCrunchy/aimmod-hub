@@ -75,6 +75,7 @@ export function AppShell({ children }: PropsWithChildren) {
       </div>)}
       <div className="hub-nav-group">
         {auth.authenticated && <NavLink to="/account">Settings & devices</NavLink>}
+        {auth.authenticated && <NavLink to="/osu/training">Training progress</NavLink>}
         {isAdmin && <NavLink to="/admin">Administration</NavLink>}
         {auth.authenticated && <button type="button" onClick={() => void auth.signOut()}>Sign out</button>}
       </div>

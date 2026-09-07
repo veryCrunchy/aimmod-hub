@@ -73,10 +73,11 @@ export const desktopGuides: DesktopGuide[] = [
     ],
   },
   {
-    slug: "sharing-and-privacy", title: "Sharing and privacy", location: "Settings → account and sharing",
+    slug: "sharing-and-privacy", title: "Sharing and privacy", location: "Settings → Account & sharing",
     summary: "Decide which plays leave your device and what a shared result includes.",
     sections: [
       { title: "Link your Hub account", steps: ["In Settings, choose Link account and follow the browser link and code prompt.", "Confirm the linked account shown in AimMod.", "Review visibility and the options Include replay file and Include judgement analysis before sharing."] },
+      { title: "Training history and progress", paragraphs: ["Under Training, enable Sync new completed training sessions to keep future practice results on your Hub account. Sessions start private. Turn on Show new training sessions on my public profile only when you want them to be visible to other players.", "Use View training & sharing to review practice time, skill summaries, recent sessions and progress on matching drills. You can share or hide individual recent sessions there. The public profile only includes public sessions.", "Existing local history is not uploaded automatically. Failed uploads stay queued and retry while AimMod is open. Turning sync off stops unsent sessions; it does not hide sessions already shared. Random layouts count toward practice history, while progress comparisons need at least six runs with the same fixed setup."] },
       { title: "Automatic sharing is optional", paragraphs: ["Automatically share new qualifying plays starts off. When enabled, the minimum PP and accuracy settings determine which new plays qualify. The replay-file and judgement-analysis options control whether those extra details are included.", "The initial sharing visibility is Public. Choose your intended visibility before publishing a result. Local practice tracking and automatic practice do not require turning on automatic sharing."] },
       { title: "Check the queue", paragraphs: ["Use the sharing queue in Settings to check whether a share has completed or needs attention. If account linking fails, retry the link flow and confirm the intended Hub account in your browser.", "Turning off automatic sharing changes future sharing behaviour. It does not by itself remove results you already published. Review shared results on the Hub separately."] },
     ],

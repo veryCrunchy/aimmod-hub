@@ -19,6 +19,7 @@ import { SortableTh } from "../components/ui/SortableTh";
 import { TypeFilterBar } from "../components/ui/TypeFilterBar";
 import { Grid, PageStack } from "../components/ui/Stack";
 import { AimProfileSection } from "../components/AimProfileSection";
+import { TrainingProfileSection } from "../components/TrainingProfileSection";
 import { AimFingerprintSection } from "../components/AimFingerprintSection";
 import { useAnimatedNumber } from "../hooks/useAnimatedNumber";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
@@ -344,6 +345,7 @@ export function ProfilePage() {
         />
       </Grid>
 
+      <TrainingProfileSection handle={profile.userHandle} />
       <Grid className="grid-cols-2 items-start max-[1180px]:grid-cols-1">
         <AimProfileSection handle={profile.userHandle} />
         <AimFingerprintSection handle={profile.userHandle} />

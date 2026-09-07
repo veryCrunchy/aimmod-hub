@@ -118,6 +118,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/admin/osu/beatmaps", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	newOsuSyncHandler(hub.Store(), auth.media, osuServer).register(mux, cfg.AllowedWebOrigin)
+	(trainingHandler{store: hub.Store()}).register(mux, cfg.AllowedWebOrigin)
 	newOsuProfileScoresHandler(hub.Store(), osuServer).register(mux, cfg.AllowedWebOrigin)
 	newOsuPlayersHandler(osuServer).register(mux, cfg.AllowedWebOrigin)
 	if osuServer != nil && hub.Store() != nil && cfg.OsuClientID != "" && cfg.OsuClientSecret != "" {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageSeo } from "../components/PageSeo";
+import { TrainingProfileSection } from "../components/TrainingProfileSection";
 import { useScorePp } from "../hooks/useScorePp";
 import { ScorePpStatus } from "../components/ScorePpStatus";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -59,6 +60,7 @@ export function OsuProfilePage() {
         { label: "Play count", value: profile.playCount.toLocaleString() },
         { label: "Shared replays", value: profile.sharedReplayCount.toLocaleString() },
       ]} />
+      {mode === "osu" && profile.hubHandle && <TrainingProfileSection handle={profile.hubHandle} />}
       <PageSection className="p-0 overflow-hidden">
         <ScoreBrowserControls />
         <ScorePpStatus {...pp} />

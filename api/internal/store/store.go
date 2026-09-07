@@ -27,6 +27,20 @@ CREATE TABLE IF NOT EXISTS hub_users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS osu_training_sessions (
+  user_id BIGINT NOT NULL REFERENCES hub_users(id) ON DELETE CASCADE,
+  session_id UUID NOT NULL,
+  completed_at TIMESTAMPTZ NOT NULL,
+  mode TEXT NOT NULL,
+  visibility TEXT NOT NULL CHECK (visibility IN ('private', 'public')),
+  content_hash TEXT NOT NULL,
+  session_json JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, session_id)
+);
+CREATE INDEX IF NOT EXISTS idx_osu_training_profile ON osu_training_sessions(user_id, visibility, completed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_osu_training_owner ON osu_training_sessions(user_id, completed_at DESC);
+
 CREATE TABLE IF NOT EXISTS scenario_runs (
   session_id TEXT PRIMARY KEY,
   source_session_id TEXT,

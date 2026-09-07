@@ -12,6 +12,7 @@ import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { useSavedPageFilters } from "./hooks/useSavedPageFilters";
 
 const AccountPage = lazy(() => import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })));
+const TrainingPage = lazy(() => import("./pages/TrainingPage").then(m => ({ default: m.TrainingPage })));
 const BrandingPage = lazy(() => import("./pages/BrandingPage").then((m) => ({ default: m.BrandingPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
 const AdminCoachingPage = lazy(() => import("./pages/AdminCoachingPage").then((m) => ({ default: m.AdminCoachingPage })));
@@ -103,6 +104,8 @@ function AppRoutes() {
           <Route path="/link-device" element={<DeviceLinkPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/osu/training" element={<TrainingPage owner />} />
+          <Route path="/osu/profiles/:handle/training" element={<TrainingPage />} />
           <Route path="/profiles/:handle" element={<ProfilePage />} />
           <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
           <Route path="/scenarios/:slug" element={<ScenarioPage />} />
