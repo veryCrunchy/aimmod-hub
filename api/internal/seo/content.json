@@ -1,6 +1,16 @@
 {
   "updatedAt": "2026-09-05",
   "routes": {
+    "/osu/help": {"title":"AimMod app guide","description":"Set up AimMod, review replays, create practice sets and track your osu! progress."},
+    "/osu/help/getting-started": {"title":"Set up AimMod · AimMod","description":"Set up AimMod: practical steps for the AimMod osu! app."},
+    "/osu/help/library-and-clients": {"title":"Beatmaps and osu! clients · AimMod","description":"Beatmaps and osu! clients: practical steps for the AimMod osu! app."},
+    "/osu/help/replays-and-statistics": {"title":"Replays and statistics · AimMod","description":"Replays and statistics: practical steps for the AimMod osu! app."},
+    "/osu/help/coaching": {"title":"Coach a beatmap · AimMod","description":"Coach a beatmap: practical steps for the AimMod osu! app."},
+    "/osu/help/automatic-practice": {"title":"Automatic practice and cleanup · AimMod","description":"Automatic practice and cleanup: practical steps for the AimMod osu! app."},
+    "/osu/help/pp-targets": {"title":"Find a PP target · AimMod","description":"Find a PP target: practical steps for the AimMod osu! app."},
+    "/osu/help/skins": {"title":"Skins and playback · AimMod","description":"Skins and playback: practical steps for the AimMod osu! app."},
+    "/osu/help/sharing-and-privacy": {"title":"Sharing and privacy · AimMod","description":"Sharing and privacy: practical steps for the AimMod osu! app."},
+    "/osu/help/troubleshooting": {"title":"Troubleshooting · AimMod","description":"Troubleshooting: practical steps for the AimMod osu! app."},
     "/branding": {"title":"AimMod Branding & Assets","description":"Download AimMod logos, icons, banners and social artwork. Brand colours, clear space and logo usage guidelines."},
     "/osu/pp-targets": {"title":"osu! PP Targets · AimMod Hub","description":"Find ranked osu! difficulties and compare full-combo PP at your chosen accuracy and mods. Open maps in AimMod for personal skill compatibility."},
     "/": {"title":"AimMod · Choose your game","description":"Find osu! beatmaps for PP, explore replays and skins, or improve your KovaaK's practice with AimMod."},

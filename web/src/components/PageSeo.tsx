@@ -35,7 +35,7 @@ export function RouteSeo() {
   const route = pathname.replace(/\/$/, "") || "/";
   const page = (content.routes as Record<string, { title: string; description: string }>)[route];
   // These pages own their complete head, including loading/error visibility states.
-  if (route === "/") return null;
+  if (route === "/" || /^\/osu\/help(?:\/|$)/.test(route)) return null;
   if (/^\/(learn(?:\/|$)|osu\/(pp-targets$|learn(?:\/|$)|(?:replays|profiles|scores)\/))/.test(route)) return null;
   const restricted = restrictedRoute.test(route);
   const dynamic = /^\/(?:profiles\/[^/]+(?:\/benchmarks(?:\/[1-9][0-9]*)?|\/scenarios\/[^/]+)?|(?:runs|scenarios)\/[^/]+|benchmarks\/[^/]+|u\/[^/]+(?:\/benchmarks\/[^/]+)?|u\/kovaaks\/[^/]+)$/.test(route);

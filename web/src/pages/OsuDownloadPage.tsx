@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Helmet } from "../lib/helmet";
 import { Button } from "../components/ui/Button";
@@ -203,6 +204,7 @@ export function OsuDownloadPage() {
           </div>
         </div>
       </PageSection>
+    <p className="text-sm text-muted">New to the app? <Link className="text-cyan" to="/osu/help/getting-started">Read the AimMod app guide →</Link></p>
     </PageStack>
   );
 }

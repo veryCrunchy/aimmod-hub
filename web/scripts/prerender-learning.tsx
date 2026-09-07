@@ -7,6 +7,7 @@ import type { FilledContext } from "react-helmet-async";
 import { HelmetProvider } from "../src/lib/helmet";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../src/App";
+import { desktopGuides } from "../src/lib/desktopGuides";
 import seoContent from "../../api/internal/seo/content.json";
 import { extractRenderedHead } from "./rendered-head";
 import { serializePrerenderPayload, type PrerenderPayload } from "../src/lib/prerender";
@@ -427,7 +428,7 @@ async function main() {
     await renderRoute(baseHtml, route.path, route.payload);
   }
 
-  for (const route of ["/osu/learn", ...seoContent.guides.map(guide => `/osu/learn/${guide.slug}`)]) {
+  for (const route of ["/osu/help", ...desktopGuides.map(guide => `/osu/help/${guide.slug}`), "/osu/learn", ...seoContent.guides.map(guide => `/osu/learn/${guide.slug}`)]) {
     await renderRoute(baseHtml, route, {});
   }
 

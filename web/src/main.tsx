@@ -1,3 +1,4 @@
+import "./pages/osuHelp.css";
 import React from "react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { HelmetProvider } from "./lib/helmet";

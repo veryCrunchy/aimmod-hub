@@ -16,7 +16,7 @@ const osuGroups = [
   { label: "Browse", links: [["/osu", "Overview"], ["/osu/pp-targets", "PP beatmaps"], ["/osu/beatmaps", "All beatmaps"], ["/osu/replays", "Replays"]] },
   { label: "Make it yours", links: [["/osu/skins", "Skins"], ["/osu/skin-builder", "Skin builder"]] },
   { label: "Community", links: [["/osu/players", "Players"], ["/osu/community", "Activity"], ["/osu/learn", "Learning guides"]] },
-  { label: "", links: [["/app/osu", "Download AimMod"]] },
+  { label: "", links: [["/app/osu", "Download AimMod"], ["/osu/help", "App guide"]] },
 ];
 
 export function AppShell({ children }: PropsWithChildren) {
@@ -112,7 +112,7 @@ export function AppShell({ children }: PropsWithChildren) {
       {!choosing && <aside className="hub-sidebar"><nav aria-label="Primary">{navigation()}</nav></aside>}
       <div className="hub-content">
         <main id="main-content" tabIndex={-1}>{children}</main>
-        <footer className="hub-footer"><span>AimMod Hub</span><div><a href="/join" target="_blank" rel="noopener noreferrer">Join Discord</a><Link to="/branding">Branding</Link><a href="https://ko-fi.com/verycrunchy" target="_blank" rel="noreferrer">Support AimMod</a><a href="https://github.com/veryCrunchy/aimmod" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/sponsors/veryCrunchy" target="_blank" rel="noreferrer">Sponsors</a></div></footer>
+        <footer className="hub-footer"><span>AimMod Hub</span><div><a href="/join" target="_blank" rel="noopener noreferrer">Join Discord</a><Link to="/osu/help">App guide</Link><Link to="/branding">Branding</Link><a href="https://ko-fi.com/verycrunchy" target="_blank" rel="noreferrer">Support AimMod</a><a href="https://github.com/veryCrunchy/aimmod" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/sponsors/veryCrunchy" target="_blank" rel="noreferrer">Sponsors</a></div></footer>
       </div>
     </div>
   );
