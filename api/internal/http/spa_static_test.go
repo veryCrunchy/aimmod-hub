@@ -36,6 +36,20 @@ func staticTestHandler(t *testing.T) http.Handler {
 	return NewSPAHandler(dir, nil, "https://aimmod.app")
 }
 
+func TestTrainingManagementDirectLinkLoadsWithoutIndexing(t *testing.T) {
+	h := staticTestHandler(t)
+	for _, route := range []string{"/osu/training", "/osu/training/"} {
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, route, nil))
+		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "SPA_SENTINEL") {
+			t.Fatalf("%s: training app did not load: %d", route, w.Code)
+		}
+		if w.Header().Get("X-Robots-Tag") != "noindex, nofollow" || w.Header().Get("Cache-Control") != "no-store" {
+			t.Fatalf("%s: account page must remain private and uncached: %v", route, w.Header())
+		}
+	}
+}
+
 func TestSPAStaticSuccessfulAssetMIMEAndCaching(t *testing.T) {
 	h := staticTestHandler(t)
 	for _, tc := range []struct{ path, mime, cache string }{

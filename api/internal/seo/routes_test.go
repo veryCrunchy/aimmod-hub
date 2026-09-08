@@ -3,12 +3,12 @@ package seo
 import "testing"
 
 func TestPrivateRouteBoundaries(t *testing.T) {
-	for _, route := range []string{"/account", "/account/", "/admin/coaching", "/auth/callback", "/link-device", "/search/"} {
+	for _, route := range []string{"/account", "/account/", "/admin/coaching", "/auth/callback", "/link-device", "/search/", "/osu/training", "/osu/training/"} {
 		if !IsPrivateRoute(route) {
 			t.Errorf("private route not protected: %s", route)
 		}
 	}
-	for _, route := range []string{"/osu/pp-targets", "/replays", "/osu/replays", "/osu/replays/public", "/administrator"} {
+	for _, route := range []string{"/osu/pp-targets", "/replays", "/osu/replays", "/osu/replays/public", "/administrator", "/osu/profiles/practice-player/training", "/osu/training-other"} {
 		if IsPrivateRoute(route) {
 			t.Errorf("public route treated as private: %s", route)
 		}
