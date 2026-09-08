@@ -34,7 +34,7 @@ export function TrainingProfileSection({ handle, owner = false }: { handle: stri
     </div>
     {error ? <EmptyState title="Training unavailable" body={error}><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></EmptyState>
       : !data ? <div role="status" aria-label="Loading training"><Skeleton className="h-64" /></div>
-      : data.sessions === 0 ? <EmptyState title={mode ? "No sessions for this skill" : "No shared practice yet"} body={owner ? "Link your account in the desktop app, then enable training sync in Settings → Account & sharing → Training. New completed sessions will appear here." : "Completed sessions shared from AimMod appear here. Try a longer period to see earlier practice."}>{mode && <Button onClick={() => setMode("")}>Show all skills</Button>}</EmptyState>
+      : data.sessions === 0 ? <EmptyState title={mode ? "No sessions for this skill" : "No shared practice yet"} body={owner ? "Link your account in the desktop app and complete a training session. Manage sync and public sharing in Settings → Account & sharing → Training." : "Completed sessions shared from AimMod appear here. Try a longer period to see earlier practice."}>{mode && <Button onClick={() => setMode("")}>Show all skills</Button>}</EmptyState>
       : <>
         <div className="training-totals">{[["Sessions", data.sessions], ["Practice time", formatPracticeTime(data.seconds)], ["Active days", data.activeDays], ["Skills practised", data.skills.length]].map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
         <div className="training-chart" role="img" aria-label={`Practice time by day: ${data.activity.map(day => `${day.date}: ${Math.round(day.seconds / 60)} minutes`).join(", ")}`}>
