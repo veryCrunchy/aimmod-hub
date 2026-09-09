@@ -14,23 +14,26 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/sync/singleflight"
+
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	osuv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/osu/v1"
 )
 
 type officialAdapter struct {
-	playerIndex  PlayerIndex
-	client       *upstreamClient
-	http         *http.Client
-	oauthURL     string
-	clientID     uint64
-	clientSecret string
-	limiter      *intervalLimiter
-	userAgent    string
-	tokenMu      sync.Mutex
-	token        string
-	tokenExpiry  time.Time
-	configError  error
+	playerIndex   PlayerIndex
+	client        *upstreamClient
+	http          *http.Client
+	oauthURL      string
+	clientID      uint64
+	clientSecret  string
+	limiter       *intervalLimiter
+	userAgent     string
+	tokenMu       sync.Mutex
+	tokenRequests singleflight.Group
+	token         string
+	tokenExpiry   time.Time
+	configError   error
 }
 
 type officialTokenResponse struct {
@@ -169,17 +172,47 @@ func (a *officialAdapter) configured() bool {
 }
 
 func (a *officialAdapter) accessToken(ctx context.Context) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
 	if a.configError != nil {
 		return "", a.configError
 	}
 	if !a.configured() {
 		return "", fmt.Errorf("osu OAuth client credentials are not configured")
 	}
+	if token := a.cachedToken(); token != "" {
+		return token, nil
+	}
+	result := a.tokenRequests.DoChan("token", func() (any, error) {
+		if token := a.cachedToken(); token != "" {
+			return token, nil
+		}
+		fetchCtx, cancel := context.WithTimeout(context.Background(), a.client.timeout)
+		defer cancel()
+		return a.refreshToken(fetchCtx)
+	})
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case response := <-result:
+		if response.Err != nil {
+			return "", response.Err
+		}
+		return response.Val.(string), nil
+	}
+}
+
+func (a *officialAdapter) cachedToken() string {
 	a.tokenMu.Lock()
 	defer a.tokenMu.Unlock()
 	if a.token != "" && time.Now().Add(30*time.Second).Before(a.tokenExpiry) {
-		return a.token, nil
+		return a.token
 	}
+	return ""
+}
+
+func (a *officialAdapter) refreshToken(ctx context.Context) (string, error) {
 	if err := a.limiter.wait(ctx); err != nil {
 		return "", err
 	}
@@ -208,8 +241,11 @@ func (a *officialAdapter) accessToken(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if resp.StatusCode == http.StatusTooManyRequests {
+		a.limiter.backoff(resp.Header.Get("Retry-After"))
+	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("osu OAuth returned HTTP %d", resp.StatusCode)
+		return "", &upstreamHTTPError{StatusCode: resp.StatusCode}
 	}
 	var token officialTokenResponse
 	if err := json.Unmarshal(body, &token); err != nil {
@@ -218,6 +254,8 @@ func (a *officialAdapter) accessToken(ctx context.Context) (string, error) {
 	if token.AccessToken == "" || token.ExpiresIn <= 0 {
 		return "", fmt.Errorf("osu OAuth response did not contain a usable access token")
 	}
+	a.tokenMu.Lock()
+	defer a.tokenMu.Unlock()
 	a.token = token.AccessToken
 	a.tokenExpiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
 	return a.token, nil

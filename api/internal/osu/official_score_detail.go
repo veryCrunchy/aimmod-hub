@@ -85,7 +85,10 @@ func (s *Server) getPublicScore(ctx context.Context, id int64, legacyMode string
 		// OfficialScoreID and its URL still identify the canonical modern score.
 		result.Item.OnlineScoreID = id
 	}
-	_ = s.retainPublicScores(ctx, []OfficialPublicScore{normalizePublicScore(score, scoreMode(*score.RulesetID))})
+	// Persistence must not hold an already fetched score behind a slow database.
+	indexCtx, indexCancel := context.WithTimeout(ctx, time.Second)
+	_ = s.retainPublicScores(indexCtx, []OfficialPublicScore{normalizePublicScore(score, scoreMode(*score.RulesetID))})
+	indexCancel()
 	result.Status = "available"
 	result.Replay.Exists = score.HasReplay
 	result.Replay.Status = "not_available"
@@ -177,6 +180,9 @@ func (s *Server) DownloadPublicReplay(ctx context.Context, id int64) (OfficialRe
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
+		if response.StatusCode == http.StatusTooManyRequests {
+			a.limiter.backoff(response.Header.Get("Retry-After"))
+		}
 		result.Status = scoreErrorStatus(&upstreamHTTPError{StatusCode: response.StatusCode})
 		if response.StatusCode == 403 {
 			result.Status = "permission_denied"

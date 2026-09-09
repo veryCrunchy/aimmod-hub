@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type osuPlayersProvider interface {
@@ -18,6 +19,10 @@ func (h *osuPlayersHandler) register(mux *http.ServeMux, origin string) {
 	mux.Handle("/api/osu/v1/players", withCORS(origin, http.HandlerFunc(h.list)))
 }
 func (h *osuPlayersHandler) list(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 12*time.Second)
+	defer cancel()
+	r = r.WithContext(ctx)
+	w.Header().Set("Cache-Control", "no-store")
 	if r.Method != "GET" {
 		http.Error(w, "method not allowed", 405)
 		return

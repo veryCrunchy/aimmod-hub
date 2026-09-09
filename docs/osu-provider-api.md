@@ -55,7 +55,7 @@ Hub applies an independent outbound request limiter to each provider and a share
 ```dotenv
 AIMMOD_OSU_CACHE_TTL=5m
 AIMMOD_OSU_CACHE_MAX_ENTRIES=256
-AIMMOD_OSU_PROVIDER_RPS=4
+AIMMOD_OSU_PROVIDER_RPS=1
 AIMMOD_OSU_REQUEST_TIMEOUT=10s
 ```
 
@@ -80,3 +80,19 @@ The site does not publish a documented API. Provider status reports `contract_is
 ### skins.osuck.net
 
 Direct server requests to skins.osuck.net currently receive a Cloudflare 403 response. Hub reports the provider unavailable and returns no search, detail, screenshot, or download data. It does not replay browser cookies, solve challenges, or construct download URLs from unverified client code. This provider can become active after its owner exposes a server-readable contract or a complete live request and file response can be verified without bypassing Cloudflare.
+
+## Request pressure and scaling
+
+Score HTML metadata reads only the warm response cache or public score snapshots indexed within the last 24 hours. It never refreshes OAuth, fetches from osu!, or writes to the index. Unknown/unavailable metadata stays noindex; interactive score API reads and the background indexer populate these snapshots. This isolates search and other crawlers from the interactive upstream quota.
+
+Public metadata misses for the same URL and score format share one outbound request per process. Each caller can cancel its own wait. The shared fetch has a deadline that includes time waiting for the provider limiter. At most 16 distinct metadata fetches per provider can be pending; additional misses fail fast. Cached reads do not consume outbound slots.
+
+The response cache has both the configured entry limit and a 64 MiB byte limit. It contains successful responses only and does not serve expired records. OAuth refresh is shared and cancellable without holding the token mutex during network I/O. HTTP 429 responses pause the provider using Retry-After (one minute when absent), while cache hits remain usable with a valid token.
+
+Profile and score REST requests have a 12-second total budget. A profile retains known public uploads and completed score pages if the remaining request fails, with explicit incomplete coverage. Index writes on these interactive paths are best effort and limited to one second. Browser requests share simultaneous profile/score reads and have a 14-second deadline; retries are not retained in a client result cache.
+
+Beatmap file caching is separate: 128 entries / 64 MiB, six-hour server TTL, one-hour public HTTP freshness, checksum validation, duplicate fetch sharing, and four concurrent downloads. This cache is process-local and disappears on restart. Public replay bytes deliberately are not cached because current download permission must be checked.
+
+These limits bound resource use; they are not a high-traffic capacity guarantee. Before adding replicas, implement a shared response/beatmap cache and a quota shared across all processes using the same OAuth client. Each replica currently has its own limiter. The official guidance is at most 60 requests per minute across the client: https://osu.ppy.sh/docs/#terms-of-use . Raising AIMMOD_OSU_PROVIDER_RPS is not a substitute for caching.
+
+For sustained traffic, serve versioned beatmaps and public static assets through object storage/CDN, use stored public score/profile snapshots as the normal read path with bounded refresh jobs, and batch/deduplicate index writes. Do not put private/unlisted uploads or replay-permission checks in a public cache. Measure cold and warm route latency, cache hit rate, upstream calls/429s, queued work, DB-pool wait, memory and disk usage before setting a supported traffic target. Rate-limit expensive uncached reads and PP calculation independently at ingress; the PP worker and database pool remain separate bottlenecks.

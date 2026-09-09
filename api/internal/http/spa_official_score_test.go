@@ -16,7 +16,7 @@ import (
 
 type scoreMetadataFunc func(context.Context, int64) (osuservice.OfficialScoreDetail, error)
 
-func (f scoreMetadataFunc) GetPublicScore(ctx context.Context, id int64) (osuservice.OfficialScoreDetail, error) {
+func (f scoreMetadataFunc) GetPublicScoreMetadata(ctx context.Context, id int64) (osuservice.OfficialScoreDetail, error) {
 	return f(ctx, id)
 }
 

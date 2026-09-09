@@ -24,10 +24,11 @@ type publicScoreProvider interface {
 type osuProfileScoresHandler struct {
 	store    publicScoreStore
 	official publicScoreProvider
+	timeout  time.Duration
 }
 
 func newOsuProfileScoresHandler(st publicScoreStore, official publicScoreProvider) *osuProfileScoresHandler {
-	return &osuProfileScoresHandler{store: st, official: official}
+	return &osuProfileScoresHandler{store: st, official: official, timeout: 12 * time.Second}
 }
 func (h *osuProfileScoresHandler) register(mux *http.ServeMux, origin string) {
 	mux.Handle("/api/osu/v1/profile-scores/", withCORS(origin, http.HandlerFunc(h.profileScores)))
@@ -47,6 +48,10 @@ type localScoreCoverage struct {
 }
 
 func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
+	defer cancel()
+	r = r.WithContext(ctx)
+	w.Header().Set("Cache-Control", "no-store")
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -104,17 +109,22 @@ func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.R
 	if h.official != nil {
 		result, err = h.official.GetPublicUserScores(r.Context(), profile.OsuUserID, mode)
 		if err != nil {
-			if r.Context().Err() != nil {
-				return
+			// Keep known uploads and completed upstream pages when the remaining fetch
+			// times out. Coverage makes the missing scores visible to the browser.
+			if result.Coverage.Best.Status == "" {
+				result.Coverage.Best = osuservice.ScoreCoverage{Status: "unavailable", HasMore: true}
 			}
-			http.Error(w, "official scores unavailable", http.StatusBadGateway)
-			return
+			if result.Coverage.Recent.Status == "" {
+				result.Coverage.Recent = osuservice.ScoreCoverage{Status: "unavailable", HasMore: true}
+			}
 		}
 	}
 	if index, ok := h.official.(interface {
 		IndexPublicScores(context.Context, []osuservice.OfficialPublicScore) error
 	}); ok {
-		_ = index.IndexPublicScores(r.Context(), result.Scores)
+		indexCtx, indexCancel := context.WithTimeout(r.Context(), time.Second)
+		_ = index.IndexPublicScores(indexCtx, result.Scores)
+		indexCancel()
 	}
 	items := osuservice.MergePublicScores(local, result.Scores)
 	for i := range items {
@@ -130,7 +140,10 @@ func (h *osuProfileScoresHandler) profileScores(w http.ResponseWriter, r *http.R
 		items = items[:limit]
 	}
 	enrichSharedScoreItems(r.Context(), h.official, items)
-	w.Header().Set("Cache-Control", "public, max-age=30")
+	cacheableCoverage := func(status string) bool { return status == "available" || status == "page_limit" }
+	if err == nil && cacheableCoverage(result.Coverage.Best.Status) && cacheableCoverage(result.Coverage.Recent.Status) {
+		w.Header().Set("Cache-Control", "public, max-age=30")
+	}
 	writeJSON(w, http.StatusOK, profileScoresResponse{Profile: profile, Items: items, Coverage: result.Coverage,
 		Local: localScoreCoverage{Returned: len(local), HasMore: profile.SharedReplayCount > len(profile.RecentReplays)}, HasMore: hasMore})
 }
@@ -140,6 +153,10 @@ func (h *osuProfileScoresHandler) scoreDetail(w http.ResponseWriter, r *http.Req
 		h.scoreReplay(w, r)
 		return
 	}
+	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
+	defer cancel()
+	r = r.WithContext(ctx)
+	w.Header().Set("Cache-Control", "no-store")
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -155,10 +172,7 @@ func (h *osuProfileScoresHandler) scoreDetail(w http.ResponseWriter, r *http.Req
 	}
 	result, err := h.official.GetPublicScore(r.Context(), id)
 	if err != nil {
-		if r.Context().Err() != nil {
-			return
-		}
-		http.Error(w, "official score unavailable", http.StatusBadGateway)
+		http.Error(w, "official score temporarily unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	status := http.StatusOK
@@ -167,7 +181,9 @@ func (h *osuProfileScoresHandler) scoreDetail(w http.ResponseWriter, r *http.Req
 	} else if result.Status != "available" {
 		status = http.StatusServiceUnavailable
 	}
-	w.Header().Set("Cache-Control", "public, max-age=30")
+	if status == http.StatusOK {
+		w.Header().Set("Cache-Control", "public, max-age=30")
+	}
 	writeJSON(w, status, result)
 }
 

@@ -15,6 +15,13 @@ type IndexedOsuScore struct {
 	Item      json.RawMessage
 }
 
+// SEO may reuse recently observed public metadata without refreshing upstream.
+func (s *Store) GetIndexedOsuScoreMetadata(ctx context.Context, id int64) (json.RawMessage, error) {
+	var item json.RawMessage
+	err := s.pool.QueryRow(ctx, `SELECT item FROM osu_public_score_index WHERE score_id=$1 AND updated_at>NOW()-INTERVAL '24 hours'`, id).Scan(&item)
+	return item, err
+}
+
 func (s *Store) SaveIndexedOsuScores(ctx context.Context, items []IndexedOsuScore) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {

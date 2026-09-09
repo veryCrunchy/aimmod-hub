@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"strconv"
 	"time"
@@ -143,6 +141,11 @@ func (s *Server) GetPublicUserScores(ctx context.Context, userID int64, mode str
 			body, err := s.official.getScorePage(ctx, fmt.Sprintf("/api/v2/users/%d/scores/%s", userID, category), query, token)
 			if err != nil {
 				if ctx.Err() != nil {
+					coverage.Status = "unavailable"
+					coverage.HasMore = true
+					if category == "best" {
+						result.Coverage.Recent = ScoreCoverage{Status: "unavailable", HasMore: true}
+					}
 					return result, ctx.Err()
 				}
 				coverage.Status = scoreErrorStatus(err)
@@ -212,45 +215,7 @@ func scoreErrorStatus(err error) string {
 }
 
 func (a *officialAdapter) getScorePage(ctx context.Context, path string, query url.Values, token string) ([]byte, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	requestURL := a.client.resolve(path, query)
-	key := "GET score-v20220705 " + requestURL
-	if body, ok := a.client.cache.get(key); ok {
-		return body, nil
-	}
-	if err := a.limiter.wait(ctx); err != nil {
-		return nil, err
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", a.userAgent)
-	req.Header.Set("x-api-version", "20220705")
-	response, err := a.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		return nil, &upstreamHTTPError{StatusCode: response.StatusCode}
-	}
-	body, err := io.ReadAll(io.LimitReader(response.Body, maxUpstreamResponseBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(body) > maxUpstreamResponseBytes {
-		return nil, fmt.Errorf("score page too large")
-	}
-	if !json.Valid(body) {
-		return nil, fmt.Errorf("invalid score JSON")
-	}
-	a.client.cache.set(key, body)
-	return body, nil
+	return a.client.getResponse(ctx, path, query, "Bearer "+token, true)
 }
 
 func normalizePublicScore(score officialScore, mode string) OfficialPublicScore {

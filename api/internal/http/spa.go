@@ -45,7 +45,7 @@ type pageMeta struct {
 }
 
 type publicScoreMetadataProvider interface {
-	GetPublicScore(context.Context, int64) (osuservice.OfficialScoreDetail, error)
+	GetPublicScoreMetadata(context.Context, int64) (osuservice.OfficialScoreDetail, error)
 }
 
 func resolveOfficialScoreMeta(ctx context.Context, route, canonical string, provider publicScoreMetadataProvider) pageMeta {
@@ -55,11 +55,11 @@ func resolveOfficialScoreMeta(ctx context.Context, route, canonical string, prov
 	if err != nil || id <= 0 || strconv.FormatInt(id, 10) != rawID || provider == nil {
 		return meta
 	}
-	// Reuse the public application-credential provider and its cache. Do not fetch
-	// replay bytes or user-authorized/private score data to construct metadata.
+	// HTML crawls use stored public metadata only. They must never compete with
+	// interactive API reads for the upstream quota or trigger index writes.
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	detail, err := provider.GetPublicScore(ctx, id)
+	detail, err := provider.GetPublicScoreMetadata(ctx, id)
 	if err != nil || ctx.Err() != nil || detail.Status != "available" || detail.Item == nil {
 		return meta
 	}

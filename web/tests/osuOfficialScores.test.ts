@@ -27,3 +27,27 @@ test("official replay existence is separate from uploaded replay availability", 
     assert.equal(result.officialReplayExists, true);
   } finally { globalThis.fetch = original; }
 });
+
+test("concurrent score reads share a request and failed reads remain retryable", async () => {
+  const original = globalThis.fetch;
+  let calls = 0;
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  globalThis.fetch = async (_input, init) => {
+    calls++;
+    assert.ok(init?.signal instanceof AbortSignal);
+    await gate;
+    if (calls === 1) return new Response("temporarily unavailable", { status: 503 });
+    return Response.json({ item: { source: "official", officialScoreId: "456" } });
+  };
+  try {
+    const first = fetchOsuOfficialScore("456");
+    const second = fetchOsuOfficialScore("456");
+    release();
+    const results = await Promise.allSettled([first, second]);
+    assert.equal(calls, 1);
+    assert.ok(results.every(result => result.status === "rejected"));
+    await fetchOsuOfficialScore("456");
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = original; }
+});

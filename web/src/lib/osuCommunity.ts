@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./config";
+import { createPublicQuery } from "./publicQuery";
 import { normalizeOsuReplayAnalysis } from "./osuReplayAnalysis";
 import type { ScorePpInput } from "./scorePp";
 
@@ -98,7 +99,7 @@ export type OsuPublicProfile = {
 };
 
 async function fetchJSON<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, { headers: { Accept: "application/json" } });
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(14_000) });
   if (!response.ok) {
     const detail = (await response.text()).trim();
     throw new Error(detail || `Request failed (${response.status}).`);
@@ -138,14 +139,21 @@ export type OsuScoreHistory = {
   coverage: { best: { status: string; fetched: number }; recent: { status: string; fetched: number }; completeHistory: false };
   hasMore: boolean;
 };
+const scoreHistoryQuery = createPublicQuery<OsuScoreHistory>();
+const officialScoreQuery = createPublicQuery<OsuSharedReplay>();
+
 export async function fetchOsuScoreHistory(handle: string, mode = "osu"): Promise<OsuScoreHistory> {
-  const history = await fetchJSON<OsuScoreHistory>(`/api/osu/v1/profile-scores/${encodeURIComponent(handle)}?mode=${encodeURIComponent(mode)}&limit=100`);
-  return { ...history, items: (history.items ?? []).map(normalizeReplay) };
+  return scoreHistoryQuery(JSON.stringify([handle, mode]), async () => {
+    const history = await fetchJSON<OsuScoreHistory>(`/api/osu/v1/profile-scores/${encodeURIComponent(handle)}?mode=${encodeURIComponent(mode)}&limit=100`);
+    return { ...history, items: (history.items ?? []).map(normalizeReplay) };
+  });
 }
 export async function fetchOsuOfficialScore(id: string): Promise<OsuSharedReplay> {
-  const response = await fetchJSON<{ item?: OsuSharedReplay; replay?: { exists: boolean } }>(`/api/osu/v1/official-scores/${encodeURIComponent(id)}`);
-  if (!response.item) throw new Error("This score is unavailable.");
-  return normalizeReplay({ ...response.item, officialReplayExists: response.replay?.exists === true });
+  return officialScoreQuery(id, async () => {
+    const response = await fetchJSON<{ item?: OsuSharedReplay; replay?: { exists: boolean } }>(`/api/osu/v1/official-scores/${encodeURIComponent(id)}`);
+    if (!response.item) throw new Error("This score is unavailable.");
+    return normalizeReplay({ ...response.item, officialReplayExists: response.replay?.exists === true });
+  });
 }
 
 export function osuScorePath(replay: OsuSharedReplay): string {

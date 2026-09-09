@@ -323,7 +323,7 @@ func DefaultConfig() Config {
 		OsuClientSecret:                        strings.TrimSpace(os.Getenv("AIMMOD_OSU_CLIENT_SECRET")),
 		OsuCacheTTL:                            parseEnvDuration("AIMMOD_OSU_CACHE_TTL", 5*time.Minute),
 		OsuCacheMaxEntries:                     parseEnvInt("AIMMOD_OSU_CACHE_MAX_ENTRIES", 256, 1, 4096),
-		OsuProviderRequestsPerSecond:           parseEnvFloat("AIMMOD_OSU_PROVIDER_RPS", 4, 0.1, 100),
+		OsuProviderRequestsPerSecond:           parseEnvFloat("AIMMOD_OSU_PROVIDER_RPS", 1, 0.1, 100),
 		OsuRequestTimeout:                      parseEnvDuration("AIMMOD_OSU_REQUEST_TIMEOUT", 10*time.Second),
 	}
 }
