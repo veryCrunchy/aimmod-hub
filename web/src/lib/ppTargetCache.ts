@@ -29,9 +29,11 @@ export function readPpSettings(params: URLSearchParams): PpSettings {
   };
 }
 
-export function candidateKey(settings: Pick<PpSettings, "query" | "low" | "high">): string {
-  return candidatePrefix + JSON.stringify([settings.query.trim(), settings.low, settings.high, "osu", "ranked", "plays_desc", 12]);
+export function candidateKey(settings: Pick<PpSettings, "query" | "low" | "high">, cursor = ""): string {
+  return candidatePrefix + JSON.stringify([settings.query.trim(), settings.low, settings.high, "osu", "ranked", "plays_desc", "pages-v2", cursor]);
 }
+
+export type PpCandidatePage = { maps: BeatmapDifficulty[]; nextPageToken: string; setCount: number };
 
 export function validChecksum(checksum: string): boolean { return /^[a-f0-9]{32}$/i.test(checksum); }
 export function validPpResult(value: unknown): value is PpResult {
@@ -103,7 +105,15 @@ export class PpTargetCache {
     } catch { return; }
   }
 
-  setCandidates(key: string, maps: BeatmapDifficulty[]): void {
+  getCandidatePage(key: string): PpCandidatePage | undefined {
+    const value = this.read(key, candidateTTL, 2 << 20);
+    if (typeof value?.nextPageToken !== "string" || value.nextPageToken.length > 512
+      || !Number.isInteger(value.setCount) || value.setCount < 0 || value.setCount > 100) return;
+    const maps = this.getCandidates(key);
+    if (maps) return { maps, nextPageToken: value.nextPageToken, setCount: value.setCount };
+  }
+
+  setCandidates(key: string, maps: BeatmapDifficulty[], page?: Omit<PpCandidatePage, "maps">): void {
     if (maps.length > 512) return;
     try {
       // A newer discovery invalidates other searches containing the older map
@@ -113,7 +123,7 @@ export class PpTargetCache {
         const old = this.getCandidates(oldKey);
         if (!old || old.some(map => revisions.has(map.beatmapId) && revisions.get(map.beatmapId) !== map.checksum)) this.storage?.removeItem(oldKey);
       }
-      this.write(key, { version: 1, expires: this.now() + candidateTTL, maps: maps.map(map => map.toJson()) }, candidatePrefix, 16, 2 << 20);
+      this.write(key, { version: 1, expires: this.now() + candidateTTL, maps: maps.map(map => map.toJson()), ...page }, candidatePrefix, 16, 2 << 20);
     } catch { /* Ignore unavailable storage or malformed metadata. */ }
   }
 

@@ -35,6 +35,33 @@ test("candidate identity isolates query and star bounds, not calculation options
   assert.deepEqual(cache.getCandidates(candidateKey(settings)), []);
 });
 
+test("paginated discovery retains continuation cursors and isolates page cache entries", () => {
+  const storage = new MemoryStorage(); let now = 1000;
+  const cache = new PpTargetCache(storage, () => now);
+  const first = candidateKey(settings), next = candidateKey(settings, "next-page");
+  assert.notEqual(first, next);
+  cache.setCandidates(first, [map()], { nextPageToken: "next-page", setCount: 50 });
+  cache.setCandidates(next, [], { nextPageToken: "last-page", setCount: 50 });
+  assert.equal(cache.getCandidatePage(first)?.maps[0].beatmapId, "42");
+  assert.equal(cache.getCandidatePage(first)?.nextPageToken, "next-page");
+  assert.deepEqual(cache.getCandidatePage(next), { maps: [], nextPageToken: "last-page", setCount: 50 });
+  cache.setCandidates(candidateKey(settings, "last-page"), [], { nextPageToken: "", setCount: 0 });
+  assert.equal(cache.getCandidatePage(candidateKey(settings, "last-page"))?.nextPageToken, "");
+  now += candidateTTL;
+  assert.equal(cache.getCandidatePage(first), undefined);
+});
+
+test("legacy or invalid pagination metadata cannot silently truncate discovery", () => {
+  const storage = new MemoryStorage(); const cache = new PpTargetCache(storage);
+  const key = candidateKey(settings);
+  cache.setCandidates(key, [map()]);
+  assert.equal(cache.getCandidatePage(key), undefined);
+  for (const page of [{ nextPageToken: "x".repeat(513), setCount: 50 }, { nextPageToken: "next", setCount: -1 }, { nextPageToken: "next", setCount: 1.5 }]) {
+    cache.setCandidates(key, [map()], page);
+    assert.equal(cache.getCandidatePage(key), undefined);
+  }
+});
+
 test("new checksum discovery evicts other searches containing the old revision", () => {
   const storage = new MemoryStorage(); const cache = new PpTargetCache(storage);
   const first = candidateKey(settings), second = candidateKey({ ...settings, query: "new" });

@@ -74,6 +74,8 @@
 .pp-toolbar .catalog-range-values label { display: flex; flex-direction: row; align-items: baseline; gap: 6px; }
 .pp-context { padding-bottom: 12px; }
 .pp-results-heading { margin-top: 14px; }
+.pp-search-more { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.pp-search-more .pp-footnote { margin: 0; }
 @media (max-width: 760px) {
   .pp-heading { flex-wrap: wrap; gap: 12px; }
   .pp-heading .pp-search { order: 3; flex-basis: 100%; }
