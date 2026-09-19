@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { spinnerPreviewState, sliderPreviewPosition } from '../lib/skinPreview';
+import { spinnerPreviewState, sliderPreviewPosition, tintSkinPixels } from '../lib/skinPreview';
 import { SKIN_ASSETS, skinThemes, trailColour, type SkinChoice } from '../lib/skinBuilder';
 
 const previewNames = ['hitcircle', 'hitcircleoverlay', 'approachcircle', 'reversearrow', 'sliderb0', 'cursor', 'scorebar-bg', 'scorebar-colour',
@@ -18,7 +18,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
     const names = [...previewNames, `guide-${choice.guide}`, `cursor-${choice.cursor}`, 'cursor-trail'];
     Promise.all(names.map(name => new Promise<void>((resolve, reject) => {
       const img = new Image(); img.onload = () => { void img.decode().then(() => { images.set(name, img); resolve(); }, reject); }; img.onerror = reject;
-      img.src = name === 'cursor-trail' ? `${SKIN_ASSETS}/trails/${trailColour(choice)}-${choice.trail}@2x.png` : `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
+      img.src = choice.colours === 'beatmap' && (name === 'hitcircle' || name === 'hitcircleoverlay') ? `${SKIN_ASSETS}/combo-colours/${name}@2x.png` : name === 'cursor-trail' ? `${SKIN_ASSETS}/trails/${trailColour(choice)}-${choice.trail}@2x.png` : `${SKIN_ASSETS}/${choice.theme}/${name.startsWith('spinner-') ? 'spinner-' + choice.spinner + '/' : ''}${name}@2x.png`;
     }))).then(() => {
       if (disposed) return;
       const el = canvas.current; const ctx = el?.getContext('2d'); if (!el || !ctx) return;
@@ -32,12 +32,13 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         const source = images.get(name)!;
         const surface = document.createElement('canvas'); surface.width = source.width; surface.height = source.height;
         const paint = surface.getContext('2d')!; paint.drawImage(source, 0, 0);
-        paint.globalCompositeOperation = 'multiply'; paint.fillStyle = colour; paint.fillRect(0, 0, surface.width, surface.height);
-        paint.globalCompositeOperation = 'destination-in'; paint.drawImage(source, 0, 0);
+        const pixels = paint.getImageData(0, 0, surface.width, surface.height);
+        tintSkinPixels(pixels.data, colour); paint.putImageData(pixels, 0, 0);
         return surface;
       };
-      tinted.set('hitcircle', tint('hitcircle', theme.edge));
-      tinted.set('approachcircle', tint('approachcircle', theme.edge));
+      const comboColours = choice.colours === 'beatmap' ? ['#ffbf69', '#73c9ff', '#c89bff', '#79dfa5'] : [theme.edge];
+      for (let i = 0; i < 4; i++) tinted.set(`hitcircle-${i}`, tint('hitcircle', comboColours[i % comboColours.length]));
+      tinted.set('approachcircle', tint('approachcircle', comboColours[0]));
       tinted.set('spinner-glow-blue', tint('spinner-glow', '#0397ff'));
 
       const draw = (now: number) => {
@@ -105,7 +106,7 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
         for (let i = 3; i >= 0; i--) {
           if (pattern === 'sliders' && i === 1) continue;
           const [x, y] = points[i]; const opacity = playing ? .55 + .45 * Math.max(0, Math.sin((t + i * .18) * Math.PI)) : 1;
-          ctx.globalAlpha = opacity; image('hitcircle', x - 59, y - 59, 118); image('hitcircleoverlay', x - 59, y - 59, 118);
+          ctx.globalAlpha = opacity; image(`hitcircle-${i}`, x - 59, y - 59, 118); image('hitcircleoverlay', x - 59, y - 59, 118);
           // A slider's reverse endpoint shows only the reverse indicator.
           if (pattern !== 'sliders' || i !== 1) {
             const number = images.get(`default-${i + 1}`)!; const h = 43, w = h * number.width / number.height; ctx.drawImage(number, x - w / 2, y - h / 2, w, h);
@@ -135,9 +136,9 @@ export function SkinBuilderPreview({ choice, playing, pattern }: { choice: SkinC
       draw(performance.now()); setReady(true);
     }).catch(() => { if (!disposed) setError(true); });
     return () => { if (playing && animationStarted !== null) elapsedRef.current += (performance.now() - animationStarted) / 1000; disposed = true; cancelAnimationFrame(frame); };
-  }, [choice.theme, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, choice.trail, playing, pattern]);
+  }, [choice.theme, choice.colours, choice.guide, choice.client, choice.cursor, choice.cursorSize, choice.spinner, choice.trail, playing, pattern]);
   return <div className="skin-scene">
-    <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.guide} followpoints, ${pattern} pattern`} />
+    <canvas ref={canvas} role="img" aria-label={`${choice.theme} skin with ${choice.colours} circle colours and ${choice.guide} followpoints, ${pattern} pattern`} />
     {!ready && <div className="skin-scene-status" role={error ? 'alert' : 'status'}>{error ? 'Preview unavailable. Choose a colour to retry.' : 'Loading preview…'}</div>}
   </div>;
 }

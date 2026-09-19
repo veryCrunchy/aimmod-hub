@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spinnerPreviewState, sliderPreviewPosition } from '../src/lib/skinPreview';
+import { spinnerPreviewState, sliderPreviewPosition, tintSkinPixels } from '../src/lib/skinPreview';
+
+test('combo tint preserves translucent fills instead of painting them opaque colours', () => {
+ const pixels = new Uint8ClampedArray([255,255,255,255, 20,20,20,195, 0,0,0,0]);
+ tintSkinPixels(pixels, '#ff8040');
+ assert.deepEqual([...pixels], [255,128,64,255, 20,10,5,195, 0,0,0,0]);
+});
 test('displayed RPM matches the derivative of spinner rotation', () => {
  for (const t of [1,2.5,4,6]) {
   const speed = (spinnerPreviewState(t + .0001).rotation - spinnerPreviewState(t).rotation) / .0001 * 60 / (Math.PI * 2);

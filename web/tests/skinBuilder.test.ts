@@ -8,9 +8,30 @@ const asset = (path: string) => unpackSkin(new Uint8Array(readFileSync(new URL('
 const sounds = { soft: asset('soft.zip'), clicky: asset('clicky.zip') };
 const id = '00000000-0000-4000-8000-000000000001';
 
+test('beatmap colours replace untinted circles for both clients without restoring slider ends', async () => {
+  const circles = asset('combo-colours.zip');
+  for (const theme of skinThemes) for (const client of ['lazer', 'stable'] as const) {
+    const base = asset(`${theme.id}/base.zip`);
+    base['hitcircleoverlay-0@2x.png'] = base['hitcircleoverlay@2x.png'];
+    const choice = { ...defaultSkinChoice, theme: theme.id, client, colours: 'beatmap' as const };
+    const args = [base, asset(`${theme.id}/subtle.zip`), sounds.soft, choice, id,
+      asset(`${theme.id}/stable.zip`), asset(`${theme.id}/cursor-ring.zip`), {}, {}] as const;
+    assert.throws(() => assembleSkin(...args), /beatmap-colour circles/);
+    const result = unpackSkin(await encodeSkin(assembleSkin(...args, circles)));
+    for (const name of Object.keys(circles)) assert.deepEqual(result[name], circles[name]);
+    assert.equal(result['hitcircleoverlay-0@2x.png'], undefined);
+    for (const name of ['sliderendcircle.png', 'sliderendcircleoverlay.png', 'default-1@2x.png', 'reversearrow@2x.png'])
+      assert.deepEqual(result[name], base[name]);
+    assert.match(strFromU8(result['skin.ini']), /Beatmap colours/);
+    assert.match(strFromU8(result['README.txt']), /Enable beatmap colours and disable beatmap skins/);
+    assert.ok(!strFromU8(result['README.txt']).includes('turn off beatmap skin/colour'));
+    assert.deepEqual(parseSkinChoice(new URLSearchParams(choice)), choice);
+  }
+});
+
 test('URL choices are allowlisted and default to the subtle lazer pack', () => {
   assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=../../other&sound=unknown&client=unknown&cursor=unknown')), defaultSkinChoice);
-  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1', spinner: 'orbit', trail: 'soft' });
+  assert.deepEqual(parseSkinChoice(new URLSearchParams('theme=hddt&sound=rafis&guide=jumps&client=stable&cursor=dot')), { colours: 'theme', theme: 'hddt', sound: 'rafis', guide: 'jumps', client: 'stable', cursor: 'dot', cursorSize: '1', spinner: 'orbit', trail: 'soft' });
 });
 
 test('every built-in combination retains its chosen cursor, guides, audio and correct client layout', () => {
@@ -21,7 +42,7 @@ test('every built-in combination retains its chosen cursor, guides, audio and co
       for (const cursor of skinCursors) {
         const cursors = asset(`${theme.id}/cursor-${cursor.id}.zip`);
         for (const sound of ['soft', 'clicky'] as const) for (const client of ['lazer', 'stable'] as const) {
-          const result = assembleSkin(base, guides, sounds[sound], { theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', spinner: 'orbit', trail: 'soft', sound, client }, id, stable, cursors);
+          const result = assembleSkin(base, guides, sounds[sound], { colours: 'theme', theme: theme.id, guide: guide.id, cursor: cursor.id, cursorSize: '1', spinner: 'orbit', trail: 'soft', sound, client }, id, stable, cursors);
           assert.deepEqual(result['cursor.png'], cursors['cursor.png']);
           assert.deepEqual(result['followpoint.png'], guides['followpoint.png']);
           assert.deepEqual(result['normal-hitnormal.wav'], sounds[sound]['normal-hitnormal.wav']);

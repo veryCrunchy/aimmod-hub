@@ -5,7 +5,7 @@ import { readSkinChoice, resolveSkinChoice, saveSkinChoice } from '../src/lib/sk
 test('all skin choices round trip and restore on a bare builder URL', () => {
  let raw: string | null = null;
  const storage = { getItem: () => raw, setItem: (_key: string, value: string) => { raw = value; } };
- const selected = { ...defaultSkinChoice, theme: 'glacier', cursor: 'yellow-glow', cursorSize: '1.5', trail: 'dots', guide: 'line', spinner: 'halo', sound: 'yugen', client: 'stable' } as const;
+ const selected = { ...defaultSkinChoice, theme: 'glacier', colours: 'beatmap', cursor: 'yellow-glow', cursorSize: '1.5', trail: 'dots', guide: 'line', spinner: 'halo', sound: 'yugen', client: 'stable' } as const;
  saveSkinChoice(selected, storage);
  assert.deepEqual(resolveSkinChoice(new URLSearchParams('utm_source=test'), readSkinChoice(storage)), selected);
  assert.deepEqual(resolveSkinChoice(new URLSearchParams('theme=hddt'), selected), { ...defaultSkinChoice, theme: 'hddt' });

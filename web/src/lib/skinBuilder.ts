@@ -37,15 +37,16 @@ export const skinSounds = [
 export type SkinTheme = typeof skinThemes[number]['id'];
 export type SkinGuide = typeof skinGuides[number]['id'];
 export type SkinSound = typeof skinSounds[number]['id'];
-export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; cursor: typeof skinCursors[number]['id']; cursorSize: typeof skinCursorSizes[number]['id']; spinner: typeof skinSpinners[number]['id']; trail: typeof skinTrails[number]['id'] };
+export type SkinChoice = { theme: SkinTheme; guide: SkinGuide; sound: SkinSound; client: 'lazer' | 'stable'; colours: 'theme' | 'beatmap'; cursor: typeof skinCursors[number]['id']; cursorSize: typeof skinCursorSizes[number]['id']; spinner: typeof skinSpinners[number]['id']; trail: typeof skinTrails[number]['id'] };
 export type SkinFiles = Record<string, Uint8Array>;
-export const defaultSkinChoice: SkinChoice = { theme: 'flow', guide: 'subtle', sound: 'rafis', client: 'lazer', cursor: 'ring', cursorSize: '1', spinner: 'orbit', trail: 'soft' };
+export const defaultSkinChoice: SkinChoice = { theme: 'flow', colours: 'theme', guide: 'subtle', sound: 'rafis', client: 'lazer', cursor: 'ring', cursorSize: '1', spinner: 'orbit', trail: 'soft' };
 
 export function parseSkinChoice(params: URLSearchParams): SkinChoice {
   return {
     theme: skinThemes.find(t => t.id === params.get('theme'))?.id ?? defaultSkinChoice.theme,
     guide: skinGuides.find(t => t.id === params.get('guide'))?.id ?? defaultSkinChoice.guide,
     sound: skinSounds.find(t => t.id === params.get('sound'))?.id ?? defaultSkinChoice.sound,
+    colours: params.get('colours') === 'beatmap' ? 'beatmap' : 'theme',
     client: params.get('client') === 'stable' ? 'stable' : 'lazer',
     trail: skinTrails.find(t => t.id === params.get('trail'))?.id ?? 'soft',
     spinner: skinSpinners.find(s => s.id === params.get('spinner'))?.id ?? 'orbit',
@@ -131,7 +132,7 @@ export function selectComboBreak(files: SkinFiles): SkinFiles {
   return {};
 }
 
-export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFiles, choice: SkinChoice, id: string, stable: SkinFiles = {}, cursor: SkinFiles = {}, spinner: SkinFiles = {}, trail: SkinFiles = {}): SkinFiles {
+export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFiles, choice: SkinChoice, id: string, stable: SkinFiles = {}, cursor: SkinFiles = {}, spinner: SkinFiles = {}, trail: SkinFiles = {}, circles: SkinFiles = {}): SkinFiles {
   const files: SkinFiles = {};
   for (const [name, data] of Object.entries(base)) {
     if (safeAsset.test(name) && (/\.(png|wav|ogg|mp3)$/i.test(name) || ['skin.ini', 'MainHUDComponents.json'].includes(name))) files[name] = data;
@@ -168,6 +169,17 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
     }
     files['MainHUDComponents.json'] = strToU8(JSON.stringify(layout, null, 2));
   }
+  if (choice.colours === 'beatmap') {
+    for (const stem of ['hitcircle', 'hitcircleoverlay', 'sliderstartcircle', 'sliderstartcircleoverlay']) {
+      // Remove animated overrides so they cannot cover the tintable layer.
+      for (const name of Object.keys(files)) if (new RegExp(`^${stem}(?:-\\d+)?(?:@2x)?\\.png$`).test(name)) delete files[name];
+      for (const suffix of ['.png', '@2x.png']) {
+        const name = stem + suffix;
+        if (!circles[name]?.length) throw new Error('The beatmap-colour circles could not be loaded. Try again.');
+        files[name] = circles[name];
+      }
+    }
+  }
   if (Object.keys(spinner).length) {
     for (const part of ['top', 'bottom', 'middle', 'middle2', 'glow', 'approachcircle', 'spin', 'clear', 'rpm']) {
       for (const suffix of ['.png', '@2x.png']) if (!spinner[`spinner-${part}${suffix}`]) throw new Error('The spinner could not be loaded. Try again.');
@@ -200,10 +212,10 @@ export function assembleSkin(base: SkinFiles, guides: SkinFiles, sounds: SkinFil
   const theme = skinThemes.find(t => t.id === choice.theme)!;
   const guide = skinGuides.find(t => t.id === choice.guide)!;
   const sound = skinSounds.find(t => t.id === choice.sound)!;
-  const name = `AimMod ${theme.name} · ${guide.name} · ${choice.cursor} ${choice.cursorSize}x · ${choice.spinner} · ${choice.trail} trail · ${sound.name} · ${choice.client}`;
+  const name = `AimMod ${theme.name}${choice.colours === 'beatmap' ? ' · Beatmap colours' : ''} · ${guide.name} · ${choice.cursor} ${choice.cursorSize}x · ${choice.spinner} · ${choice.trail} trail · ${sound.name} · ${choice.client}`;
   files['skin.ini'] = strToU8(strFromU8(files['skin.ini']).replace(/^Name\s*:.*$/m, `Name: ${name}`));
   if (choice.client === 'lazer') files['skininfo.json'] = strToU8(JSON.stringify({ ID: id, Name: name, Creator: 'AimMod', InstantiationInfo: 'osu.Game.Skinning.LegacySkin, osu.Game' }, null, 2));
-  files['README.txt'] = strToU8(`${name}\n\nImport this .osk into osu!${choice.client === 'lazer' ? 'lazer' : 'stable'}, then select it in skin settings. Enable the key overlay and turn off beatmap skin/colour overrides to use your chosen appearance. Turn off beatmap hitsounds to hear this set.\n\nThis skin does not enable Hidden or Double Time. Followpoints: ${guide.name}. Standard 300 judgements are hidden; 100, 50 and MISS use 80% opacity.\n${choice.client === 'stable' ? 'Includes standard, taiko, catch and mania artwork. PP and the lazer HUD layout are not available in stable.\n' : ''}`);
+  files['README.txt'] = strToU8(`${name}\n\nImport this .osk into osu!${choice.client === 'lazer' ? 'lazer' : 'stable'}, then select it in skin settings. Enable the key overlay. ${skinColourInstructions(choice)} Turn off beatmap hitsounds to hear this set.\n\nThis skin does not enable Hidden or Double Time. Followpoints: ${guide.name}. Standard 300 judgements are hidden; 100, 50 and MISS use 80% opacity.\n${choice.client === 'stable' ? 'Includes standard, taiko, catch and mania artwork. PP and the lazer HUD layout are not available in stable.\n' : ''}`);
   files['CREDITS.txt'] = strToU8(`Artwork and layout: AimMod.\nHitsounds: ${sound.name} by ${sound.creator}.\n${sound.source ? 'Source: ' + sound.source + '\n' : ''}Combo break: ${Object.keys(comboBreak).length ? sound.creator : 'AimMod (fallback)'}. Menu sounds and missing-sample fallbacks: AimMod.\n`);
   return files;
 }
@@ -216,4 +228,10 @@ export function encodeSkin(files: SkinFiles): Promise<Uint8Array> {
 
 export function trailColour(choice: SkinChoice): string {
   return choice.cursor === 'yellow' || choice.cursor === 'yellow-glow' ? 'yellow' : choice.cursor === 'white' ? 'white' : choice.theme;
+}
+
+export function skinColourInstructions(choice: SkinChoice): string {
+  return choice.colours === 'beatmap'
+    ? 'Enable beatmap colours and disable beatmap skins. Hit circles, slider heads and approach circles use the map’s combo colours. Maps without custom colours use your selected theme.'
+    : 'Disable beatmap colours and beatmap skins to use your selected theme.';
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from '../lib/helmet';
 import { SkinBuilderPreview } from '../components/SkinBuilderPreview';
-import { assembleSkin, encodeSkin, isSilentAudio, selectComboBreak, selectHitSamples, skinCursors, skinCursorSizes, skinGuides, skinSounds, skinSpinners, skinThemes, skinTrails, trailColour, SKIN_ASSETS, type SkinChoice, type SkinFiles } from '../lib/skinBuilder';
+import { assembleSkin, encodeSkin, skinColourInstructions, isSilentAudio, selectComboBreak, selectHitSamples, skinCursors, skinCursorSizes, skinGuides, skinSounds, skinSpinners, skinThemes, skinTrails, trailColour, SKIN_ASSETS, type SkinChoice, type SkinFiles } from '../lib/skinBuilder';
 import { loadBuilderArchive, soundArchiveURL } from '../lib/skinBuilderLoader';
 import { readSkinChoice, resolveSkinChoice, saveSkinChoice, skinChoiceStorage } from '../lib/skinChoiceStorage';
 import './skinBuilder.css';
@@ -89,7 +89,7 @@ export function OsuSkinBuilderPage() {
     const selected = { ...choice }; const controller = new AbortController(); requests.current.add(controller);
     setBusy(true); setError(''); setMessage('');
     try {
-      const [base, guides, audio, stable, cursor, spinner, trail] = await Promise.all([
+      const [base, guides, audio, stable, cursor, spinner, trail, circles] = await Promise.all([
         loadBuilderArchive(`${SKIN_ASSETS}/${selected.theme}/base.zip`, controller.signal),
         loadBuilderArchive(`${SKIN_ASSETS}/${selected.theme}/${selected.guide}.zip`, controller.signal),
         sounds(controller.signal, selected),
@@ -97,11 +97,12 @@ export function OsuSkinBuilderPage() {
         loadBuilderArchive(`${SKIN_ASSETS}/${selected.theme}/cursor-${selected.cursor}${selected.cursorSize === '1' ? '' : '-' + selected.cursorSize}.zip`, controller.signal),
         loadBuilderArchive(`${SKIN_ASSETS}/${selected.theme}/spinner-${selected.spinner}.zip`, controller.signal),
         loadBuilderArchive(`${SKIN_ASSETS}/trails/${trailColour(selected)}-${selected.trail}-${selected.cursorSize}.zip`, controller.signal),
+        selected.colours === 'beatmap' ? loadBuilderArchive(`${SKIN_ASSETS}/combo-colours.zip`, controller.signal) : Promise.resolve({}),
       ]);
-      const packed = await encodeSkin(assembleSkin(base, guides, audio, selected, crypto.randomUUID(), stable, cursor, spinner, trail));
+      const packed = await encodeSkin(assembleSkin(base, guides, audio, selected, crypto.randomUUID(), stable, cursor, spinner, trail, circles));
       controller.signal.throwIfAborted();
       const url = URL.createObjectURL(new Blob([packed.slice().buffer as ArrayBuffer], { type: 'application/octet-stream' }));
-      const link = document.createElement('a'); link.href = url; link.download = `AimMod-${selected.theme}-${selected.guide}-${selected.sound}-${selected.cursor}-${selected.cursorSize}x-${selected.spinner}-${selected.trail}-trail-${selected.client}.osk`; document.body.appendChild(link); link.click(); link.remove();
+      const link = document.createElement('a'); link.href = url; link.download = `AimMod-${selected.theme}-${selected.colours}-${selected.guide}-${selected.sound}-${selected.cursor}-${selected.cursorSize}x-${selected.spinner}-${selected.trail}-trail-${selected.client}.osk`; document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 30000); setMessage('Your skin is ready. Open the .osk file to import it.');
     } catch (e) { if (!controller.signal.aborted && mounted.current) setError(e instanceof Error ? e.message : 'Your skin could not be downloaded. Try again.'); }
     finally { controller.abort(); requests.current.delete(controller); if (mounted.current) setBusy(false); }
@@ -112,7 +113,7 @@ export function OsuSkinBuilderPage() {
     <div className="skin-builder-layout">
       <div className="skin-controls">
         <fieldset><legend><span>01</span> Client</legend><div className="skin-segments">{(['lazer', 'stable'] as const).map(client => <button key={client} type="button" aria-pressed={choice.client === client} onClick={() => update({ client })}>osu!{client}</button>)}</div><p className="skin-help">{choice.client === 'lazer' ? 'A compact gameplay pack with the native lazer PP counter.' : 'Four modes, menus, pause screens and results. No PP overlay.'}</p></fieldset>
-        <fieldset><legend><span>02</span> Colour</legend><div className="skin-theme-grid">{skinThemes.map(t => <button type="button" key={t.id} aria-pressed={choice.theme === t.id} onClick={() => update({ theme: t.id })}><span className="skin-swatch" style={{ borderColor: t.edge, boxShadow: `inset 0 0 14px ${t.edge}30` }} /><span>{t.name}</span>{choice.theme === t.id && <span aria-hidden="true" className="skin-check">✓</span>}</button>)}</div><p className="skin-help">{theme.description}</p></fieldset>
+        <fieldset><legend><span>02</span> Colour</legend><div className="skin-theme-grid">{skinThemes.map(t => <button type="button" key={t.id} aria-pressed={choice.theme === t.id} onClick={() => update({ theme: t.id })}><span className="skin-swatch" style={{ borderColor: t.edge, boxShadow: `inset 0 0 14px ${t.edge}30` }} /><span>{t.name}</span>{choice.theme === t.id && <span aria-hidden="true" className="skin-check">✓</span>}</button>)}</div><p className="skin-help">{theme.description}</p><label className="skin-size-label" htmlFor="circle-colours">Hit circle colours</label><select id="circle-colours" value={choice.colours} onChange={event => { update({ colours: event.target.value as SkinChoice['colours'] }); setScene('standard'); if (pattern === 'spinner') setPattern('jumps'); }}><option value="theme">Theme colours</option><option value="beatmap">Beatmap colours</option></select><p className="skin-help">{choice.colours === 'beatmap' ? 'Hit circles, slider heads and approach circles follow the beatmap’s combo colours. The preview uses example colours.' : 'Keep the selected AimMod colour on every circle.'}</p></fieldset>
         <fieldset><legend><span>03</span> Followpoints</legend><div className="skin-guide-grid">{skinGuides.map(g => <button type="button" key={g.id} aria-pressed={choice.guide === g.id} onClick={() => update({ guide: g.id })}><span aria-hidden="true" className={`skin-guide-icon ${g.id}`}>{g.id === 'line' ? '───' : g.id === 'arrows' ? '→ →' : g.id === 'subtle' ? '– –' : '○   ○'}</span>{g.name}</button>)}</div><p className="skin-help">{skinGuides.find(g => g.id === choice.guide)!.description}</p></fieldset>
         <fieldset><legend><span>04</span> Cursor</legend><div className="skin-guide-grid skin-cursor-grid">{skinCursors.map(c => <button type="button" key={c.id} aria-pressed={choice.cursor === c.id} onClick={() => update({ cursor: c.id })}><img alt="" className="skin-cursor-option" src={`${SKIN_ASSETS}/${choice.theme}/cursor-${c.id}@2x.png`} />{c.name}</button>)}</div><p className="skin-help">{skinCursors.find(c => c.id === choice.cursor)!.description}</p><label className="skin-size-label" htmlFor="cursor-size">Cursor size</label><select id="cursor-size" value={choice.cursorSize} onChange={event => update({ cursorSize: event.target.value as SkinChoice['cursorSize'] })}>{skinCursorSizes.map(size => <option key={size.id} value={size.id}>{size.name} · {size.id}×</option>)}</select><p className="skin-help">Applied to the cursor and trail in your download. Your in-game cursor scale also affects the final size.</p><label className="skin-size-label" htmlFor="cursor-trail">Cursor trail</label><select id="cursor-trail" value={choice.trail} onChange={event => { update({ trail: event.target.value as SkinChoice['trail'] }); setScene('standard'); setPlaying(true); }}>{skinTrails.map(trail => <option key={trail.id} value={trail.id}>{trail.name}</option>)}</select><p className="skin-help">Matches your cursor colour and size.</p></fieldset>
         <fieldset><legend><span>05</span> Spinner</legend><div className="skin-guide-grid">{skinSpinners.map(spinner => <button type="button" key={spinner.id} aria-pressed={choice.spinner === spinner.id} onClick={() => { update({ spinner: spinner.id }); setScene('standard'); setPattern('spinner'); setPlaying(true); }}><img className="skin-spinner-option" alt="" src={`${SKIN_ASSETS}/${choice.theme}/spinner-${spinner.id}/preview.png`} />{spinner.name}</button>)}</div><p className="skin-help">{skinSpinners.find(s => s.id === choice.spinner)!.description}</p></fieldset>
@@ -125,7 +126,7 @@ export function OsuSkinBuilderPage() {
         <div className="skin-preview-caption"><span>{scene === 'standard' ? 'Gameplay preview' : 'Artwork preview'}</span><span>Custom glyphs · Quiet judgements</span></div>
         <div className="skin-download-panel"><div><p className="skin-eyebrow">YOUR BUILD</p><h2>{theme.name} <span>· {skinGuides.find(g => g.id === choice.guide)!.name}</span></h2><p>{sound.name} / osu!{choice.client}{choice.client === 'stable' ? ' / All four modes' : ''}</p></div><button type="button" className="skin-download" disabled={busy} onClick={() => void download()}>{busy ? 'Preparing skin…' : 'Download skin ↓'}</button></div>
         <div aria-live="polite">{message && <p className="skin-success">{message}</p>}{error && <p className="skin-error" role="alert">{error}</p>}</div>
-        <details className="skin-install"><summary>How to install</summary><ol><li>Open the downloaded .osk file with osu!{choice.client}.</li><li>Select your AimMod skin in the game’s skin settings.</li><li>Disable beatmap skin, colour and hitsound overrides to use your selection.</li></ol></details>
+        <details className="skin-install"><summary>How to install</summary><ol><li>Open the downloaded .osk file with osu!{choice.client}.</li><li>Select your AimMod skin in the game’s skin settings.</li><li>{skinColourInstructions(choice)} Disable beatmap hitsounds to hear your selected sound set.</li></ol></details>
       </div></div>
     </div>
   </section>;

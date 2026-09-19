@@ -1,3 +1,10 @@
+/** Match osu!'s texture multiplication without colouring transparent interiors. */
+export function tintSkinPixels(pixels: Uint8ClampedArray, colour: string): void {
+  const rgb = [1, 3, 5].map(offset => parseInt(colour.slice(offset, offset + 2), 16));
+  for (let at = 0; at < pixels.length; at += 4)
+    for (let channel = 0; channel < 3; channel++) pixels[at + channel] = Math.round(pixels[at + channel] * rgb[channel] / 255);
+}
+
 /** Eight-second synthetic spinner, using lazer's legacy layer ratios and progress effects. */
 export function spinnerPreviewState(elapsedSeconds: number) {
   const elapsed = Math.max(0, elapsedSeconds) % 8;
