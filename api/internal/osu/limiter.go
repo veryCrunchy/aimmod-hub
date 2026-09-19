@@ -13,6 +13,7 @@ type intervalLimiter struct {
 	interval     time.Duration
 	next         time.Time
 	blockedUntil time.Time
+	waiters      []chan struct{}
 }
 
 func newIntervalLimiter(requestsPerSecond float64) *intervalLimiter {
@@ -23,8 +24,26 @@ func newIntervalLimiter(requestsPerSecond float64) *intervalLimiter {
 }
 
 func (l *intervalLimiter) wait(ctx context.Context) error {
-	// Reserve only actual starts. Cancelled requests must not leave future slots
-	// that accumulate and eventually block every caller, including token renewal.
+	// Only the head of the queue may claim the next slot. Racing every caller's
+	// timer lets newer traffic repeatedly overtake a waiting interactive search.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	ready := make(chan struct{})
+	l.mu.Lock()
+	l.waiters = append(l.waiters, ready)
+	if len(l.waiters) == 1 {
+		close(ready)
+	}
+	l.mu.Unlock()
+	defer l.removeWaiter(ready)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-ready:
+	}
+	// Reserve only actual starts. Cancellation removes a waiter without leaving
+	// a reservation that would delay subsequent requests.
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -49,6 +68,21 @@ func (l *intervalLimiter) wait(ctx context.Context) error {
 			timer.Stop()
 			return ctx.Err()
 		}
+	}
+}
+
+func (l *intervalLimiter) removeWaiter(ready chan struct{}) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	for i, waiter := range l.waiters {
+		if waiter != ready {
+			continue
+		}
+		l.waiters = append(l.waiters[:i], l.waiters[i+1:]...)
+		if i == 0 && len(l.waiters) > 0 {
+			close(l.waiters[0])
+		}
+		return
 	}
 }
 

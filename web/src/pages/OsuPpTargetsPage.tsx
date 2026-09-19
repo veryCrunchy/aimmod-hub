@@ -12,6 +12,7 @@ import { browserPpCache, candidateKey, ppMods, readPpSettings, validChecksum, va
 import "./osuCatalog.css";
 import "./ppFinder.css";
 import { readPpGoal, matchesPpGoal } from "../lib/ppGoal";
+import { matchingPpDifficulties, needsPpDetails, ppSearchError, ppResultsTitle } from "../lib/ppTargetDiscovery";
 
 type Candidate = { map: BeatmapDifficulty; result?: PpResult };
 
@@ -97,15 +98,20 @@ export function OsuPpTargetsPage() {
         } else {
           const response = await osuClient.searchBeatmapItems({ query, providers: [Provider.OSU_OFFICIAL], filters: { ruleset: Ruleset.OSU, status: "ranked", stars: { minimum: low ? Number(low) : undefined, maximum: high ? Number(high) : undefined } }, sort: "plays_desc" }, { signal: controller.signal });
           if (!active()) return;
-          if (response.providers.some(provider => !provider.available)) throw new Error("Beatmap search is unavailable. Please try again.");
+          const searchError = ppSearchError(response.providers);
+          if (searchError) throw new Error(searchError);
           // Give each song a usable PP result before working through its remaining difficulties.
           await runLanes(response.items.slice(0, 12), async (item, lane) => {
             let maps: BeatmapDifficulty[];
             try {
-              const detail = await osuClient.getBeatmapItem({ provider: Provider.OSU_OFFICIAL, sourceId: item.sourceId }, { signal: controller.signal });
-              if (!active()) return;
-              if (!detail.item || detail.provider?.available === false) throw new Error("Map unavailable");
-              maps = detail.item.difficulties.filter(map => map.ruleset === Ruleset.OSU && (!low || map.stars >= Number(low)) && (!high || map.stars <= Number(high))).sort((a, b) => b.stars - a.stars);
+              let complete = item;
+              if (needsPpDetails(item, low, high)) {
+                const detail = await osuClient.getBeatmapItem({ provider: Provider.OSU_OFFICIAL, sourceId: item.sourceId }, { signal: controller.signal });
+                if (!active()) return;
+                if (!detail.item || detail.provider?.available === false) throw new Error("Map unavailable");
+                complete = detail.item;
+              }
+              maps = matchingPpDifficulties(complete, low, high);
             } catch {
               if (active()) { detailsFailed = true; setError("Some beatmaps could not load. You can browse the available results or retry."); }
               return;
@@ -159,11 +165,11 @@ export function OsuPpTargetsPage() {
       </div></details>
     </div>
     <div className="pp-context"><span>Full-combo estimate · {accuracy.toFixed(1)}% · {lazer ? "Lazer" : "Stable"}{goal.max !== undefined ? ` · Up to ${goal.max} PP` : ""}</span><span>No misses or dropped slider ends.</span></div>
-    {error && <div role="alert" className="py-4"><p className="mb-3">{error}</p><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></div>}
-    <div className="pp-results-heading"><div><h2>{sets.size} beatmaps <span>· {visible.length} difficulties</span></h2>{busy && <span role="status">{rows.length ? `Calculating PP · ${progress}/${rows.length}` : "Finding beatmaps…"}</span>}</div><div className="pp-result-tools"><select aria-label="Sort beatmaps" value={sort} onChange={event => updateParam("sort", event.target.value)}><option value="pp">Highest PP</option><option value="max">Highest SS PP</option><option value="stars">Highest difficulty</option></select><button type="button" aria-label="Refresh results" title="Refresh results" disabled={busy} onClick={() => { browserPpCache().deleteCandidates(candidateKey({ query, low, high })); setAttempt(value => value + 1); }}><RotateCw size={16} /></button></div></div>
+    {error && <div role="alert" className="py-4"><p className="mb-3">{error}</p><Button disabled={busy} onClick={() => setAttempt(value => value + 1)}>Try again</Button></div>}
+    <div className="pp-results-heading"><div><h2>{ppResultsTitle(!!error && !rows.length, busy, sets.size, visible.length)}</h2>{busy && rows.length > 0 && <span role="status">{`Calculating PP · ${progress}/${rows.length}`}</span>}</div><div className="pp-result-tools"><select aria-label="Sort beatmaps" value={sort} onChange={event => updateParam("sort", event.target.value)}><option value="pp">Highest PP</option><option value="max">Highest SS PP</option><option value="stars">Highest difficulty</option></select><button type="button" aria-label="Refresh results" title="Refresh results" disabled={busy} onClick={() => { browserPpCache().deleteCandidates(candidateKey({ query, low, high })); setAttempt(value => value + 1); }}><RotateCw size={16} /></button></div></div>
     {busy && !visible.length && !error && <div className="pp-loading" role="status">{goal.min !== undefined || goal.max !== undefined ? "Checking maps against your PP goal…" : "Looking for ranked beatmaps…"}<div className="pp-loading-line" /></div>}
     {!busy && !error && !visible.length && <div className="pp-empty"><h3>No beatmaps match these filters</h3><p>Try a wider star or PP range, or another song.</p><Button onClick={() => setParams({ min: "3", max: "7", acc: "98", mods: "NM", scoring: "lazer", sort: "pp" })}>Reset filters</Button></div>}
     <div className="pp-results card-grid">{[...sets].map(([setId, difficulties]) => <BeatmapCard key={setId} difficulties={difficulties} accuracy={accuracy} mods={mods} lazer={lazer} showPp />)}</div>
-    <p className="pp-footnote">From up to 12 popular matching sets. Change your search to explore more.</p>
+    {rows.length > 0 && <p className="pp-footnote">From up to 12 popular matching sets. Change your search to explore more.</p>}
   </div>;
 }

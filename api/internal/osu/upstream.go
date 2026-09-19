@@ -107,7 +107,7 @@ func (c *upstreamClient) getResponse(ctx context.Context, path string, query url
 		fetchCtx, cancel := context.WithTimeout(context.Background(), c.timeout)
 		defer cancel()
 		if err := c.limiter.wait(fetchCtx); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("upstream request queue: %w", err)
 		}
 		req, err := http.NewRequestWithContext(fetchCtx, http.MethodGet, requestURL, nil)
 		if err != nil {

@@ -47,6 +47,75 @@ func TestCancelledWaitingRequestsDoNotReserveSlots(t *testing.T) {
 	}
 }
 
+func awaitLimiterWaiters(t *testing.T, limiter *intervalLimiter, count int) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		limiter.mu.Lock()
+		n := len(limiter.waiters)
+		limiter.mu.Unlock()
+		if n == count {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatalf("limiter did not reach %d waiters", count)
+}
+
+func TestLimiterAdmitsQueuedSearchBeforeNewerTraffic(t *testing.T) {
+	limiter := newIntervalLimiter(1000)
+	limiter.next = time.Now().Add(200 * time.Millisecond)
+	order := make(chan int, 8)
+	for i := 0; i < 8; i++ {
+		go func(index int) {
+			if err := limiter.wait(context.Background()); err != nil {
+				t.Error(err)
+			}
+			order <- index
+		}(i)
+		awaitLimiterWaiters(t, limiter, i+1)
+	}
+	for want := 0; want < 8; want++ {
+		select {
+		case got := <-order:
+			if got != want {
+				t.Fatalf("request %d overtook request %d", got, want)
+			}
+		case <-time.After(time.Second):
+			t.Fatal("queued request starved")
+		}
+	}
+}
+
+func TestLimiterCancellationRemovesHeadAndMiddleWithoutDebt(t *testing.T) {
+	limiter := newIntervalLimiter(1000)
+	limiter.next = time.Now().Add(200 * time.Millisecond)
+	reserved := limiter.next
+	ctx, cancel := context.WithCancel(context.Background())
+	finished := make(chan error, 3)
+	go func() { finished <- limiter.wait(ctx) }()
+	awaitLimiterWaiters(t, limiter, 1)
+	go func() { finished <- limiter.wait(context.Background()) }()
+	awaitLimiterWaiters(t, limiter, 2)
+	go func() { finished <- limiter.wait(ctx) }()
+	awaitLimiterWaiters(t, limiter, 3)
+	cancel()
+	for i := 0; i < 2; i++ {
+		if err := <-finished; !errors.Is(err, context.Canceled) {
+			t.Fatalf("cancelled waiter: %v", err)
+		}
+	}
+	limiter.mu.Lock()
+	if !limiter.next.Equal(reserved) {
+		t.Error("cancelled requests reserved slots")
+	}
+	limiter.mu.Unlock()
+	if err := <-finished; err != nil {
+		t.Fatal(err)
+	}
+	awaitLimiterWaiters(t, limiter, 0)
+}
+
 func TestUpstreamConcurrentMissesShareRequestAndCancellation(t *testing.T) {
 	entered, release := make(chan struct{}), make(chan struct{})
 	var calls atomic.Int32
