@@ -116,6 +116,52 @@ func TestLimiterCancellationRemovesHeadAndMiddleWithoutDebt(t *testing.T) {
 	awaitLimiterWaiters(t, limiter, 0)
 }
 
+func TestSearchSharesSlotsWithoutWaitingBehindEntireScoreBatch(t *testing.T) {
+	limiter := newIntervalLimiter(100)
+	limiter.next = time.Now().Add(200 * time.Millisecond)
+	order := make(chan int, 6)
+	for i := 0; i < 6; i++ {
+		go func(index int) {
+			if err := limiter.waitFor(context.Background(), index >= 4); err != nil {
+				t.Error(err)
+			}
+			order <- index
+		}(i)
+		awaitLimiterWaiters(t, limiter, i+1)
+	}
+	// The already waiting head retains its slot. After that the classes
+	// alternate, with FIFO ordering inside each class.
+	for _, want := range []int{0, 4, 1, 5, 2, 3} {
+		select {
+		case got := <-order:
+			if got != want {
+				t.Fatalf("request %d started; want %d", got, want)
+			}
+		case <-time.After(time.Second):
+			t.Fatal("queued request starved")
+		}
+	}
+}
+
+func TestSearchCanEnterWhenScoreCapacityIsFull(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, `{}`) }))
+	defer upstream.Close()
+	client, _ := newUpstreamClient(upstream.URL, upstream.Client(), newResponseCache(time.Minute, 32), newIntervalLimiter(100000), "test")
+	for i := 0; i < cap(client.capacity); i++ {
+		client.capacity <- struct{}{}
+	}
+	if _, err := client.get(context.Background(), "/api/v2/beatmapsets/search", nil, ""); err != nil {
+		t.Fatalf("search blocked by score capacity: %v", err)
+	}
+	for i := 0; i < cap(client.searchCapacity); i++ {
+		client.searchCapacity <- struct{}{}
+	}
+	client.cache = newResponseCache(time.Minute, 32)
+	if _, err := client.get(context.Background(), "/api/v2/beatmapsets/search", nil, ""); !isUpstreamHTTPStatus(err, 503) {
+		t.Fatalf("search capacity must remain bounded: %v", err)
+	}
+}
+
 func TestUpstreamConcurrentMissesShareRequestAndCancellation(t *testing.T) {
 	entered, release := make(chan struct{}), make(chan struct{})
 	var calls atomic.Int32

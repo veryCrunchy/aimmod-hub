@@ -13,7 +13,12 @@ type intervalLimiter struct {
 	interval     time.Duration
 	next         time.Time
 	blockedUntil time.Time
-	waiters      []chan struct{}
+	waiters      []*limiterWaiter
+}
+
+type limiterWaiter struct {
+	ready  chan struct{}
+	search bool
 }
 
 func newIntervalLimiter(requestsPerSecond float64) *intervalLimiter {
@@ -24,23 +29,27 @@ func newIntervalLimiter(requestsPerSecond float64) *intervalLimiter {
 }
 
 func (l *intervalLimiter) wait(ctx context.Context) error {
+	return l.waitFor(ctx, false)
+}
+
+func (l *intervalLimiter) waitFor(ctx context.Context, search bool) error {
 	// Only the head of the queue may claim the next slot. Racing every caller's
 	// timer lets newer traffic repeatedly overtake a waiting interactive search.
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	ready := make(chan struct{})
+	waiter := &limiterWaiter{ready: make(chan struct{}), search: search}
 	l.mu.Lock()
-	l.waiters = append(l.waiters, ready)
+	l.waiters = append(l.waiters, waiter)
 	if len(l.waiters) == 1 {
-		close(ready)
+		close(waiter.ready)
 	}
 	l.mu.Unlock()
-	defer l.removeWaiter(ready)
+	defer l.removeWaiter(waiter)
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-ready:
+	case <-waiter.ready:
 	}
 	// Reserve only actual starts. Cancellation removes a waiter without leaving
 	// a reservation that would delay subsequent requests.
@@ -71,16 +80,26 @@ func (l *intervalLimiter) wait(ctx context.Context) error {
 	}
 }
 
-func (l *intervalLimiter) removeWaiter(ready chan struct{}) {
+func (l *intervalLimiter) removeWaiter(finished *limiterWaiter) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	for i, waiter := range l.waiters {
-		if waiter != ready {
+		if waiter != finished {
 			continue
 		}
 		l.waiters = append(l.waiters[:i], l.waiters[i+1:]...)
 		if i == 0 && len(l.waiters) > 0 {
-			close(l.waiters[0])
+			// Alternate search and other traffic when both are queued. A browsing
+			// request must not wait behind a full batch of score enrichment, and
+			// searches must not starve profiles, scores or background indexing.
+			for j, next := range l.waiters {
+				if next.search != finished.search {
+					copy(l.waiters[1:j+1], l.waiters[:j])
+					l.waiters[0] = next
+					break
+				}
+			}
+			close(l.waiters[0].ready)
 		}
 		return
 	}

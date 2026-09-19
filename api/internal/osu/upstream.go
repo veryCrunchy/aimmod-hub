@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -30,14 +31,15 @@ func isUpstreamHTTPStatus(err error, statusCode int) bool {
 }
 
 type upstreamClient struct {
-	baseURL   *url.URL
-	http      *http.Client
-	cache     *responseCache
-	limiter   *intervalLimiter
-	userAgent string
-	requests  singleflight.Group
-	capacity  chan struct{}
-	timeout   time.Duration
+	baseURL        *url.URL
+	http           *http.Client
+	cache          *responseCache
+	limiter        *intervalLimiter
+	userAgent      string
+	requests       singleflight.Group
+	capacity       chan struct{}
+	searchCapacity chan struct{}
+	timeout        time.Duration
 }
 
 func newUpstreamClient(rawBaseURL string, httpClient *http.Client, cache *responseCache, limiter *intervalLimiter, userAgent string) (*upstreamClient, error) {
@@ -49,13 +51,14 @@ func newUpstreamClient(rawBaseURL string, httpClient *http.Client, cache *respon
 		return nil, fmt.Errorf("unsupported upstream URL scheme %q", baseURL.Scheme)
 	}
 	return &upstreamClient{
-		baseURL:   baseURL,
-		http:      httpClient,
-		cache:     cache,
-		limiter:   limiter,
-		userAgent: userAgent,
-		capacity:  make(chan struct{}, 16),
-		timeout:   upstreamTimeout(httpClient),
+		baseURL:        baseURL,
+		http:           httpClient,
+		cache:          cache,
+		limiter:        limiter,
+		userAgent:      userAgent,
+		capacity:       make(chan struct{}, 16),
+		searchCapacity: make(chan struct{}, 2),
+		timeout:        upstreamTimeout(httpClient),
 	}, nil
 }
 
@@ -96,9 +99,15 @@ func (c *upstreamClient) getResponse(ctx context.Context, path string, query url
 			return cached, nil
 		}
 		// Fail fast for many distinct misses; never build an unbounded upstream queue.
+		search := path == "/api/v2/beatmapsets/search"
+		capacity := c.capacity
+		if search {
+			// Reserve bounded admission for browsing even during score batches.
+			capacity = c.searchCapacity
+		}
 		select {
-		case c.capacity <- struct{}{}:
-			defer func() { <-c.capacity }()
+		case capacity <- struct{}{}:
+			defer func() { <-capacity }()
 		default:
 			return nil, &upstreamHTTPError{StatusCode: http.StatusServiceUnavailable}
 		}
@@ -106,7 +115,13 @@ func (c *upstreamClient) getResponse(ctx context.Context, path string, query url
 		// another browser's shared fetch, and orphaned work still has a strict bound.
 		fetchCtx, cancel := context.WithTimeout(context.Background(), c.timeout)
 		defer cancel()
-		if err := c.limiter.wait(fetchCtx); err != nil {
+		if err := c.limiter.waitFor(fetchCtx, search); err != nil {
+			if search {
+				c.limiter.mu.Lock()
+				waiters, interval, next := len(c.limiter.waiters), c.limiter.interval, c.limiter.next
+				c.limiter.mu.Unlock()
+				log.Printf("osu beatmap search queue unavailable: waiters=%d interval=%s next_in=%s error=%v", waiters, interval, time.Until(next), err)
+			}
 			return nil, fmt.Errorf("upstream request queue: %w", err)
 		}
 		req, err := http.NewRequestWithContext(fetchCtx, http.MethodGet, requestURL, nil)
