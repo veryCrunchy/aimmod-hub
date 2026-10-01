@@ -140,23 +140,23 @@ type Benchmark struct {
 }
 
 var standardCategories = []BenchmarkCategory{
-	{"Clicking Static", []string{"Synthetic Tile Click", "Synthetic Micro Flick"}},
-	{"Clicking Dynamic", []string{"Synthetic Reflex Grid"}},
-	{"Tracking Smooth", []string{"Synthetic Smoothbot", "Synthetic Long Track"}},
-	{"Tracking Reactive", []string{"Synthetic Strafe Track", "Synthetic Air Track"}},
-	{"Switching Speed", []string{"Synthetic Switch Duo", "Synthetic Switch Wide"}},
-	{"Switching Evasive", []string{"Synthetic Bounce Switch"}},
+	{"Static Clicking", []string{"Synthetic Tile Click", "Synthetic Micro Flick"}},
+	{"Dynamic Clicking", []string{"Synthetic Reflex Grid"}},
+	{"Smooth Tracking", []string{"Synthetic Smoothbot", "Synthetic Long Track"}},
+	{"Reactive Tracking", []string{"Synthetic Strafe Track", "Synthetic Air Track"}},
+	{"Speed Switching", []string{"Synthetic Switch Duo", "Synthetic Switch Wide"}},
+	{"Evasive Switching", []string{"Synthetic Bounce Switch"}},
 }
 
 // Benchmarks are the synthetic benchmark sheets. The last four are the
 // kinds of entries the catalog filter should hide.
 var Benchmarks = []Benchmark{
 	{9101, "Synthetic Benchmarks S1 Novice", "AimMod Dev", 0.8, standardCategories},
-	{9102, "Synthetic Benchmarks S1 Intermediate", "AimMod Dev", 1.0, standardCategories},
-	{9103, "Synthetic Benchmarks S1 Advanced", "AimMod Dev", 1.2, standardCategories},
+	{9102, "Synthetic Benchmarks S1 Intermediate", "AimMod Dev", 1.1, standardCategories},
+	{9103, "Synthetic Benchmarks S1 Advanced", "AimMod Dev", 1.3, standardCategories},
 	{9108, "Synthetic Tracking Focus", "AimMod Dev", 0.95, []BenchmarkCategory{
-		{"Tracking Smooth", []string{"Synthetic Smoothbot", "Synthetic Flow Track"}},
-		{"Tracking Reactive", []string{"Synthetic Strafe Track"}},
+		{"Smooth Tracking", []string{"Synthetic Smoothbot", "Synthetic Flow Track"}},
+		{"Reactive Tracking", []string{"Synthetic Strafe Track"}},
 	}},
 	{9104, "Bench 1212311231231", "someone", 1.0, []BenchmarkCategory{{"Mixed", []string{"Synthetic Warmup Grid"}}}},
 	{9105, "test", "someone", 1.0, []BenchmarkCategory{{"Mixed", []string{"Synthetic Warmup Grid"}}}},
