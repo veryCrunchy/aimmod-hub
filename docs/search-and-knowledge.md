@@ -67,7 +67,9 @@ renders the art AimMod for KovaaK's sets on a multiplayer lobby's Discord
 presence: `banner` (1280×720) is the game-invite banner
 (`assets.invite_cover_image`), `square` (1024×1024) the presence's large image,
 which Discord's "Playing" panel shows small, so the player count leads there.
-Both carry an "AimMod required" badge and the aimmod.app download address.
+Both carry the AimMod lockup, a "[AimMod wordmark] REQUIRED" badge and the
+aimmod.app download address, set in Roboto, the in-game UI typeface
+(`social_assets/README.md`).
 The card repeats only what that presence already shows: a mode key from a fixed
 list (never free text), the map or scenario name (at most 96 characters), a
 source-game tag from a fixed list, the player count, the lobby state and the

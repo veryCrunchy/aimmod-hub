@@ -9,6 +9,8 @@ import (
 	"image/color"
 	"image/jpeg"
 	"image/png"
+
+	"golang.org/x/image/font"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -321,6 +323,41 @@ func TestInviteCardUsesTheHubsMapArtAndNames(t *testing.T) {
 		if m.GameKey == "" || len(ogMaps.files[m.Key]) > 200_000 {
 			t.Fatalf("%+v", m)
 		}
+	}
+}
+
+func TestInviteCardTypographyAndBrandAssets(t *testing.T) {
+	fonts, err := cardFonts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, weight := range []string{"bold", "medium"} {
+		name, err := fonts[weight].Name(nil, 1) // family
+		if err != nil || !strings.HasPrefix(name, "Roboto") {
+			t.Fatal(weight, name, err)
+		}
+	}
+	if !strings.Contains(robotoBoldLicense, "SIL OPEN FONT LICENSE") || !strings.Contains(robotoBoldLicense, "The Roboto Project Authors") ||
+		!strings.Contains(robotoMediumLicense, "Apache License") || !strings.Contains(robotoMediumLicense, "END OF TERMS AND CONDITIONS") {
+		t.Fatal("font licence missing")
+	}
+	// Tabular figures: every digit has the same advance, so "2/6" and "10/10" line up.
+	p := &cardPainter{canvas: image.NewRGBA(image.Rect(0, 0, 1, 1))}
+	defer p.close()
+	face := p.face("bold", 100)
+	widths := map[int]bool{}
+	for _, d := range "0123456789" {
+		widths[p.measure(face, string(d))] = true
+	}
+	if len(widths) != 1 {
+		t.Fatal("digits are not tabular", widths)
+	}
+	if p.measure(face, "competitive") >= font.MeasureString(face, "competitive").Ceil() {
+		t.Fatal("large text is not tightened")
+	}
+	brand, err := cardBrand()
+	if err != nil || brand["horizontal"].Bounds().Dy() < 160 || brand["wordmark-black"].Bounds().Dy() < 100 {
+		t.Fatal("brand lockups missing or too small", err)
 	}
 }
 
