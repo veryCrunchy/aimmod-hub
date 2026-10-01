@@ -9,6 +9,7 @@ import { HeaderSearch } from "./HeaderSearch";
 const kovaaksGroups = [
   { label: "KovaaK's", links: [["/kovaaks", "Overview"], ["/community", "Community"], ["/replays", "Replays"], ["/live", "Live activity"]] },
   { label: "Improve", links: [["/benchmarks", "Benchmarks"], ["/leaderboard", "Leaderboard"], ["/learn", "Learning library"]] },
+  { label: "Compete", links: [["/tournaments", "Tournaments"]] },
   { label: "AimMod", links: [["/app/kovaaks", "Get AimMod for KovaaK's"], ["/app", "All downloads"]] },
 ];
 

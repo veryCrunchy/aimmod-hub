@@ -47,6 +47,12 @@ const ExternalBenchmarkPage = lazy(() => import("./pages/ExternalBenchmarkPage")
 
 const OsuSkinBuilderPage = lazy(() => import("./pages/OsuSkinBuilderPage").then(m => ({ default: m.OsuSkinBuilderPage })));
 
+const TournamentsPage = lazy(() => import("./pages/TournamentsPage").then(m => ({ default: m.TournamentsPage })));
+const TournamentCreatePage = lazy(() => import("./pages/TournamentCreatePage").then(m => ({ default: m.TournamentCreatePage })));
+const TournamentPage = lazy(() => import("./pages/TournamentPage").then(m => ({ default: m.TournamentPage })));
+const TournamentMatchPage = lazy(() => import("./pages/TournamentMatchPage").then(m => ({ default: m.TournamentMatchPage })));
+const TournamentOverviewPage = lazy(() => import("./pages/TournamentOverviewPage").then(m => ({ default: m.TournamentOverviewPage })));
+
 const OsuPlayersPage = lazy(() => import("./pages/OsuPlayersPage").then(m => ({ default: m.OsuPlayersPage })));
 
 function RouteLoading() {
@@ -104,6 +110,11 @@ function AppRoutes() {
           <Route path="/link-device" element={<DeviceLinkPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/tournaments" element={<TournamentsPage />} />
+          <Route path="/tournaments/new" element={<TournamentCreatePage />} />
+          <Route path="/tournaments/:tournamentId" element={<TournamentPage />} />
+          <Route path="/tournaments/:tournamentId/overview" element={<TournamentOverviewPage />} />
+          <Route path="/tournaments/:tournamentId/matches/:matchId" element={<TournamentMatchPage />} />
           <Route path="/osu/training" element={<TrainingPage owner />} />
           <Route path="/osu/profiles/:handle/training" element={<TrainingPage />} />
           <Route path="/profiles/:handle" element={<ProfilePage />} />
