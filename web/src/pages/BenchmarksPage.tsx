@@ -10,7 +10,8 @@ import { hasRank as hasRealRank } from "../components/BenchmarkCards";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Button } from "../components/ui/Button";
 import { Helmet } from "../lib/helmet";
-import { fetchProfile } from "../lib/api";
+import { fetchBenchmarkList, fetchProfile } from "../lib/api";
+import { useUrlState } from "../lib/urlState";
 import { groupBenchmarks, type BenchmarkGroup } from "../lib/benchmarkGroups";
 
 function hasRank(rankName?: string | null) {
@@ -130,6 +131,14 @@ export function BenchmarksPage() {
   const { handle = "" } = useParams();
   const [profile, setProfile] = useState<GetProfileResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
+  const [state, setState] = useUrlState({ all: "" });
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchBenchmarkList().then((r) => { if (!cancelled) setHiddenIds(new Set(r.benchmarks.filter((b) => b.hidden).map((b) => b.benchmarkId))); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,7 +165,9 @@ export function BenchmarksPage() {
     return <PageStack><PageSkeleton stats={0} label="Loading benchmarks" /></PageStack>;
   }
 
-  const ranked = profile.benchmarks.filter((b) => hasRank(b.overallRank?.rankName));
+  const allRanked = profile.benchmarks.filter((b) => hasRank(b.overallRank?.rankName));
+  const hiddenCount = allRanked.filter((b) => hiddenIds.has(b.benchmarkId)).length;
+  const ranked = state.all ? allRanked : allRanked.filter((b) => !hiddenIds.has(b.benchmarkId));
   const rankedGroups = groupBenchmarks(ranked);
 
   function renderGroup(group: BenchmarkGroupSummary) {
@@ -185,6 +196,11 @@ export function BenchmarksPage() {
         before={<Breadcrumb crumbs={[{ label: profile.userDisplayName || profile.userHandle, to: `/profiles/${profile.userHandle}` }, { label: "Benchmarks" }]} />}
         title="Benchmark ranks"
         meta={ranked.length > 0 ? `${profile.userDisplayName || profile.userHandle} is ranked in ${ranked.length} ${ranked.length === 1 ? "benchmark" : "benchmarks"}` : undefined}
+        actions={hiddenCount ? (
+          <button type="button" className="text-sm text-cyan hover:underline" onClick={() => setState({ all: state.all ? "" : "1" })}>
+            {state.all ? "Hide test and empty benchmarks" : `Show all (${hiddenCount} hidden)`}
+          </button>
+        ) : null}
       />
 
       {rankedGroups.length > 0 ? (
