@@ -270,79 +270,6 @@ function SearchQuickJump({
   );
 }
 
-function SearchBestMatch({
-  query,
-  scenario,
-  profile,
-  run,
-}: {
-  query: string;
-  scenario: HubSearchScenario | null;
-  profile: HubSearchProfile | null;
-  run: HubSearchRun | null;
-}) {
-  const candidates = [
-    scenario
-      ? {
-          kind: "Scenario",
-          title: scenario.scenarioName,
-          body: "Jump straight into the scenario page with all uploaded history and leaderboard context.",
-          to: `/scenarios/${scenario.scenarioSlug}`,
-          meta: `${scenario.runCount.toLocaleString()} runs`,
-          badge: scenario.scenarioType,
-        }
-      : null,
-    profile
-      ? {
-          kind: "Player",
-          title: profile.userDisplayName || profile.userHandle,
-          body: "Open the player profile to see their top scenarios, recent runs, and overall practice shape.",
-          to: `/profiles/${profile.userHandle}`,
-          meta: `${profile.runCount.toLocaleString()} runs · ${profile.scenarioCount.toLocaleString()} scenarios`,
-          badge: profile.primaryScenarioType,
-        }
-      : null,
-    run
-      ? {
-          kind: "Run",
-          title: run.scenarioName,
-          body: `Open the run from ${run.userDisplayName || run.userHandle} and inspect the saved detail.`,
-          to: `/runs/${run.publicRunID || run.sessionID}`,
-          meta: `${Math.round(run.score).toLocaleString()} score · ${run.accuracy.toFixed(1)}% acc`,
-          badge: run.scenarioType,
-        }
-      : null,
-  ].filter(Boolean) as {
-    kind: string;
-    title: string;
-    body: string;
-    to: string;
-    meta: string;
-    badge: string;
-  }[];
-
-  const best = candidates[0] ?? null;
-  if (!best) return null;
-
-  return (
-    <PageSection>
-      <SectionHeader title="Best match" />
-      <Link
-        to={best.to}
-        className="block rounded-md border border-mint/18 bg-[rgba(255,255,255,0.03)] px-5 py-4 transition-colors hover:border-mint/35 hover:bg-[rgba(255,255,255,0.05)]"
-      >
-        <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-normal text-cyan">
-          <span>{best.kind}</span>
-          <ScenarioTypeBadge type={best.badge} />
-        </div>
-        <h3 className="mt-3 text-[24px] leading-[1.05] text-text">{best.title}</h3>
-        <p className="mt-3 max-w-[70ch] text-[14px] leading-6 text-muted">{best.body}</p>
-        <p className="mt-4 text-[13px] text-mint">{best.meta}</p>
-      </Link>
-    </PageSection>
-  );
-}
-
 function SearchSuggestions({ overview }: { overview: GetOverviewResponse }) {
   return (
     <Grid className="grid-cols-3 max-[1180px]:grid-cols-1">
@@ -620,11 +547,12 @@ export function SearchPage() {
     }
   }
 
-  const showScenarios = view === "all" || view === "scenarios";
-  const showProfiles = view === "all" || view === "players";
-  const showRuns = view === "all" || view === "runs";
-  const showReplays = view === "all" || view === "replays";
-  const showBenchmarks = view === "all" || view === "benchmarks";
+  // In the combined view, only sections with matches are shown.
+  const showScenarios = view === "scenarios" || (view === "all" && scenarioCount > 0);
+  const showProfiles = view === "players" || (view === "all" && profileCount > 0);
+  const showRuns = view === "runs" || (view === "all" && runCount > 0);
+  const showReplays = view === "replays" || (view === "all" && replayCount > 0);
+  const showBenchmarks = view === "benchmarks" || (view === "all" && benchmarkCount > 0);
 
   return (
     <PageStack>
@@ -710,21 +638,14 @@ export function SearchPage() {
         </PageSection>
       ) : (
         <>
-          <SearchQuickJump
+          {view === "all" && <SearchQuickJump
             items={quickResults}
             activeIndex={activeQuickIndex}
             onHover={(index) => {
               setActiveQuickIndex(index);
               setQuickSelectionActive(true);
             }}
-          />
-
-          <SearchBestMatch
-            query={query}
-            scenario={ranked.scenario}
-            profile={ranked.profile}
-            run={ranked.run}
-          />
+          />}
 
           <Grid className="grid-cols-3 items-start max-[1280px]:grid-cols-1">
             {showReplays ? (
