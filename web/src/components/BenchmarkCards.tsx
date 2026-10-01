@@ -6,9 +6,11 @@ function imageUrl(value?: string) {
   return value?.trim() ? value : "";
 }
 
-function hasRank(rank?: { rankName?: string | undefined | null } | null) {
-  const name = rank?.rankName?.trim();
-  return Boolean(name && name.toLowerCase() !== "no rank");
+/** True when the player holds a real rank, not a placeholder such as "Unranked" or "0/5". */
+export function hasRank(rank?: { rankName?: string | undefined | null } | null) {
+  const name = rank?.rankName?.trim() ?? "";
+  if (!name) return false;
+  return !/^(no rank|unranked|none)$/i.test(name) && !/^0\s*\/\s*\d+$/.test(name);
 }
 
 // ─── BenchmarkSummaryGrid ─────────────────────────────────────────────────────

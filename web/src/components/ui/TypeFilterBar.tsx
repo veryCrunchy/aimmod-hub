@@ -33,9 +33,11 @@ function FilterChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "rounded-full border px-3 py-1 text-[11px] uppercase tracking-wider transition-colors",
+        "min-h-8 rounded-full border px-3 py-1 text-xs transition-colors",
         active
           ? "border-cyan/40 bg-cyan/10 text-cyan"
           : "border-line text-muted hover:border-line hover:text-text"

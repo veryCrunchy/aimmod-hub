@@ -14,7 +14,7 @@ export function SortableTh({ label, field, sortField, sortDir, onSort, className
   return (
     <th
       className={cn(
-        "px-4 py-3 cursor-pointer select-none whitespace-nowrap transition-colors",
+        "px-3 py-1 font-medium cursor-pointer select-none whitespace-nowrap transition-colors",
         active ? "text-text" : "text-muted hover:text-text",
         className
       )}

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
 
 type SectionHeaderProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: ReactNode;
   body?: ReactNode;
   aside?: ReactNode;
@@ -15,8 +15,8 @@ export function SectionHeader({ eyebrow, title, body, aside, className, level = 
   return (
     <div className={cn("mb-4 flex flex-col gap-3 md:mb-[18px] md:flex-row md:items-start md:justify-between md:gap-5", className)}>
       <div className="min-w-0">
-        <div className="text-xs font-medium text-muted">{eyebrow}</div>
-        <Heading className={cn("my-1.5 break-words font-semibold leading-snug", level === 1 ? "text-3xl" : "text-xl")}>{title}</Heading>
+        {eyebrow ? <div className="text-xs font-medium text-muted">{eyebrow}</div> : null}
+        <Heading className={cn("my-1 break-words font-semibold leading-snug", level === 1 ? "text-3xl" : "text-lg")}>{title}</Heading>
         {body ? <p className="max-w-[72ch] break-words text-[12px] leading-5 text-muted md:text-[13px] md:leading-6">{body}</p> : null}
       </div>
       {aside ? <div className="min-w-0 pt-0 text-[12px] text-muted md:pt-1.5 md:text-[13px]">{aside}</div> : null}

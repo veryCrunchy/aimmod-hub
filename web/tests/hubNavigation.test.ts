@@ -41,3 +41,14 @@ test("public player groups include non-AimMod players and merge linked identitie
  assert.equal(groups[0].plays.length,2);
  assert.equal(groups[1].id,"43");
 });
+
+test("KovaaK's navigation is about players and stats, and account links follow the game", async () => {
+  const { accountNav, kovaaksNav, osuNav } = await import("../src/lib/hubNavigation");
+  const kovaaksLinks = kovaaksNav.flatMap((g) => g.links.map(([to]) => to));
+  for (const to of ["/kovaaks", "/live", "/leaderboard", "/benchmarks", "/community", "/replays", "/tournaments", "/learn"]) assert.ok(kovaaksLinks.includes(to), to);
+  assert.equal(new Set(kovaaksLinks).size, kovaaksLinks.length, "no duplicate links");
+  assert.ok(!osuNav.some((g) => g.label === ""), "every osu! group has a heading");
+  assert.deepEqual(accountNav("kovaaks", { authenticated: false, isAdmin: false }), []);
+  assert.deepEqual(accountNav("kovaaks", { authenticated: true, isAdmin: false, profileHandle: "demo-a" }).map(([to]) => to), ["/profiles/demo-a", "/account"]);
+  assert.deepEqual(accountNav("osu", { authenticated: true, isAdmin: true }).map(([to]) => to), ["/osu/training", "/account", "/admin"]);
+});
