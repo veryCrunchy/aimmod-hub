@@ -950,6 +950,23 @@ export class GetOverviewResponse extends Message<GetOverviewResponse> {
    */
   activeProfiles: CommunityProfilePreview[] = [];
 
+  /**
+   * Activity in the last seven days, and total time played across all runs.
+   *
+   * @generated from field: uint32 runs_last_7_days = 7;
+   */
+  runsLast7Days = 0;
+
+  /**
+   * @generated from field: uint32 players_last_7_days = 8;
+   */
+  playersLast7Days = 0;
+
+  /**
+   * @generated from field: uint64 total_duration_ms = 9;
+   */
+  totalDurationMs = protoInt64.zero;
+
   constructor(data?: PartialMessage<GetOverviewResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -964,6 +981,9 @@ export class GetOverviewResponse extends Message<GetOverviewResponse> {
     { no: 4, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
     { no: 5, name: "top_scenarios", kind: "message", T: TopScenario, repeated: true },
     { no: 6, name: "active_profiles", kind: "message", T: CommunityProfilePreview, repeated: true },
+    { no: 7, name: "runs_last_7_days", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "players_last_7_days", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 9, name: "total_duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOverviewResponse {
@@ -1249,6 +1269,18 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
    */
   scoreDistribution: ScoreBin[] = [];
 
+  /**
+   * Distinct players with a run on this scenario, and runs in the last seven days.
+   *
+   * @generated from field: uint32 player_count = 12;
+   */
+  playerCount = 0;
+
+  /**
+   * @generated from field: uint32 runs_last_7_days = 13;
+   */
+  runsLast7Days = 0;
+
   constructor(data?: PartialMessage<GetScenarioPageResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1268,6 +1300,8 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
     { no: 9, name: "recent_runs", kind: "message", T: RunPreview, repeated: true },
     { no: 10, name: "top_runs", kind: "message", T: RunPreview, repeated: true },
     { no: 11, name: "score_distribution", kind: "message", T: ScoreBin, repeated: true },
+    { no: 12, name: "player_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 13, name: "runs_last_7_days", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioPageResponse {
@@ -1398,6 +1432,23 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
    */
   benchmarks: BenchmarkSummary[] = [];
 
+  /**
+   * Total time played across all runs, the most recent run, and runs in the last seven days.
+   *
+   * @generated from field: uint64 total_duration_ms = 15;
+   */
+  totalDurationMs = protoInt64.zero;
+
+  /**
+   * @generated from field: string last_played_at_iso = 16;
+   */
+  lastPlayedAtIso = "";
+
+  /**
+   * @generated from field: uint32 runs_last_7_days = 17;
+   */
+  runsLast7Days = 0;
+
   constructor(data?: PartialMessage<GetProfileResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1420,6 +1471,9 @@ export class GetProfileResponse extends Message<GetProfileResponse> {
     { no: 12, name: "personal_bests", kind: "message", T: RunPreview, repeated: true },
     { no: 13, name: "is_verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 14, name: "benchmarks", kind: "message", T: BenchmarkSummary, repeated: true },
+    { no: 15, name: "total_duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 16, name: "last_played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 17, name: "runs_last_7_days", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetProfileResponse {
