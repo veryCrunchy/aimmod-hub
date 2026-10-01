@@ -596,6 +596,9 @@ func (s *Server) myMatch(t *tournament.Tournament, m *bracket.Match, a tournamen
 	if other != nil {
 		mm.OpponentSteamId = other.User.SteamID
 	}
+	if l := s.live.get(t.ID, m.ID); l != nil {
+		mm.LobbyToken = l.LobbyToken
+	}
 	return mm
 }
 
@@ -620,7 +623,7 @@ func (s *Server) matchResponse(t *tournament.Tournament, id string, a tournament
 	resp := &pb.GetMatchResponse{Tournament: tournamentPB(t), Match: matchPB(t, m, a), Viewer: viewerPB(t, a, s.now()),
 		EntrantA: entrantPB(t.Entrant(m.Slots[0].Entrant), pl[m.Slots[0].Entrant]),
 		EntrantB: entrantPB(t.Entrant(m.Slots[1].Entrant), pl[m.Slots[1].Entrant])}
-	resp.Live = s.live.get(t.ID, id)
+	resp.Live = publicLive(s.live.get(t.ID, id), t.CanSeePrivate(a) || slotOfViewer(t, m, a) >= 0)
 	for _, d := range t.Disputes {
 		if d.Match == id && (d.Status == tournament.DisputeOpen || resp.Dispute == nil) {
 			resp.Dispute = disputePB(d)
@@ -823,8 +826,11 @@ func (s *Server) ReportLiveState(ctx context.Context, req *connect.Request[pb.Re
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("Live state names someone outside the match."))
 		}
 	}
+	if len(live.LobbyToken) > 128 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("Invalid lobby."))
+	}
 	stored := &pb.LiveMatch{MatchId: live.MatchId, GameIndex: live.GameIndex, Scenario: live.Scenario, Phase: live.Phase,
-		Players: live.Players, UpdatedAt: ts(now), Spectators: live.Spectators}
+		Players: live.Players, UpdatedAt: ts(now), Spectators: live.Spectators, LobbyToken: live.LobbyToken}
 	s.live.put(t.ID, live.MatchId, stored, now)
 	return connect.NewResponse(&pb.ReportLiveStateResponse{}), nil
 }
@@ -849,11 +855,21 @@ func (s *Server) GetOverview(ctx context.Context, req *connect.Request[pb.GetOve
 			}
 			resp.Active = append(resp.Active, matchPB(t, m, a))
 			if l := s.live.get(t.ID, m.ID); l != nil {
-				resp.Live = append(resp.Live, l)
+				resp.Live = append(resp.Live, publicLive(l, t.CanSeePrivate(a) || slotOfViewer(t, m, a) >= 0))
 			}
 		}
 	}
 	return connect.NewResponse(resp), nil
+}
+
+// publicLive hides the lobby token from everyone but the players and staff.
+func publicLive(l *pb.LiveMatch, insider bool) *pb.LiveMatch {
+	if l == nil || insider || l.LobbyToken == "" {
+		return l
+	}
+	c := *l
+	c.LobbyToken = ""
+	return &c
 }
 
 // ---- live state ----------------------------------------------------------

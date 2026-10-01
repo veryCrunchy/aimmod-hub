@@ -455,6 +455,9 @@ message LiveMatch {
   repeated LivePlayer players = 5;
   string updated_at = 6;
   int32 spectators = 7;
+  // The host's Steam lobby, so the opponent's client can join it directly
+  // (also when they aren't Steam friends). Only the match's players and staff see it.
+  string lobby_token = 8;
 }
 
 message ListTournamentsRequest {
@@ -601,6 +604,8 @@ message MyMatch {
   // The opponent's Steam id, for the automatic lobby invite (participants only).
   string opponent_steam_id = 8;
   SchedulingMode scheduling = 9;
+  // The host's lobby, once the host's client reported it (see LiveMatch.lobby_token).
+  string lobby_token = 10;
 }
 
 message ListMyMatchesResponse {

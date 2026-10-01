@@ -2568,6 +2568,14 @@ export class LiveMatch extends Message<LiveMatch> {
    */
   spectators = 0;
 
+  /**
+   * The host's Steam lobby, so the opponent's client can join it directly
+   * (also when they aren't Steam friends). Only the match's players and staff see it.
+   *
+   * @generated from field: string lobby_token = 8;
+   */
+  lobbyToken = "";
+
   constructor(data?: PartialMessage<LiveMatch>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2583,6 +2591,7 @@ export class LiveMatch extends Message<LiveMatch> {
     { no: 5, name: "players", kind: "message", T: LivePlayer, repeated: true },
     { no: 6, name: "updated_at", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "spectators", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 8, name: "lobby_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LiveMatch {
@@ -3751,6 +3760,13 @@ export class MyMatch extends Message<MyMatch> {
    */
   scheduling = SchedulingMode.UNSPECIFIED;
 
+  /**
+   * The host's lobby, once the host's client reported it (see LiveMatch.lobby_token).
+   *
+   * @generated from field: string lobby_token = 10;
+   */
+  lobbyToken = "";
+
   constructor(data?: PartialMessage<MyMatch>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3768,6 +3784,7 @@ export class MyMatch extends Message<MyMatch> {
     { no: 7, name: "host", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 8, name: "opponent_steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "scheduling", kind: "enum", T: proto3.getEnumType(SchedulingMode) },
+    { no: 10, name: "lobby_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MyMatch {

@@ -344,8 +344,16 @@ func TestTournamentFlowOverTheAPI(t *testing.T) {
 	}
 	ea, eb := pm.Msg.EntrantA.Id, pm.Msg.EntrantB.Id
 	_, err = h.client.ReportLiveState(ctx, as(2, &pb.ReportLiveStateRequest{TournamentId: tid, Live: &pb.LiveMatch{MatchId: mid, Phase: "live",
-		Players: []*pb.LivePlayer{{EntrantId: ea, Score: 500, PingMs: 30, Connection: "connected"}, {EntrantId: eb, Score: 450}}}}))
+		Players: []*pb.LivePlayer{{EntrantId: ea, Score: 500, PingMs: 30, Connection: "connected"}, {EntrantId: eb, Score: 450}}, LobbyToken: "lobby-synthetic"}}))
 	h.must(err)
+	// The opponent's client learns the lobby to join; the public doesn't.
+	joiner, _ := h.client.ListMyMatches(ctx, as(3, &pb.ListMyMatchesRequest{}))
+	if joiner.Msg.Matches[0].LobbyToken != "lobby-synthetic" {
+		t.Fatalf("lobby token for the opponent: %q", joiner.Msg.Matches[0].LobbyToken)
+	}
+	if pub, _ := h.client.GetMatch(ctx, as(0, &pb.GetMatchRequest{TournamentId: tid, MatchId: mid})); pub.Msg.Live.LobbyToken != "" {
+		t.Fatal("lobby token leaked to the public")
+	}
 	ov, err := h.client.GetOverview(ctx, as(0, &pb.GetOverviewRequest{TournamentId: tid}))
 	h.must(err)
 	if len(ov.Msg.Active) != 1 || len(ov.Msg.Live) != 1 || ov.Msg.Live[0].Players[0].Score != 500 {

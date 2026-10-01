@@ -3253,10 +3253,13 @@ type LiveMatch struct {
 	GameIndex int32                  `protobuf:"varint,2,opt,name=game_index,json=gameIndex,proto3" json:"game_index,omitempty"`
 	Scenario  string                 `protobuf:"bytes,3,opt,name=scenario,proto3" json:"scenario,omitempty"`
 	// "lobby", "loading", "countdown", "live", "round", "final".
-	Phase         string        `protobuf:"bytes,4,opt,name=phase,proto3" json:"phase,omitempty"`
-	Players       []*LivePlayer `protobuf:"bytes,5,rep,name=players,proto3" json:"players,omitempty"`
-	UpdatedAt     string        `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Spectators    int32         `protobuf:"varint,7,opt,name=spectators,proto3" json:"spectators,omitempty"`
+	Phase      string        `protobuf:"bytes,4,opt,name=phase,proto3" json:"phase,omitempty"`
+	Players    []*LivePlayer `protobuf:"bytes,5,rep,name=players,proto3" json:"players,omitempty"`
+	UpdatedAt  string        `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Spectators int32         `protobuf:"varint,7,opt,name=spectators,proto3" json:"spectators,omitempty"`
+	// The host's Steam lobby, so the opponent's client can join it directly
+	// (also when they aren't Steam friends). Only the match's players and staff see it.
+	LobbyToken    string `protobuf:"bytes,8,opt,name=lobby_token,json=lobbyToken,proto3" json:"lobby_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3338,6 +3341,13 @@ func (x *LiveMatch) GetSpectators() int32 {
 		return x.Spectators
 	}
 	return 0
+}
+
+func (x *LiveMatch) GetLobbyToken() string {
+	if x != nil {
+		return x.LobbyToken
+	}
+	return ""
 }
 
 type ListTournamentsRequest struct {
@@ -4678,8 +4688,10 @@ type MyMatch struct {
 	// The opponent's Steam id, for the automatic lobby invite (participants only).
 	OpponentSteamId string         `protobuf:"bytes,8,opt,name=opponent_steam_id,json=opponentSteamId,proto3" json:"opponent_steam_id,omitempty"`
 	Scheduling      SchedulingMode `protobuf:"varint,9,opt,name=scheduling,proto3,enum=aimmod.tournament.v1.SchedulingMode" json:"scheduling,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// The host's lobby, once the host's client reported it (see LiveMatch.lobby_token).
+	LobbyToken    string `protobuf:"bytes,10,opt,name=lobby_token,json=lobbyToken,proto3" json:"lobby_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MyMatch) Reset() {
@@ -4773,6 +4785,13 @@ func (x *MyMatch) GetScheduling() SchedulingMode {
 		return x.Scheduling
 	}
 	return SchedulingMode_SCHEDULING_MODE_UNSPECIFIED
+}
+
+func (x *MyMatch) GetLobbyToken() string {
+	if x != nil {
+		return x.LobbyToken
+	}
+	return ""
 }
 
 type ListMyMatchesResponse struct {
@@ -6511,7 +6530,7 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"connection\x18\x06 \x01(\tR\n" +
 	"connection\x12\x16\n" +
 	"\x06status\x18\a \x01(\tR\x06status\x12\x14\n" +
-	"\x05ready\x18\b \x01(\bR\x05ready\"\xf2\x01\n" +
+	"\x05ready\x18\b \x01(\bR\x05ready\"\x93\x02\n" +
 	"\tLiveMatch\x12\x19\n" +
 	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\x1d\n" +
 	"\n" +
@@ -6523,7 +6542,9 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"updated_at\x18\x06 \x01(\tR\tupdatedAt\x12\x1e\n" +
 	"\n" +
 	"spectators\x18\a \x01(\x05R\n" +
-	"spectators\"\x9e\x01\n" +
+	"spectators\x12\x1f\n" +
+	"\vlobby_token\x18\b \x01(\tR\n" +
+	"lobbyToken\"\x9e\x01\n" +
 	"\x16ListTournamentsRequest\x12B\n" +
 	"\bstatuses\x18\x01 \x03(\x0e2&.aimmod.tournament.v1.TournamentStatusR\bstatuses\x12\x12\n" +
 	"\x04mine\x18\x02 \x01(\bR\x04mine\x12\x14\n" +
@@ -6619,7 +6640,7 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"\x0eseeding_source\x18\x03 \x01(\tR\rseedingSource\"K\n" +
 	"\x0eReseedResponse\x129\n" +
 	"\bentrants\x18\x01 \x03(\v2\x1d.aimmod.tournament.v1.EntrantR\bentrants\"\x16\n" +
-	"\x14ListMyMatchesRequest\"\xb7\x03\n" +
+	"\x14ListMyMatchesRequest\"\xd8\x03\n" +
 	"\aMyMatch\x12#\n" +
 	"\rtournament_id\x18\x01 \x01(\tR\ftournamentId\x12'\n" +
 	"\x0ftournament_name\x18\x02 \x01(\tR\x0etournamentName\x121\n" +
@@ -6631,7 +6652,10 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"\x11opponent_steam_id\x18\b \x01(\tR\x0fopponentSteamId\x12D\n" +
 	"\n" +
 	"scheduling\x18\t \x01(\x0e2$.aimmod.tournament.v1.SchedulingModeR\n" +
-	"scheduling\"\x94\x01\n" +
+	"scheduling\x12\x1f\n" +
+	"\vlobby_token\x18\n" +
+	" \x01(\tR\n" +
+	"lobbyToken\"\x94\x01\n" +
 	"\x15ListMyMatchesResponse\x127\n" +
 	"\amatches\x18\x01 \x03(\v2\x1d.aimmod.tournament.v1.MyMatchR\amatches\x12B\n" +
 	"\bcheck_in\x18\x02 \x03(\v2'.aimmod.tournament.v1.TournamentSummaryR\acheckIn\"Q\n" +
