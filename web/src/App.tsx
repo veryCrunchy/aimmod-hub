@@ -36,6 +36,7 @@ const OsuReplayPage = lazy(() => import("./pages/OsuReplayPage").then((m) => ({ 
 const ProductsPage = lazy(() => import("./pages/ProductsPage").then((m) => ({ default: m.ProductsPage })));
 const PlayerScenarioPage = lazy(() => import("./pages/PlayerScenarioPage").then((m) => ({ default: m.PlayerScenarioPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const ComparePage = lazy(() => import("./pages/ComparePage").then((m) => ({ default: m.ComparePage })));
 const ReplayHubPage = lazy(() => import("./pages/ReplayHubPage").then((m) => ({ default: m.ReplayHubPage })));
 const RunPage = lazy(() => import("./pages/RunPage").then((m) => ({ default: m.RunPage })));
 const ScenarioPage = lazy(() => import("./pages/ScenarioPage").then((m) => ({ default: m.ScenarioPage })));
@@ -119,6 +120,7 @@ function AppRoutes() {
           <Route path="/osu/profiles/:handle/training" element={<TrainingPage />} />
           <Route path="/profiles/:handle" element={<ProfilePage />} />
           <Route path="/profiles/:handle/scenarios/:slug" element={<PlayerScenarioPage />} />
+          <Route path="/profiles/:handle/compare/:other" element={<ComparePage />} />
           <Route path="/scenarios/:slug" element={<ScenarioPage />} />
           <Route path="/runs/:runId" element={<RunPage />} />
           <Route path="/u/:steamId" element={<ExternalProfilePage />} />

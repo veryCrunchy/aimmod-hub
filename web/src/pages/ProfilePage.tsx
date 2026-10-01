@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Helmet } from "../lib/helmet";
 import { Link, useParams } from "react-router-dom";
-import type { GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import type { ActivityDay, GetProfileResponse } from "../gen/aimmod/hub/v1/hub_pb";
+import { ActivityStrip, CompareLauncher, PlayerScenarioStats } from "../components/PlayerScenarioStats";
 import { ReplayResultCard } from "../components/ReplayResultCard";
 import { BenchmarkSummaryGrid, hasRank } from "../components/BenchmarkCards";
 import { RunTrendChart } from "../components/charts/RunTrendChart";
@@ -22,7 +23,7 @@ import { useAnimatedNumber } from "../hooks/useAnimatedNumber";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useNow } from "../hooks/useNow";
 import { useAuth } from "../lib/AuthContext";
-import { displayScenarioType, fetchLiveActivity, fetchProfile, fetchReplayHub, formatRelativeTime, subscribeLiveActivityFeed, type HubSearchRun, type LiveHubActivity } from "../lib/api";
+import { displayScenarioType, fetchBenchmarkList, fetchLiveActivity, fetchPlayerScenarioStats, fetchProfile, fetchReplayHub, formatRelativeTime, subscribeLiveActivityFeed, type HubSearchRun, type LiveHubActivity } from "../lib/api";
 import { accuracyTrend, formatAccuracy, formatPlaytime, formatPoints, formatScore, newestFirst } from "../lib/kovaaksStats";
 import { liveView, ownSessionNote, phaseLabel } from "../lib/liveActivity";
 
@@ -58,6 +59,15 @@ export function ProfilePage() {
   const [liveActivity, setLiveActivity] = useState<LiveHubActivity | null>(null);
   const [error, setError] = useState(false);
   const [runsShown, setRunsShown] = useState(RUNS_SHOWN);
+  const [activity, setActivity] = useState<ActivityDay[]>([]);
+  const [hiddenBenchmarks, setHiddenBenchmarks] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    // Test, empty and barely played benchmarks stay off the profile summary.
+    void fetchBenchmarkList().then((r) => { if (!cancelled) setHiddenBenchmarks(new Set(r.benchmarks.filter((b) => b.hidden).map((b) => b.benchmarkId))); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const nowMs = useNow(1000);
 
   useEffect(() => {
@@ -74,6 +84,7 @@ export function ProfilePage() {
         const resolved = next.userHandle || handle;
         void fetchLiveActivity(resolved).then((activity) => { if (!cancelled) setLiveActivity(activity); }).catch(() => {});
         void fetchReplayHub({ handle: resolved, limit: 6 }).then((response) => { if (!cancelled) setReplays(response.items); }).catch(() => {});
+        void fetchPlayerScenarioStats(resolved, "").then((stats) => { if (!cancelled) setActivity(stats.activity); }).catch(() => {});
       })
       .catch(() => { if (!cancelled) setError(true); });
     return () => { cancelled = true; };
@@ -92,8 +103,6 @@ export function ProfilePage() {
   useAutoRefresh(refreshLive, 30_000);
 
   const recentRuns = useMemo(() => newestFirst(profile?.recentRuns ?? []), [profile]);
-  const runsByScenario = useMemo(() => new Map((profile?.topScenarios ?? []).map((s) => [s.scenarioName, Number(s.runCount)])), [profile]);
-  const personalBests = useMemo(() => [...(profile?.personalBests ?? [])].sort((a, b) => (runsByScenario.get(b.scenarioName) ?? 0) - (runsByScenario.get(a.scenarioName) ?? 0)), [profile, runsByScenario]);
 
   if (error) {
     return (
@@ -116,7 +125,7 @@ export function ProfilePage() {
   const mainType = displayScenarioType(profile.primaryScenarioType);
   const trend = accuracyTrend(profile.recentRuns);
   const lastPlayed = profile.lastPlayedAtIso || recentRuns[0]?.playedAtIso;
-  const rankedBenchmarks = profile.benchmarks.filter((b) => hasRank(b.overallRank));
+  const rankedBenchmarks = profile.benchmarks.filter((b) => hasRank(b.overallRank) && !hiddenBenchmarks.has(b.benchmarkId));
   const hasScenarioTypes = profile.topScenarios.some((s) => s.scenarioType?.trim() && s.scenarioType !== "Unknown");
 
   return (
@@ -135,6 +144,7 @@ export function ProfilePage() {
         actions={<>
           {rankedBenchmarks.length > 0 && <Button to={`/profiles/${profile.userHandle}/benchmarks`}>Benchmarks</Button>}
           {own && <Button to="/account">Account</Button>}
+          <CompareLauncher handle={profile.userHandle} />
         </>}
       />
 
@@ -148,41 +158,12 @@ export function ProfilePage() {
         <StatCard label="Personal bests" value={profile.personalBests.length.toLocaleString()} detail={rankedBenchmarks.length ? `${rankedBenchmarks.length} benchmark ranks` : undefined} />
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <Section title="Personal bests" aside={personalBests.length ? "Most played first" : undefined}>
-          {personalBests.length ? (
-            <div className="overflow-x-auto rounded-md border border-line">
-              <table className="w-full sm:min-w-[480px] text-left text-sm">
-                <thead className="border-b border-line text-xs text-muted">
-                  <tr>
-                    <th scope="col" className="px-3 py-2 font-medium">Scenario</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Best</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Accuracy</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Runs</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Set</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {personalBests.map((pb) => {
-                    const slug = profile.topScenarios.find((s) => s.scenarioName === pb.scenarioName)?.scenarioSlug;
-                    return (
-                      <tr key={pb.runId || pb.sessionId} className="border-b border-line/60 last:border-b-0 hover:bg-white/[0.02]">
-                        <td className="max-w-[160px] truncate px-3 py-2 sm:max-w-[260px]">
-                          <Link className="text-text hover:text-cyan" to={`/profiles/${profile.userHandle}/scenarios/${slug ?? pb.scenarioName}`} title="Progress on this scenario">{pb.scenarioName}</Link>
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums"><Link className="font-medium text-gold hover:text-cyan" to={`/runs/${pb.runId || pb.sessionId}`}>{formatScore(pb.score)}</Link></td>
-                        <td className="px-3 py-2 text-right tabular-nums text-muted">{formatAccuracy(pb.accuracy)}</td>
-                        <td className="px-3 py-2 text-right tabular-nums text-muted max-sm:hidden">{runsByScenario.get(pb.scenarioName)?.toLocaleString() ?? "—"}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted max-sm:hidden">{formatRelativeTime(pb.playedAtIso)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : <EmptyState title="No runs shared yet." />}
-        </Section>
+      <PlayerScenarioStats handle={profile.userHandle} />
 
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Section title="Activity">
+          {activity.length ? <ActivityStrip days={activity} /> : <EmptyState title="No runs in the last six months." />}
+        </Section>
         <div className="grid gap-6">
           {profile.recentRuns.length >= 2 && (
             <Section title="Accuracy, recent runs" aside={trend ? `${formatAccuracy(trend.recent)} last ${Math.min(10, Math.floor(profile.recentRuns.length / 2))}` : undefined}>
