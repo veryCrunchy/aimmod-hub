@@ -348,6 +348,12 @@ func TestTournamentFlowOverTheAPI(t *testing.T) {
 	h.must(err)
 	// The opponent's client learns the lobby to join; the public doesn't.
 	joiner, _ := h.client.ListMyMatches(ctx, as(3, &pb.ListMyMatchesRequest{}))
+	if mt := joiner.Msg.Matches[0].MatchToken; len(mt) != 32 || mt != mine.Msg.Matches[0].MatchToken || strings.Trim(mt, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-") != "" {
+		t.Fatalf("both players share one lobby token: %q %q", mt, mine.Msg.Matches[0].MatchToken)
+	}
+	if body, _ := json.Marshal(pm.Msg); strings.Contains(string(body), joiner.Msg.Matches[0].MatchToken) {
+		t.Fatal("the match token appears outside ListMyMatches")
+	}
 	if joiner.Msg.Matches[0].LobbyToken != "lobby-synthetic" {
 		t.Fatalf("lobby token for the opponent: %q", joiner.Msg.Matches[0].LobbyToken)
 	}

@@ -2,6 +2,7 @@ package tournament
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/binary"
 	"math"
 	"strconv"
@@ -16,7 +17,9 @@ import (
 type Series struct {
 	Match string `json:"match"`
 	// Entrants the series was opened for; an override that changes them opens a fresh series.
-	Entrants    [2]string            `json:"entrants"`
+	Entrants [2]string `json:"entrants"`
+	// JoinToken: the match's lobby secret for its two players ([A-Za-z0-9_-], 32 chars).
+	JoinToken   string               `json:"joinToken,omitempty"`
 	BestOf      int                  `json:"bestOf"`
 	OpenedAt    time.Time            `json:"openedAt"`
 	ScheduledAt *time.Time           `json:"scheduledAt,omitempty"`
@@ -121,6 +124,15 @@ var randomSeed = func() uint64 {
 	return uint64(binary.LittleEndian.Uint32(b[:]))
 }
 
+// newJoinToken: 24 random bytes as base64url (32 characters of [A-Za-z0-9_-]).
+func newJoinToken() string {
+	var b [24]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		panic(err)
+	}
+	return base64.RawURLEncoding.EncodeToString(b[:])
+}
+
 func (s *Series) addFlag(flag string) bool {
 	for _, f := range s.Flags {
 		if f == flag {
@@ -200,7 +212,7 @@ func (t *Tournament) syncSeries(now time.Time) bool {
 				s = nil
 			}
 			if s == nil {
-				s = &Series{Match: m.ID, Entrants: [2]string{a, z}, BestOf: t.BestOf(m), OpenedAt: now, ReadyAt: map[string]time.Time{}, CanHost: map[string]bool{}}
+				s = &Series{Match: m.ID, Entrants: [2]string{a, z}, BestOf: t.BestOf(m), OpenedAt: now, ReadyAt: map[string]time.Time{}, CanHost: map[string]bool{}, JoinToken: newJoinToken()}
 				deadline := now.Add(time.Duration(t.Spec.ReadyWindow) * time.Minute)
 				if t.Spec.Scheduling == Scheduled && t.Spec.StartsAt != nil && now.Before(*t.Spec.StartsAt) {
 					at := *t.Spec.StartsAt
@@ -805,7 +817,7 @@ func (t *Tournament) ResolveDispute(a Actor, disputeID string, d Decision, now t
 		}
 	case DecisionReplay:
 		if s != nil {
-			fresh := &Series{Match: m.ID, Entrants: s.Entrants, BestOf: s.BestOf, OpenedAt: now, ReadyAt: map[string]time.Time{}, CanHost: map[string]bool{}, Flags: append(s.Flags, "replayed")}
+			fresh := &Series{Match: m.ID, Entrants: s.Entrants, JoinToken: newJoinToken(), BestOf: s.BestOf, OpenedAt: now, ReadyAt: map[string]time.Time{}, CanHost: map[string]bool{}, Flags: append(s.Flags, "replayed")}
 			deadline := now.Add(time.Duration(t.Spec.ReadyWindow) * time.Minute)
 			fresh.Deadline = &deadline
 			t.Series[m.ID] = fresh

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/tournament"
@@ -588,6 +589,9 @@ func (s *Server) myMatch(t *tournament.Tournament, m *bracket.Match, a tournamen
 	} else {
 		mm.Scheduling = pb.SchedulingMode_SCHEDULING_MODE_READY_WHEN_ONLINE
 	}
+	if sr := t.Series[m.ID]; sr != nil {
+		mm.MatchToken = sr.JoinToken
+	}
 	if sr := t.Series[m.ID]; sr != nil && sr.Host != "" {
 		mm.Host = sr.Host == self.ID
 	} else {
@@ -867,9 +871,9 @@ func publicLive(l *pb.LiveMatch, insider bool) *pb.LiveMatch {
 	if l == nil || insider || l.LobbyToken == "" {
 		return l
 	}
-	c := *l
+	c := proto.Clone(l).(*pb.LiveMatch)
 	c.LobbyToken = ""
-	return &c
+	return c
 }
 
 // ---- live state ----------------------------------------------------------

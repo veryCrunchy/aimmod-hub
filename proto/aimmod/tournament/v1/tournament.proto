@@ -606,6 +606,10 @@ message MyMatch {
   SchedulingMode scheduling = 9;
   // The host's lobby, once the host's client reported it (see LiveMatch.lobby_token).
   string lobby_token = 10;
+  // Secret of this match, given only to its two players. The host creates its
+  // Steam lobby with it and the opponent joins with it; the bridge lets in only
+  // the expected opponent presenting the same token.
+  string match_token = 11;
 }
 
 message ListMyMatchesResponse {

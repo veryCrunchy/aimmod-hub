@@ -4689,7 +4689,11 @@ type MyMatch struct {
 	OpponentSteamId string         `protobuf:"bytes,8,opt,name=opponent_steam_id,json=opponentSteamId,proto3" json:"opponent_steam_id,omitempty"`
 	Scheduling      SchedulingMode `protobuf:"varint,9,opt,name=scheduling,proto3,enum=aimmod.tournament.v1.SchedulingMode" json:"scheduling,omitempty"`
 	// The host's lobby, once the host's client reported it (see LiveMatch.lobby_token).
-	LobbyToken    string `protobuf:"bytes,10,opt,name=lobby_token,json=lobbyToken,proto3" json:"lobby_token,omitempty"`
+	LobbyToken string `protobuf:"bytes,10,opt,name=lobby_token,json=lobbyToken,proto3" json:"lobby_token,omitempty"`
+	// Secret of this match, given only to its two players. The host creates its
+	// Steam lobby with it and the opponent joins with it; the bridge lets in only
+	// the expected opponent presenting the same token.
+	MatchToken    string `protobuf:"bytes,11,opt,name=match_token,json=matchToken,proto3" json:"match_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4790,6 +4794,13 @@ func (x *MyMatch) GetScheduling() SchedulingMode {
 func (x *MyMatch) GetLobbyToken() string {
 	if x != nil {
 		return x.LobbyToken
+	}
+	return ""
+}
+
+func (x *MyMatch) GetMatchToken() string {
+	if x != nil {
+		return x.MatchToken
 	}
 	return ""
 }
@@ -6640,7 +6651,7 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"\x0eseeding_source\x18\x03 \x01(\tR\rseedingSource\"K\n" +
 	"\x0eReseedResponse\x129\n" +
 	"\bentrants\x18\x01 \x03(\v2\x1d.aimmod.tournament.v1.EntrantR\bentrants\"\x16\n" +
-	"\x14ListMyMatchesRequest\"\xd8\x03\n" +
+	"\x14ListMyMatchesRequest\"\xf9\x03\n" +
 	"\aMyMatch\x12#\n" +
 	"\rtournament_id\x18\x01 \x01(\tR\ftournamentId\x12'\n" +
 	"\x0ftournament_name\x18\x02 \x01(\tR\x0etournamentName\x121\n" +
@@ -6655,7 +6666,9 @@ const file_aimmod_tournament_v1_tournament_proto_rawDesc = "" +
 	"scheduling\x12\x1f\n" +
 	"\vlobby_token\x18\n" +
 	" \x01(\tR\n" +
-	"lobbyToken\"\x94\x01\n" +
+	"lobbyToken\x12\x1f\n" +
+	"\vmatch_token\x18\v \x01(\tR\n" +
+	"matchToken\"\x94\x01\n" +
 	"\x15ListMyMatchesResponse\x127\n" +
 	"\amatches\x18\x01 \x03(\v2\x1d.aimmod.tournament.v1.MyMatchR\amatches\x12B\n" +
 	"\bcheck_in\x18\x02 \x03(\v2'.aimmod.tournament.v1.TournamentSummaryR\acheckIn\"Q\n" +

@@ -3767,6 +3767,15 @@ export class MyMatch extends Message<MyMatch> {
    */
   lobbyToken = "";
 
+  /**
+   * Secret of this match, given only to its two players. The host creates its
+   * Steam lobby with it and the opponent joins with it; the bridge lets in only
+   * the expected opponent presenting the same token.
+   *
+   * @generated from field: string match_token = 11;
+   */
+  matchToken = "";
+
   constructor(data?: PartialMessage<MyMatch>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3785,6 +3794,7 @@ export class MyMatch extends Message<MyMatch> {
     { no: 8, name: "opponent_steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "scheduling", kind: "enum", T: proto3.getEnumType(SchedulingMode) },
     { no: 10, name: "lobby_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "match_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): MyMatch {

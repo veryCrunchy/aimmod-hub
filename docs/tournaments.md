@@ -111,7 +111,13 @@ decided, in order (`Tournament.Tick`), and saves when something changed:
 
 1. Both players mark ready (`MarkReady`), saying whether their client can host
    a Steam lobby. The **host** is the higher seed, unless only the other
-   player can host. That client creates the lobby and invites the opponent.
+   player can host. That client creates a Steam tournament lobby (invisible,
+   joinable by id) with the match's **join token** (32 random characters,
+   given only to the two players) and the opponent's Steam id, and reports
+   the lobby id with its live state. The opponent's client joins by that id
+   with the same token; the bridge lets in only that opponent with that token
+   (AimMod's `in-game/docs/multiplayer.md`, tournament lobbies). Steam
+   friendship isn't needed.
 2. **Veto** (`SubmitVeto`), when the ruleset has one: bans and picks by seed
    (higher or lower). The scenario left over is the decider. Games are the
    picks in order, then the decider. A custom veto is written for the
@@ -218,7 +224,7 @@ entries).
 | `Register`, `Withdraw`, `CheckIn` | players | |
 | `InviteEntrants` | staff | Invite or uninvite by Hub handle. |
 | `SetSeeds`, `Reseed` | staff | Until the first match starts. |
-| `ListMyMatches` | players | Open matches with the ruleset, whether this client hosts, and the opponent's Steam id for the lobby invite (only to the match's players); events awaiting check-in. |
+| `ListMyMatches` | players | Open matches with the ruleset, whether this client hosts, and for the lobby: the opponent's Steam id, the host's lobby id once reported, and the match's join token. Only the match's two players see these. Events awaiting check-in. |
 | `GetMatch` | anyone | A match with its games and live state. Seeds only to players and staff until the match ends. |
 | `MarkReady`, `SubmitVeto`, `ReportGame`, `ConfirmResult`, `OpenDispute` | the match's players | |
 | `ResolveDispute`, `SetMatchResult`, `Disqualify` | staff | |
