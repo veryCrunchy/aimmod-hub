@@ -60,6 +60,24 @@ a conditional response. Do not change its caching to immutable/public caching
 for replay or profile data. Third-party social platforms may retain previews
 they have already fetched; the application cannot revoke those external copies.
 
+### Discord invite cards
+
+`/og/invite.png?v=1&layout=banner|square&mode=…&map=…&n=…&max=…&state=…&host=…&ws=…`
+renders the art AimMod for KovaaK's sets on a multiplayer lobby's Discord
+presence: `banner` (1280×720) is the game-invite banner
+(`assets.invite_cover_image`), `square` (1024×1024) the presence's large image.
+The card repeats only what that presence already shows: a mode key from a fixed
+list (never free text), the map or scenario name (at most 96 characters), the
+player count, the lobby state, the host's public Hub handle and, with `ws`, the
+public Steam Workshop preview of a KovaaK's item. Unknown or repeated parameters
+are rejected.
+
+Workshop previews come from Steam's public `GetPublishedFileDetails` API: only
+public, unbanned KovaaK's items, only Steam's image hosts, at most 4 MB and
+4096 px per side, at most four lookups at a time. Found previews are kept for a
+day and misses retried after ten minutes; a card drawn without its preview is
+cached for ten minutes instead of a day.
+
 ## Verification
 
 Knowledge guides now include symptom-led aim, tapping and practice-session
