@@ -13,6 +13,7 @@ import { useAnimatedNumber } from "../hooks/useAnimatedNumber";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useNow } from "../hooks/useNow";
 import { fetchLiveActivityFeed, formatRelativeTime, subscribeLiveActivityFeed, type LiveHubActivity } from "../lib/api";
+import { isLiveHealthy, liveHealthDetail, liveSessionDetail } from "../lib/liveActivity";
 
 function PlayerAvatar({ url, name }: { url?: string; name: string }) {
   if (!url) {
@@ -26,11 +27,11 @@ function PlayerAvatar({ url, name }: { url?: string; name: string }) {
 }
 
 function activityStatusLabel(activity: LiveHubActivity): string {
-  const base = activity.gameState?.trim() || "Practicing";
-  if (activity.scenarioSubtype?.trim()) {
-    return `${base} · ${activity.scenarioSubtype}`;
-  }
-  return base;
+  const parts = [activity.gameState?.trim() || "Practicing"];
+  if (activity.scenarioSubtype?.trim()) parts.push(activity.scenarioSubtype.trim());
+  const session = liveSessionDetail(activity);
+  if (session) parts.push(session);
+  return parts.join(" · ");
 }
 
 function resolveLiveTimerSeconds(activity: LiveHubActivity, nowMs: number): number | null {
@@ -158,8 +159,8 @@ export function LivePage() {
     [items],
   );
 
-  const bridgeHealthyCount = useMemo(
-    () => items.filter((item) => item.runtimeLoaded !== false && item.bridgeConnected !== false).length,
+  const connectedCount = useMemo(
+    () => items.filter(isLiveHealthy).length,
     [items],
   );
 
@@ -167,7 +168,7 @@ export function LivePage() {
     <PageStack>
       <Helmet>
         <title>Live · AimMod Hub</title>
-        <meta name="description" content="See which AimMod users are currently practicing live, including scenario, score, and bridge status." />
+        <meta name="description" content="See which AimMod users are currently practicing live, including scenario, score, and connection status." />
       </Helmet>
 
       <PageSection className="relative overflow-hidden border-cyan/18 bg-[radial-gradient(circle_at_top_left,rgba(57,208,255,0.18),transparent_24%),radial-gradient(circle_at_78%_18%,rgba(121,201,151,0.12),transparent_20%),linear-gradient(135deg,rgba(8,18,15,0.98),rgba(5,12,10,0.96)_54%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
@@ -204,7 +205,7 @@ export function LivePage() {
       <Grid className="grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
         <StatCard label="Live now" value={items.length.toLocaleString()} detail="Users currently sending live activity" />
         <StatCard label="In scenario" value={inScenarioCount.toLocaleString()} detail="Users with a scenario currently identified" accent="cyan" />
-        <StatCard label="Bridge healthy" value={bridgeHealthyCount.toLocaleString()} detail="Users with runtime and bridge both reporting healthy" accent="gold" />
+        <StatCard label="Connected" value={connectedCount.toLocaleString()} detail="Users whose app or in-game mod reports a healthy game connection" accent="gold" />
       </Grid>
 
       <PageSection>
@@ -281,12 +282,8 @@ export function LivePage() {
                     />
                   </div>
 
-                  {item.runtimeLoaded === false || item.bridgeConnected === false ? (
-                    <div className="mt-3 text-[12px] leading-6 text-muted">
-                      Bridge status: {item.runtimeLoaded ? "runtime loaded" : "runtime not loaded"}
-                      {" · "}
-                      {item.bridgeConnected ? "bridge connected" : "bridge reconnecting"}
-                    </div>
+                  {liveHealthDetail(item) ? (
+                    <div className="mt-3 text-[12px] leading-6 text-muted">{liveHealthDetail(item)}</div>
                   ) : null}
 
                   <div className="mt-4 text-[12px] text-cyan transition-colors group-hover:text-text">

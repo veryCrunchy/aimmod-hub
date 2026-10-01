@@ -318,6 +318,16 @@ export type LiveHubActivity = {
   queueTimeRemainingSecs?: number | null;
   runtimeLoaded?: boolean;
   bridgeConnected?: boolean;
+  /** Sender: "companion" (also when absent) or "in-game". */
+  client?: string;
+  clientVersion?: string;
+  /** menu, scenario, challenge, replay, lobby, match or results. */
+  activity?: string;
+  sessionRunCount?: number | null;
+  sessionElapsedSecs?: number | null;
+  steamConnected?: boolean | null;
+  /** Both health checks pass (computed by the Hub). */
+  healthy?: boolean;
 };
 
 export type LiveHubActivityListResponse = {
