@@ -365,11 +365,7 @@ func (s *HubServer) QuickSearch(
 			results = mergeSearchResults(results, external)
 		}
 	}
-	sort.SliceStable(results, func(i, j int) bool { return results[i].Relevance > results[j].Relevance })
-	if len(results) > limit {
-		results = results[:limit]
-	}
-	resp.Results = results
+	resp.Results = capSearchResults(results, limit, 6)
 	return connect.NewResponse(resp), nil
 }
 
@@ -728,4 +724,31 @@ func (s *HubServer) resolveKovaaksPlayer(ctx context.Context, query string) (str
 		return profile.SteamID, profile.KovaaksUsername
 	}
 	return "", ""
+}
+
+// capSearchResults keeps the best results within limit while reserving up
+// to `reserved` places for KovaaK's results, so AimMod matches cannot crowd
+// out players and scenarios that only exist on KovaaK's.
+func capSearchResults(results []*hubv1.QuickSearchResult, limit, reserved int) []*hubv1.QuickSearchResult {
+	var local, external []*hubv1.QuickSearchResult
+	for _, r := range results {
+		if strings.HasPrefix(r.Kind, "kovaaks_") {
+			external = append(external, r)
+		} else {
+			local = append(local, r)
+		}
+	}
+	byRelevance := func(list []*hubv1.QuickSearchResult) {
+		sort.SliceStable(list, func(i, j int) bool { return list[i].Relevance > list[j].Relevance })
+	}
+	byRelevance(local)
+	byRelevance(external)
+	keepExternal := min(len(external), reserved)
+	keepLocal := min(len(local), limit-keepExternal)
+	if spare := limit - keepLocal - keepExternal; spare > 0 {
+		keepExternal = min(len(external), keepExternal+spare)
+	}
+	out := append(append([]*hubv1.QuickSearchResult(nil), local[:keepLocal]...), external[:keepExternal]...)
+	byRelevance(out)
+	return out
 }

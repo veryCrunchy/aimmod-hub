@@ -220,3 +220,26 @@ func TestLooksLikeSteam64(t *testing.T) {
 		t.Fatal("steam64 detection")
 	}
 }
+
+func TestCapSearchResultsReservesKovaaksPlaces(t *testing.T) {
+	var results []*hubv1.QuickSearchResult
+	for i := 0; i < 30; i++ {
+		results = append(results, &hubv1.QuickSearchResult{Kind: "scenario", Relevance: float64(100 - i)})
+	}
+	for i := 0; i < 10; i++ {
+		results = append(results, &hubv1.QuickSearchResult{Kind: "kovaaks_player", Relevance: float64(10 - i)})
+	}
+	got := capSearchResults(results, 20, 6)
+	external := 0
+	for _, r := range got {
+		if r.Kind == "kovaaks_player" {
+			external++
+		}
+	}
+	if len(got) != 20 || external != 6 || got[0].Relevance != 100 {
+		t.Fatalf("got %d results, %d external", len(got), external)
+	}
+	if few := capSearchResults(results[:3], 20, 6); len(few) != 3 {
+		t.Fatal("short lists are kept whole")
+	}
+}
