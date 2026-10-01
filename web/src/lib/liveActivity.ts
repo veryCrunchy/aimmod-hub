@@ -15,6 +15,10 @@ export type LiveView = {
   accuracy: number | null;
   scorePerMinute: number | null;
   kills: number | null;
+  /** "Playing", "Paused", or what the player is doing outside a scenario. */
+  status: string;
+  /** "3 runs this session", or null when the client does not send it. */
+  session: string | null;
 };
 
 function finite(value: number | null | undefined): number | null {
@@ -53,13 +57,15 @@ export function liveView(activity: LiveHubActivity, nowMs: number): LiveView {
     name: activity.userDisplayName?.trim() || handle || "Player",
     handle,
     phase,
-    title: activity.scenarioName?.trim() || activity.gameState?.trim() || "In game",
+    title: activity.scenarioName?.trim() || activity.gameState?.trim() || activityLabel(activity) || "In game",
     scenarioType: activity.scenarioType && activity.scenarioType !== "Unknown" ? activity.scenarioType : undefined,
     timer: phase === "idle" ? null : liveTimer(activity, nowMs),
     score: phase === "idle" ? null : finite(activity.score),
     accuracy: phase === "idle" ? null : finite(activity.accuracyPct),
     scorePerMinute: phase === "idle" ? null : finite(activity.scorePerMinute),
     kills: phase === "idle" ? null : finite(activity.kills),
+    status: phase === "idle" ? activityLabel(activity) ?? phaseLabel(phase) : phaseLabel(phase),
+    session: liveSessionDetail(activity),
   };
 }
 
@@ -74,15 +80,65 @@ export function sortLive(items: readonly LiveHubActivity[]): LiveHubActivity[] {
   });
 }
 
+// Live activity comes from two clients with different health checks:
+// - companion app: game runtime loaded / connection to the game
+// - in-game mod: AimMod loaded in KovaaK's / live game data reaching AimMod
+// Older Hub responses and companion payloads have no `client`; treat them as the companion.
+
+export function liveClient(activity: LiveHubActivity): "companion" | "in-game" {
+  return activity.client === "in-game" ? "in-game" : "companion";
+}
+
+export function isLiveHealthy(activity: LiveHubActivity): boolean {
+  if (typeof activity.healthy === "boolean") return activity.healthy;
+  return activity.runtimeLoaded !== false && activity.bridgeConnected !== false;
+}
+
+/** A short connection problem for this client, or null when nothing is wrong. */
+export function liveHealthDetail(activity: LiveHubActivity): string | null {
+  if (liveClient(activity) === "in-game") {
+    if (isLiveHealthy(activity)) return null;
+    if (activity.runtimeLoaded === false) return "AimMod is starting in KovaaK's";
+    return "AimMod is reconnecting to KovaaK's";
+  }
+  // Only a loaded runtime with a dropped connection is a real problem. Companion
+  // versions that do not report these fields leave both false, which says nothing.
+  if (activity.runtimeLoaded === true && activity.bridgeConnected === false) return "Reconnecting to your game";
+  return null;
+}
+
 /**
  * A short note for the signed-in player about their own session when the game
  * is not reporting everything. Other players never see this.
  */
 export function ownSessionNote(activity: LiveHubActivity): string | null {
-  // Only a loaded runtime with a dropped connection is a real problem. Senders
-  // that do not report these fields leave both false, which says nothing.
-  if (activity.runtimeLoaded === true && activity.bridgeConnected === false) return "Reconnecting to your game. Live scores will resume shortly.";
-  return null;
+  const detail = liveHealthDetail(activity);
+  if (!detail) return null;
+  return activity.runtimeLoaded === false
+    ? `${detail}. Live scores will appear shortly.`
+    : `${detail}. Live scores will resume shortly.`;
+}
+
+/** Session progress, e.g. "3 runs this session", or null when the client does not send it. */
+export function liveSessionDetail(activity: LiveHubActivity): string | null {
+  const runs = activity.sessionRunCount;
+  if (typeof runs !== "number" || !Number.isFinite(runs) || runs < 0) return null;
+  return runs === 1 ? "1 run this session" : `${Math.round(runs).toLocaleString()} runs this session`;
+}
+
+const activityLabels: Record<string, string> = {
+  menu: "In menus",
+  scenario: "In a scenario",
+  challenge: "In a challenge",
+  replay: "Watching a replay",
+  lobby: "In a lobby",
+  match: "In a match",
+  results: "Viewing results",
+};
+
+/** A label for the client's activity kind, or null when it sent none. */
+export function activityLabel(activity: LiveHubActivity): string | null {
+  return activityLabels[activity.activity?.trim().toLowerCase() ?? ""] ?? null;
 }
 
 export function phaseLabel(phase: LivePhase): string {

@@ -29,13 +29,15 @@ type HubServer struct {
 	storedCatalog    publicResultCache[[]store.KovaaksBenchmarkRecord]
 	searchResults    publicResultCache[[]*hubv1.QuickSearchResult]
 	externalSearch   publicResultCache[[]*hubv1.QuickSearchResult]
+	// scenarioTypes classifies runs sent without a scenario type; nil skips it.
+	scenarioTypes func(ctx context.Context, scenarioName string) (string, error)
 }
 
 const optionalBenchmarkTimeout = 1500 * time.Millisecond
 const optionalProfileBenchmarkTimeout = 4 * time.Second
 
 func NewHubServer(version string, store *store.Store) *HubServer {
-	return &HubServer{
+	server := &HubServer{
 		version: version,
 		store:   store,
 		benchmarks: kovaaksbenchmarks.NewClient(func(ctx context.Context, username string, ids []uint32) {
@@ -50,6 +52,10 @@ func NewHubServer(version string, store *store.Store) *HubServer {
 		}),
 		events: NewEventBroker(),
 	}
+	if store != nil {
+		server.scenarioTypes = store.InferScenarioType
+	}
+	return server
 }
 
 func (s *HubServer) Store() *store.Store {
@@ -97,6 +103,7 @@ func (s *HubServer) IngestAuthorized(
 		s.recordIngestFailure(ctx, req, err)
 		return nil, err
 	}
+	run.ScenarioType = s.resolveScenarioType(ctx, run.ScenarioName, run.ScenarioType)
 
 	if err := s.store.SaveIngestedRun(ctx, run, authUser); err != nil {
 		s.recordIngestFailure(ctx, req, err)

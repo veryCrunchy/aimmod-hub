@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -26,8 +27,35 @@ type LiveActivityPayload struct {
 	ElapsedSecs            *float64 `json:"elapsedSecs,omitempty"`
 	TimeRemainingSecs      *float64 `json:"timeRemainingSecs,omitempty"`
 	QueueTimeRemainingSecs *float64 `json:"queueTimeRemainingSecs,omitempty"`
-	RuntimeLoaded          bool     `json:"runtimeLoaded"`
-	BridgeConnected        bool     `json:"bridgeConnected"`
+	// RuntimeLoaded and BridgeConnected are the client's two health checks.
+	// Companion app: UE4SS runtime loaded / bridge DLL connected.
+	// In-game mod: AimModCore loaded in the game / its live game data reaching
+	// the AimMod service.
+	RuntimeLoaded   bool `json:"runtimeLoaded"`
+	BridgeConnected bool `json:"bridgeConnected"`
+
+	// Optional fields; older clients omit them.
+	// Client names the sender: "companion" (default) or "in-game".
+	Client        string `json:"client,omitempty"`
+	ClientVersion string `json:"clientVersion,omitempty"`
+	// Activity is a machine-readable state: menu, scenario, challenge,
+	// replay, lobby, match or results. GameState stays the display label.
+	Activity           string   `json:"activity,omitempty"`
+	SessionRunCount    *uint32  `json:"sessionRunCount,omitempty"`
+	SessionElapsedSecs *float64 `json:"sessionElapsedSecs,omitempty"`
+	// SteamConnected: the in-game mod's Steam bridge (multiplayer); omitted
+	// when the client has none.
+	SteamConnected *bool `json:"steamConnected,omitempty"`
+}
+
+const (
+	LiveClientCompanion = "companion"
+	LiveClientInGame    = "in-game"
+)
+
+var liveActivityKinds = map[string]bool{
+	"menu": true, "scenario": true, "challenge": true, "replay": true,
+	"lobby": true, "match": true, "results": true,
 }
 
 type LiveActivityRecord struct {
@@ -37,7 +65,17 @@ type LiveActivityRecord struct {
 	AvatarURL       string    `json:"avatarUrl,omitempty"`
 	IsVerified      bool      `json:"isVerified,omitempty"`
 	UpdatedAt       time.Time `json:"updatedAt,omitempty"`
+	// Healthy: both health checks pass, whichever client sent them.
+	Healthy bool `json:"healthy"`
 	LiveActivityPayload
+}
+
+func (record *LiveActivityRecord) finish() {
+	record.Active = true
+	if record.Client == "" {
+		record.Client = LiveClientCompanion
+	}
+	record.Healthy = record.RuntimeLoaded && record.BridgeConnected
 }
 
 func sanitizeLiveActivityPayload(payload LiveActivityPayload) LiveActivityPayload {
@@ -66,7 +104,35 @@ func sanitizeLiveActivityPayload(payload LiveActivityPayload) LiveActivityPayloa
 	payload.ScenarioName = clean(payload.ScenarioName, 160)
 	payload.ScenarioType = clean(payload.ScenarioType, 80)
 	payload.ScenarioSubtype = clean(payload.ScenarioSubtype, 80)
+	payload.Client = cleanLiveToken(payload.Client, 32)
+	if payload.Client == "" {
+		payload.Client = LiveClientCompanion
+	}
+	payload.ClientVersion = clean(payload.ClientVersion, 40)
+	if activity := strings.ToLower(strings.TrimSpace(payload.Activity)); liveActivityKinds[activity] {
+		payload.Activity = activity
+	} else {
+		payload.Activity = ""
+	}
+	if payload.SessionElapsedSecs != nil && (math.IsNaN(*payload.SessionElapsedSecs) || *payload.SessionElapsedSecs < 0 || *payload.SessionElapsedSecs > 7*24*3600) {
+		payload.SessionElapsedSecs = nil
+	}
 	return payload
+}
+
+// cleanLiveToken keeps a lower-case [a-z0-9-] identifier, or "" when the
+// value contains anything else.
+func cleanLiveToken(value string, maxLen int) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	if value == "" || len(value) > maxLen {
+		return ""
+	}
+	for _, r := range value {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
+			return ""
+		}
+	}
+	return value
 }
 
 func (s *Store) UpsertLiveActivity(ctx context.Context, userID int64, payload LiveActivityPayload) error {
@@ -139,7 +205,7 @@ func (s *Store) GetLiveActivityByHandle(ctx context.Context, handle string) (Liv
 	if err := json.Unmarshal(rawJSON, &record.LiveActivityPayload); err != nil {
 		return LiveActivityRecord{}, fmt.Errorf("decode live activity payload: %w", err)
 	}
-	record.Active = true
+	record.finish()
 	return record, nil
 }
 
@@ -189,7 +255,7 @@ func (s *Store) ListLiveActivities(ctx context.Context, limit int) ([]LiveActivi
 		if err := json.Unmarshal(rawJSON, &record.LiveActivityPayload); err != nil {
 			return nil, fmt.Errorf("decode live activity payload: %w", err)
 		}
-		record.Active = true
+		record.finish()
 		records = append(records, record)
 	}
 	if err := rows.Err(); err != nil {

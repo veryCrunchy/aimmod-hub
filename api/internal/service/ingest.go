@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"strings"
@@ -187,6 +188,20 @@ func normalizeScenarioType(raw string, summary map[string]*hubv1.SessionSummaryV
 		}
 	}
 	return trimmed
+}
+
+// resolveScenarioType keeps a known type, and otherwise uses the type other
+// runs of the scenario were classified as. The in-game mod does not classify
+// scenarios, so its runs arrive without a type. A failed lookup keeps the run.
+func (s *HubServer) resolveScenarioType(ctx context.Context, scenarioName, current string) string {
+	if store.KnownScenarioType(current) || s.scenarioTypes == nil {
+		return current
+	}
+	inferred, err := s.scenarioTypes(ctx, scenarioName)
+	if err != nil || !store.KnownScenarioType(inferred) {
+		return current
+	}
+	return inferred
 }
 
 func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error) {

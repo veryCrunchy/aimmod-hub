@@ -14,7 +14,7 @@ import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useNow } from "../hooks/useNow";
 import { useAuth } from "../lib/AuthContext";
 import { displayScenarioType, fetchLiveActivityFeed, formatRelativeTime, slugifyScenarioName, subscribeLiveActivityFeed, type LiveHubActivity } from "../lib/api";
-import { liveView, ownSessionNote, phaseLabel, sortLive, type LiveView } from "../lib/liveActivity";
+import { liveView, ownSessionNote, sortLive, type LiveView } from "../lib/liveActivity";
 
 function PlayerAvatar({ url, name }: { url?: string; name: string }) {
   if (!url) {
@@ -52,7 +52,8 @@ function LiveCard({ activity, view, own }: { activity: LiveHubActivity; view: Li
           </div>
           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
             <span aria-hidden="true" className={`h-2 w-2 rounded-full ${phaseDot[view.phase]}`} />
-            {phaseLabel(view.phase)}
+            {view.status}
+            {view.session ? <span className="text-muted-2">· {view.session}</span> : null}
             {activity.updatedAt ? <span className="text-muted-2">· updated {formatRelativeTime(activity.updatedAt)}</span> : null}
           </div>
         </div>

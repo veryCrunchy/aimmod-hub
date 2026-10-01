@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -76,6 +77,7 @@ func (h *authHandler) handleUpsertLiveActivity(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	h.fillLiveScenarioType(r.Context(), &payload)
 	if err := h.store.UpsertLiveActivity(r.Context(), authUser.UserID, payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -88,6 +90,17 @@ func (h *authHandler) handleUpsertLiveActivity(w http.ResponseWriter, r *http.Re
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// fillLiveScenarioType adds the scenario's known type when the client sent
+// none (the in-game mod does not classify scenarios). Lookups are cached.
+func (h *authHandler) fillLiveScenarioType(ctx context.Context, payload *store.LiveActivityPayload) {
+	if h.store == nil || store.KnownScenarioType(payload.ScenarioType) || strings.TrimSpace(payload.ScenarioName) == "" {
+		return
+	}
+	if inferred, err := h.store.InferScenarioType(ctx, payload.ScenarioName); err == nil && store.KnownScenarioType(inferred) {
+		payload.ScenarioType = inferred
+	}
 }
 
 func (h *authHandler) handleDeleteLiveActivity(w http.ResponseWriter, r *http.Request) {
@@ -223,6 +236,7 @@ func (h *authHandler) handleLiveActivityWebSocket(w http.ResponseWriter, r *http
 			if message.Payload == nil {
 				continue
 			}
+			h.fillLiveScenarioType(r.Context(), message.Payload)
 			if err := h.store.UpsertLiveActivity(r.Context(), authUser.UserID, *message.Payload); err != nil {
 				continue
 			}

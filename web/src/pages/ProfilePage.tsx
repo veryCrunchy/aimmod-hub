@@ -25,7 +25,7 @@ import { useNow } from "../hooks/useNow";
 import { useAuth } from "../lib/AuthContext";
 import { displayScenarioType, fetchBenchmarkList, fetchLiveActivity, fetchPlayerScenarioStats, fetchProfile, fetchReplayHub, formatRelativeTime, subscribeLiveActivityFeed, type HubSearchRun, type LiveHubActivity } from "../lib/api";
 import { accuracyTrend, formatAccuracy, formatPlaytime, formatPoints, formatScore, newestFirst } from "../lib/kovaaksStats";
-import { liveView, ownSessionNote, phaseLabel } from "../lib/liveActivity";
+import { liveView, ownSessionNote } from "../lib/liveActivity";
 
 const RUNS_SHOWN = 15;
 
@@ -39,13 +39,14 @@ function LiveBanner({ activity, own, nowMs }: { activity: LiveHubActivity; own: 
   const note = own ? ownSessionNote(activity) : null;
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-mint/30 bg-mint/[0.06] px-4 py-3 text-sm" role="status">
-      <span className="flex items-center gap-2 font-medium text-mint"><span aria-hidden="true" className="h-2 w-2 rounded-full bg-mint" />{phaseLabel(view.phase)}</span>
+      <span className="flex items-center gap-2 font-medium text-mint"><span aria-hidden="true" className="h-2 w-2 rounded-full bg-mint" />{view.status}</span>
       {view.phase !== "idle" && <>
         <span className="min-w-0 truncate text-text">{view.title}</span>
         <span className="tabular-nums text-muted">Score <LiveNumber value={view.score} format={(v) => Math.round(v).toLocaleString()} /></span>
         <span className="tabular-nums text-muted">Accuracy <LiveNumber value={view.accuracy} format={(v) => `${v.toFixed(1)}%`} /></span>
         {view.timer ? <span className="tabular-nums text-muted">{view.timer}</span> : null}
       </>}
+      {view.session ? <span className="text-muted">{view.session}</span> : null}
       {note ? <span className="w-full text-xs text-gold">{note}</span> : null}
     </div>
   );
