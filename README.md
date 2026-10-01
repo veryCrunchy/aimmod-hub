@@ -122,6 +122,24 @@ This starts:
 - the Go API
 - the Vite frontend
 
+### Synthetic data for local development
+
+Fill a local database with invented players, runs and tournaments, and run a
+synthetic stand-in for KovaaK's so benchmark sheets, KovaaK's leaderboards and
+KovaaK's-only player pages work without contacting KovaaK's:
+
+```bash
+AIMMOD_DEVSEED_DATABASE_URL=postgres://postgres:postgres@localhost:5432/aimmod_hub?sslmode=disable \
+  go run ./api/cmd/aimmod-devseed
+go run ./api/cmd/aimmod-devkovaaks -addr 127.0.0.1:18091
+
+AIMMOD_KOVAAKS_API_BASE_URL=http://127.0.0.1:18091/webapp-backend \
+AIMMOD_STEAM_COMMUNITY_BASE_URL=http://127.0.0.1:18091/steam \
+  go run ./cmd/aimmod-hub
+```
+
+The seed refuses `DATABASE_URL`; it only writes to the database you name.
+
 ## Deployment
 
 The root `Dockerfile` builds both the frontend and the API into a single image. The Go server serves the SPA with per-route server-side meta tag injection (`og:*`, `twitter:*`, `<title>`) so social media link previews and crawlers see real content without a separate renderer.
@@ -265,6 +283,10 @@ API uses:
 - `AIMMOD_HUB_S3_ACCESS_KEY_ID`
 - `AIMMOD_HUB_S3_SECRET_ACCESS_KEY`
 - `AIMMOD_HUB_S3_FORCE_PATH_STYLE`
+- `AIMMOD_KOVAAKS_API_BASE_URL` — KovaaK's web API root (default `https://kovaaks.com/webapp-backend`); point at `aimmod-devkovaaks` locally
+- `AIMMOD_STEAM_COMMUNITY_BASE_URL` — Steam community root for profile lookups (default `https://steamcommunity.com`)
+- `AIMMOD_KOVAAKS_REQUESTS_PER_SECOND`, `AIMMOD_KOVAAKS_REQUEST_BURST` — outbound budget for KovaaK's and Steam (defaults 8 and 16)
+- `AIMMOD_KOVAAKS_SYNC` — `off` stops the background sync of public benchmark definitions
 
 ## Replay media storage
 
