@@ -169,7 +169,7 @@ function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: numbe
               style={{ width: `${pct}%`, background: met ? color : `${color}55` }}
             />
             <div
-              className="absolute inset-0 flex items-center justify-center text-[9px] font-medium tabular-nums z-10 leading-none"
+              className="absolute inset-0 flex items-center justify-center text-[11px] font-medium tabular-nums z-10 leading-none"
               style={{ color: textColor, mixBlendMode: met ? "multiply" : "normal" }}
             >
               {fmtScore(t.score)}
@@ -269,7 +269,7 @@ function CategoryRows({
                 style={{ borderLeft: `2px solid ${accent}55`, width: 24, minWidth: 24 }}
               >
                 <span
-                  className="text-[8px] uppercase font-medium whitespace-nowrap inline-block"
+                  className="text-[11px] uppercase font-medium whitespace-nowrap inline-block"
                   style={{
                     color: `${accent}cc`,
                     writingMode: "vertical-rl",
@@ -309,7 +309,7 @@ function CategoryRows({
                   </span>
                 )}
                 {scenario.leaderboardRank > 0 && (
-                  <span className="shrink-0 text-[9px] text-muted/50 tabular-nums">
+                  <span className="shrink-0 text-[11px] text-muted-2 tabular-nums">
                     #{scenario.leaderboardRank.toLocaleString()}
                   </span>
                 )}
@@ -321,7 +321,7 @@ function CategoryRows({
                 {scenario.score > 0 ? Math.round(scenario.score).toLocaleString() : "—"}
               </div>
               {pctOfMax !== null && scenario.score > 0 && (
-                <div className="text-[9px] text-muted/50 tabular-nums">{pctOfMax}%</div>
+                <div className="text-[11px] text-muted-2 tabular-nums">{pctOfMax}%</div>
               )}
             </td>
 
@@ -344,7 +344,7 @@ function CategoryRows({
                     <span className="text-[13px] font-medium tabular-nums" style={{ color: accent }}>
                       {category.categoryRank.toLocaleString()}
                     </span>
-                    <span className="text-[8px] uppercase tracking-widest text-muted/40">nrg</span>
+                    <span className="text-[11px] uppercase tracking-widest text-muted-2">nrg</span>
                   </div>
                 )}
               </td>
@@ -482,7 +482,7 @@ export function ExternalBenchmarkPage() {
                     @{page.aimmodHandle} · AimMod profile →
                   </Link>
                 ) : (
-                  <span className="text-[11px] text-muted/60">KovaaK's only user</span>
+                  <span className="text-[11px] text-muted-2">KovaaK's only user</span>
                 )}
               </div>
             </div>
@@ -498,7 +498,7 @@ export function ExternalBenchmarkPage() {
                   <div className="text-[12px] font-medium" style={{ color: page.overallRankColor || "#a7c2b3" }}>
                     {page.overallRankName}
                   </div>
-                  <div className="text-[9px] text-muted/60 uppercase tracking-widest">Overall</div>
+                  <div className="text-[11px] text-muted-2 uppercase tracking-widest">Overall</div>
                 </div>
               </div>
             )}
@@ -528,10 +528,10 @@ export function ExternalBenchmarkPage() {
                 <tr className="border-b border-line bg-white/2">
                   <th className="w-5 py-2 font-normal" />
                   <th className="w-6 py-2 font-normal" />
-                  <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">
+                  <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal">
                     Scenario
                   </th>
-                  <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">
+                  <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">
                     Score
                   </th>
                   {tierCols.map((col) => (
@@ -544,11 +544,11 @@ export function ExternalBenchmarkPage() {
                         {col.iconUrl && (
                           <img src={col.iconUrl} alt="" className="h-4 w-4 rounded-sm border border-white/10 object-cover" />
                         )}
-                        <span className="text-[8px] uppercase tracking-widest leading-none">{col.label}</span>
+                        <span className="text-[11px] uppercase tracking-widest leading-none">{col.label}</span>
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">
+                  <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">
                     Nrg
                   </th>
                 </tr>

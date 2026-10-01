@@ -8,6 +8,8 @@ import { SectionHeader } from "../components/SectionHeader";
 import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
 import { VerificationBadge } from "../components/VerificationBadge";
 import { Button } from "../components/ui/Button";
+import { PageHeader } from "../components/ui/PageHeader";
+import { TableSkeleton } from "../components/ui/Skeleton";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
@@ -227,11 +229,7 @@ function SearchQuickJump({
   return (
     <PageSection className="border-mint/14 bg-[rgba(255,255,255,0.02)]">
       <div className="flex items-center justify-between gap-3">
-        <SectionHeader
-          eyebrow="Quick jump"
-          title="Best places to open next"
-          body="Use the arrow keys and press Enter to open the highlighted result."
-        />
+        <SectionHeader title="Top results" />
         <div className="hidden shrink-0 items-center gap-2 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-3 py-1 text-[11px] text-muted md:inline-flex">
           <span>↑ ↓ move</span>
           <span className="text-muted-2">•</span>
@@ -327,12 +325,8 @@ function SearchBestMatch({
   if (!best) return null;
 
   return (
-    <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.16),transparent_28%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(4,12,9,0.98))]">
-      <SectionHeader
-        eyebrow="Best match"
-        title={`Most likely match for “${query}”`}
-        body="Use this when you already know roughly what you want and just want to get there fast."
-      />
+    <PageSection>
+      <SectionHeader title="Best match" />
       <Link
         to={best.to}
         className="block rounded-md border border-mint/18 bg-[rgba(255,255,255,0.03)] px-5 py-4 transition-colors hover:border-mint/35 hover:bg-[rgba(255,255,255,0.05)]"
@@ -353,7 +347,7 @@ function SearchSuggestions({ overview }: { overview: GetOverviewResponse }) {
   return (
     <Grid className="grid-cols-3 max-[1180px]:grid-cols-1">
       <PageSection>
-        <SectionHeader eyebrow="Popular scenarios" title="Jump into active pages" body="The scenarios with the most uploaded history right now." />
+        <SectionHeader title="Popular scenarios" />
         <ScrollArea className="max-h-[420px] pr-2">
           <div className="grid gap-2.5">
             {overview.topScenarios.slice(0, 10).map((scenario) => (
@@ -364,7 +358,7 @@ function SearchSuggestions({ overview }: { overview: GetOverviewResponse }) {
       </PageSection>
 
       <PageSection>
-        <SectionHeader eyebrow="Active players" title="Profiles worth exploring" body="The players contributing the most recent usable history." />
+        <SectionHeader title="Most active players" />
         <ScrollArea className="max-h-[420px] pr-2">
           <div className="grid gap-2.5">
             {overview.activeProfiles.slice(0, 10).map((profile) => (
@@ -375,7 +369,7 @@ function SearchSuggestions({ overview }: { overview: GetOverviewResponse }) {
       </PageSection>
 
       <PageSection>
-        <SectionHeader eyebrow="Recent runs" title="Fresh runs worth opening" body="The newest uploaded runs across the hub." />
+        <SectionHeader title="Recent runs" />
         <ScrollArea className="max-h-[420px] pr-2">
           <div className="grid gap-2.5">
             {overview.recentRuns.slice(0, 10).map((run) => (
@@ -638,17 +632,10 @@ export function SearchPage() {
         <title>{query ? `"${query}" · Search · AimMod Hub` : "Search · AimMod Hub"}</title>
         <meta name="description" content={query ? `Search results for "${query}" on AimMod Hub.` : "Search for players, scenarios, runs, and replays across AimMod Hub."} />
       </Helmet>
-      <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_top_left,rgba(121,201,151,0.14),transparent_26%),linear-gradient(135deg,rgba(9,25,18,0.98),rgba(4,12,9,0.98))]">
-        <SectionHeader
-          eyebrow="Search"
-          title={query ? `Results for “${query}”` : "Find players, scenarios, runs, and replays"}
-          body={
-            query
-              ? hasResults
-                ? `${totalCount} results across scenarios, players, and runs.`
-                : "No matches yet."
-              : "Search the whole hub from one place, then jump straight into the page, run, or replay you want."
-          }
+      <PageSection>
+        <PageHeader
+          title={query ? `Results for “${query}”` : "Search"}
+          meta={query && results ? `${totalCount.toLocaleString()} ${totalCount === 1 ? "result" : "results"}` : "Players, scenarios, runs, replays and benchmarks"}
         />
         <form onSubmit={handleSubmit} className="mt-4 flex flex-wrap items-center gap-2">
           <input
@@ -658,8 +645,10 @@ export function SearchPage() {
               setQuickSelectionActive(false);
             }}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search scenarios, players, run ids, or replay-ready runs"
-            className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-mint/70"
+            aria-label="Search"
+            type="search"
+            placeholder="Player, scenario or run id"
+            className="min-h-10 min-w-0 flex-1 rounded-md border border-line bg-panel px-3 text-sm text-text placeholder:text-muted-2"
           />
           <Button type="submit" variant="primary">Search</Button>
           {query ? (
@@ -705,24 +694,19 @@ export function SearchPage() {
         overview ? (
           <SearchSuggestions overview={overview} />
         ) : (
-          <PageSection>
-            <SectionHeader eyebrow="Search" title="Loading the hub" body="Pulling in a few useful starting points." />
-          </PageSection>
+          <TableSkeleton rows={6} />
         )
       ) : error ? (
         <PageSection>
-          <EmptyState title="Search is unavailable right now" body={error} />
+          <EmptyState title="Search could not be loaded." body="Try again in a moment." />
         </PageSection>
       ) : !results ? (
-        <PageSection>
-          <SectionHeader eyebrow="Search" title="Searching" body="Looking through players, scenarios, and runs." />
-        </PageSection>
+        <div role="status" aria-label="Searching"><TableSkeleton rows={6} /></div>
         ) : !hasResults ? (
         <PageSection>
-          <EmptyState
-            title="No matches found"
-            body="Try a scenario name, a player name, or part of a run id."
-          />
+          <EmptyState title={`Nothing matches “${query}”.`} body="Try part of a player or scenario name.">
+            <Button to="/community">Browse players & scenarios</Button>
+          </EmptyState>
         </PageSection>
       ) : (
         <>
@@ -745,14 +729,14 @@ export function SearchPage() {
           <Grid className="grid-cols-3 items-start max-[1280px]:grid-cols-1">
             {showReplays ? (
               <PageSection>
-                <SectionHeader eyebrow="Replays" title="Replay-ready runs" body="Runs that already have video replay or mouse path data available." />
+                <SectionHeader title="Replays" />
                 <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
                   <div className="grid gap-2.5">
                     {replayCount > 0
                       ? ranked.replays.map((run) => (
                           <ReplayResultCard key={`replay:${run.publicRunID || run.sessionID}`} run={run} />
                         ))
-                      : <EmptyState title="No replay matches" body="No replay-ready runs matched this search." />}
+                      : <EmptyState title="No replays match." />}
                   </div>
                 </ScrollArea>
               </PageSection>
@@ -760,14 +744,14 @@ export function SearchPage() {
 
             {showScenarios ? (
               <PageSection>
-                <SectionHeader eyebrow="Scenarios" title="Scenario pages" body="Open the scenario itself to see shared history, leaderboards, and activity." />
+                <SectionHeader title="Scenarios" />
                 <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
                   <div className="grid gap-2.5">
                     {scenarioCount > 0
                       ? ranked.scenarios.map((scenario) => (
                           <SearchScenarioCard key={scenario.scenarioSlug} scenario={scenario} />
                         ))
-                      : <EmptyState title="No scenario matches" body="No scenario names matched this search." />}
+                      : <EmptyState title="No scenarios match." />}
                   </div>
                 </ScrollArea>
               </PageSection>
@@ -775,14 +759,14 @@ export function SearchPage() {
 
             {showProfiles ? (
               <PageSection>
-                <SectionHeader eyebrow="Players" title="Profiles" body="Jump into a player’s uploaded history and top scenarios." />
+                <SectionHeader title="Players" />
                 <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
                   <div className="grid gap-2.5">
                     {profileCount > 0
                       ? ranked.profiles.map((profile) => (
                           <SearchProfileCard key={profile.userHandle} profile={profile} />
                         ))
-                      : <EmptyState title="No player matches" body="No player profiles matched this search." />}
+                      : <EmptyState title="No players match." />}
                   </div>
                 </ScrollArea>
               </PageSection>
@@ -790,7 +774,7 @@ export function SearchPage() {
 
             {showBenchmarks && benchmarkCount > 0 ? (
               <PageSection>
-                <SectionHeader eyebrow="Benchmarks" title="Benchmark ranks" body="Hub players ranked in benchmarks matching your search." />
+                <SectionHeader title="Benchmarks" />
                 <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
                   <div className="grid gap-2.5">
                     {(results?.benchmarks ?? []).map((b) => (
@@ -803,14 +787,14 @@ export function SearchPage() {
 
             {showRuns ? (
               <PageSection>
-                <SectionHeader eyebrow="Runs" title="Run results" body="Useful when you want one exact run instead of the whole scenario or profile page." />
+                <SectionHeader title="Runs" />
                 <ScrollArea className="max-h-[min(68vh,860px)] pr-2">
                   <div className="grid gap-2.5">
                     {runCount > 0
                       ? ranked.runs.map((run) => (
                           <SearchRunCard key={run.publicRunID || run.sessionID} run={run} />
                         ))
-                      : <EmptyState title="No run matches" body="No runs matched this search." />}
+                      : <EmptyState title="No runs match." />}
                   </div>
                 </ScrollArea>
               </PageSection>

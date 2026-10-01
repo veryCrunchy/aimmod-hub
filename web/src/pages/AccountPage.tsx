@@ -29,7 +29,7 @@ export function AccountPage() {
     try {
       await auth.revokeToken(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove desktop access");
+      setError(err instanceof Error ? err.message : "Could not remove this device");
     } finally {
       setBusy(false);
     }
@@ -53,7 +53,7 @@ export function AccountPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Account" title="Checking session" />
+          <SectionHeader title="Account" body="Checking your sign-in…" />
         </PageSection>
       </PageStack>
     );
@@ -63,15 +63,8 @@ export function AccountPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader
-            eyebrow="Account"
-            title="Sign in to link AimMod"
-            body="Discord is the first linked identity. Once you sign in, AimMod can link directly from the desktop app and start sending real run data into the hub."
-          />
-          <EmptyState
-            title="Not signed in"
-            body="Website auth is backed by Discord. After you sign in, the desktop app can connect through the browser without asking you to paste secrets manually."
-          >
+          <SectionHeader level={1} title="Account" />
+          <EmptyState title="Sign in to link AimMod to your profile." body="Your runs then appear on your Hub profile.">
             <Button href={discordStartUrl("/account")} variant="primary">
               Continue with Discord
             </Button>
@@ -104,10 +97,9 @@ export function AccountPage() {
     <PageStack>
       <PageSection>
         <SectionHeader
-          eyebrow="Account"
+          level={1}
           title={auth.user.displayName || auth.user.username}
-          body={`Connected as ${auth.user.username}. This page manages desktop access and the linked account behind your AimMod data.`}
-          aside={`AimMod ID · ${auth.user.aimmodUserId || "Pending"}`}
+          body={`Signed in with Discord as ${auth.user.username}.`}
         />
         <Grid className="grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
@@ -144,7 +136,7 @@ export function AccountPage() {
             {profileSubdomainUrl ? <p className="mt-2 text-xs text-muted">Handle subdomain: {profileSubdomainUrl}</p> : null}
             {discordWellKnownUrl ? <p className="mt-2 text-xs text-muted">Discord verification URL: {discordWellKnownUrl}</p> : null}
             <p className="mt-2 text-xs text-muted">Paste the token Discord gives you. AimMod serves it from `/.well-known/discord` on your handle subdomain as `dh=&lt;token&gt;`.</p>
-            <p className="mt-3 text-sm leading-7 text-muted">Discord signs you in. Your verified in-game identity is what claims and owns the public training profile.</p>
+            <p className="mt-3 text-sm leading-6 text-muted">Your profile is verified once a KovaaK's or Steam account is linked through AimMod.</p>
           </div>
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
             <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Linked identities</div>
@@ -156,20 +148,17 @@ export function AccountPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-sm leading-7 text-muted">
-              These values come from the linked Discord account plus any Steam or KovaaK&apos;s identities the hub has attached to your profile.
-            </p>
+
           </div>
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
-            <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Connected devices</div>
+            <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Linked devices</div>
             <div className="mt-2 text-2xl text-mint">{auth.tokens?.length ?? 0}</div>
-            <p className="mt-3 text-sm leading-7 text-muted">Each linked desktop app gets its own access record. Remove one here if you want to disconnect a machine and stop future uploads from it.</p>
           </div>
           {isAdmin ? (
             <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
               <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Admin access</div>
               <div className="mt-2 text-2xl text-text">Enabled</div>
-              <p className="mt-3 text-sm leading-7 text-muted">This linked Discord account matches the admin account configured on the API.</p>
+              
             </div>
           ) : null}
         </Grid>
@@ -177,9 +166,8 @@ export function AccountPage() {
 
       <PageSection>
         <SectionHeader
-          eyebrow="Desktop access"
           title="Linked devices"
-          body="Desktop apps linked through the browser show up here. Removing one immediately stops it from uploading new runs."
+          body="Removing a device stops it uploading runs straight away."
         />
         <div className="mb-4 flex flex-wrap gap-3">
           <Link
@@ -215,8 +203,8 @@ export function AccountPage() {
           </ScrollArea>
         ) : (
           <EmptyState
-            title="No linked desktop apps"
-            body="That is fine. Start the link from AimMod and approve it in the browser when you are ready to sync runs."
+            title="No devices linked yet."
+            body="Start linking from AimMod in KovaaK's, then approve it here."
           />
         )}
       </PageSection>

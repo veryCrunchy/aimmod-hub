@@ -124,7 +124,7 @@ function AppRoutes() {
           <Route path="/u/:steamId" element={<ExternalProfilePage />} />
           <Route path="/u/:steamId/benchmarks/:benchmarkId" element={<ExternalBenchmarkPage />} />
           <Route path="/u/kovaaks/:kovaaksUsername" element={<ExternalKovaaksPage />} />
-          <Route path="*" element={<section className="py-8"><h1 className="text-2xl">Page not found</h1><Link className="text-cyan" to="/">Return to AimMod Hub</Link></section>} />
+          <Route path="*" element={<section className="grid gap-3 py-8"><h1 className="text-2xl font-semibold">Page not found</h1><p className="text-sm text-muted">The link may be old, or the page has moved.</p><div className="flex flex-wrap gap-4 text-sm"><Link className="text-cyan hover:underline" to="/">Home</Link><Link className="text-cyan hover:underline" to="/search">Search</Link><Link className="text-cyan hover:underline" to="/kovaaks">KovaaK's overview</Link><Link className="text-cyan hover:underline" to="/osu">osu! overview</Link></div></section>} />
         </Routes>
       </Suspense></RouteErrorBoundary>
     </AppShell>

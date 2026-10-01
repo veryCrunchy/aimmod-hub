@@ -37,7 +37,7 @@ export function BenchmarkSummaryGrid({
                   <p className="text-[10px] uppercase tracking-widest text-cyan">Benchmark</p>
                   <p className="mt-1 break-words text-sm font-medium text-text">{benchmark.benchmarkName}</p>
                   {benchmark.benchmarkType && (
-                    <p className="mt-0.5 text-[10px] text-muted/60">{benchmark.benchmarkType}</p>
+                    <p className="mt-0.5 text-[10px] text-muted-2">{benchmark.benchmarkType}</p>
                   )}
                 </div>
                 {imageUrl(benchmark.benchmarkIconUrl) && (
@@ -58,10 +58,10 @@ export function BenchmarkSummaryGrid({
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-[12px] font-medium text-text">{rank?.rankName}</p>
-                  <p className="mt-0.5 text-[9px] uppercase tracking-widest text-muted/50">Current rank</p>
+                  <p className="mt-0.5 text-[11px] uppercase tracking-widest text-muted-2">Current rank</p>
                 </div>
                 {handle && (
-                  <span className="ml-auto text-[10px] text-muted/40 shrink-0">→</span>
+                  <span className="ml-auto text-[10px] text-muted-2 shrink-0">→</span>
                 )}
               </div>
             </>
@@ -107,11 +107,11 @@ export function ScenarioBenchmarkRankList({
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="border-b border-line bg-white/2">
-            <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">Benchmark</th>
-            <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">Category</th>
-            <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">Score</th>
-            <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-center">Rank</th>
-            <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">LB</th>
+            <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal">Benchmark</th>
+            <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal">Category</th>
+            <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">Score</th>
+            <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-center">Rank</th>
+            <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">LB</th>
           </tr>
         </thead>
         <tbody>
@@ -160,7 +160,7 @@ export function ScenarioBenchmarkRankList({
                 </td>
                 {/* Leaderboard rank */}
                 <td className="px-3 py-2 text-right">
-                  <span className="text-[10px] text-muted/60 tabular-nums">
+                  <span className="text-[10px] text-muted-2 tabular-nums">
                     {rank.leaderboardRank > 0 ? `#${rank.leaderboardRank.toLocaleString()}` : "—"}
                   </span>
                 </td>

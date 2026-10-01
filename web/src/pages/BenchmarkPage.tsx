@@ -192,7 +192,7 @@ function TierBar({ col, score, startScore = 0 }: { col: TierColumn; score: numbe
               style={{ width: `${pct}%`, background: met ? color : `${color}55` }}
             />
             <div
-              className="absolute inset-0 flex items-center justify-center text-[9px] font-medium tabular-nums z-10 leading-none"
+              className="absolute inset-0 flex items-center justify-center text-[11px] font-medium tabular-nums z-10 leading-none"
               style={{ color: textColor, mixBlendMode: met ? "multiply" : "normal" }}
             >
               {fmtScore(t.score)}
@@ -294,7 +294,7 @@ function CategoryRows({
                 style={{ borderLeft: `2px solid ${accent}55`, width: 24, minWidth: 24 }}
               >
                 <span
-                  className="text-[8px] uppercase font-medium whitespace-nowrap inline-block"
+                  className="text-[11px] uppercase font-medium whitespace-nowrap inline-block"
                   style={{
                     color: `${accent}cc`,
                     writingMode: "vertical-rl",
@@ -329,7 +329,7 @@ function CategoryRows({
                   {scenario.scenarioName}
                 </Link>
                 {scenario.leaderboardRank > 0 && (
-                  <span className="shrink-0 text-[9px] text-muted/50 tabular-nums">
+                  <span className="shrink-0 text-[11px] text-muted-2 tabular-nums">
                     #{scenario.leaderboardRank.toLocaleString()}
                   </span>
                 )}
@@ -342,7 +342,7 @@ function CategoryRows({
                 {Math.round(scenario.score).toLocaleString()}
               </div>
               {pctOfMax !== null && (
-                <div className="text-[9px] text-muted/50 tabular-nums">{pctOfMax}%</div>
+                <div className="text-[11px] text-muted-2 tabular-nums">{pctOfMax}%</div>
               )}
             </td>
 
@@ -367,7 +367,7 @@ function CategoryRows({
                     <span className="text-[13px] font-medium tabular-nums" style={{ color: accent }}>
                       {category.categoryRank.toLocaleString()}
                     </span>
-                    <span className="text-[8px] uppercase tracking-widest text-muted/40">nrg</span>
+                    <span className="text-[11px] uppercase tracking-widest text-muted-2">nrg</span>
                   </div>
                 ) : null}
               </td>
@@ -485,8 +485,8 @@ function BenchmarkCharts({
     <div className="flex flex-col gap-4">
       {/* Radar chart */}
       <Card className="p-4">
-        <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Radar Chart</p>
-        <p className="mb-4 text-[11px] text-muted/40">Average rank index per subcategory</p>
+        <p className="mb-1 text-[10px] uppercase tracking-widest text-muted-2">Category scores</p>
+        <p className="mb-4 text-[11px] text-muted-2">Average rank index per subcategory</p>
         <ResponsiveContainer width="100%" height={300}>
           <RadarChart data={radarData} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
             <PolarGrid stroke="rgba(255,255,255,0.07)" />
@@ -514,8 +514,8 @@ function BenchmarkCharts({
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4">
         {/* Donut */}
         <Card className="p-4 flex flex-col">
-          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Rank Distribution</p>
-          <p className="mb-3 text-[11px] text-muted/40">Scenarios per tier</p>
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted-2">Scenarios per rank</p>
+          <p className="mb-3 text-[11px] text-muted-2">Scenarios per tier</p>
           <div className="relative mx-auto">
             <PieChart width={180} height={180}>
               <Pie
@@ -542,7 +542,7 @@ function BenchmarkCharts({
             </PieChart>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-xl font-medium text-text tabular-nums">{totalRanked}</span>
-              <span className="text-[9px] uppercase tracking-widest text-muted/40">ranked</span>
+              <span className="text-[11px] uppercase tracking-widest text-muted-2">ranked</span>
             </div>
           </div>
           <div className="mt-3 flex flex-col gap-1.5">
@@ -552,7 +552,7 @@ function BenchmarkCharts({
                   <div className="h-2 w-2 shrink-0 rounded-sm" style={{ background: d.color }} />
                   <span className="text-[11px] text-text/70">{d.name}</span>
                 </div>
-                <span className="text-[11px] text-muted/50 tabular-nums">{d.value}</span>
+                <span className="text-[11px] text-muted-2 tabular-nums">{d.value}</span>
               </div>
             ))}
           </div>
@@ -560,8 +560,8 @@ function BenchmarkCharts({
 
         {/* Horizontal bar — scenario performance */}
         <Card className="p-4">
-          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted/50">Rank Performance</p>
-          <p className="mb-4 text-[11px] text-muted/40">Per-scenario rank index</p>
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-muted-2">Rank by scenario</p>
+          <p className="mb-4 text-[11px] text-muted-2">Longer bars are higher ranks</p>
           <ResponsiveContainer width="100%" height={Math.max(200, scenarioPerfData.length * 28)}>
             <BarChart
               data={scenarioPerfData}
@@ -665,7 +665,7 @@ export function BenchmarkPage() {
     return (
       <PageStack>
         <Card className="p-4.5">
-          <EmptyState title="Benchmark not found" body={error} />
+          <EmptyState title="This benchmark could not be loaded." />
         </Card>
       </PageStack>
     );
@@ -716,7 +716,7 @@ export function BenchmarkPage() {
                   { label: siblings ? siblings.base : page.benchmarkName },
                 ]}
               />
-              <h1 className="mt-2 text-base font-medium text-text leading-tight">
+              <h1 className="mt-2 text-2xl font-semibold text-text leading-tight">
                 {siblings ? siblings.base : page.benchmarkName}
               </h1>
               <p className="mt-0.5 text-[11px] text-muted/70">
@@ -736,7 +736,7 @@ export function BenchmarkPage() {
               )}
               <div>
                 <div className="text-[12px] font-medium text-text">{page.overallRank.rankName}</div>
-                <div className="text-[9px] text-muted/60 uppercase tracking-widest">Overall</div>
+                <div className="text-[11px] text-muted-2 uppercase tracking-widest">Overall</div>
               </div>
             </div>
           )}
@@ -758,7 +758,7 @@ export function BenchmarkPage() {
                     "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors",
                     isActive
                       ? "border-cyan/40 bg-cyan/10 text-cyan"
-                      : "border-line text-muted/60 hover:border-line/80 hover:text-text",
+                      : "border-line text-muted-2 hover:border-line/80 hover:text-text",
                   ].join(" ")}
                 >
                   {rank?.iconUrl && (
@@ -766,7 +766,7 @@ export function BenchmarkPage() {
                   )}
                   {label}
                   {hasR && rank?.rankName && (
-                    <span className={`text-[9px] ${isActive ? "text-cyan/70" : "text-muted/40"}`}>
+                    <span className={`text-[11px] ${isActive ? "text-cyan/70" : "text-muted-2"}`}>
                       · {rank.rankName}
                     </span>
                   )}
@@ -788,10 +788,10 @@ export function BenchmarkPage() {
                 <th className="w-5 py-2 font-normal" />
                 {/* sub-category column */}
                 <th className="w-6 py-2 font-normal" />
-                <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal">
+                <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal">
                   Scenario
                 </th>
-                <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">
+                <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">
                   Score
                 </th>
                 {tierCols.map((col) => (
@@ -808,11 +808,11 @@ export function BenchmarkPage() {
                           className="h-4 w-4 rounded-sm border border-white/10 object-cover"
                         />
                       )}
-                      <span className="text-[8px] uppercase tracking-widest leading-none">{col.label}</span>
+                      <span className="text-[11px] uppercase tracking-widest leading-none">{col.label}</span>
                     </div>
                   </th>
                 ))}
-                <th className="px-3 py-2 text-[9px] uppercase tracking-widest text-muted/50 font-normal text-right">
+                <th className="px-3 py-2 text-[11px] uppercase tracking-widest text-muted-2 font-normal text-right">
                   Nrg
                 </th>
               </tr>

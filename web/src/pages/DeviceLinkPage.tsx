@@ -48,7 +48,7 @@ export function DeviceLinkPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Device link" title="Missing link code" body="Open this page from AimMod so the link code is already filled in." />
+          <SectionHeader title="Missing link code" body="Open this page from AimMod so the link code is already filled in." />
         </PageSection>
       </PageStack>
     );
@@ -58,7 +58,7 @@ export function DeviceLinkPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Device link" title="Checking account" body="We are checking your AimMod Hub session before linking this desktop app." />
+          <SectionHeader title="Checking account" body="Checking your sign-in…" />
         </PageSection>
       </PageStack>
     );
@@ -68,7 +68,7 @@ export function DeviceLinkPage() {
     return (
       <PageStack>
         <PageSection>
-          <SectionHeader eyebrow="Device link" title="Sign in to approve this desktop app" body={`Device code ${userCode} is waiting for approval.`} />
+          <SectionHeader title="Sign in to link AimMod" body={`Device code ${userCode} is waiting for approval.`} />
           <EmptyState title="Discord sign-in required" body="Sign in first, then this page will finish linking AimMod automatically.">
             <Button href={discordStartUrl(`${location.pathname}${location.search}`)} variant="primary">
               Continue with Discord
@@ -83,26 +83,25 @@ export function DeviceLinkPage() {
     <PageStack>
       <PageSection>
         <SectionHeader
-          eyebrow="Device link"
-          title={state === "approved" ? "AimMod is linked" : "Approve desktop app"}
+          title={state === "approved" ? "AimMod is linked" : "Link AimMod"}
           body={`Signed in as ${auth.user.displayName || auth.user.username}. Device code ${userCode} will be used for this link.`}
         />
         {state === "approved" ? (
           <EmptyState
             title="Desktop app connected"
-            body="You can go back to AimMod now. It should finish linking on its own and start syncing pending runs."
+            body="You can go back to the game. AimMod will finish linking and upload your runs."
           />
         ) : state === "error" ? (
           <EmptyState
             title="Could not approve this device"
-            body={error ?? "Something went wrong while approving this desktop app. Try the link again from AimMod."}
+            body={error ?? "Linking failed. Start it again from AimMod."}
           />
         ) : (
           <EmptyState
             title={state === "approving" ? "Approving device..." : "Ready to approve"}
             body={state === "approving"
-              ? "This page is linking your desktop app now."
-              : "This page will approve the desktop app automatically."}
+              ? "Linking AimMod…"
+              : "AimMod will be linked automatically."}
           />
         )}
       </PageSection>

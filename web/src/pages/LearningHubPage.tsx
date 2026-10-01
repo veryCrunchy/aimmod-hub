@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { updateFilterQuery } from "../lib/savedPageFilters";
 import { SectionHeader } from "../components/SectionHeader";
 import { Button } from "../components/ui/Button";
+import { PageHeader } from "../components/ui/PageHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -200,63 +201,14 @@ export function LearningHubPage() {
         description="Read aim training guides on mechanics, practice routines, common mistakes and scenario selection." noindex={Boolean(error)} />
       <Link className="text-sm text-cyan" to="/osu/learn">Looking for osu! guides? Visit the osu! knowledge base.</Link>
 
-      <PageSection className="relative overflow-hidden border-cyan/18 bg-[radial-gradient(circle_at_top_left,rgba(94,233,255,0.12),transparent_24%),radial-gradient(circle_at_82%_12%,rgba(121,201,151,0.12),transparent_22%),linear-gradient(135deg,rgba(8,18,20,0.98),rgba(7,13,16,0.96)_52%,rgba(5,8,11,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-        <div className="text-[11px] uppercase tracking-[0.1em] text-cyan/80">AimMod Learn</div>
-        <h1 className="my-2.5 max-w-[16ch] break-words text-[clamp(28px,5vw,56px)] leading-[0.94] tracking-[-0.05em]">
-          Evidence-backed aim training guides.
-        </h1>
-        <p className="max-w-[760px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
-          Research-backed guides covering aim improvement, flaws, mechanics, scenario training, and sensitivity — the same advice AimMod uses when coaching you directly.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Button
-            to={data?.featuredEntries[0] ? `/learn/${data.featuredEntries[0].id}` : "/learn"}
-            variant="primary"
-          >
-            Open a featured guide
-          </Button>
-          <Button to="/app">Get the desktop coach</Button>
-        </div>
-      </PageSection>
-
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
-        <PageSection className="border-mint/18 bg-[radial-gradient(circle_at_bottom_right,rgba(121,201,151,0.07),transparent_60%)]">
-          <div className="text-[10px] uppercase tracking-[0.1em] text-mint/60">Guides</div>
-          <div className="mt-2 text-[clamp(24px,3vw,32px)] font-medium text-text tabular-nums">
-            {data?.entryCount ?? "—"}
-          </div>
-          <div className="mt-1 text-[12px] text-muted">Evidence-backed aim training guides</div>
-        </PageSection>
-        <PageSection className="border-cyan/14 bg-[radial-gradient(circle_at_bottom_right,rgba(94,233,255,0.05),transparent_60%)]">
-          <div className="text-[10px] uppercase tracking-[0.1em] text-cyan/60">Sources</div>
-          <div className="mt-2 text-[clamp(24px,3vw,32px)] font-medium text-text tabular-nums">
-            {data?.sourceCount ?? "—"}
-          </div>
-          <div className="mt-1 text-[12px] text-muted">Videos, articles, transcripts</div>
-        </PageSection>
-        <PageSection>
-          <div className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Signals</div>
-          <div className="mt-2 text-[clamp(24px,3vw,32px)] font-medium text-text tabular-nums">
-            {data?.signalKeyCount ?? "—"}
-          </div>
-          <div className="mt-1 text-[12px] text-muted">Aim patterns covered</div>
-        </PageSection>
-        <PageSection>
-          <div className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Topics</div>
-          <div className="mt-2 text-[clamp(24px,3vw,32px)] font-medium text-text tabular-nums">
-            {data?.contextTagCount ?? "—"}
-          </div>
-          <div className="mt-1 text-[12px] text-muted">Searchable learning tags</div>
-        </PageSection>
-      </Grid>
+      <PageHeader
+        title="Training guides"
+        meta={data ? `${data.entryCount.toLocaleString()} guides on aim mechanics, common mistakes and what to practise, drawn from ${data.sourceCount.toLocaleString()} cited sources` : "Guides on aim mechanics, common mistakes and what to practise"}
+      />
 
       <Grid className="grid-cols-[1.45fr_0.85fr] max-[1080px]:grid-cols-1">
         <PageSection>
-          <SectionHeader
-            eyebrow="Featured guides"
-            title="High-signal learning pages"
-            body="Comprehensive guides with clear action steps, cited research, and related topics to explore."
-          />
+          <SectionHeader title="Start here" />
           {data?.featuredEntries.length ? (
             <div className="grid gap-3 md:grid-cols-2">
               {data.featuredEntries.map((entry) => (
@@ -265,21 +217,16 @@ export function LearningHubPage() {
             </div>
           ) : (
             <EmptyState
-              title="No learning guides yet"
-              body={error || "No guides available right now. Check back soon."}
+              title={error ? "Guides could not be loaded." : "No guides yet."}
             />
           )}
         </PageSection>
 
         <PageSection>
-          <SectionHeader
-            eyebrow="Topic map"
-            title="Browse by topic"
-            body="Click a tag to filter the guide list below."
-          />
+          <SectionHeader title="Topics" />
           <div className="grid gap-4">
             <div>
-              <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-muted-2">Top contexts</div>
+              <div className="mb-2 text-xs text-muted">Common problems</div>
               <div className="flex flex-wrap gap-2">
                 {data?.topContextTags.map((tag) => (
                   <Link
@@ -293,7 +240,7 @@ export function LearningHubPage() {
               </div>
             </div>
             <div>
-              <div className="mb-2 text-[11px] uppercase tracking-[0.1em] text-muted-2">Scenario families</div>
+              <div className="mb-2 text-xs text-muted">Scenario types</div>
               <div className="flex flex-wrap gap-2">
                 {data?.topScenarioTypes.map((tag) => (
                   <Link
@@ -306,16 +253,12 @@ export function LearningHubPage() {
                 ))}
               </div>
             </div>
-            <div className="rounded-[14px] border border-line bg-white/[0.02] p-4 text-[13px] leading-6 text-muted">
-              Every guide is backed by the same research AimMod uses to coach you. New guides appear as the research grows.
-            </div>
           </div>
         </PageSection>
       </Grid>
 
       <PageSection>
         <SectionHeader
-          eyebrow="Browse guides"
           title="All guides"
           aside={
             data?.updatedAtIso ? (
