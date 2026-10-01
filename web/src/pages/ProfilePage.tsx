@@ -24,6 +24,7 @@ import { AimFingerprintSection } from "../components/AimFingerprintSection";
 import { useAnimatedNumber } from "../hooks/useAnimatedNumber";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useNow } from "../hooks/useNow";
+import { liveHealthDetail } from "../lib/liveActivity";
 import { fetchLiveActivity, fetchProfile, fetchReplayHub, formatDurationMs, formatRelativeTime, slugifyScenarioName, subscribeLiveActivityFeed, type HubSearchRun, type LiveHubActivity } from "../lib/api";
 
 const PAGE_SIZE = 15;
@@ -311,12 +312,8 @@ export function ProfilePage() {
                 />
               </div>
 
-              {liveActivity.runtimeLoaded === false || liveActivity.bridgeConnected === false ? (
-                <div className="text-[12px] leading-6 text-muted">
-                  Bridge status: {liveActivity.runtimeLoaded ? "runtime loaded" : "runtime not loaded"}
-                  {" · "}
-                  {liveActivity.bridgeConnected ? "bridge connected" : "bridge reconnecting"}
-                </div>
+              {liveHealthDetail(liveActivity) ? (
+                <div className="text-[12px] leading-6 text-muted">{liveHealthDetail(liveActivity)}</div>
               ) : null}
             </div>
           )}
