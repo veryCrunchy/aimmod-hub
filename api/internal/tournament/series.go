@@ -111,13 +111,14 @@ const (
 	StateSkipped  SeriesState = "skipped"
 )
 
-// randomSeed is replaceable in tests.
+// randomSeed is replaceable in tests. Seeds are 32-bit: AimModCore's
+// start-scenario seed is 0..4294967295 (in-game/native-mod/DESIGN.md).
 var randomSeed = func() uint64 {
-	var b [8]byte
+	var b [4]byte
 	if _, err := rand.Read(b[:]); err != nil {
 		panic(err)
 	}
-	return binary.LittleEndian.Uint64(b[:])
+	return uint64(binary.LittleEndian.Uint32(b[:]))
 }
 
 func (s *Series) addFlag(flag string) bool {

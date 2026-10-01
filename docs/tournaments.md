@@ -118,7 +118,8 @@ decided, in order (`Tournament.Tick`), and saves when something changed:
    ruleset's best-of; longer rounds use the standard veto (alternate bans
    from the higher seed down to N scenarios, then alternate picks). Without a
    veto, the games follow the pool in order.
-3. **Games.** Each game gets a fresh 64-bit **seed** from a cryptographic
+3. **Games.** Each game gets a fresh 32-bit **seed** (the range AimModCore's
+   `start-scenario` accepts) from a cryptographic
    source. Both players play the game with that seed, so the targets are the
    same for both. The seed is shown to the players and staff once the game
    starts, and to everyone after the match.
