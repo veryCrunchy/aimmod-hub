@@ -434,6 +434,8 @@ type Store struct {
 
 	scenarioSlugMu    sync.RWMutex
 	scenarioSlugCache scenarioSlugCache
+
+	scenarioTypes scenarioTypeCache
 }
 
 type scenarioSlugCache struct {
