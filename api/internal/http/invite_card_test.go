@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/jpeg"
 	"image/png"
 	"net/http"
 	"net/http/httptest"
@@ -265,19 +266,88 @@ func TestInviteCardArtifacts(t *testing.T) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Fatal(err)
 	}
+	h := newInviteCardHandler(nil)
+	examples := map[string]string{
+		"map":   "v=1&mode=cs&map=aimmod_de_d2_remake_css&art=aimmod_de_d2_remake_css&n=2&max=6&state=lobby&host=synthetic-host",
+		"quake": "v=1&mode=deathmatch&map=Blood+Run&game=q3&art=aimmod_ztn3dm1_q3&n=3&max=8&state=match",
+		"plain": "v=1&mode=score-race&map=Synthetic+Scenario+Name&n=1&max=4&state=lobby&host=synthetic-host",
+		"long":  "v=1&mode=team-deathmatch&map=" + url.QueryEscape(strings.Repeat("Very Long Synthetic Map Name ", 3)) + "&game=css&n=10&max=10&state=results",
+	}
 	for _, layout := range []string{"banner", "square"} {
-		for name, art := range map[string]image.Image{"plain": nil, "art": syntheticArtwork()} {
-			card, err := parseInviteCard(inviteQuery + "&layout=" + layout)
-			if err != nil {
+		for name, query := range examples {
+			result := inviteRequest(h, query+"&layout="+layout, "GET", "")
+			if result.Code != 200 {
+				t.Fatal(name, result.Code)
+			}
+			if err := os.WriteFile(filepath.Join(dir, layout+"-"+name+".png"), result.Body.Bytes(), 0644); err != nil {
 				t.Fatal(err)
 			}
-			data, err := renderInviteCard(card, art)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err = os.WriteFile(filepath.Join(dir, layout+"-"+name+".png"), data, 0644); err != nil {
-				t.Fatal(err)
-			}
+		}
+	}
+}
+
+func TestInviteCardUsesTheHubsMapArtAndNames(t *testing.T) {
+	var workshop atomic.Int32
+	h := newInviteCardHandler(func(context.Context, string) (image.Image, error) {
+		workshop.Add(1)
+		return syntheticArtwork(), nil
+	})
+	key := "aimmod_de_d2_remake_css"
+	if _, ok := ogMaps.meta[key]; !ok {
+		t.Fatal("shipped map art missing")
+	}
+	withArt := inviteRequest(h, "v=1&mode=cs&map=whatever&art="+key+"&ws=1001&n=2&max=6", "GET", "")
+	sameArt := inviteRequest(h, "v=1&mode=cs&map=other&game=q3&art="+key+"&n=2&max=6", "GET", "")
+	if withArt.Code != 200 || withArt.Header().Get("Cache-Control") != "public, max-age=86400" {
+		t.Fatal(withArt.Code, withArt.Header())
+	}
+	if !bytes.Equal(withArt.Body.Bytes(), sameArt.Body.Bytes()) {
+		t.Fatal("the Hub's map name and game should replace the caller's")
+	}
+	if workshop.Load() != 0 {
+		t.Fatal("Workshop looked up although the Hub has the map")
+	}
+	unknown := inviteRequest(h, "v=1&mode=cs&map=New+Port&art=aimmod_not_shipped_yet_css&ws=1001&n=2&max=6", "GET", "")
+	plain := inviteRequest(h, "v=1&mode=cs&map=New+Port&art=aimmod_not_shipped_yet_css&n=2&max=6", "GET", "")
+	if unknown.Code != 200 || plain.Code != 200 || workshop.Load() != 1 || bytes.Equal(unknown.Body.Bytes(), plain.Body.Bytes()) {
+		t.Fatal("unknown map key should fall back to the Workshop preview, then the plain card")
+	}
+	for _, query := range []string{"v=1&mode=cs&n=2&max=6&art=../etc", "v=1&mode=cs&n=2&max=6&art=AimMod_X", "v=1&mode=cs&n=2&max=6&game=doom"} {
+		if inviteRequest(h, query, "GET", "").Code != 400 {
+			t.Fatal(query)
+		}
+	}
+	for _, m := range ogMaps.meta {
+		if m.GameKey == "" || len(ogMaps.files[m.Key]) > 200_000 {
+			t.Fatalf("%+v", m)
+		}
+	}
+}
+
+func TestOgMapImagesAreServedWithLongCaching(t *testing.T) {
+	h := newOgMapHandler()
+	get := func(path, etag string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("GET", path, nil)
+		if etag != "" {
+			r.Header.Set("If-None-Match", etag)
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	ok := get("/og/maps/aimmod_de_d2_remake_css.jpg", "")
+	if ok.Code != 200 || ok.Header().Get("Content-Type") != "image/jpeg" || !strings.Contains(ok.Header().Get("Cache-Control"), "max-age=2592000") {
+		t.Fatal(ok.Code, ok.Header())
+	}
+	if _, err := jpeg.Decode(bytes.NewReader(ok.Body.Bytes())); err != nil {
+		t.Fatal(err)
+	}
+	if get("/og/maps/aimmod_de_d2_remake_css.jpg", ok.Header().Get("ETag")).Code != 304 {
+		t.Fatal("conditional request")
+	}
+	for _, path := range []string{"/og/maps/maps.json", "/og/maps/aimmod_unknown_css.jpg", "/og/maps/../invite_card.go", "/og/maps/aimmod_de_d2_remake_css.png", "/og/maps/aimmod_de_d2_remake_css.jpg?x=1"} {
+		if get(path, "").Code != 404 {
+			t.Fatal(path)
 		}
 	}
 }

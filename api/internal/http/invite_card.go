@@ -8,12 +8,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"image"
-	"image/color"
-	"image/draw"
 	_ "image/jpeg"
-	"image/png"
 	"io"
 	"net/http"
 	"net/url"
@@ -24,11 +20,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	xdraw "golang.org/x/image/draw"
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/image/font/gofont/goregular"
-	"golang.org/x/image/math/fixed"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -36,12 +27,14 @@ import (
 // sets this URL as the activity's invite_cover_image (banner) and large_image
 // (square). The card only repeats what the lobby's Discord presence already
 // shows: the mode, the map or scenario name, the player count, the lobby state,
-// the host's public AimMod Hub handle and the scenario's public Workshop preview.
+// the host's public AimMod Hub handle and the map's picture: AimMod's own
+// render of a shipped map port (og_maps, by map key), else the scenario's public
+// Workshop preview.
 //
-// GET /og/invite.png?v=1&layout=banner|square&mode=<mode key>&map=<name>&n=2&max=6
+// GET /og/invite.png?v=1&layout=banner|square&mode=<mode key>&map=<name>&game=<game tag>
 //
-//	&state=lobby|match|results&host=<hub handle>&ws=<workshop item id>
-const inviteCardVersion = "invite-v1"
+//	&art=<map key>&n=2&max=6&state=lobby|match|results&host=<hub handle>&ws=<workshop item id>
+const inviteCardVersion = "invite-v2"
 
 var inviteModeLabels = map[string]string{
 	"score-race":      "Score race",
@@ -67,8 +60,13 @@ type inviteCard struct {
 	State      string `json:"state"`
 	Host       string `json:"host"`
 	Workshop   string `json:"ws"`
+	Game       string `json:"game"`
+	MapKey     string `json:"key"`
 	HasArtwork bool   `json:"art"`
 }
+
+// Source-game tags of AimMod map ports (map-port naming.GAME_TAGS) and their card labels.
+var inviteGameLabels = map[string]string{"css": "CS:S", "csgo": "CS:GO", "cs2": "CS2", "cs16": "CS 1.6", "gmod": "GMod", "q3": "Quake 3", "ql": "Quake Live"}
 
 var errInviteCardQuery = errors.New("invalid invite card query")
 
@@ -93,7 +91,7 @@ func parseInviteCard(rawQuery string) (inviteCard, error) {
 	if err != nil {
 		return inviteCard{}, errInviteCardQuery
 	}
-	allowed := map[string]bool{"v": true, "layout": true, "mode": true, "map": true, "n": true, "max": true, "state": true, "host": true, "ws": true}
+	allowed := map[string]bool{"v": true, "layout": true, "mode": true, "map": true, "n": true, "max": true, "state": true, "host": true, "ws": true, "game": true, "art": true}
 	for key, values := range query {
 		if !allowed[key] || len(values) != 1 {
 			return inviteCard{}, errInviteCardQuery
@@ -102,7 +100,16 @@ func parseInviteCard(rawQuery string) (inviteCard, error) {
 	if query.Get("v") != "1" {
 		return inviteCard{}, errInviteCardQuery
 	}
-	card := inviteCard{Layout: query.Get("layout"), Mode: query.Get("mode"), State: query.Get("state"), Host: query.Get("host"), Workshop: query.Get("ws")}
+	card := inviteCard{Layout: query.Get("layout"), Mode: query.Get("mode"), State: query.Get("state"), Host: query.Get("host"), Workshop: query.Get("ws"), Game: query.Get("game"), MapKey: query.Get("art")}
+	if card.Game != "" {
+		if _, ok := inviteGameLabels[card.Game]; !ok {
+			return inviteCard{}, errInviteCardQuery
+		}
+	}
+	// A map key of a port this Hub has no picture for yet is fine: the card falls back.
+	if card.MapKey != "" && !inviteMapKey.MatchString(card.MapKey) {
+		return inviteCard{}, errInviteCardQuery
+	}
 	if card.Layout == "" {
 		card.Layout = "banner"
 	}
@@ -178,8 +185,13 @@ func (h *inviteCardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid invite card", http.StatusBadRequest)
 		return
 	}
-	var art image.Image
-	if card.Workshop != "" && h.artwork != nil {
+	// The Hub's own map art first, then the Workshop preview.
+	art, curated := ogMapImage(card.MapKey)
+	if curated {
+		meta := ogMaps.meta[card.MapKey]
+		card.Map, card.Game = meta.Name, meta.GameKey
+		card.Workshop = "" // not needed for this card
+	} else if card.Workshop != "" && h.artwork != nil {
 		ctx, cancel := context.WithTimeout(r.Context(), 6*time.Second)
 		art, _ = h.artwork(ctx, card.Workshop)
 		cancel()
@@ -236,154 +248,6 @@ func (h *inviteCardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, _ = w.Write(value.data)
-}
-
-// Fill dst with src scaled to cover it (centre crop).
-func drawCover(dst *image.RGBA, rect image.Rectangle, src image.Image) {
-	b := src.Bounds()
-	if b.Dx() <= 0 || b.Dy() <= 0 {
-		return
-	}
-	sx, sy := float64(rect.Dx())/float64(b.Dx()), float64(rect.Dy())/float64(b.Dy())
-	scale := sx
-	if sy > scale {
-		scale = sy
-	}
-	w, h := int(float64(rect.Dx())/scale), int(float64(rect.Dy())/scale)
-	x0, y0 := b.Min.X+(b.Dx()-w)/2, b.Min.Y+(b.Dy()-h)/2
-	xdraw.CatmullRom.Scale(dst, rect, src, image.Rect(x0, y0, x0+w, y0+h), draw.Src, nil)
-}
-
-// A vertical fade from transparent to the background colour over rect.
-func drawFade(dst *image.RGBA, rect image.Rectangle, ink color.RGBA, from, to uint8) {
-	for y := rect.Min.Y; y < rect.Max.Y; y++ {
-		t := float64(y-rect.Min.Y) / float64(max(1, rect.Dy()-1))
-		a := uint8(float64(from) + (float64(to)-float64(from))*t)
-		c := color.NRGBA{ink.R, ink.G, ink.B, a}
-		draw.Draw(dst, image.Rect(rect.Min.X, y, rect.Max.X, y+1), image.NewUniform(c), image.Point{}, draw.Over)
-	}
-}
-
-func renderInviteCard(card inviteCard, art image.Image) ([]byte, error) {
-	square := card.Layout == "square"
-	width, height := 1280, 720
-	if square {
-		width, height = 1024, 1024
-	}
-	sizes := map[string]float64{"brand": 34, "mode": 76, "map": 40, "label": 22, "count": 64}
-	if square {
-		sizes = map[string]float64{"brand": 40, "mode": 92, "map": 50, "label": 28, "count": 120}
-	}
-	faces := map[string]font.Face{}
-	defer func() {
-		for _, face := range faces {
-			face.Close()
-		}
-	}()
-	for name, size := range sizes {
-		ttf := gobold.TTF
-		if name == "map" {
-			ttf = goregular.TTF
-		}
-		face, err := previewFace(ttf, size)
-		if err != nil {
-			return nil, err
-		}
-		faces[name] = face
-	}
-	canvas := image.NewRGBA(image.Rect(0, 0, width, height))
-	background, white, muted, mint, seat := color.RGBA{16, 17, 19, 255}, color.RGBA{246, 248, 249, 255}, color.RGBA{180, 190, 195, 255}, color.RGBA{40, 218, 171, 255}, color.RGBA{58, 66, 72, 255}
-	draw.Draw(canvas, canvas.Bounds(), image.NewUniform(background), image.Point{}, draw.Src)
-	if art != nil {
-		drawCover(canvas, canvas.Bounds(), art)
-		if square {
-			drawFade(canvas, image.Rect(0, 0, width, height/3), background, 150, 60)
-			drawFade(canvas, image.Rect(0, height/3, width, height), background, 60, 250)
-		} else {
-			drawFade(canvas, image.Rect(0, 0, width, height), background, 110, 245)
-			draw.Draw(canvas, image.Rect(0, 0, width*3/5, height), image.NewUniform(color.NRGBA{16, 17, 19, 90}), image.Point{}, draw.Over)
-		}
-	}
-	draw.Draw(canvas, image.Rect(0, 0, width, 10), image.NewUniform(mint), image.Point{}, draw.Src)
-	write := func(face font.Face, value string, x, y int, ink color.Color) int {
-		d := font.Drawer{Dst: canvas, Src: image.NewUniform(ink), Face: face, Dot: fixed.P(x, y)}
-		d.DrawString(value)
-		return d.Dot.X.Ceil()
-	}
-	logo, err := png.Decode(bytes.NewReader(socialBrandPNG))
-	if err != nil {
-		return nil, err
-	}
-	margin := 64
-	logoSize := 72
-	if square {
-		logoSize = 88
-	}
-	xdraw.CatmullRom.Scale(canvas, image.Rect(margin, 44, margin+logoSize, 44+logoSize), logo, logo.Bounds(), draw.Over, nil)
-	write(faces["brand"], "AimMod", margin+logoSize+18, 44+logoSize/2+int(sizes["brand"]*0.36), white)
-	write(faces["label"], "KOVAAK'S MULTIPLAYER", margin, 44+logoSize+58, mint)
-
-	// The bottom block: state, mode, map, players and host.
-	textWidth := width - 2*margin
-	if !square {
-		textWidth = width - 2*margin - 300
-	}
-	footer := height - 64
-	host := ""
-	if card.Host != "" {
-		host = "Hosted by @" + card.Host
-	}
-	write(faces["label"], "aimmod.app", margin, footer, mint)
-	if host != "" {
-		for _, line := range previewLines(host, faces["label"], textWidth-220, 1) {
-			write(faces["label"], line, margin+200, footer, muted)
-		}
-	}
-	draw.Draw(canvas, image.Rect(margin, footer-46, width-margin, footer-44), image.NewUniform(color.RGBA{53, 61, 66, 255}), image.Point{}, draw.Src)
-	y := footer - 46 - 36
-	mapLines := previewLines(card.Map, faces["map"], textWidth, 2)
-	for i := len(mapLines) - 1; i >= 0; i-- {
-		write(faces["map"], mapLines[i], margin, y, muted)
-		y -= int(sizes["map"] * 1.25)
-	}
-	if len(mapLines) > 0 {
-		y -= 8
-	}
-	for _, line := range previewLines(inviteModeLabels[card.Mode], faces["mode"], textWidth, 1) {
-		write(faces["mode"], line, margin, y, white)
-	}
-	y -= int(sizes["mode"]) + 6
-	write(faces["label"], inviteStateLabels[card.State], margin, y, mint)
-
-	// Players: a large count with one seat per slot.
-	count := fmt.Sprintf("%d/%d", card.Players, card.Max)
-	seatSize, gap := 26, 10
-	if square {
-		seatSize, gap = 34, 12
-	}
-	seatsWidth := card.Max*seatSize + (card.Max-1)*gap
-	var countX, countY, seatsX, seatsY int
-	if square {
-		countX, countY = width-margin-font.MeasureString(faces["count"], count).Ceil(), 44+logoSize+190
-		seatsX, seatsY = width-margin-seatsWidth, countY+30
-	} else {
-		countX, countY = width-margin-font.MeasureString(faces["count"], count).Ceil(), footer-46-120
-		seatsX, seatsY = width-margin-seatsWidth, countY+34
-	}
-	write(faces["count"], count, countX, countY, white)
-	playersLabel := "PLAYERS"
-	write(faces["label"], playersLabel, width-margin-font.MeasureString(faces["label"], playersLabel).Ceil(), countY-int(sizes["count"])-8, muted)
-	for i := 0; i < card.Max; i++ {
-		ink := seat
-		if i < card.Players {
-			ink = mint
-		}
-		x := seatsX + i*(seatSize+gap)
-		draw.Draw(canvas, image.Rect(x, seatsY, x+seatSize, seatsY+seatSize), image.NewUniform(ink), image.Point{}, draw.Src)
-	}
-	var out bytes.Buffer
-	err = png.Encode(&out, canvas)
-	return out.Bytes(), err
 }
 
 // Steam Workshop previews, from the public GetPublishedFileDetails API (no key).

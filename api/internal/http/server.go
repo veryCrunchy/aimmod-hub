@@ -225,7 +225,8 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/sitemap.xml", sitemaps)
 	mux.Handle("/sitemaps/", sitemaps)
 	mux.Handle("/social-preview.png", newSocialPreviewHandler(hub.Store()))
-	mux.Handle("/og/invite.png", newInviteCardHandler(newWorkshopArtwork("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", nil).Get))
+	mux.Handle("/og/maps/", newOgMapHandler())
+	mux.Handle("/og/invite.png",newInviteCardHandler(newWorkshopArtwork("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", nil).Get))
 	if hasLLMManifest(cfg) {
 		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))
 	}

@@ -1,0 +1,72 @@
+[
+ {
+  "key": "aimmod_aim_ag_texture2_css",
+  "name": "AG Texture 2",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_aim_deagle7k_2067_css",
+  "name": "Deagle 7k",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_aim_map_css",
+  "name": "aim_map",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_aim_redline_cs16",
+  "name": "Redline",
+  "game": "CS 1.6"
+ },
+ {
+  "key": "aimmod_aim_redline_css",
+  "name": "Redline",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_awp_lego_css",
+  "name": "AWP Lego",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_de_d2_beta_cs16",
+  "name": "Dust2 Beta",
+  "game": "CS 1.6"
+ },
+ {
+  "key": "aimmod_de_d2_remake_css",
+  "name": "Dust2 Remake",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_de_dust2_csgo",
+  "name": "Dust2",
+  "game": "CS:GO"
+ },
+ {
+  "key": "aimmod_fy_pool_day_css",
+  "name": "Pool Day",
+  "game": "CS:S"
+ },
+ {
+  "key": "aimmod_hub3aeroq3_q3",
+  "name": "Aerowalk",
+  "game": "Quake 3"
+ },
+ {
+  "key": "aimmod_pro_q3tourney7_q3",
+  "name": "Almost Lost",
+  "game": "Quake 3"
+ },
+ {
+  "key": "aimmod_ztn3dm1_q3",
+  "name": "Blood Run",
+  "game": "Quake 3"
+ },
+ {
+  "key": "aimmod_ztn3tourney1_q3",
+  "name": "Blood Run Tourney",
+  "game": "Quake 3"
+ }
+]

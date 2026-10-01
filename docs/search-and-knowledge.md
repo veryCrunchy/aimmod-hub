@@ -62,15 +62,25 @@ they have already fetched; the application cannot revoke those external copies.
 
 ### Discord invite cards
 
-`/og/invite.png?v=1&layout=banner|square&mode=…&map=…&n=…&max=…&state=…&host=…&ws=…`
+`/og/invite.png?v=1&layout=banner|square&mode=…&map=…&game=…&art=…&n=…&max=…&state=…&host=…&ws=…`
 renders the art AimMod for KovaaK's sets on a multiplayer lobby's Discord
 presence: `banner` (1280×720) is the game-invite banner
-(`assets.invite_cover_image`), `square` (1024×1024) the presence's large image.
+(`assets.invite_cover_image`), `square` (1024×1024) the presence's large image,
+which Discord's "Playing" panel shows small, so the player count leads there.
+Both carry an "AimMod required" badge and the aimmod.app download address.
 The card repeats only what that presence already shows: a mode key from a fixed
-list (never free text), the map or scenario name (at most 96 characters), the
-player count, the lobby state, the host's public Hub handle and, with `ws`, the
-public Steam Workshop preview of a KovaaK's item. Unknown or repeated parameters
-are rejected.
+list (never free text), the map or scenario name (at most 96 characters), a
+source-game tag from a fixed list, the player count, the lobby state and the
+host's public Hub handle. Unknown or repeated parameters are rejected.
+
+The background is the map: first AimMod's own render of a shipped map port
+(`art=<map key>`, from `api/internal/http/og_maps/`, which also supplies the map's
+pretty name and game label), then, with `ws`, the public Steam Workshop preview
+of a KovaaK's item, otherwise a plain design. The pictures are also served at
+`/og/maps/<key>.jpg` with a 30-day cache. To add maps, run the client repo's
+`python -m mapport.cardart <port folders> --out <dir>` (in
+`in-game/tools/map-port`) and copy its `.jpg` files and `maps.json` into
+`og_maps/`; only ports AimMod ships belong there.
 
 Workshop previews come from Steam's public `GetPublishedFileDetails` API: only
 public, unbanned KovaaK's items, only Steam's image hosts, at most 4 MB and
