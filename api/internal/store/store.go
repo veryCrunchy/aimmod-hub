@@ -433,6 +433,7 @@ type Store struct {
 	pool *pgxpool.Pool
 
 	scenarioSlugMu    sync.RWMutex
+	searchIndex       searchIndexCache
 	scenarioSlugCache scenarioSlugCache
 }
 
@@ -594,6 +595,15 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 	}
 	if err := s.ensureTournamentSchema(ctx); err != nil {
 		return err
+	}
+	if _, err := s.pool.Exec(ctx, kovaaksBenchmarkSchemaSQL); err != nil {
+		return fmt.Errorf("ensure kovaaks benchmark schema: %w", err)
+	}
+	if _, err := s.pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_scenario_runs_scenario_user_score
+			ON scenario_runs(scenario_name, user_id, score DESC);
+	`); err != nil {
+		return fmt.Errorf("ensure scenario leaderboard index: %w", err)
 	}
 	if _, err := s.pool.Exec(ctx, `
 		DELETE FROM ingest_failures

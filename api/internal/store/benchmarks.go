@@ -25,7 +25,7 @@ func (s *Store) ListUsersWithBenchmarkIdentity(ctx context.Context) ([]Benchmark
 			hui.user_display_name,
 			COALESCE(steam.avatar_url, hui.avatar_url, '') AS avatar_url,
 			steam.provider_account_id AS steam_id,
-			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, hui.user_handle) AS kovaaks_username
+			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		JOIN linked_accounts steam
 			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
@@ -123,7 +123,7 @@ func (s *Store) GetBenchmarkIdentityByKovaaksUsername(ctx context.Context, usern
 			hui.user_display_name,
 			COALESCE(steam.avatar_url, hui.avatar_url, '') AS avatar_url,
 			COALESCE(NULLIF(TRIM(steam.provider_account_id), ''), '') AS steam_id,
-			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, hui.user_handle) AS kovaaks_username
+			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		LEFT JOIN linked_accounts steam
 			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
@@ -156,7 +156,7 @@ func (s *Store) GetBenchmarkIdentityBySteamId(ctx context.Context, steamId strin
 			hui.user_display_name,
 			COALESCE(steam.avatar_url, hui.avatar_url, '') AS avatar_url,
 			steam.provider_account_id AS steam_id,
-			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, hui.user_handle) AS kovaaks_username
+			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		JOIN linked_accounts steam
 			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
