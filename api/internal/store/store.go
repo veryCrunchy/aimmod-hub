@@ -592,6 +592,9 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 	if _, err := s.pool.Exec(ctx, hubUserIdentityViewSQL); err != nil {
 		return fmt.Errorf("ensure hub user identity view: %w", err)
 	}
+	if err := s.ensureTournamentSchema(ctx); err != nil {
+		return err
+	}
 	if _, err := s.pool.Exec(ctx, `
 		DELETE FROM ingest_failures
 		WHERE created_at < NOW() - INTERVAL '30 days'

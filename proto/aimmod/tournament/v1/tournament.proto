@@ -1,0 +1,786 @@
+syntax = "proto3";
+
+package aimmod.tournament.v1;
+
+option go_package = "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/tournament/v1;tournamentv1";
+
+// Tournaments run on AimMod's own multiplayer and never touch KovaaK's ranked
+// leaderboards. Results are verified by AimMod: the lobby host validates each
+// game, replays are uploaded to the Hub and checked there, and the other
+// player confirms the result. See docs/tournaments.md.
+
+enum TournamentFormat {
+  TOURNAMENT_FORMAT_UNSPECIFIED = 0;
+  TOURNAMENT_FORMAT_SINGLE_ELIMINATION = 1;
+  TOURNAMENT_FORMAT_DOUBLE_ELIMINATION = 2;
+  TOURNAMENT_FORMAT_ROUND_ROBIN = 3;
+  TOURNAMENT_FORMAT_SWISS = 4;
+}
+
+enum TournamentStatus {
+  TOURNAMENT_STATUS_UNSPECIFIED = 0;
+  TOURNAMENT_STATUS_DRAFT = 1;
+  TOURNAMENT_STATUS_REGISTRATION = 2;
+  TOURNAMENT_STATUS_CHECK_IN = 3;
+  TOURNAMENT_STATUS_IN_PROGRESS = 4;
+  TOURNAMENT_STATUS_COMPLETED = 5;
+  TOURNAMENT_STATUS_CANCELLED = 6;
+}
+
+enum RegistrationMode {
+  REGISTRATION_MODE_UNSPECIFIED = 0;
+  REGISTRATION_MODE_OPEN = 1;
+  REGISTRATION_MODE_INVITE_ONLY = 2;
+}
+
+enum SeedingMethod {
+  SEEDING_METHOD_UNSPECIFIED = 0;
+  SEEDING_METHOD_MANUAL = 1;
+  SEEDING_METHOD_RANDOM = 2;
+  // Benchmark rank from the Hub's KovaaK's benchmark data (seeding_source = benchmark id).
+  SEEDING_METHOD_BENCHMARK_RANK = 3;
+  // Personal best on one scenario from uploaded Hub runs (seeding_source = scenario name).
+  SEEDING_METHOD_SCENARIO_PB = 4;
+}
+
+enum SchedulingMode {
+  SCHEDULING_MODE_UNSPECIFIED = 0;
+  // A match starts when both players are online and ready.
+  SCHEDULING_MODE_READY_WHEN_ONLINE = 1;
+  // Matches have start times; players who are not ready by the deadline forfeit.
+  SCHEDULING_MODE_SCHEDULED = 2;
+}
+
+enum EntrantStatus {
+  ENTRANT_STATUS_UNSPECIFIED = 0;
+  ENTRANT_STATUS_REGISTERED = 1;
+  ENTRANT_STATUS_CHECKED_IN = 2;
+  ENTRANT_STATUS_ACTIVE = 3;
+  ENTRANT_STATUS_ELIMINATED = 4;
+  ENTRANT_STATUS_DISQUALIFIED = 5;
+  ENTRANT_STATUS_WITHDRAWN = 6;
+  ENTRANT_STATUS_NO_SHOW = 7;
+}
+
+enum BracketSide {
+  BRACKET_SIDE_UNSPECIFIED = 0;
+  BRACKET_SIDE_WINNERS = 1;
+  BRACKET_SIDE_LOSERS = 2;
+  BRACKET_SIDE_GRAND_FINAL = 3;
+  BRACKET_SIDE_THIRD_PLACE = 4;
+  BRACKET_SIDE_ROUND_ROBIN = 5;
+  BRACKET_SIDE_SWISS = 6;
+}
+
+enum MatchState {
+  MATCH_STATE_UNSPECIFIED = 0;
+  // Waiting for an earlier match to decide an entrant.
+  MATCH_STATE_PENDING = 1;
+  // Both entrants known; waiting for both to be ready.
+  MATCH_STATE_READY = 2;
+  MATCH_STATE_VETO = 3;
+  MATCH_STATE_LIVE = 4;
+  MATCH_STATE_AWAITING_CONFIRMATION = 5;
+  MATCH_STATE_DISPUTED = 6;
+  MATCH_STATE_COMPLETE = 7;
+  // Not needed (an unused grand final reset, or two byes).
+  MATCH_STATE_SKIPPED = 8;
+}
+
+enum Resolution {
+  RESOLUTION_UNSPECIFIED = 0;
+  RESOLUTION_PLAYED = 1;
+  RESOLUTION_WALKOVER = 2;
+  RESOLUTION_FORFEIT = 3;
+  RESOLUTION_NO_SHOW = 4;
+  RESOLUTION_ADMIN_OVERRIDE = 5;
+}
+
+enum VetoAction {
+  VETO_ACTION_UNSPECIFIED = 0;
+  VETO_ACTION_BAN = 1;
+  VETO_ACTION_PICK = 2;
+  // The scenario left over after the veto.
+  VETO_ACTION_DECIDER = 3;
+}
+
+enum VetoActor {
+  VETO_ACTOR_UNSPECIFIED = 0;
+  VETO_ACTOR_HIGHER_SEED = 1;
+  VETO_ACTOR_LOWER_SEED = 2;
+}
+
+enum ReplayStatus {
+  REPLAY_STATUS_UNSPECIFIED = 0;
+  REPLAY_STATUS_PENDING = 1;
+  REPLAY_STATUS_VERIFIED = 2;
+  // Decoded, but a plausibility check failed; an admin decides.
+  REPLAY_STATUS_SUSPICIOUS = 3;
+  REPLAY_STATUS_REJECTED = 4;
+}
+
+enum DisputeStatus {
+  DISPUTE_STATUS_UNSPECIFIED = 0;
+  DISPUTE_STATUS_OPEN = 1;
+  DISPUTE_STATUS_RESOLVED = 2;
+}
+
+enum DisputeDecision {
+  DISPUTE_DECISION_UNSPECIFIED = 0;
+  // The reported result stands.
+  DISPUTE_DECISION_UPHOLD = 1;
+  // The admin sets the result (winner and score).
+  DISPUTE_DECISION_OVERTURN = 2;
+  // The series is cleared and played again.
+  DISPUTE_DECISION_REPLAY = 3;
+}
+
+enum StaffRole {
+  STAFF_ROLE_UNSPECIFIED = 0;
+  STAFF_ROLE_ORGANISER = 1;
+  // Can manage matches, disputes and entrants, but not delete or re-format the event.
+  STAFF_ROLE_ADMIN = 2;
+  // Read access to private match details for casting (seeds after a game starts, live state).
+  STAFF_ROLE_CASTER = 3;
+}
+
+enum AdvanceAction {
+  ADVANCE_ACTION_UNSPECIFIED = 0;
+  ADVANCE_ACTION_OPEN_REGISTRATION = 1;
+  ADVANCE_ACTION_OPEN_CHECK_IN = 2;
+  // Seeds the field (removing anyone who did not check in) and generates the bracket.
+  ADVANCE_ACTION_START = 3;
+  ADVANCE_ACTION_CANCEL = 4;
+}
+
+message UserRef {
+  string user_external_id = 1;
+  string handle = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+}
+
+message PoolScenario {
+  string name = 1;
+  // Content hash the in-game lobby checks every player against (optional).
+  string hash = 2;
+  // Overrides the scenario's own length; 0 keeps it.
+  int32 time_limit_seconds = 3;
+}
+
+message VetoStep {
+  VetoAction action = 1;
+  VetoActor actor = 2;
+}
+
+message RoundBestOf {
+  BracketSide side = 1;
+  // Applies from this round on (1-based); 0 means the side's final round only.
+  int32 from_round = 2;
+  int32 best_of = 3;
+}
+
+// The locked ruleset every match of the tournament is played with. The
+// in-game lobby applies it and refuses changes.
+message Ruleset {
+  // In-game lobby mode, e.g. "score-race".
+  string game_mode = 1;
+  int32 best_of = 2;
+  repeated RoundBestOf round_best_of = 3;
+  repeated PoolScenario pool = 4;
+  // Empty: games use the pool in order. Set: bans and picks by seed, then the decider.
+  repeated VetoStep veto = 5;
+  int32 countdown_seconds = 6;
+  bool spectators = 7;
+  // Every game needs a replay from both players before the result can be confirmed.
+  bool require_replays = 8;
+  // Minutes the other player has to confirm or dispute before the result is accepted.
+  int32 confirm_minutes = 9;
+}
+
+message TournamentOptions {
+  bool third_place_match = 1;
+  bool grand_final_reset = 2;
+  int32 round_robin_cycles = 3;
+  int32 swiss_rounds = 4;
+}
+
+message Tournament {
+  string id = 1;
+  string slug = 2;
+  string name = 3;
+  string description = 4;
+  TournamentFormat format = 5;
+  TournamentStatus status = 6;
+  RegistrationMode registration_mode = 7;
+  int32 max_entrants = 8;
+  SeedingMethod seeding = 9;
+  string seeding_source = 10;
+  SchedulingMode scheduling = 11;
+  // RFC 3339 times; empty when unset.
+  string check_in_opens_at = 12;
+  string check_in_closes_at = 13;
+  string starts_at = 14;
+  int32 ready_window_minutes = 15;
+  int32 no_show_minutes = 16;
+  Ruleset ruleset = 17;
+  TournamentOptions options = 18;
+  UserRef organiser = 19;
+  int32 entrant_count = 20;
+  int32 checked_in_count = 21;
+  // Free text shown on the event page; AimMod does not handle prizes.
+  string prize = 22;
+  string created_at = 23;
+  string updated_at = 24;
+  int64 version = 25;
+  string champion_entrant_id = 26;
+}
+
+message Entrant {
+  string id = 1;
+  UserRef user = 2;
+  int32 seed = 3;
+  EntrantStatus status = 4;
+  string registered_at = 5;
+  string checked_in_at = 6;
+  // The stat used for seeding (benchmark rank points or scenario PB).
+  double rating = 7;
+  string rating_label = 8;
+  int32 place = 9;
+}
+
+message VetoEntry {
+  int32 step = 1;
+  VetoAction action = 2;
+  string entrant_id = 3;
+  string scenario = 4;
+  string at = 5;
+}
+
+message ReplayRef {
+  string id = 1;
+  string entrant_id = 2;
+  string sha256 = 3;
+  int64 byte_size = 4;
+  ReplayStatus status = 5;
+  repeated string checks = 6;
+  string scenario = 7;
+  double score = 8;
+  double duration_seconds = 9;
+}
+
+// One finished lobby match (one tournament game), as the lobby host built it.
+// This is the result record proposed in in-game/docs/game-modes.md section
+// 8.4, adopted with three changes: players also carry their entrant id (the
+// hashed key is only meaningful to the local history), the game's seed is
+// echoed, and times are Unix milliseconds.
+message GameResult {
+  int32 format = 1;
+  // The lobby's match id.
+  string match = 2;
+  // Lobby mode: "score-race", later "deathmatch" or "tracking-duel".
+  string mode = 3;
+  // MatchScenario.Key of the lobby settings and the content hash of the scenario.
+  string settings_key = 4;
+  string scenario_hash = 5;
+  int64 started_at = 6;
+  int64 ended_at = 7;
+  // Player key of the host.
+  string host = 8;
+  repeated GameResultPlayer players = 9;
+  // Player key of the winner; empty for a tie.
+  string winner = 10;
+  string seed = 11;
+}
+
+message GameResultPlayer {
+  // Hashed member id (MultiplayerService.PlayerKey).
+  string key = 1;
+  string entrant_id = 2;
+  int32 team = 3;
+  int32 place = 4;
+  double score = 5;
+  int32 frags = 6;
+  int32 deaths = 7;
+  int32 claims = 8;
+  int32 rejected = 9;
+  // Tracking modes only; absent otherwise.
+  optional double track_percent = 10;
+  bool disputed = 11;
+  // SHA-256 of the replay this player's client recorded, when it has one.
+  string replay = 12;
+  double accuracy = 13;
+}
+
+message Game {
+  int32 index = 1;
+  string scenario = 2;
+  string scenario_hash = 3;
+  int32 time_limit_seconds = 4;
+  // Same seed for both players: identical target randomness. Revealed to the
+  // players when the game starts, to everyone once the match is complete.
+  string seed = 5;
+  bool has_score = 6;
+  double score_a = 7;
+  double score_b = 8;
+  // Winning slot: 0 (entrant a), 1 (entrant b); -1 none yet or a tie.
+  int32 winner = 9;
+  repeated ReplayRef replays = 10;
+  string reported_by = 11;
+  string reported_at = 12;
+  // The lobby host's client checked both runs (scores, scenario, seed) before reporting.
+  bool host_validated = 13;
+  repeated string flags = 14;
+  // The scenario as actually played (a generated match scenario when the ruleset changes the length).
+  string played_scenario = 15;
+  GameResult result = 16;
+}
+
+message MatchSlot {
+  string entrant_id = 1;
+  // "seed", "winner", "loser", "slot" or "bye", with the source match.
+  string source = 2;
+  string source_match_id = 3;
+  bool empty = 4;
+}
+
+message Match {
+  string id = 1;
+  BracketSide side = 2;
+  int32 round = 3;
+  int32 position = 4;
+  string label = 5;
+  MatchSlot slot_a = 6;
+  MatchSlot slot_b = 7;
+  MatchState state = 8;
+  int32 best_of = 9;
+  int32 wins_a = 10;
+  int32 wins_b = 11;
+  string winner_entrant_id = 12;
+  Resolution resolution = 13;
+  repeated VetoEntry veto = 14;
+  repeated Game games = 15;
+  string host_entrant_id = 16;
+  string scheduled_at = 17;
+  // No-show deadline while waiting for players; confirm deadline while awaiting confirmation.
+  string deadline = 18;
+  repeated string ready_entrant_ids = 19;
+  string reported_by = 20;
+  repeated string flags = 21;
+  string dispute_id = 22;
+  string winner_to_match_id = 23;
+  string loser_to_match_id = 24;
+  // Index of the game being played now; -1 when none.
+  int32 current_game = 25;
+  // Whose turn it is in the veto, and what they must do.
+  string veto_turn_entrant_id = 26;
+  VetoAction veto_turn_action = 27;
+}
+
+message Standing {
+  string entrant_id = 1;
+  int32 place = 2;
+  int32 wins = 3;
+  int32 losses = 4;
+  int32 games_won = 5;
+  int32 games_lost = 6;
+  int32 points = 7;
+  int32 buchholz = 8;
+  bool eliminated = 9;
+}
+
+message Dispute {
+  string id = 1;
+  string match_id = 2;
+  string opened_by_entrant_id = 3;
+  string reason = 4;
+  DisputeStatus status = 5;
+  DisputeDecision decision = 6;
+  string resolution_note = 7;
+  string created_at = 8;
+  string resolved_at = 9;
+  UserRef resolved_by = 10;
+}
+
+message Staff {
+  UserRef user = 1;
+  StaffRole role = 2;
+}
+
+message AuditEntry {
+  string at = 1;
+  UserRef actor = 2;
+  string action = 3;
+  string detail = 4;
+}
+
+// What the caller may do, so clients don't guess.
+message Viewer {
+  bool signed_in = 1;
+  StaffRole role = 2;
+  string entrant_id = 3;
+  bool can_register = 4;
+  bool can_check_in = 5;
+  bool can_manage = 6;
+  bool invited = 7;
+}
+
+message TournamentSummary {
+  Tournament tournament = 1;
+  // The caller's entrant in it, when they entered.
+  Entrant self = 2;
+}
+
+message LivePlayer {
+  string entrant_id = 1;
+  double score = 2;
+  double accuracy = 3;
+  double seconds_left = 4;
+  int32 ping_ms = 5;
+  // "connected", "reconnecting" or "offline".
+  string connection = 6;
+  // "waiting", "playing", "finished", "left".
+  string status = 7;
+  bool ready = 8;
+}
+
+// Pushed by the match host's client every few seconds while a match runs;
+// kept in memory on the Hub for the organiser overview and casting overlays.
+message LiveMatch {
+  string match_id = 1;
+  int32 game_index = 2;
+  string scenario = 3;
+  // "lobby", "loading", "countdown", "live", "round", "final".
+  string phase = 4;
+  repeated LivePlayer players = 5;
+  string updated_at = 6;
+  int32 spectators = 7;
+}
+
+message ListTournamentsRequest {
+  // Empty: everything public that is not a draft.
+  repeated TournamentStatus statuses = 1;
+  // Only tournaments the caller entered or helps run.
+  bool mine = 2;
+  int32 limit = 3;
+  string cursor = 4;
+}
+
+message ListTournamentsResponse {
+  repeated TournamentSummary tournaments = 1;
+  string next_cursor = 2;
+}
+
+message GetTournamentRequest {
+  // Id or slug.
+  string tournament = 1;
+}
+
+message GetTournamentResponse {
+  Tournament tournament = 1;
+  repeated Entrant entrants = 2;
+  repeated Match matches = 3;
+  repeated Standing standings = 4;
+  repeated Dispute disputes = 5;
+  repeated Staff staff = 6;
+  Viewer viewer = 7;
+  // Organisers and admins only.
+  repeated AuditEntry audit = 8;
+  repeated string invited_handles = 9;
+}
+
+message TournamentSpec {
+  string name = 1;
+  string description = 2;
+  TournamentFormat format = 3;
+  RegistrationMode registration_mode = 4;
+  int32 max_entrants = 5;
+  SeedingMethod seeding = 6;
+  string seeding_source = 7;
+  SchedulingMode scheduling = 8;
+  string check_in_opens_at = 9;
+  string check_in_closes_at = 10;
+  string starts_at = 11;
+  int32 ready_window_minutes = 12;
+  int32 no_show_minutes = 13;
+  Ruleset ruleset = 14;
+  TournamentOptions options = 15;
+  string prize = 16;
+}
+
+message CreateTournamentRequest {
+  TournamentSpec spec = 1;
+}
+
+message CreateTournamentResponse {
+  Tournament tournament = 1;
+}
+
+message UpdateTournamentRequest {
+  string tournament_id = 1;
+  int64 version = 2;
+  TournamentSpec spec = 3;
+}
+
+message UpdateTournamentResponse {
+  Tournament tournament = 1;
+}
+
+message AdvanceTournamentRequest {
+  string tournament_id = 1;
+  AdvanceAction action = 2;
+}
+
+message AdvanceTournamentResponse {
+  Tournament tournament = 1;
+}
+
+message RegisterRequest {
+  string tournament_id = 1;
+}
+
+message RegisterResponse {
+  Entrant entrant = 1;
+}
+
+message WithdrawRequest {
+  string tournament_id = 1;
+}
+
+message WithdrawResponse {}
+
+message CheckInRequest {
+  string tournament_id = 1;
+}
+
+message CheckInResponse {
+  Entrant entrant = 1;
+}
+
+message InviteEntrantsRequest {
+  string tournament_id = 1;
+  repeated string handles = 2;
+  bool remove = 3;
+}
+
+message InviteEntrantsResponse {
+  repeated string invited_handles = 1;
+}
+
+message SetSeedsRequest {
+  string tournament_id = 1;
+  // Entrant ids, top seed first. Entrants left out follow in their current order.
+  repeated string entrant_ids = 2;
+}
+
+message SetSeedsResponse {
+  repeated Entrant entrants = 1;
+}
+
+message ReseedRequest {
+  string tournament_id = 1;
+  SeedingMethod method = 2;
+  string seeding_source = 3;
+}
+
+message ReseedResponse {
+  repeated Entrant entrants = 1;
+}
+
+message ListMyMatchesRequest {}
+
+message MyMatch {
+  string tournament_id = 1;
+  string tournament_name = 2;
+  Match match = 3;
+  Entrant self = 4;
+  Entrant opponent = 5;
+  Ruleset ruleset = 6;
+  // True when this client should create the lobby and invite the opponent.
+  bool host = 7;
+  // The opponent's Steam id, for the automatic lobby invite (participants only).
+  string opponent_steam_id = 8;
+  SchedulingMode scheduling = 9;
+}
+
+message ListMyMatchesResponse {
+  repeated MyMatch matches = 1;
+  // Tournaments where the caller still has to check in.
+  repeated TournamentSummary check_in = 2;
+}
+
+message GetMatchRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+}
+
+message GetMatchResponse {
+  Tournament tournament = 1;
+  Match match = 2;
+  Entrant entrant_a = 3;
+  Entrant entrant_b = 4;
+  Viewer viewer = 5;
+  LiveMatch live = 6;
+  Dispute dispute = 7;
+}
+
+message MarkReadyRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+  bool ready = 3;
+  // This client can host a Steam lobby (the bridge is connected).
+  bool can_host = 4;
+}
+
+message MarkReadyResponse {
+  Match match = 1;
+}
+
+message SubmitVetoRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+  string scenario = 3;
+}
+
+message SubmitVetoResponse {
+  Match match = 1;
+}
+
+message ReportGameRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+  int32 game_index = 3;
+  double score_a = 4;
+  double score_b = 5;
+  // Replays uploaded with UploadReplay (the HTTP endpoint), one per player when available.
+  repeated string replay_ids = 6;
+  bool host_validated = 7;
+  string played_scenario = 8;
+  // The seed the lobby passed to the game, echoed back for the record.
+  string seed = 9;
+  // The full result record. When set, the scores come from it and must
+  // name exactly the match's two entrants.
+  GameResult result = 10;
+}
+
+message ReportGameResponse {
+  Match match = 1;
+}
+
+message ConfirmResultRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+}
+
+message ConfirmResultResponse {
+  Match match = 1;
+}
+
+message OpenDisputeRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+  string reason = 3;
+}
+
+message OpenDisputeResponse {
+  Dispute dispute = 1;
+}
+
+message ResolveDisputeRequest {
+  string tournament_id = 1;
+  string dispute_id = 2;
+  DisputeDecision decision = 3;
+  string winner_entrant_id = 4;
+  int32 wins_a = 5;
+  int32 wins_b = 6;
+  string note = 7;
+}
+
+message ResolveDisputeResponse {
+  Dispute dispute = 1;
+  Match match = 2;
+}
+
+message SetMatchResultRequest {
+  string tournament_id = 1;
+  string match_id = 2;
+  string winner_entrant_id = 3;
+  int32 wins_a = 4;
+  int32 wins_b = 5;
+  // RESOLUTION_ADMIN_OVERRIDE, RESOLUTION_FORFEIT or RESOLUTION_NO_SHOW.
+  Resolution resolution = 6;
+  string reason = 7;
+}
+
+message SetMatchResultResponse {
+  Match match = 1;
+  // Later matches cleared because their entrants changed.
+  repeated string reset_match_ids = 2;
+}
+
+message DisqualifyRequest {
+  string tournament_id = 1;
+  string entrant_id = 2;
+  string reason = 3;
+}
+
+message DisqualifyResponse {
+  Entrant entrant = 1;
+}
+
+message SetStaffRequest {
+  string tournament_id = 1;
+  string handle = 2;
+  // STAFF_ROLE_UNSPECIFIED removes them.
+  StaffRole role = 3;
+}
+
+message SetStaffResponse {
+  repeated Staff staff = 1;
+}
+
+message ReportLiveStateRequest {
+  string tournament_id = 1;
+  LiveMatch live = 2;
+}
+
+message ReportLiveStateResponse {}
+
+message GetOverviewRequest {
+  string tournament_id = 1;
+}
+
+message GetOverviewResponse {
+  Tournament tournament = 1;
+  // Matches being played now, with their live state when the host reports it.
+  repeated Match active = 2;
+  repeated LiveMatch live = 3;
+  repeated Entrant entrants = 4;
+}
+
+service TournamentService {
+  rpc ListTournaments(ListTournamentsRequest) returns (ListTournamentsResponse);
+  rpc GetTournament(GetTournamentRequest) returns (GetTournamentResponse);
+  rpc CreateTournament(CreateTournamentRequest) returns (CreateTournamentResponse);
+  rpc UpdateTournament(UpdateTournamentRequest) returns (UpdateTournamentResponse);
+  rpc AdvanceTournament(AdvanceTournamentRequest) returns (AdvanceTournamentResponse);
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Withdraw(WithdrawRequest) returns (WithdrawResponse);
+  rpc CheckIn(CheckInRequest) returns (CheckInResponse);
+  rpc InviteEntrants(InviteEntrantsRequest) returns (InviteEntrantsResponse);
+  rpc SetSeeds(SetSeedsRequest) returns (SetSeedsResponse);
+  rpc Reseed(ReseedRequest) returns (ReseedResponse);
+  rpc ListMyMatches(ListMyMatchesRequest) returns (ListMyMatchesResponse);
+  rpc GetMatch(GetMatchRequest) returns (GetMatchResponse);
+  rpc MarkReady(MarkReadyRequest) returns (MarkReadyResponse);
+  rpc SubmitVeto(SubmitVetoRequest) returns (SubmitVetoResponse);
+  rpc ReportGame(ReportGameRequest) returns (ReportGameResponse);
+  rpc ConfirmResult(ConfirmResultRequest) returns (ConfirmResultResponse);
+  rpc OpenDispute(OpenDisputeRequest) returns (OpenDisputeResponse);
+  rpc ResolveDispute(ResolveDisputeRequest) returns (ResolveDisputeResponse);
+  rpc SetMatchResult(SetMatchResultRequest) returns (SetMatchResultResponse);
+  rpc Disqualify(DisqualifyRequest) returns (DisqualifyResponse);
+  rpc SetStaff(SetStaffRequest) returns (SetStaffResponse);
+  rpc ReportLiveState(ReportLiveStateRequest) returns (ReportLiveStateResponse);
+  rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse);
+}

@@ -85,6 +85,8 @@ type Config struct {
 	OsuCacheMaxEntries                     int
 	OsuProviderRequestsPerSecond           float64
 	OsuRequestTimeout                      time.Duration
+	// TournamentCreators: who may create tournaments ("admin", "verified" or "signed-in").
+	TournamentCreators string
 }
 
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
@@ -119,6 +121,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/admin/osu/providers", withAuthCORS(cfg.AllowedWebOrigin, adminOsu))
 	newOsuSyncHandler(hub.Store(), auth.media, osuServer).register(mux, cfg.AllowedWebOrigin)
 	(trainingHandler{store: hub.Store()}).register(mux, cfg.AllowedWebOrigin)
+	registerTournaments(mux, cfg, hub.Store(), auth, hub.Benchmarks())
 	newOsuProfileScoresHandler(hub.Store(), osuServer).register(mux, cfg.AllowedWebOrigin)
 	newOsuPlayersHandler(osuServer).register(mux, cfg.AllowedWebOrigin)
 	if osuServer != nil && hub.Store() != nil && cfg.OsuClientID != "" && cfg.OsuClientSecret != "" {
@@ -325,6 +328,7 @@ func DefaultConfig() Config {
 		OsuCacheMaxEntries:                     parseEnvInt("AIMMOD_OSU_CACHE_MAX_ENTRIES", 256, 1, 4096),
 		OsuProviderRequestsPerSecond:           parseEnvFloat("AIMMOD_OSU_PROVIDER_RPS", 1, 0.1, 100),
 		OsuRequestTimeout:                      parseEnvDuration("AIMMOD_OSU_REQUEST_TIMEOUT", 10*time.Second),
+		TournamentCreators:                     envOrDefault("AIMMOD_HUB_TOURNAMENT_CREATORS", "admin"),
 	}
 }
 
