@@ -3,8 +3,13 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 import { API_BASE_URL } from "./config";
 import { createPublicQuery } from "./publicQuery";
 import {
+  ComparePlayersRequest,
   GetBenchmarkLeaderboardRequest,
+  GetKovaaksPlayerRequest,
   GetLeaderboardRequest,
+  GetPlayerScenarioStatsRequest,
+  GetScenarioLeaderboardRequest,
+  QuickSearchRequest,
   GetLearningEntryRequest,
   GetLearningEntryResponse as ProtoGetLearningEntryResponse,
   GetLearningIndexRequest,
@@ -503,8 +508,8 @@ export async function fetchOverview() {
   return hubClient.getOverview(new GetOverviewRequest());
 }
 
-export async function fetchScenarioPage(slug: string) {
-  return hubClient.getScenarioPage(new GetScenarioPageRequest({ slug }));
+export async function fetchScenarioPage(slug: string, handle = "") {
+  return hubClient.getScenarioPage(new GetScenarioPageRequest({ slug, handle }));
 }
 
 export async function fetchProfile(handle: string) {
@@ -525,6 +530,66 @@ export function fetchLeaderboard(scenarioType = "") {
 
 export async function fetchBenchmarkLeaderboard(benchmarkId: number) {
   return hubClient.getBenchmarkLeaderboard(new GetBenchmarkLeaderboardRequest({ benchmarkId }));
+}
+
+const scenarioLeaderboardQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getScenarioLeaderboard>>>(15_000);
+const quickSearchQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.quickSearch>>>(30_000);
+const kovaaksPlayerQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getKovaaksPlayer>>>(60_000);
+const playerStatsQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getPlayerScenarioStats>>>(15_000);
+
+export type ScenarioLeaderboardParams = {
+  scenarioSlug?: string;
+  scenarioName?: string;
+  leaderboardId?: number;
+  source?: "aimmod" | "kovaaks";
+  range?: string;
+  page?: number;
+  pageSize?: number;
+  aroundHandle?: string;
+  aroundSteamId?: string;
+  query?: string;
+  sort?: string;
+  linkedOnly?: boolean;
+};
+
+export function fetchScenarioLeaderboard(params: ScenarioLeaderboardParams) {
+  const request = new GetScenarioLeaderboardRequest({
+    scenarioSlug: params.scenarioSlug ?? "",
+    scenarioName: params.scenarioName ?? "",
+    leaderboardId: params.leaderboardId ?? 0,
+    source: params.source ?? "aimmod",
+    range: params.range ?? "",
+    page: params.page ?? 0,
+    pageSize: params.pageSize ?? 50,
+    aroundHandle: params.aroundHandle ?? "",
+    aroundSteamId: params.aroundSteamId ?? "",
+    query: params.query ?? "",
+    sort: params.sort ?? "",
+    linkedOnly: params.linkedOnly ?? false,
+  });
+  return scenarioLeaderboardQuery(request.toJsonString(), () => hubClient.getScenarioLeaderboard(request));
+}
+
+export function quickSearch(query: string, includeKovaaks = false, limit = 20) {
+  const key = JSON.stringify([query.trim().toLowerCase(), includeKovaaks, limit]);
+  return quickSearchQuery(key, () => hubClient.quickSearch(new QuickSearchRequest({ query, includeKovaaks, limit })));
+}
+
+export function fetchPlayerScenarioStats(handle: string, range = "") {
+  return playerStatsQuery(JSON.stringify([handle, range]), () => hubClient.getPlayerScenarioStats(new GetPlayerScenarioStatsRequest({ handle, range })));
+}
+
+export function comparePlayers(handle: string, otherHandle: string) {
+  return hubClient.comparePlayers(new ComparePlayersRequest({ handle, otherHandle }));
+}
+
+export function fetchKovaaksPlayer(query: string) {
+  return kovaaksPlayerQuery(query.trim().toLowerCase(), () => hubClient.getKovaaksPlayer(new GetKovaaksPlayerRequest({ query })));
+}
+
+/** Benchmark sheet for a KovaaK's player by Steam id, from KovaaK's data only. */
+export function fetchKovaaksBenchmarkPage(steamId: string, benchmarkId: number) {
+  return benchmarkPageQuery(JSON.stringify(["steam", steamId, benchmarkId]), () => hubClient.getBenchmarkPage(new GetBenchmarkPageRequest({ steamId, benchmarkId })));
 }
 
 export function formatRelativeTime(dateStr: string | undefined | null): string {
