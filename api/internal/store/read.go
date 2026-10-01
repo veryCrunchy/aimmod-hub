@@ -43,6 +43,8 @@ type ScenarioPageRecord struct {
 	AverageScore      float64
 	AverageAccuracy   float64
 	AverageDurationMS uint64
+	PlayerCount       uint32
+	RunsLast7Days     uint32
 	RecentRuns        []*hubv1.RunPreview
 	TopRuns           []*hubv1.RunPreview
 	ScoreDistribution []*hubv1.ScoreBin
@@ -59,6 +61,9 @@ type ProfileRecord struct {
 	PrimaryScenarioType string
 	AverageScore        float64
 	AverageAccuracy     float64
+	TotalDurationMS     uint64
+	LastPlayedAt        *time.Time
+	RunsLast7Days       uint32
 	TopScenarios        []*hubv1.TopScenario
 	RecentRuns          []*hubv1.RunPreview
 	PersonalBests       []*hubv1.RunPreview
@@ -115,6 +120,9 @@ type OverviewRecord struct {
 	TotalRuns      uint32
 	TotalScenarios uint32
 	TotalPlayers   uint32
+	RunsLast7Days    uint32
+	PlayersLast7Days uint32
+	TotalDurationMS  uint64
 	RecentRuns     []*hubv1.RunPreview
 	TopScenarios   []*hubv1.TopScenario
 	ActiveProfiles []*hubv1.CommunityProfilePreview
@@ -1495,9 +1503,12 @@ func (s *Store) GetOverview(ctx context.Context) (OverviewRecord, error) {
 		SELECT
 			COUNT(*)::bigint,
 			COUNT(DISTINCT scenario_name)::bigint,
-			COUNT(DISTINCT user_id)::bigint
+			COUNT(DISTINCT user_id)::bigint,
+			COUNT(*) FILTER (WHERE played_at >= NOW() - INTERVAL '7 days')::bigint,
+			COUNT(DISTINCT user_id) FILTER (WHERE played_at >= NOW() - INTERVAL '7 days')::bigint,
+			COALESCE(SUM(duration_ms), 0)::bigint
 		FROM scenario_runs
-	`).Scan(&record.TotalRuns, &record.TotalScenarios, &record.TotalPlayers); err != nil {
+	`).Scan(&record.TotalRuns, &record.TotalScenarios, &record.TotalPlayers, &record.RunsLast7Days, &record.PlayersLast7Days, &record.TotalDurationMS); err != nil {
 		return OverviewRecord{}, fmt.Errorf("load overview aggregates: %w", err)
 	}
 
@@ -1819,7 +1830,9 @@ func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageR
 			COALESCE(MAX(score), 0),
 			COALESCE(AVG(score), 0),
 			COALESCE(AVG(accuracy), 0),
-			COALESCE(ROUND(AVG(duration_ms))::bigint, 0)
+			COALESCE(ROUND(AVG(duration_ms))::bigint, 0),
+			COUNT(DISTINCT user_id),
+			COUNT(*) FILTER (WHERE played_at >= NOW() - INTERVAL '7 days')
 		FROM scenario_runs
 		WHERE scenario_name = $1
 	`, scenarioName).Scan(
@@ -1829,6 +1842,8 @@ func (s *Store) GetScenarioPage(ctx context.Context, slug string) (ScenarioPageR
 		&record.AverageScore,
 		&record.AverageAccuracy,
 		&record.AverageDurationMS,
+		&record.PlayerCount,
+		&record.RunsLast7Days,
 	); err != nil {
 		return ScenarioPageRecord{}, fmt.Errorf("load scenario aggregates: %w", err)
 	}
@@ -2022,7 +2037,10 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 			COUNT(*),
 			COUNT(DISTINCT scenario_name),
 			COALESCE(AVG(score), 0),
-			COALESCE(AVG(accuracy), 0)
+			COALESCE(AVG(accuracy), 0),
+			COALESCE(SUM(duration_ms), 0)::bigint,
+			MAX(played_at),
+			COUNT(*) FILTER (WHERE played_at >= NOW() - INTERVAL '7 days')
 		FROM scenario_runs
 		WHERE user_id = $1
 	`, userID).Scan(
@@ -2030,6 +2048,9 @@ func (s *Store) GetProfile(ctx context.Context, handle string) (ProfileRecord, e
 		&record.ScenarioCount,
 		&record.AverageScore,
 		&record.AverageAccuracy,
+		&record.TotalDurationMS,
+		&record.LastPlayedAt,
+		&record.RunsLast7Days,
 	); err != nil {
 		return ProfileRecord{}, fmt.Errorf("load profile aggregates: %w", err)
 	}

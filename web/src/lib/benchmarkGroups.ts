@@ -68,3 +68,20 @@ export function groupBenchmarks<T extends {
   }
   return [...groups.values()];
 }
+
+export type BenchmarkSort = "players" | "name";
+type BenchmarkLike = Parameters<typeof groupBenchmarks>[0][number] & { playerCount: number; benchmarkName: string };
+
+export function groupPlayers(group: BenchmarkGroup<{ playerCount?: number }>) {
+  return group.variants.reduce((sum, v) => sum + (v.item.playerCount ?? 0), 0);
+}
+
+/** Groups ordered for browsing: matching the query, most ranked Hub players first. */
+export function browseBenchmarkGroups<T extends BenchmarkLike>(items: readonly T[], query: string, sort: BenchmarkSort, rankedOnly: boolean) {
+  const q = query.trim().toLowerCase();
+  return groupBenchmarks([...items])
+    .filter((group) => !q || `${group.base} ${group.author} ${group.type} ${group.variants.map((v) => v.item.benchmarkName).join(" ")}`.toLowerCase().includes(q))
+    .filter((group) => !rankedOnly || groupPlayers(group) > 0)
+    .sort((a, b) => sort === "name" ? a.base.localeCompare(b.base) : groupPlayers(b) - groupPlayers(a) || a.base.localeCompare(b.base));
+}
+

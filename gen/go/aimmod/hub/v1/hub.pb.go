@@ -1195,8 +1195,12 @@ type GetOverviewResponse struct {
 	RecentRuns     []*RunPreview              `protobuf:"bytes,4,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
 	TopScenarios   []*TopScenario             `protobuf:"bytes,5,rep,name=top_scenarios,json=topScenarios,proto3" json:"top_scenarios,omitempty"`
 	ActiveProfiles []*CommunityProfilePreview `protobuf:"bytes,6,rep,name=active_profiles,json=activeProfiles,proto3" json:"active_profiles,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Activity in the last seven days, and total time played across all runs.
+	RunsLast_7Days    uint32 `protobuf:"varint,7,opt,name=runs_last_7_days,json=runsLast7Days,proto3" json:"runs_last_7_days,omitempty"`
+	PlayersLast_7Days uint32 `protobuf:"varint,8,opt,name=players_last_7_days,json=playersLast7Days,proto3" json:"players_last_7_days,omitempty"`
+	TotalDurationMs   uint64 `protobuf:"varint,9,opt,name=total_duration_ms,json=totalDurationMs,proto3" json:"total_duration_ms,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetOverviewResponse) Reset() {
@@ -1269,6 +1273,27 @@ func (x *GetOverviewResponse) GetActiveProfiles() []*CommunityProfilePreview {
 		return x.ActiveProfiles
 	}
 	return nil
+}
+
+func (x *GetOverviewResponse) GetRunsLast_7Days() uint32 {
+	if x != nil {
+		return x.RunsLast_7Days
+	}
+	return 0
+}
+
+func (x *GetOverviewResponse) GetPlayersLast_7Days() uint32 {
+	if x != nil {
+		return x.PlayersLast_7Days
+	}
+	return 0
+}
+
+func (x *GetOverviewResponse) GetTotalDurationMs() uint64 {
+	if x != nil {
+		return x.TotalDurationMs
+	}
+	return 0
 }
 
 type GetRunRequest struct {
@@ -1544,8 +1569,11 @@ type GetScenarioPageResponse struct {
 	RecentRuns        []*RunPreview          `protobuf:"bytes,9,rep,name=recent_runs,json=recentRuns,proto3" json:"recent_runs,omitempty"`
 	TopRuns           []*RunPreview          `protobuf:"bytes,10,rep,name=top_runs,json=topRuns,proto3" json:"top_runs,omitempty"`
 	ScoreDistribution []*ScoreBin            `protobuf:"bytes,11,rep,name=score_distribution,json=scoreDistribution,proto3" json:"score_distribution,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Distinct players with a run on this scenario, and runs in the last seven days.
+	PlayerCount    uint32 `protobuf:"varint,12,opt,name=player_count,json=playerCount,proto3" json:"player_count,omitempty"`
+	RunsLast_7Days uint32 `protobuf:"varint,13,opt,name=runs_last_7_days,json=runsLast7Days,proto3" json:"runs_last_7_days,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetScenarioPageResponse) Reset() {
@@ -1655,6 +1683,20 @@ func (x *GetScenarioPageResponse) GetScoreDistribution() []*ScoreBin {
 	return nil
 }
 
+func (x *GetScenarioPageResponse) GetPlayerCount() uint32 {
+	if x != nil {
+		return x.PlayerCount
+	}
+	return 0
+}
+
+func (x *GetScenarioPageResponse) GetRunsLast_7Days() uint32 {
+	if x != nil {
+		return x.RunsLast_7Days
+	}
+	return 0
+}
+
 type GetProfileRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Handle        string                 `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
@@ -1715,8 +1757,12 @@ type GetProfileResponse struct {
 	PersonalBests       []*RunPreview          `protobuf:"bytes,12,rep,name=personal_bests,json=personalBests,proto3" json:"personal_bests,omitempty"`
 	IsVerified          bool                   `protobuf:"varint,13,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
 	Benchmarks          []*BenchmarkSummary    `protobuf:"bytes,14,rep,name=benchmarks,proto3" json:"benchmarks,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// Total time played across all runs, the most recent run, and runs in the last seven days.
+	TotalDurationMs uint64 `protobuf:"varint,15,opt,name=total_duration_ms,json=totalDurationMs,proto3" json:"total_duration_ms,omitempty"`
+	LastPlayedAtIso string `protobuf:"bytes,16,opt,name=last_played_at_iso,json=lastPlayedAtIso,proto3" json:"last_played_at_iso,omitempty"`
+	RunsLast_7Days  uint32 `protobuf:"varint,17,opt,name=runs_last_7_days,json=runsLast7Days,proto3" json:"runs_last_7_days,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetProfileResponse) Reset() {
@@ -1845,6 +1891,27 @@ func (x *GetProfileResponse) GetBenchmarks() []*BenchmarkSummary {
 		return x.Benchmarks
 	}
 	return nil
+}
+
+func (x *GetProfileResponse) GetTotalDurationMs() uint64 {
+	if x != nil {
+		return x.TotalDurationMs
+	}
+	return 0
+}
+
+func (x *GetProfileResponse) GetLastPlayedAtIso() string {
+	if x != nil {
+		return x.LastPlayedAtIso
+	}
+	return ""
+}
+
+func (x *GetProfileResponse) GetRunsLast_7Days() uint32 {
+	if x != nil {
+		return x.RunsLast_7Days
+	}
+	return 0
 }
 
 type SearchRequest struct {
@@ -5961,7 +6028,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x15primary_scenario_type\x18\x06 \x01(\tR\x13primaryScenarioType\x12\x1f\n" +
 	"\vis_verified\x18\a \x01(\bR\n" +
 	"isVerified\"\x14\n" +
-	"\x12GetOverviewRequest\"\xd0\x02\n" +
+	"\x12GetOverviewRequest\"\xd4\x03\n" +
 	"\x13GetOverviewResponse\x12\x1d\n" +
 	"\n" +
 	"total_runs\x18\x01 \x01(\rR\ttotalRuns\x12'\n" +
@@ -5970,7 +6037,10 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\vrecent_runs\x18\x04 \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\n" +
 	"recentRuns\x12?\n" +
 	"\rtop_scenarios\x18\x05 \x03(\v2\x1a.aimmod.hub.v1.TopScenarioR\ftopScenarios\x12O\n" +
-	"\x0factive_profiles\x18\x06 \x03(\v2&.aimmod.hub.v1.CommunityProfilePreviewR\x0eactiveProfiles\"E\n" +
+	"\x0factive_profiles\x18\x06 \x03(\v2&.aimmod.hub.v1.CommunityProfilePreviewR\x0eactiveProfiles\x12'\n" +
+	"\x10runs_last_7_days\x18\a \x01(\rR\rrunsLast7Days\x12-\n" +
+	"\x13players_last_7_days\x18\b \x01(\rR\x10playersLast7Days\x12*\n" +
+	"\x11total_duration_ms\x18\t \x01(\x04R\x0ftotalDurationMs\"E\n" +
 	"\rGetRunRequest\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x15\n" +
@@ -6004,7 +6074,7 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".aimmod.hub.v1.SessionSummaryValueR\x05value:\x028\x01\",\n" +
 	"\x16GetScenarioPageRequest\x12\x12\n" +
-	"\x04slug\x18\x01 \x01(\tR\x04slug\"\xfe\x03\n" +
+	"\x04slug\x18\x01 \x01(\tR\x04slug\"\xca\x04\n" +
 	"\x17GetScenarioPageResponse\x12#\n" +
 	"\rscenario_name\x18\x01 \x01(\tR\fscenarioName\x12#\n" +
 	"\rscenario_slug\x18\x02 \x01(\tR\fscenarioSlug\x12#\n" +
@@ -6019,9 +6089,11 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"recentRuns\x124\n" +
 	"\btop_runs\x18\n" +
 	" \x03(\v2\x19.aimmod.hub.v1.RunPreviewR\atopRuns\x12F\n" +
-	"\x12score_distribution\x18\v \x03(\v2\x17.aimmod.hub.v1.ScoreBinR\x11scoreDistribution\"+\n" +
+	"\x12score_distribution\x18\v \x03(\v2\x17.aimmod.hub.v1.ScoreBinR\x11scoreDistribution\x12!\n" +
+	"\fplayer_count\x18\f \x01(\rR\vplayerCount\x12'\n" +
+	"\x10runs_last_7_days\x18\r \x01(\rR\rrunsLast7Days\"+\n" +
 	"\x11GetProfileRequest\x12\x16\n" +
-	"\x06handle\x18\x01 \x01(\tR\x06handle\"\x93\x05\n" +
+	"\x06handle\x18\x01 \x01(\tR\x06handle\"\x95\x06\n" +
 	"\x12GetProfileResponse\x12(\n" +
 	"\x10user_external_id\x18\x01 \x01(\tR\x0euserExternalId\x12\x1f\n" +
 	"\vuser_handle\x18\x02 \x01(\tR\n" +
@@ -6043,7 +6115,10 @@ const file_aimmod_hub_v1_hub_proto_rawDesc = "" +
 	"isVerified\x12?\n" +
 	"\n" +
 	"benchmarks\x18\x0e \x03(\v2\x1f.aimmod.hub.v1.BenchmarkSummaryR\n" +
-	"benchmarks\"%\n" +
+	"benchmarks\x12*\n" +
+	"\x11total_duration_ms\x18\x0f \x01(\x04R\x0ftotalDurationMs\x12+\n" +
+	"\x12last_played_at_iso\x18\x10 \x01(\tR\x0flastPlayedAtIso\x12'\n" +
+	"\x10runs_last_7_days\x18\x11 \x01(\rR\rrunsLast7Days\"%\n" +
 	"\rSearchRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\"\xa2\x01\n" +
 	"\x14SearchScenarioResult\x12#\n" +

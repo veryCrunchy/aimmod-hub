@@ -5,20 +5,7 @@ import { useAuth } from "../lib/AuthContext";
 import { discordStartUrl } from "../lib/auth";
 import { Button } from "./ui/Button";
 import { HeaderSearch } from "./HeaderSearch";
-
-const kovaaksGroups = [
-  { label: "KovaaK's", links: [["/kovaaks", "Overview"], ["/community", "Community"], ["/replays", "Replays"], ["/live", "Live activity"]] },
-  { label: "Improve", links: [["/benchmarks", "Benchmarks"], ["/leaderboard", "Leaderboard"], ["/learn", "Learning library"]] },
-  { label: "Compete", links: [["/tournaments", "Tournaments"]] },
-  { label: "AimMod", links: [["/app/kovaaks", "Get AimMod for KovaaK's"], ["/app", "All downloads"]] },
-];
-
-const osuGroups = [
-  { label: "Browse", links: [["/osu", "Overview"], ["/osu/pp-targets", "PP beatmaps"], ["/osu/beatmaps", "All beatmaps"], ["/osu/replays", "Replays"]] },
-  { label: "Make it yours", links: [["/osu/skins", "Skins"], ["/osu/skin-builder", "Skin builder"]] },
-  { label: "Community", links: [["/osu/players", "Players"], ["/osu/community", "Activity"], ["/osu/learn", "Learning guides"]] },
-  { label: "", links: [["/app/osu", "Download AimMod"], ["/osu/help", "App guide"]] },
-];
+import { accountNav, navFor } from "../lib/hubNavigation";
 
 export function AppShell({ children }: PropsWithChildren) {
   const auth = useAuth();
@@ -28,7 +15,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const choosing = location.pathname === "/";
   const finder = ["/osu/pp-targets", "/osu/beatmaps", "/osu/players", "/osu/skins"].includes(location.pathname);
   const game = gameForPath(location.pathname) ?? preferredGame;
-  const groups = game === "osu" ? osuGroups : kovaaksGroups;
+  const groups = navFor(game);
   const searchRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDetailsElement>(null);
   const isAdmin = Boolean(auth.user?.isAdmin ?? auth.isAdmin);
@@ -74,12 +61,11 @@ export function AppShell({ children }: PropsWithChildren) {
         {group.label && <span className="hub-nav-label">{group.label}</span>}
         {group.links.map(([to, label]) => <NavLink key={to} to={to} end={to === "/" || to === "/app" || to === "/osu" || to === "/kovaaks"}>{label}</NavLink>)}
       </div>)}
-      <div className="hub-nav-group">
-        {auth.authenticated && <NavLink to="/account">Settings & devices</NavLink>}
-        {auth.authenticated && <NavLink to="/osu/training">Training progress</NavLink>}
-        {isAdmin && <NavLink to="/admin">Administration</NavLink>}
-        {auth.authenticated && <button type="button" onClick={() => void auth.signOut()}>Sign out</button>}
-      </div>
+      {auth.authenticated && <div className="hub-nav-group">
+        <span className="hub-nav-label">You</span>
+        {accountNav(game, { authenticated: true, isAdmin, profileHandle: auth.user?.profileHandle }).map(([to, label]) => <NavLink key={to} to={to} end>{label}</NavLink>)}
+        <button type="button" onClick={() => void auth.signOut()}>Sign out</button>
+      </div>}
     </>;
   }
 

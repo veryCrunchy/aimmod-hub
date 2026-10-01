@@ -64,11 +64,7 @@ export function AimProfileSection({ handle }: Props) {
 
   return (
     <PageSection className="h-full">
-      <SectionHeader
-        eyebrow="Aim profile"
-        title="Performance by scenario type"
-        body="Accuracy percentile vs the community across the scenario families this player has practiced."
-      />
+      <SectionHeader title="Accuracy by scenario type" body="Percentile against all players on the Hub. 50th is the median." />
 
       <Grid className="grid-cols-[minmax(0,1fr)_220px] items-start gap-4 max-[900px]:grid-cols-1">
         {/* radar — only shown with 2+ types */}
@@ -79,7 +75,7 @@ export function AimProfileSection({ handle }: Props) {
           <div className="rounded-[14px] border border-line bg-white/2 p-3">
             <p className="text-[10px] uppercase tracking-[0.1em] text-muted-2">Overall</p>
             <p className={`mt-1 text-xl font-medium ${overallPct.color}`}>
-              {Math.round(profile.overallAccuracyPercentile)}th
+              {Math.round(profile.overallAccuracyPercentile)}th <span className="text-xs font-normal text-muted">percentile</span>
             </p>
             <p className={`mt-0.5 text-[11px] ${overallPct.color}`}>{overallPct.label}</p>
             <p className="mt-1 text-[11px] text-muted-2">{profile.overallAccuracy.toFixed(1)}% avg acc</p>
@@ -91,7 +87,7 @@ export function AimProfileSection({ handle }: Props) {
               <p className="mt-1 text-sm font-medium">
                 {displayScenarioType(profile.strongestType) ?? profile.strongestType}
               </p>
-              <p className="mt-1 text-[11px] opacity-60">Highest accuracy %ile</p>
+              <p className="mt-1 text-[11px] opacity-60">Best percentile</p>
             </div>
           )}
 
@@ -101,7 +97,7 @@ export function AimProfileSection({ handle }: Props) {
               <p className="mt-1 text-sm font-medium">
                 {displayScenarioType(profile.mostPracticedType) ?? profile.mostPracticedType}
               </p>
-              <p className="mt-1 text-[11px] opacity-60">Highest run volume</p>
+              <p className="mt-1 text-[11px] opacity-60">Most runs</p>
             </div>
           )}
         </div>

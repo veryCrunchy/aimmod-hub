@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { TournamentStatus, type TournamentSummary } from "../gen/aimmod/tournament/v1/tournament_pb";
 import { PageSeo } from "../components/PageSeo";
-import { SectionHeader } from "../components/SectionHeader";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Tabs } from "../components/ui/Tabs";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { Skeleton } from "../components/ui/Skeleton";
 import { PageStack } from "../components/ui/Stack";
 import { useAuth } from "../lib/AuthContext";
-import { cn } from "../lib/cn";
 import { errorMessage, formatLabels, formatWhen, statusLabels, tournamentClient } from "../lib/tournaments";
 
 const tabs = [
@@ -52,27 +52,22 @@ export function TournamentsPage() {
     <PageStack>
       <PageSeo title="KovaaK's Tournaments · AimMod Hub" description="Brackets, check-in and live matches for AimMod tournaments in KovaaK's. Results are verified with replays and never touch KovaaK's ranked leaderboards." />
       <PageSection>
-        <SectionHeader
-          level={1}
-          eyebrow="Compete"
+        <PageHeader
           title="Tournaments"
-          body="Play bracket events inside KovaaK's with AimMod. Your match lobby is created for you, both players play the same seeded scenario, and results are verified with replays. Tournament games never count toward KovaaK's ranked leaderboards."
-          aside={auth.authenticated ? <Button to="/tournaments/new" variant="primary">Create a tournament</Button> : null}
+          meta="Bracket events played in KovaaK's. Results are checked with replays and never affect ranked leaderboards."
+          actions={auth.authenticated ? <Button to="/tournaments/new" variant="primary">Create a tournament</Button> : null}
         />
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tournament list">
-          {tabs.filter((t) => t.key !== "mine" || auth.authenticated).map((t) => (
-            <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)}
-              className={cn("rounded-full border px-4 py-1.5 text-[12px] font-medium transition-colors",
-                tab === t.key ? "border-cyan/40 bg-cyan/10 text-cyan" : "border-line text-muted hover:text-text")}>
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <Tabs label="Tournament list" value={tab} onChange={setTab} className="mt-4"
+          tabs={tabs.filter((t) => t.key !== "mine" || auth.authenticated).map((t) => [t.key, t.label] as const)} />
       </PageSection>
       <PageSection>
-        {error ? <EmptyState title="Could not load tournaments" body={error} />
+        {error ? <EmptyState title="Tournaments could not be loaded." body={error} />
           : !items ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="mb-2 h-16" />)
-          : items.length === 0 ? <EmptyState title="Nothing here yet" body={tab === "mine" ? "Tournaments you enter or help run appear here." : "No tournaments in this list right now."} />
+          : items.length === 0 ? (
+            <EmptyState title={tab === "mine" ? "You have not entered a tournament yet." : tab === "live" ? "No tournaments are running." : tab === "done" ? "No finished tournaments yet." : "No tournaments are open."}>
+              {tab !== "open" ? <Button onClick={() => setTab("open")}>See open tournaments</Button> : auth.authenticated ? <Button to="/tournaments/new">Create a tournament</Button> : null}
+            </EmptyState>
+          )
           : (
             <ul className="divide-y divide-line border-y border-line">
               {items.map(({ tournament: t, self }) => t && (

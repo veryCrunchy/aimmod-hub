@@ -180,6 +180,9 @@ func (s *HubServer) GetOverview(
 		TotalRuns:      overview.TotalRuns,
 		TotalScenarios: overview.TotalScenarios,
 		TotalPlayers:   overview.TotalPlayers,
+		RunsLast_7Days:    overview.RunsLast7Days,
+		PlayersLast_7Days: overview.PlayersLast7Days,
+		TotalDurationMs:   overview.TotalDurationMS,
 		RecentRuns:     overview.RecentRuns,
 		TopScenarios:   overview.TopScenarios,
 		ActiveProfiles: overview.ActiveProfiles,
@@ -256,6 +259,8 @@ func (s *HubServer) GetScenarioPage(
 		RecentRuns:        page.RecentRuns,
 		TopRuns:           page.TopRuns,
 		ScoreDistribution: page.ScoreDistribution,
+		PlayerCount:       page.PlayerCount,
+		RunsLast_7Days:    page.RunsLast7Days,
 	}), nil
 }
 
@@ -295,6 +300,9 @@ func (s *HubServer) GetProfile(
 		RecentRuns:          profile.RecentRuns,
 		PersonalBests:       profile.PersonalBests,
 		Benchmarks:          benchmarks,
+		TotalDurationMs:     profile.TotalDurationMS,
+		LastPlayedAtIso:     isoOrEmpty(profile.LastPlayedAt),
+		RunsLast_7Days:      profile.RunsLast7Days,
 	}), nil
 }
 
@@ -496,6 +504,10 @@ func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) (
 	if err != nil {
 		return nil, nil, err
 	}
+	if strings.TrimSpace(identity.KovaaksUsername) == "" && strings.TrimSpace(identity.SteamID) == "" {
+		// Without a linked KovaaK's or Steam account there are no ranks to look up.
+		return nil, nil, nil
+	}
 
 	items, listErr := s.benchmarks.ListPlayerBenchmarks(ctx, identity.KovaaksUsername)
 	if strings.TrimSpace(identity.SteamID) == "" {
@@ -611,6 +623,9 @@ func (s *HubServer) fetchScenarioBenchmarkRanks(
 	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
 	if err != nil {
 		return nil, err
+	}
+	if strings.TrimSpace(identity.KovaaksUsername) == "" && strings.TrimSpace(identity.SteamID) == "" {
+		return nil, nil
 	}
 	items := preloaded
 	if len(items) == 0 {
@@ -1321,3 +1336,10 @@ func replayMediaPath(publicRunID, quality string) string {
 }
 
 var _ hubv1connect.HubServiceHandler = (*HubServer)(nil)
+
+func isoOrEmpty(t *time.Time) string {
+	if t == nil || t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}

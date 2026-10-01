@@ -15,9 +15,9 @@ export function GameSelectionPage() {
       </section>
       <section className="game-choice game-choice-kovaaks" aria-labelledby="kovaaks-choice">
         <div className="game-choice-top"><span className="game-emblem"><Crosshair size={30} aria-hidden="true" /></span><span>AIM & CONSISTENCY</span></div>
-        <h2 id="kovaaks-choice">KovaaK’s</h2><p>Make your practice count.</p><span className="game-description">Review runs, compare benchmarks, and find the next skill to work on.</span>
+        <h2 id="kovaaks-choice">KovaaK’s</h2><p>Make your practice count.</p><span className="game-description">Track your scores, personal bests and benchmark ranks, and see who is playing now.</span>
         <Link className="home-primary" to="/kovaaks">Explore KovaaK’s <ArrowRight size={19} aria-hidden="true" /></Link>
-        <div className="game-shortcuts"><Link to="/benchmarks">Benchmarks <ArrowRight size={16} /></Link><Link to="/replays">Watch replays <ArrowRight size={16} /></Link></div>
+        <div className="game-shortcuts"><Link to="/leaderboard">Leaderboards <ArrowRight size={16} /></Link><Link to="/live">Live now <ArrowRight size={16} /></Link></div>
       </section>
     </div>
     <div className="home-bottom"><span><TrendingUp size={18} aria-hidden="true" /> A little more progress, every session.</span><Link to="/app"><Download size={17} aria-hidden="true" /> Get AimMod <ArrowRight size={16} aria-hidden="true" /></Link></div>

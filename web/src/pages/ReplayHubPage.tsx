@@ -3,13 +3,11 @@ import { Helmet } from "../lib/helmet";
 import { useSearchParams } from "react-router-dom";
 import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 import { ReplayResultCard } from "../components/ReplayResultCard";
-import { SectionHeader } from "../components/SectionHeader";
+import { PageHeader } from "../components/ui/PageHeader";
 import { EmptyState } from "../components/ui/EmptyState";
-import { PageSection } from "../components/ui/PageSection";
-import { ScrollArea } from "../components/ui/ScrollArea";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Button } from "../components/ui/Button";
-import { Grid, PageStack } from "../components/ui/Stack";
+import { PageStack } from "../components/ui/Stack";
 import { fetchReplayHub } from "../lib/api";
 
 type ReplayFilter = "all" | "video" | "mouse";
@@ -70,42 +68,36 @@ export function ReplayHubPage() {
     setSearchParams(next);
   }
 
+  const videoCount = items.filter((item) => item.hasVideo).length;
+  const mouseCount = items.filter((item) => item.hasMousePath).length;
+  const counts: Record<ReplayFilter, number> = { all: items.length, video: videoCount, mouse: mouseCount };
+  const labels: Record<ReplayFilter, string> = { all: "All", video: "Video", mouse: "Mouse path" };
+
   return (
     <PageStack>
       <Helmet>
-        <title>Replay Hub · AimMod Hub</title>
-        <meta
-          name="description"
-          content="Browse uploaded AimMod replays, find watchable runs, and jump straight into replay-rich scenarios and player pages."
-        />
+        <title>Replays · AimMod Hub</title>
+        <meta name="description" content="KovaaK's runs with replay video or mouse paths, shared through AimMod." />
       </Helmet>
 
-      <PageSection>
-        <SectionHeader
-          eyebrow="Replay hub"
-          level={1}
-          title="Replay library"
-          body="Recorded KovaaK's runs and mouse paths."
-        />
+      <PageHeader
+        title="Replays"
+        meta={loading ? "Loading…" : query ? `${filteredItems.length.toLocaleString()} matching “${query}”` : `${items.length.toLocaleString()} recent runs with video or a mouse path`}
+      />
 
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <form onSubmit={handleSubmit} role="search" className="flex min-w-0 flex-1 gap-2">
           <input
-            aria-label="Search KovaaK's replays"
+            aria-label="Search replays"
             type="search"
             value={draftQuery}
             onChange={(event) => setDraftQuery(event.target.value)}
-            placeholder="Search replays by scenario, player, or run id"
-            className="min-w-0 flex-1 rounded-full border border-line bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-mint/60"
+            placeholder="Scenario, player or run id"
+            className="min-h-10 min-w-0 flex-1 rounded-md border border-line bg-panel px-3 text-sm text-text placeholder:text-muted-2"
           />
-          <button
-            type="submit"
-            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-mint px-4 text-sm font-medium text-[#041009] transition-transform hover:scale-[1.02]"
-          >
-            Search
-          </button>
+          <Button type="submit">Search</Button>
         </form>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Replay type">
           {FILTERS.map((item) => (
             <button
               key={item}
@@ -113,71 +105,33 @@ export function ReplayHubPage() {
               aria-pressed={filter === item}
               onClick={() => setFilter(item)}
               className={[
-                "rounded-full border px-3 py-1.5 text-[12px] transition-colors",
-                filter === item
-                  ? "border-mint/40 bg-mint/10 text-mint"
-                  : "border-line text-muted hover:border-line-strong hover:text-text",
+                "min-h-8 rounded-full border px-3 text-xs transition-colors",
+                filter === item ? "border-cyan/40 bg-cyan/10 text-cyan" : "border-line text-muted hover:text-text",
               ].join(" ")}
             >
-              {item === "all" ? "All replays" : item === "video" ? "Video only" : "Mouse path only"}
+              {labels[item]} <span className="tabular-nums opacity-70">{counts[item]}</span>
             </button>
           ))}
         </div>
-      </PageSection>
+      </div>
 
-      <Grid className="grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
-        <div className="rounded-md border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-normal text-muted-2">Replay runs</p>
-          <p className="mt-2 text-3xl font-medium text-text">{items.length.toLocaleString()}</p>
-          <p className="mt-1 text-[12px] text-muted">Runs with replay data in the current query window.</p>
+      {loading ? (
+        <div role="status" aria-label="Loading replays" className="grid gap-3 lg:grid-cols-2">
+          {[0, 1, 2, 3].map((index) => <Skeleton key={index} className="h-[110px]" />)}
         </div>
-        <div className="rounded-md border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-normal text-muted-2">Video clips</p>
-          <p className="mt-2 text-3xl font-medium text-mint">{items.filter((item) => item.hasVideo).length.toLocaleString()}</p>
-          <p className="mt-1 text-[12px] text-muted">Runs that already have watchable replay video on the hub.</p>
+      ) : error ? (
+        <EmptyState title="Replays could not be loaded."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></EmptyState>
+      ) : filteredItems.length === 0 ? (
+        query || filter !== "all"
+          ? <EmptyState title="No replays match."><Button onClick={() => setSearchParams(new URLSearchParams())}>Clear search</Button></EmptyState>
+          : <EmptyState title="No replays shared yet."><Button to="/kovaaks">See recent runs</Button></EmptyState>
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {filteredItems.map((item) => (
+            <ReplayResultCard key={`${item.publicRunID || item.sessionID}:${item.replayQuality}:${item.hasMousePath}`} run={item} />
+          ))}
         </div>
-        <div className="rounded-md border border-line bg-white/2 p-4">
-          <p className="text-[10px] uppercase tracking-normal text-muted-2">Mouse path captures</p>
-          <p className="mt-2 text-3xl font-medium text-violet">{items.filter((item) => item.hasMousePath).length.toLocaleString()}</p>
-          <p className="mt-1 text-[12px] text-muted">Runs with uploaded mouse-path replay data.</p>
-        </div>
-      </Grid>
-
-      <PageSection>
-        <SectionHeader
-          eyebrow="Replay results"
-          title={query ? `Results for “${query}”` : "Latest replay-ready runs"}
-          body={
-            query
-              ? "These are the replay-ready runs that match your search."
-              : "The newest runs that already have replay data available on the hub."
-          }
-        />
-
-        {loading ? (
-          <div role="status" aria-label="Loading replays" className="grid gap-3">
-            <span className="text-sm text-muted">Loading replays...</span>
-            {[0, 1, 2, 3, 4].map((index) => (
-              <Skeleton key={index} className="h-[124px] rounded-md" />
-            ))}
-          </div>
-        ) : error ? (
-          <EmptyState title="Replay library unavailable" body="Please try again in a moment."><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></EmptyState>
-        ) : filteredItems.length === 0 ? (
-          <EmptyState
-            title="No replay matches yet"
-            body="Try a broader search, or wait for more replay-enabled runs to upload."
-          />
-        ) : (
-          <ScrollArea className="max-h-[min(72vh,980px)] pr-2">
-            <div className="grid gap-3">
-              {filteredItems.map((item) => (
-                <ReplayResultCard key={`${item.publicRunID || item.sessionID}:${item.replayQuality}:${item.hasMousePath}`} run={item} />
-              ))}
-            </div>
-          </ScrollArea>
-        )}
-      </PageSection>
+      )}
     </PageStack>
   );
 }

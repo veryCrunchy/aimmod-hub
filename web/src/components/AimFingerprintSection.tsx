@@ -98,9 +98,8 @@ export function AimFingerprintSection({ handle }: Props) {
   return (
     <PageSection className="h-full">
       <SectionHeader
-        eyebrow="Aim fingerprint"
         title="Movement profile"
-        body={`Built from ${fp.sessionCount} recent sessions with smoothness data.`}
+        body={`From ${fp.sessionCount} recent runs with mouse data.`}
       />
 
       <div className="grid gap-4 grid-cols-[minmax(0,1fr)_240px] items-start max-[900px]:grid-cols-1">

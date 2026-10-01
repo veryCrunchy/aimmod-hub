@@ -1,168 +1,112 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Helmet } from "../lib/helmet";
 import type { BenchmarkListItem } from "../gen/aimmod/hub/v1/hub_pb";
-import { SectionHeader } from "../components/SectionHeader";
+import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
-import { PageSection } from "../components/ui/PageSection";
-import { Skeleton } from "../components/ui/Skeleton";
-import { Grid, PageStack } from "../components/ui/Stack";
+import { PageHeader } from "../components/ui/PageHeader";
+import { PageSkeleton } from "../components/ui/Skeleton";
+import { PageStack } from "../components/ui/Stack";
 import { fetchBenchmarkList } from "../lib/api";
-import { groupBenchmarks, type BenchmarkGroup } from "../lib/benchmarkGroups";
+import { browseBenchmarkGroups, groupPlayers, type BenchmarkSort } from "../lib/benchmarkGroups";
+import { filterChoice, updateFilterQuery } from "../lib/savedPageFilters";
 
-type BenchmarkGroupItem = BenchmarkGroup<BenchmarkListItem>;
-
-function BenchmarkCard({ b }: { b: BenchmarkListItem }) {
-  return (
-    <Link
-      to={`/benchmarks/${b.benchmarkId}`}
-      className="group flex flex-col gap-3 rounded-[18px] border border-line bg-white/2.5 p-4 transition-all hover:border-cyan/30 hover:bg-white/4"
-    >
-      <div className="flex items-start gap-3 min-w-0">
-        {b.benchmarkIconUrl ? (
-          <img src={b.benchmarkIconUrl} alt="" className="h-10 w-10 shrink-0 rounded-[10px] border border-white/10 object-cover" />
-        ) : (
-          <div className="h-10 w-10 shrink-0 rounded-[10px] border border-line bg-white/5 flex items-center justify-center text-[18px] text-muted/40">◈</div>
-        )}
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium text-text leading-tight truncate group-hover:text-cyan transition-colors">
-            {b.benchmarkName}
-          </p>
-          {b.benchmarkType && (
-            <p className="mt-0.5 text-[10px] text-muted/60 uppercase tracking-widest">{b.benchmarkType}</p>
-          )}
-          {b.benchmarkAuthor && (
-            <p className="mt-0.5 text-[10px] text-muted/50">by {b.benchmarkAuthor}</p>
-          )}
-        </div>
-      </div>
-      <div className="mt-auto flex items-center justify-between rounded-xl border border-white/6 bg-black/20 px-3 py-2">
-        <p className="text-[11px] text-muted/60">{b.playerCount > 0 ? `${b.playerCount} player${b.playerCount !== 1 ? "s" : ""} ranked` : "View leaderboard"}</p>
-        <span className="text-[10px] text-muted/40 group-hover:text-cyan transition-colors">→</span>
-      </div>
-    </Link>
-  );
-}
-
-function BenchmarkGroupCard({ group }: { group: BenchmarkGroupItem }) {
-  return (
-    <div className="flex flex-col rounded-[18px] border border-line bg-white/2.5 overflow-hidden">
-      <div className="flex items-start gap-3 p-4 pb-3">
-        {group.iconUrl ? (
-          <img src={group.iconUrl} alt="" className="h-10 w-10 shrink-0 rounded-[10px] border border-white/10 object-cover" />
-        ) : (
-          <div className="h-10 w-10 shrink-0 rounded-[10px] border border-line bg-white/5 flex items-center justify-center text-[18px] text-muted/40">◈</div>
-        )}
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium text-text leading-tight truncate">{group.base}</p>
-          {group.type && (
-            <p className="mt-0.5 text-[10px] text-muted/60 uppercase tracking-widest">{group.type}</p>
-          )}
-          {group.author && (
-            <p className="mt-0.5 text-[10px] text-muted/50">by {group.author}</p>
-          )}
-        </div>
-      </div>
-      <div className="border-t border-white/6 divide-y divide-white/4">
-        {group.variants.map(({ item, difficulty }) => (
-          <Link
-            key={item.benchmarkId}
-            to={`/benchmarks/${item.benchmarkId}`}
-            className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/3 transition-colors group"
-          >
-            <span className="w-24 shrink-0 text-[10px] text-muted/60 uppercase tracking-widest truncate">
-              {difficulty ?? item.benchmarkName}
-            </span>
-            <span className="flex-1 text-[11px] text-muted/50 tabular-nums">
-              {item.playerCount > 0 ? `${item.playerCount} player${item.playerCount !== 1 ? "s" : ""}` : "View leaderboard"}
-            </span>
-            <span className="shrink-0 text-[10px] text-muted/30 group-hover:text-cyan transition-colors">→</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+const PAGE = 60;
 
 export function GlobalBenchmarksPage() {
   const [benchmarks, setBenchmarks] = useState<BenchmarkListItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [shown, setShown] = useState(PAGE);
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q") ?? "";
+  const sort = filterChoice<BenchmarkSort>(params.get("sort"), ["players", "name"], "players");
+  const rankedParam = params.get("ranked");
 
-  useEffect(() => {
-    let cancelled = false;
+  const load = () => {
     void fetchBenchmarkList()
-      .then((res) => { if (!cancelled) setBenchmarks(res.benchmarks ?? []); })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : "Could not load benchmarks."); });
-    const refresh = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      void fetchBenchmarkList().then((res) => {
-        if (!cancelled) { setBenchmarks(res.benchmarks ?? []); setError(null); }
-      }).catch(() => { /* Keep the last complete catalog during a failed refresh. */ });
-    }, 65_000);
-    return () => { cancelled = true; window.clearInterval(refresh); };
-  }, []);
+      .then((res) => { setBenchmarks(res.benchmarks ?? []); setError(false); })
+      .catch(() => setError(true));
+  };
+  useEffect(load, []);
 
-  if (error) {
-    return (
-      <PageStack>
-        <PageSection>
-          <EmptyState title="Could not load benchmarks" body={error} />
-        </PageSection>
-      </PageStack>
-    );
-  }
+  const anyRanked = (benchmarks ?? []).some((b) => b.playerCount > 0);
+  const rankedOnly = rankedParam == null ? anyRanked : rankedParam === "1";
+  const groups = useMemo(() => browseBenchmarkGroups(benchmarks ?? [], query, sort, rankedOnly), [benchmarks, query, sort, rankedOnly]);
+  useEffect(() => setShown(PAGE), [query, sort, rankedOnly]);
+
+  const head = <Helmet>
+    <title>Benchmarks · AimMod Hub</title>
+    <meta name="description" content="KovaaK's benchmarks and how many Hub players are ranked in each." />
+  </Helmet>;
 
   if (!benchmarks) {
-    return (
-      <PageStack>
-        <PageSection>
-          <Skeleton className="mb-3 h-3 w-24" />
-          <Skeleton className="mb-3 h-8 w-64" />
-          <Skeleton className="h-4 w-48" />
-        </PageSection>
-        <Grid className="grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </Grid>
-      </PageStack>
-    );
+    return <PageStack>{head}{error
+      ? <><PageHeader title="Benchmarks" /><EmptyState title="Benchmarks could not be loaded."><Button onClick={load}>Try again</Button></EmptyState></>
+      : <PageSkeleton stats={0} rows={10} label="Loading benchmarks" />}</PageStack>;
   }
 
-  const groups = groupBenchmarks(benchmarks);
+  const rankedCount = benchmarks.filter((b) => b.playerCount > 0).length;
+  const set = (patch: Record<string, string | null>) => setParams((current) => updateFilterQuery(current, patch), { replace: true });
 
   return (
     <PageStack>
-      <PageSection>
-        <SectionHeader
-          eyebrow="Benchmarks"
-          title="All benchmarks"
-          body={
-            benchmarks.length > 0
-              ? `${benchmarks.length} benchmark${benchmarks.length !== 1 ? "s" : ""} tracked across hub players.`
-              : "No benchmark data found yet."
-          }
-        />
-      </PageSection>
+      {head}
+      <PageHeader title="Benchmarks" meta={`${benchmarks.length.toLocaleString()} benchmarks · ${rankedCount.toLocaleString()} with ranked Hub players`} />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="sr-only" htmlFor="benchmark-search">Search benchmarks</label>
+        <input id="benchmark-search" type="search" value={query} onChange={(e) => set({ q: e.target.value || null })} placeholder="Benchmark or author"
+          className="min-h-9 w-full max-w-xs rounded-md border border-line bg-panel px-3 text-sm placeholder:text-muted-2" />
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input type="checkbox" checked={rankedOnly} onChange={(e) => set({ ranked: e.target.checked ? "1" : "0" })} />
+          Only with ranked players
+        </label>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          Sort
+          <select value={sort} onChange={(e) => set({ sort: e.target.value })} className="min-h-9 rounded-md border border-line bg-panel px-2 text-sm text-text">
+            <option value="players">Most players</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
+      </div>
 
       {groups.length === 0 ? (
-        <PageSection>
-          <EmptyState
-            title="No benchmarks yet"
-            body="Benchmarks appear here once hub players with linked Steam accounts have been ranked."
-          />
-        </PageSection>
+        <EmptyState title={rankedOnly && !query ? "No Hub players are ranked in a benchmark yet." : "No benchmarks match."}>
+          {rankedOnly ? <Button onClick={() => set({ ranked: "0" })}>Show all benchmarks</Button> : <Button onClick={() => set({ q: null })}>Clear search</Button>}
+        </EmptyState>
       ) : (
-        <PageSection>
-          <Grid className="grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
-            {groups.map((group) =>
-              group.variants.length === 1 ? (
-                <BenchmarkCard key={group.variants[0].item.benchmarkId} b={group.variants[0].item} />
-              ) : (
-                <BenchmarkGroupCard key={group.base + group.iconUrl} group={group} />
-              )
-            )}
-          </Grid>
-        </PageSection>
+        <>
+          <ul className="divide-y divide-line overflow-hidden rounded-md border border-line">
+            {groups.slice(0, shown).map((group) => {
+              const players = groupPlayers(group);
+              const single = group.variants.length === 1 ? group.variants[0].item : null;
+              return (
+                <li key={group.base + group.iconUrl} className="flex flex-wrap items-center gap-3 px-3 py-2.5 hover:bg-white/[0.02]">
+                  {group.iconUrl
+                    ? <img src={group.iconUrl} alt="" className="h-8 w-8 shrink-0 rounded border border-line object-cover" loading="lazy" />
+                    : <span aria-hidden="true" className="h-8 w-8 shrink-0 rounded border border-line bg-bg-2" />}
+                  <div className="min-w-0 flex-1">
+                    {single
+                      ? <Link to={`/benchmarks/${single.benchmarkId}`} className="block truncate text-sm font-medium text-text hover:text-cyan">{single.benchmarkName}</Link>
+                      : <span className="block truncate text-sm font-medium text-text">{group.base}</span>}
+                    <span className="block truncate text-xs text-muted-2">{[group.author && `by ${group.author}`, group.type].filter(Boolean).join(" · ")}</span>
+                  </div>
+                  {!single && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.variants.map(({ item, difficulty }) => (
+                        <Link key={item.benchmarkId} to={`/benchmarks/${item.benchmarkId}`} className="rounded-full border border-line px-2.5 py-0.5 text-xs capitalize text-muted hover:border-line-strong hover:text-text">
+                          {difficulty ?? item.benchmarkName}{item.playerCount > 0 ? <span className="ml-1 tabular-nums text-muted-2">{item.playerCount}</span> : null}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  <span className="w-24 shrink-0 text-right text-xs tabular-nums text-muted">{players > 0 ? `${players.toLocaleString()} ranked` : "No Hub ranks"}</span>
+                </li>
+              );
+            })}
+          </ul>
+          {groups.length > shown && <Button onClick={() => setShown((n) => n + PAGE)}>Show more ({(groups.length - shown).toLocaleString()} left)</Button>}
+        </>
       )}
     </PageStack>
   );

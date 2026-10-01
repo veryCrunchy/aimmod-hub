@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { Helmet } from "../lib/helmet";
 import { Link, useParams } from "react-router-dom";
 import type { GetRunResponse } from "../gen/aimmod/hub/v1/hub_pb";
-import { Skeleton } from "../components/ui/Skeleton";
+import { PageSkeleton } from "../components/ui/Skeleton";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Section } from "../components/ui/Section";
+import { Button } from "../components/ui/Button";
+import { RunTable } from "../components/RunTable";
+import { bestPerPlayer, formatAccuracy, formatScore, rankWithin } from "../lib/kovaaksStats";
 import { TimelineChart } from "../components/charts/TimelineChart";
 import { SectionHeader } from "../components/SectionHeader";
 import { StatCard } from "../components/StatCard";
-import { Breadcrumb } from "../components/ui/Breadcrumb";
 import { EmptyState } from "../components/ui/EmptyState";
 import { PageSection } from "../components/ui/PageSection";
 import { ScrollArea } from "../components/ui/ScrollArea";
@@ -14,8 +18,7 @@ import { Grid, PageStack } from "../components/ui/Stack";
 import { RunReplayPanel } from "../components/RunReplayPanel";
 import { ScenarioBenchmarkRankList } from "../components/BenchmarkCards";
 import type { SessionSummaryValue } from "../gen/aimmod/hub/v1/hub_pb";
-import { ScenarioTypeBadge } from "../components/ScenarioTypeBadge";
-import { deleteReplayMedia, fetchMousePath, fetchReplayMediaMeta, fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
+import { deleteReplayMedia, displayScenarioType, fetchMousePath, fetchReplayMediaMeta, fetchRun, formatDurationMs, formatRelativeTime, slugifyScenarioName, summaryValueToNumber } from "../lib/api";
 import { useAuth } from "../lib/AuthContext";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
@@ -150,27 +153,16 @@ export function RunPage() {
     return (
       <PageStack>
         <Helmet><title>Run · AimMod Hub</title></Helmet>
-        <PageSection>
-          <SectionHeader eyebrow="Run" title="Could not load this run" />
-          <EmptyState title="Run not found" body={error} />
-        </PageSection>
+        <PageHeader title="Run not found" />
+        <EmptyState title="This run could not be loaded. It may have been removed.">
+          <Button to="/kovaaks">Recent runs</Button>
+        </EmptyState>
       </PageStack>
     );
   }
 
   if (!run) {
-    return (
-      <PageStack>
-        <PageSection>
-          <Skeleton className="mb-3 h-3 w-12" />
-          <Skeleton className="mb-3 h-10 w-72" />
-          <Skeleton className="mb-4 h-4 w-64" />
-          <Grid className="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px]" />)}
-          </Grid>
-        </PageSection>
-      </PageStack>
-    );
+    return <PageStack><PageSkeleton label="Loading run" /></PageStack>;
   }
 
   // ── summary metrics ────────────────────────────────────────────────────────
@@ -216,13 +208,12 @@ export function RunPage() {
     !!auth.user &&
     (auth.user.profileHandle || auth.user.username).toLowerCase() === run.userHandle.toLowerCase();
 
-  // stat card display values
-  const spmDisplay     = spm ? `${Math.round(spm).toLocaleString()} /min` : "—";
-  const spmDetail      = peakSpm ? `Peak ${Math.round(peakSpm).toLocaleString()} /min` : "Score per minute";
-  const shotsPerHit    = avgShotsToHit ? avgShotsToHit.toFixed(2) : null;
-  const accDetail      = shotsPerHit ? `${shotsPerHit} shots/hit` : "Accuracy";
   const damageDisplay  = damageEff !== null ? `${damageEff.toFixed(1)}%` : "—";
-  const damageDetail   = avgFireToHit !== null ? `Fire→hit ${Math.round(avgFireToHit)}ms avg` : "Damage efficiency";
+  const scenarioSlug   = slugifyScenarioName(run.scenarioName);
+  const scenarioBoard  = [...run.scenarioRuns].sort((a, b) => b.score - a.score);
+  const scoreRank      = rankWithin(run.score, scenarioBoard);
+  const scoreRankLabel = scoreRank != null ? `#${scoreRank} of the top ${scenarioBoard.length} runs` : scenarioBoard.length ? `Outside the top ${scenarioBoard.length}` : undefined;
+  const playerBoard    = bestPerPlayer(scenarioBoard);
 
   return (
     <PageStack>
@@ -232,66 +223,33 @@ export function RunPage() {
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDesc} />
       </Helmet>
-      {/* ── header + stat cards ── */}
-      <PageSection>
-        <Breadcrumb crumbs={[
-          { label: run.scenarioName, to: `/scenarios/${slugifyScenarioName(run.scenarioName)}` },
-          { label: "Run" },
-        ]} />
-        <SectionHeader
-          eyebrow="Run"
-          title={<Link className="hover:text-cyan transition-colors" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>{run.scenarioName}</Link>}
-          body={`Played ${formatRelativeTime(run.playedAtIso)} by ${run.userDisplayName || run.userHandle}.`}
-          aside={
-            <div className="flex items-center gap-3">
-              <ScenarioTypeBadge type={run.scenarioType} />
-              {run.userHandle && (
-                <>
-                  <Link className="text-cyan underline underline-offset-3" to={`/profiles/${run.userHandle}`}>
-                    Open profile
-                  </Link>
-                  <Link className="text-violet underline underline-offset-3 text-[12px]" to={`/profiles/${run.userHandle}/scenarios/${slugifyScenarioName(run.scenarioName)}`}>
-                    History on this scenario
-                  </Link>
-                </>
-              )}
-            </div>
-          }
-        />
-        <Grid className="grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-          <StatCard
-            label="Score"
-            value={run.score.toLocaleString()}
-            detail={scoreDerived ? `Derived ${Math.round(scoreDerived).toLocaleString()}` : "Final result"}
-          />
-          <StatCard
-            label="Accuracy"
-            value={`${run.accuracy.toFixed(1)}%`}
-            detail={accDetail}
-            accent="cyan"
-          />
-          <StatCard
-            label="SPM"
-            value={spmDisplay}
-            detail={spmDetail}
-            accent="gold"
-          />
-          <StatCard
-            label="Damage eff"
-            value={damageDisplay}
-            detail={damageDetail}
-            accent="violet"
-          />
-        </Grid>
-      </PageSection>
+      <PageHeader
+        title={<Link className="hover:text-cyan" to={`/scenarios/${scenarioSlug}`}>{run.scenarioName}</Link>}
+        meta={<>
+          <Link className="text-text hover:text-cyan" to={`/profiles/${run.userHandle}`}>{runName}</Link>
+          {" · "}<span title={new Date(run.playedAtIso).toLocaleString()}>{formatRelativeTime(run.playedAtIso)}</span>
+          {" · "}{formatDurationMs(run.durationMs)}
+          {displayScenarioType(run.scenarioType) ? ` · ${displayScenarioType(run.scenarioType)}` : ""}
+        </>}
+        actions={run.userHandle ? <>
+          <Button to={`/profiles/${run.userHandle}/scenarios/${scenarioSlug}`}>Player's progress</Button>
+          <Button to={`/scenarios/${scenarioSlug}?tab=leaderboard`}>Scenario leaderboard</Button>
+        </> : null}
+      />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label="Score" value={formatScore(run.score)} detail={scoreRankLabel} accent={scoreRank === 1 ? "gold" : "text"} />
+        <StatCard label="Accuracy" value={formatAccuracy(run.accuracy)} detail={hasShots ? `${fmt(shotsHit)} of ${fmt(shotsFired)} shots hit` : undefined} />
+        <StatCard label="Score per minute" value={fmt(spm)} detail={peakSpm ? `Peak ${fmt(peakSpm)}` : undefined} />
+        {hasDamage
+          ? <StatCard label="Damage efficiency" value={damageDisplay} detail={damageDone != null && damagePossible != null ? `${fmt(damageDone)} of ${fmt(damagePossible)}` : undefined} />
+          : hasTtk ? <StatCard label="Time to kill" value={`${fmt(avgTtk)} ms`} detail={bestTtk != null ? `Best ${fmt(bestTtk)} ms` : "Average"} />
+          : hasKills ? <StatCard label="Kills" value={fmt(kills)} detail={kps != null ? `${kps.toFixed(2)} per second` : undefined} />
+          : null}
+      </div>
 
       {run.benchmarkRanks.length > 0 && (
         <PageSection>
-          <SectionHeader
-            eyebrow="Benchmark ranks"
-            title="Rank for this score"
-            body="These benchmark systems already have a rank for this exact scenario."
-          />
+          <SectionHeader title="Benchmark rank for this score" />
           <ScenarioBenchmarkRankList title="Ranks" ranks={run.benchmarkRanks} handle={run.userHandle} />
         </PageSection>
       )}
@@ -300,13 +258,8 @@ export function RunPage() {
       {hasTimeline && (
         <PageSection>
           <SectionHeader
-            eyebrow="Run shape"
-            title="Score rate & accuracy over time"
-            body={
-              hasContextWindows
-                ? "SPM (left) and accuracy % (right) per second. Violet markers show saved moments."
-                : "SPM (left) and accuracy % (right) plotted second by second."
-            }
+            title="Score per minute and accuracy, second by second"
+            body={hasContextWindows ? "Markers show the moments listed below." : undefined}
           />
           <TimelineChart timeline={run.timelineSeconds} contextWindows={run.contextWindows} />
         </PageSection>
@@ -334,15 +287,10 @@ export function RunPage() {
       )}
 
       {/* ── context windows + detailed metrics ── */}
-      <Grid className="grid-cols-2 items-start max-[1100px]:grid-cols-1">
+      <Grid className={hasContextWindows ? "grid-cols-2 items-start max-[1100px]:grid-cols-1" : "items-start"}>
 
-        {/* ── context windows ── */}
-        <PageSection>
-          <SectionHeader
-            eyebrow="Saved moments"
-            title="Context windows"
-            body="Key moments captured during the run."
-          />
+        {hasContextWindows && <PageSection>
+          <SectionHeader title="Moments" body="Stretches of the run worth a closer look." />
           {hasContextWindows ? (
             <ScrollArea className="max-h-[min(72vh,900px)] pr-2">
               <div className="grid gap-3">
@@ -452,16 +400,16 @@ export function RunPage() {
               </div>
             </ScrollArea>
           ) : (
-            <EmptyState title="No saved moments" body="This run did not include any context windows." />
+            null
           )}
-        </PageSection>
+        </PageSection>}
 
         {/* ── right column: metrics + smoothness ── */}
-        <div className="grid gap-[18px]">
+        <div className={hasContextWindows ? "grid gap-[18px]" : "grid items-start gap-[18px] lg:grid-cols-2"}>
 
           {/* detailed run metrics */}
           <PageSection>
-            <SectionHeader eyebrow="Run metrics" title="Session breakdown" />
+            <SectionHeader title="Details" />
 
             <div className="grid gap-5">
               {/* pace */}
@@ -523,7 +471,7 @@ export function RunPage() {
           {/* smoothness panel */}
           {hasSmoothness && (
             <PageSection>
-              <SectionHeader eyebrow="Mouse quality" title="Smoothness" />
+              <SectionHeader title="Smoothness" />
 
               {(() => {
                 const { label, color } = smoothnessLabel(smoothness!);
@@ -534,7 +482,7 @@ export function RunPage() {
                     </div>
                     <div>
                       <p className={`text-lg font-medium ${color}`}>{label}</p>
-                      <p className="text-sm text-muted">Composite smoothness score (0–100)</p>
+                      <p className="text-sm text-muted">Out of 100</p>
                     </div>
                   </div>
                 );
@@ -559,65 +507,11 @@ export function RunPage() {
         </div>
       </Grid>
 
-      {run.scenarioRuns.length > 0 && (
-        <PageSection>
-          <SectionHeader
-            eyebrow="Same scenario"
-            title="Top runs on this scenario"
-            body="The highest-scoring runs other players have recorded on this scenario."
-          />
-          <ScrollArea className="max-h-[min(60vh,720px)] overflow-auto rounded-[18px] border border-line bg-white/2">
-            <table className="min-w-full text-left text-sm">
-              <thead className="sticky top-0 z-10 border-b border-line bg-[rgba(4,12,9,0.97)] text-[11px] uppercase tracking-[0.08em] text-muted">
-                <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Player</th>
-                  <th className="px-4 py-3">Score</th>
-                  <th className="px-4 py-3">Acc</th>
-                  <th className="px-4 py-3">Run</th>
-                  <th className="px-4 py-3">History</th>
-                </tr>
-              </thead>
-              <tbody>
-                {run.scenarioRuns.map((r, idx) => {
-                  const rank = idx + 1;
-                  const rankColor = rank === 1 ? "text-gold" : rank <= 3 ? "text-cyan" : "text-muted-2";
-                  const isCurrentRun = (r.runId || r.sessionId) === runId;
-                  const rHandle = r.userHandle || r.userDisplayName;
-                  return (
-                    <tr key={r.runId || r.sessionId} className={`border-b border-white/6 last:border-b-0 transition-colors ${isCurrentRun ? "bg-white/[0.03]" : "hover:bg-white/[0.015]"}`}>
-                      <td className={`px-4 py-3 font-medium tabular-nums ${rankColor}`}>{rank}</td>
-                      <td className="px-4 py-3 text-text">
-                        <Link className="text-cyan underline underline-offset-3" to={`/profiles/${rHandle}`}>
-                          {r.userDisplayName || r.userHandle}
-                        </Link>
-                      </td>
-                      <td className={`px-4 py-3 font-medium ${rank === 1 ? "text-gold" : "text-text"}`}>
-                        {Math.round(r.score).toLocaleString()}
-                        {isCurrentRun && <span className="ml-2 text-[10px] text-muted-2 uppercase tracking-wider">this run</span>}
-                      </td>
-                      <td className="px-4 py-3 text-text">{r.accuracy.toFixed(1)}%</td>
-                      <td className="px-4 py-3">
-                        {isCurrentRun
-                          ? <span className="text-muted-2 text-[11px]">current</span>
-                          : <Link className="text-cyan underline underline-offset-3" to={`/runs/${r.runId || r.sessionId}`}>Open</Link>
-                        }
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          className="text-violet underline underline-offset-3 text-[12px]"
-                          to={`/profiles/${rHandle}/scenarios/${slugifyScenarioName(run.scenarioName)}`}
-                        >
-                          History
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </ScrollArea>
-        </PageSection>
+      {playerBoard.length > 0 && (
+        <Section title="Best players on this scenario" aside={<Link to={`/scenarios/${scenarioSlug}?tab=leaderboard`} className="text-cyan hover:underline">Full leaderboard</Link>}>
+          <RunTable runs={playerBoard.map((entry) => entry.best)} scenario={false} ranked caption="Best player scores on this scenario"
+            playerHref={(r) => `/profiles/${r.userHandle || r.userDisplayName}/scenarios/${scenarioSlug}`} />
+        </Section>
       )}
     </PageStack>
   );

@@ -131,6 +131,10 @@ message GetOverviewResponse {
   repeated RunPreview recent_runs = 4;
   repeated TopScenario top_scenarios = 5;
   repeated CommunityProfilePreview active_profiles = 6;
+  // Activity in the last seven days, and total time played across all runs.
+  uint32 runs_last_7_days = 7;
+  uint32 players_last_7_days = 8;
+  uint64 total_duration_ms = 9;
 }
 
 message GetRunRequest {
@@ -173,6 +177,9 @@ message GetScenarioPageResponse {
   repeated RunPreview recent_runs = 9;
   repeated RunPreview top_runs = 10;
   repeated ScoreBin score_distribution = 11;
+  // Distinct players with a run on this scenario, and runs in the last seven days.
+  uint32 player_count = 12;
+  uint32 runs_last_7_days = 13;
 }
 
 message GetProfileRequest {
@@ -194,6 +201,10 @@ message GetProfileResponse {
   repeated RunPreview personal_bests = 12;
   bool is_verified = 13;
   repeated BenchmarkSummary benchmarks = 14;
+  // Total time played across all runs, the most recent run, and runs in the last seven days.
+  uint64 total_duration_ms = 15;
+  string last_played_at_iso = 16;
+  uint32 runs_last_7_days = 17;
 }
 
 message SearchRequest {
