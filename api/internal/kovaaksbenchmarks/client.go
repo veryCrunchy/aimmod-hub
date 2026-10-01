@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,8 +22,12 @@ const (
 
 type Client struct {
 	requests          singleflight.Group
-	baseURL           string
+	baseURL           string // benchmark endpoints (apiBaseURL + "/benchmarks")
+	apiBaseURL        string // KovaaK's public web API root
+	steamBaseURL      string
 	http              *http.Client
+	limiter           *tokenBucket
+	responses         *responseCache
 	observeBenchmarks func(context.Context, string, []uint32)
 
 	mu           sync.RWMutex
@@ -123,17 +126,27 @@ type BenchmarkScenarioPage struct {
 	LeaderboardID   uint32
 	ScenarioRank    BenchmarkRankVisual
 	Thresholds      []BenchmarkThreshold
+	// ScoreSource is "aimmod" when the player's own AimMod upload beat the
+	// KovaaK's score, otherwise "kovaaks".
+	ScoreSource string
 }
 
 type BenchmarkDetail struct {
 	OverallRank uint32
 	Categories  map[string]BenchmarkCategory
 	Ranks       []BenchmarkRankVisual
+	// CategoryOrder lists category names in the order the benchmark author
+	// defined them (JSON object order from the provider).
+	CategoryOrder []string
+	// BenchmarkProgress is KovaaK's own overall progress figure for the player.
+	BenchmarkProgress float64
 }
 
 type BenchmarkCategory struct {
-	CategoryRank uint32
-	Scenarios    map[string]BenchmarkScenario
+	CategoryRank      uint32
+	Scenarios         map[string]BenchmarkScenario
+	ScenarioOrder     []string
+	BenchmarkProgress float64
 }
 
 type BenchmarkScenario struct {
@@ -163,14 +176,16 @@ type benchmarkListSummary struct {
 }
 
 type benchmarkDetailPayload struct {
-	OverallRank uint32                             `json:"overall_rank"`
-	Categories  map[string]benchmarkCategoryRecord `json:"categories"`
-	Ranks       []benchmarkRankRecord              `json:"ranks"`
+	OverallRank       uint32                             `json:"overall_rank"`
+	BenchmarkProgress float64                            `json:"benchmark_progress"`
+	Categories        map[string]benchmarkCategoryRecord `json:"categories"`
+	Ranks             []benchmarkRankRecord              `json:"ranks"`
 }
 
 type benchmarkCategoryRecord struct {
-	CategoryRank uint32                             `json:"category_rank"`
-	Scenarios    map[string]benchmarkScenarioRecord `json:"scenarios"`
+	CategoryRank      uint32                             `json:"category_rank"`
+	BenchmarkProgress float64                            `json:"benchmark_progress"`
+	Scenarios         map[string]benchmarkScenarioRecord `json:"scenarios"`
 }
 
 type benchmarkScenarioRecord struct {
@@ -193,12 +208,20 @@ func NewClient(observers ...func(context.Context, string, []uint32)) *Client {
 	if len(observers) > 0 {
 		observer = observers[0]
 	}
+	apiBase := envOr("AIMMOD_KOVAAKS_API_BASE_URL", defaultAPIBaseURL)
 	return &Client{
 		observeBenchmarks: observer,
-		baseURL:           "https://kovaaks.com/webapp-backend/benchmarks",
+		apiBaseURL:        apiBase,
+		baseURL:           apiBase + "/benchmarks",
+		steamBaseURL:      envOr("AIMMOD_STEAM_COMMUNITY_BASE_URL", defaultSteamBaseURL),
 		http: &http.Client{
 			Timeout: 10 * time.Second,
 		},
+		limiter: newTokenBucket(
+			envInt("AIMMOD_KOVAAKS_REQUESTS_PER_SECOND", defaultRequestsPerSecond),
+			envInt("AIMMOD_KOVAAKS_REQUEST_BURST", defaultRequestBurst),
+		),
+		responses:    newResponseCache(20000),
 		listCache:    map[string]cachedProfileBenchmarks{},
 		detailCache:  map[string]cachedBenchmarkDetail{},
 		rankCache:    map[string]cachedScenarioRanks{},
@@ -416,66 +439,110 @@ func (c *Client) BuildBenchmarkPage(
 	if err != nil || detail == nil {
 		return nil, nil, err
 	}
+	return detail, BuildCategoryPages(detail, PageOptions{RankedOnly: true}), nil
+}
+
+// PageOptions controls how a provider detail becomes page records.
+type PageOptions struct {
+	// RankedOnly drops scenarios the provider reports as unranked.
+	RankedOnly bool
+	// LocalScores maps exact scenario names to a better score the player
+	// achieved in AimMod. Only pass this for the player's own linked account.
+	LocalScores map[string]float64
+	// ComputeRanks derives scenario ranks from score versus thresholds
+	// instead of trusting the provider's scenario_rank.
+	ComputeRanks bool
+}
+
+// BuildCategoryPages converts a benchmark detail into ordered category
+// records with thresholds, keeping the author's category and scenario order.
+func BuildCategoryPages(detail *BenchmarkDetail, opts PageOptions) []BenchmarkCategoryPageRecord {
+	if detail == nil {
+		return nil
+	}
 	categories := make([]BenchmarkCategoryPageRecord, 0, len(detail.Categories))
-	for categoryName, category := range detail.Categories {
+	for _, categoryName := range detail.CategoryOrder {
+		category, ok := detail.Categories[categoryName]
+		if !ok {
+			continue
+		}
 		scenarios := make([]BenchmarkScenarioPage, 0, len(category.Scenarios))
-		for scenarioName, scenario := range category.Scenarios {
-			if scenario.ScenarioRank == 0 {
+		for _, scenarioName := range category.ScenarioOrder {
+			scenario, ok := category.Scenarios[scenarioName]
+			if !ok {
 				continue
 			}
-			thresholds := make([]BenchmarkThreshold, 0, len(scenario.RankMaxes))
-			// rank_maxes[n] is the minimum score required to enter rank n+1.
-			// The API returns player scores multiplied by 100, so divide by 100 to
-			// get the real score that can be compared directly against rank_maxes.
-			for rankIndex, threshold := range scenario.RankMaxes {
-				nextRankIndex := rankIndex + 1
-				if nextRankIndex >= len(detail.Ranks) {
-					continue
-				}
-				rank := detail.Ranks[nextRankIndex]
-				if rank.RankName == "" || strings.EqualFold(rank.RankName, "No Rank") {
-					continue
-				}
-				thresholds = append(thresholds, BenchmarkThreshold{
-					RankIndex: uint32(nextRankIndex),
-					RankName:  rank.RankName,
-					IconURL:   rank.IconURL,
-					Color:     rank.Color,
-					Score:     threshold,
-				})
+			if opts.RankedOnly && scenario.ScenarioRank == 0 {
+				continue
+			}
+			score := scenario.Score / 100.0
+			source := "kovaaks"
+			if local, ok := opts.LocalScores[scenarioName]; ok && local > score {
+				score = local
+				source = "aimmod"
+			}
+			rankIndex := scenario.ScenarioRank
+			if opts.ComputeRanks {
+				rankIndex = computeScenarioRankIndex(score, scenario.RankMaxes)
 			}
 			scenarios = append(scenarios, BenchmarkScenarioPage{
 				ScenarioName:    scenarioName,
 				CategoryName:    categoryName,
-				Score:           scenario.Score / 100.0,
+				Score:           score,
 				LeaderboardRank: scenario.LeaderboardRank,
 				LeaderboardID:   scenario.LeaderboardID,
-				ScenarioRank:    rankVisual(detail.Ranks, scenario.ScenarioRank),
-				Thresholds:      thresholds,
+				ScenarioRank:    rankVisual(detail.Ranks, rankIndex),
+				Thresholds:      thresholdsFor(detail.Ranks, scenario.RankMaxes),
+				ScoreSource:     source,
 			})
 		}
 		if len(scenarios) == 0 {
 			continue
 		}
-		sort.Slice(scenarios, func(i, j int) bool {
-			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
-		})
 		categories = append(categories, BenchmarkCategoryPageRecord{
-			CategoryName: categoryName,
-			CategoryRank: category.CategoryRank,
-			Scenarios:    scenarios,
+			CategoryName:      categoryName,
+			CategoryRank:      category.CategoryRank,
+			BenchmarkProgress: category.BenchmarkProgress,
+			Scenarios:         scenarios,
 		})
 	}
-	sort.Slice(categories, func(i, j int) bool {
-		return categories[i].CategoryName < categories[j].CategoryName
-	})
-	return detail, categories, nil
+	return categories
+}
+
+// ThresholdsFor maps rank_maxes onto rank visuals.
+func ThresholdsFor(ranks []BenchmarkRankVisual, rankMaxes []float64) []BenchmarkThreshold {
+	return thresholdsFor(ranks, rankMaxes)
+}
+
+// thresholdsFor maps rank_maxes onto rank visuals. rank_maxes[n] is the
+// minimum score required to enter rank n+1.
+func thresholdsFor(ranks []BenchmarkRankVisual, rankMaxes []float64) []BenchmarkThreshold {
+	thresholds := make([]BenchmarkThreshold, 0, len(rankMaxes))
+	for rankIndex, threshold := range rankMaxes {
+		nextRankIndex := rankIndex + 1
+		if nextRankIndex >= len(ranks) {
+			continue
+		}
+		rank := ranks[nextRankIndex]
+		if rank.RankName == "" || strings.EqualFold(rank.RankName, "No Rank") {
+			continue
+		}
+		thresholds = append(thresholds, BenchmarkThreshold{
+			RankIndex: uint32(nextRankIndex),
+			RankName:  rank.RankName,
+			IconURL:   rank.IconURL,
+			Color:     rank.Color,
+			Score:     threshold,
+		})
+	}
+	return thresholds
 }
 
 type BenchmarkCategoryPageRecord struct {
-	CategoryName string
-	CategoryRank uint32
-	Scenarios    []BenchmarkScenarioPage
+	CategoryName      string
+	CategoryRank      uint32
+	BenchmarkProgress float64
+	Scenarios         []BenchmarkScenarioPage
 }
 
 func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, steamID string) (*BenchmarkDetail, error) {
@@ -491,18 +558,41 @@ func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, ste
 	}
 	c.mu.RUnlock()
 
-	var payload benchmarkDetailPayload
+	var raw json.RawMessage
 	if err := c.getJSON(ctx, "/player-progress-rank-benchmark", url.Values{
 		"benchmarkId": {strconv.FormatUint(uint64(benchmarkID), 10)},
 		"steamId":     {strings.TrimSpace(steamID)},
-	}, &payload); err != nil {
+	}, &raw); err != nil {
 		return nil, err
 	}
+	detail, err := parseBenchmarkDetail(raw)
+	if err != nil {
+		return nil, err
+	}
+	c.mu.Lock()
+	c.detailCache[cacheKey] = cachedBenchmarkDetail{
+		expiresAt: time.Now().Add(cacheTTL),
+		detail:    detail,
+	}
+	c.mu.Unlock()
 
+	return detail, nil
+}
+
+// parseBenchmarkDetail decodes a player-progress-rank-benchmark response,
+// keeping category and scenario order.
+func parseBenchmarkDetail(raw []byte) (*BenchmarkDetail, error) {
+	var payload benchmarkDetailPayload
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return nil, fmt.Errorf("decode benchmark detail: %w", err)
+	}
+	order := detailKeyOrder(raw)
 	detail := &BenchmarkDetail{
-		OverallRank: payload.OverallRank,
-		Categories:  make(map[string]BenchmarkCategory, len(payload.Categories)),
-		Ranks:       make([]BenchmarkRankVisual, 0, len(payload.Ranks)),
+		OverallRank:       payload.OverallRank,
+		BenchmarkProgress: payload.BenchmarkProgress,
+		Categories:        make(map[string]BenchmarkCategory, len(payload.Categories)),
+		Ranks:             make([]BenchmarkRankVisual, 0, len(payload.Ranks)),
+		CategoryOrder:     completeOrder(order.categories, payload.Categories),
 	}
 	for idx, rank := range payload.Ranks {
 		detail.Ranks = append(detail.Ranks, BenchmarkRankVisual{
@@ -515,8 +605,10 @@ func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, ste
 	}
 	for categoryName, category := range payload.Categories {
 		nextCategory := BenchmarkCategory{
-			CategoryRank: category.CategoryRank,
-			Scenarios:    make(map[string]BenchmarkScenario, len(category.Scenarios)),
+			CategoryRank:      category.CategoryRank,
+			BenchmarkProgress: category.BenchmarkProgress,
+			Scenarios:         make(map[string]BenchmarkScenario, len(category.Scenarios)),
+			ScenarioOrder:     completeOrder(order.scenarios[categoryName], category.Scenarios),
 		}
 		for scenarioName, scenario := range category.Scenarios {
 			leaderboardRank := uint32(0)
@@ -533,13 +625,6 @@ func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, ste
 		}
 		detail.Categories[categoryName] = nextCategory
 	}
-
-	c.mu.Lock()
-	c.detailCache[cacheKey] = cachedBenchmarkDetail{
-		expiresAt: time.Now().Add(cacheTTL),
-		detail:    detail,
-	}
-	c.mu.Unlock()
 
 	return detail, nil
 }
@@ -595,7 +680,7 @@ func (c *Client) LookupSteamUsername(ctx context.Context, steamID string) (strin
 	if steamID == "" {
 		return "", nil
 	}
-	profile, err := c.fetchSteamXMLProfile(ctx, "https://steamcommunity.com/profiles/"+url.PathEscape(steamID)+"/?xml=1")
+	profile, err := c.fetchSteamXMLProfile(ctx, c.steamBaseURL+"/profiles/"+url.PathEscape(steamID)+"/?xml=1")
 	if err != nil {
 		return "", err
 	}
@@ -654,7 +739,7 @@ func (c *Client) resolveFromSteam64(ctx context.Context, steam64 string) (Resolv
 	}
 	c.mu.RUnlock()
 
-	profile, err := c.fetchSteamXMLProfile(ctx, "https://steamcommunity.com/profiles/"+url.PathEscape(steam64)+"/?xml=1")
+	profile, err := c.fetchSteamXMLProfile(ctx, c.steamBaseURL+"/profiles/"+url.PathEscape(steam64)+"/?xml=1")
 	identity := ResolvedSteamIdentity{Steam64: steam64, KovaaksUsername: strings.TrimSpace(profile.SteamID)}
 	if err == nil {
 		c.storeResolvedIdentity(steam64, "", identity)
@@ -671,7 +756,7 @@ func (c *Client) resolveVanity(ctx context.Context, vanity string) (ResolvedStea
 	}
 	c.mu.RUnlock()
 
-	profile, err := c.fetchSteamXMLProfile(ctx, "https://steamcommunity.com/id/"+url.PathEscape(vanity)+"/?xml=1")
+	profile, err := c.fetchSteamXMLProfile(ctx, c.steamBaseURL+"/id/"+url.PathEscape(vanity)+"/?xml=1")
 	if err != nil {
 		return ResolvedSteamIdentity{}, err
 	}
@@ -709,6 +794,9 @@ func (c *Client) storeResolvedIdentity(steam64, altKey string, identity Resolved
 }
 
 func (c *Client) fetchSteamXMLProfile(ctx context.Context, endpoint string) (steamXMLProfile, error) {
+	if err := c.limiter.wait(ctx); err != nil {
+		return steamXMLProfile{}, err
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return steamXMLProfile{}, fmt.Errorf("build steam profile request: %w", err)
@@ -780,54 +868,7 @@ func (c *Client) BuildFullBenchmarkPage(
 	if err != nil || detail == nil {
 		return nil, nil, err
 	}
-	categories := make([]BenchmarkCategoryPageRecord, 0, len(detail.Categories))
-	for categoryName, category := range detail.Categories {
-		scenarios := make([]BenchmarkScenarioPage, 0, len(category.Scenarios))
-		for scenarioName, scenario := range category.Scenarios {
-			thresholds := make([]BenchmarkThreshold, 0, len(scenario.RankMaxes))
-			for rankIndex, threshold := range scenario.RankMaxes {
-				nextRankIndex := rankIndex + 1
-				if nextRankIndex >= len(detail.Ranks) {
-					continue
-				}
-				rank := detail.Ranks[nextRankIndex]
-				if rank.RankName == "" || strings.EqualFold(rank.RankName, "No Rank") {
-					continue
-				}
-				thresholds = append(thresholds, BenchmarkThreshold{
-					RankIndex: uint32(nextRankIndex),
-					RankName:  rank.RankName,
-					IconURL:   rank.IconURL,
-					Color:     rank.Color,
-					Score:     threshold,
-				})
-			}
-			scenarios = append(scenarios, BenchmarkScenarioPage{
-				ScenarioName:    scenarioName,
-				CategoryName:    categoryName,
-				Score:           scenario.Score / 100.0,
-				LeaderboardRank: scenario.LeaderboardRank,
-				LeaderboardID:   scenario.LeaderboardID,
-				ScenarioRank:    rankVisual(detail.Ranks, scenario.ScenarioRank),
-				Thresholds:      thresholds,
-			})
-		}
-		if len(scenarios) == 0 {
-			continue
-		}
-		sort.Slice(scenarios, func(i, j int) bool {
-			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
-		})
-		categories = append(categories, BenchmarkCategoryPageRecord{
-			CategoryName: categoryName,
-			CategoryRank: category.CategoryRank,
-			Scenarios:    scenarios,
-		})
-	}
-	sort.Slice(categories, func(i, j int) bool {
-		return categories[i].CategoryName < categories[j].CategoryName
-	})
-	return detail, categories, nil
+	return detail, BuildCategoryPages(detail, PageOptions{}), nil
 }
 
 type kovaaksUserSearchEntry struct {
@@ -858,26 +899,12 @@ func (c *Client) SearchUsers(ctx context.Context, query string, max int) ([]Kova
 	}
 	c.mu.RUnlock()
 
-	endpoint := fmt.Sprintf("https://kovaaks.com/webapp-backend/user/search?username=%s&max=%d",
-		url.QueryEscape(query), max)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, fmt.Errorf("build user search request: %w", err)
-	}
-	req.Header.Set("accept", "application/json")
-
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("user search request: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("user search failed: %s", resp.Status)
-	}
-
 	var raw []kovaaksUserSearchEntry
-	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
-		return nil, fmt.Errorf("decode user search response: %w", err)
+	if err := c.getAPIJSON(ctx, "/user/search", url.Values{
+		"username": {query},
+		"max":      {strconv.Itoa(max)},
+	}, 0, &raw); err != nil {
+		return nil, err
 	}
 
 	results := make([]KovaaksUserResult, 0, len(raw))
@@ -912,14 +939,34 @@ func (c *Client) SearchUsers(ctx context.Context, query string, max int) ([]Kova
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out any) error {
-	endpoint := c.baseURL + path
+	return c.fetchJSON(ctx, c.baseURL+path, query, 0, out)
+}
+
+// getAPIJSON reads an endpoint under the KovaaK's web API root. A positive ttl
+// serves a cached response without a request while it is fresh.
+func (c *Client) getAPIJSON(ctx context.Context, path string, query url.Values, ttl time.Duration, out any) error {
+	return c.fetchJSON(ctx, c.apiBaseURL+path, query, ttl, out)
+}
+
+// fetchJSON performs a rate-limited, de-duplicated GET. Responses are kept so
+// that a fresh copy (within ttl) skips the network and a stale copy (within
+// staleTTL) is served when the provider errors or rate limits us.
+func (c *Client) fetchJSON(ctx context.Context, base string, query url.Values, ttl time.Duration, out any) error {
+	endpoint := base
 	if encoded := query.Encode(); encoded != "" {
 		endpoint += "?" + encoded
+	}
+	cached, hasCached := c.responses.get(endpoint)
+	if hasCached && ttl > 0 && time.Since(cached.fetchedAt) < ttl {
+		return decodeProviderJSON(cached.raw, out)
 	}
 
 	result := c.requests.DoChan(endpoint, func() (any, error) {
 		sharedCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
 		defer cancel()
+		if err := c.limiter.wait(sharedCtx); err != nil {
+			return nil, err
+		}
 		req, err := http.NewRequestWithContext(sharedCtx, http.MethodGet, endpoint, nil)
 		if err != nil {
 			return nil, fmt.Errorf("build benchmark request: %w", err)
@@ -930,6 +977,10 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 			return nil, fmt.Errorf("request benchmarks: %w", err)
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+			c.limiter.backOff(time.Now().Add(retryAfter(resp)))
+			return nil, ErrRateLimited
+		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			return nil, fmt.Errorf("benchmark request failed: %s", resp.Status)
 		}
@@ -937,21 +988,33 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 		if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
 			return nil, fmt.Errorf("decode benchmark response: %w", err)
 		}
-		return raw, nil
+		c.responses.put(endpoint, raw, time.Now())
+		return []byte(raw), nil
 	})
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	case result := <-result:
 		if result.Err != nil {
+			if hasCached && time.Since(cached.fetchedAt) < staleTTL {
+				return decodeProviderJSON(cached.raw, out)
+			}
 			return result.Err
 		}
-		if err := json.Unmarshal(result.Val.(json.RawMessage), out); err != nil {
-			return fmt.Errorf("decode benchmark response: %w", err)
-		}
-		return nil
+		return decodeProviderJSON(result.Val.([]byte), out)
 	}
+}
 
+func decodeProviderJSON(raw []byte, out any) error {
+	if err := json.Unmarshal(raw, out); err != nil {
+		return fmt.Errorf("decode benchmark response: %w", err)
+	}
+	return nil
+}
+
+// ScenarioRankIndex returns the rank index a score reaches on a scenario.
+func ScenarioRankIndex(score float64, rankMaxes []float64) uint32 {
+	return computeScenarioRankIndex(score, rankMaxes)
 }
 
 // computeScenarioRankIndex returns the highest rank index the player achieves
@@ -975,7 +1038,7 @@ func computeScenarioRankIndex(score float64, rankMaxes []float64) uint32 {
 // leaderboard scores are suppressed by KovaaK's (e.g. banned players) because
 // it never relies on the API's scenario_rank field.
 //
-// localScores maps exact scenario_name → best score as stored by AimMod.
+// localScores maps exact scenario_name to best score as stored by AimMod.
 // Pass nil or an empty map to use only KovaaK's data (still with computed ranks).
 func (c *Client) BuildBenchmarkPageWithLocalScores(
 	ctx context.Context,
@@ -987,67 +1050,7 @@ func (c *Client) BuildBenchmarkPageWithLocalScores(
 	if err != nil || detail == nil {
 		return nil, nil, err
 	}
-	categories := make([]BenchmarkCategoryPageRecord, 0, len(detail.Categories))
-	for categoryName, category := range detail.Categories {
-		scenarios := make([]BenchmarkScenarioPage, 0, len(category.Scenarios))
-		for scenarioName, scenario := range category.Scenarios {
-			thresholds := make([]BenchmarkThreshold, 0, len(scenario.RankMaxes))
-			for rankIndex, threshold := range scenario.RankMaxes {
-				nextRankIndex := rankIndex + 1
-				if nextRankIndex >= len(detail.Ranks) {
-					continue
-				}
-				rank := detail.Ranks[nextRankIndex]
-				if rank.RankName == "" || strings.EqualFold(rank.RankName, "No Rank") {
-					continue
-				}
-				thresholds = append(thresholds, BenchmarkThreshold{
-					RankIndex: uint32(nextRankIndex),
-					RankName:  rank.RankName,
-					IconURL:   rank.IconURL,
-					Color:     rank.Color,
-					Score:     threshold,
-				})
-			}
-
-			// Use the best available score: max of KovaaK's reported score
-			// and the player's AimMod-ingested score.
-			kovaaksScore := scenario.Score / 100.0
-			effectiveScore := kovaaksScore
-			if ls, ok := localScores[scenarioName]; ok && ls > effectiveScore {
-				effectiveScore = ls
-			}
-
-			// Compute rank from score vs thresholds rather than trusting the
-			// API's scenario_rank (which may be 0 for banned players).
-			computedRankIdx := computeScenarioRankIndex(effectiveScore, scenario.RankMaxes)
-
-			scenarios = append(scenarios, BenchmarkScenarioPage{
-				ScenarioName:    scenarioName,
-				CategoryName:    categoryName,
-				Score:           effectiveScore,
-				LeaderboardRank: scenario.LeaderboardRank,
-				LeaderboardID:   scenario.LeaderboardID,
-				ScenarioRank:    rankVisual(detail.Ranks, computedRankIdx),
-				Thresholds:      thresholds,
-			})
-		}
-		if len(scenarios) == 0 {
-			continue
-		}
-		sort.Slice(scenarios, func(i, j int) bool {
-			return scenarios[i].ScenarioName < scenarios[j].ScenarioName
-		})
-		categories = append(categories, BenchmarkCategoryPageRecord{
-			CategoryName: categoryName,
-			CategoryRank: category.CategoryRank,
-			Scenarios:    scenarios,
-		})
-	}
-	sort.Slice(categories, func(i, j int) bool {
-		return categories[i].CategoryName < categories[j].CategoryName
-	})
-	return detail, categories, nil
+	return detail, BuildCategoryPages(detail, PageOptions{LocalScores: localScores, ComputeRanks: true}), nil
 }
 
 // OverallRankFromCategories computes the overall benchmark rank as the
