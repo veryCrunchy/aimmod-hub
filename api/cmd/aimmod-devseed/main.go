@@ -9,6 +9,11 @@
 //	  go run ./api/cmd/aimmod-devseed
 //
 // Pass -live to keep refreshing the synthetic live sessions until interrupted.
+//
+// The first six players also upload with synthetic Steam and KovaaK's
+// accounts. Run aimmod-devkovaaks and point the API at it
+// (AIMMOD_KOVAAKS_API_BASE_URL and AIMMOD_STEAM_COMMUNITY_BASE_URL) to see
+// benchmark sheets, KovaaK's leaderboards and KovaaK's-only players locally.
 package main
 
 import (
@@ -25,52 +30,17 @@ import (
 
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 
+	"github.com/veryCrunchy/aimmod-hub/api/internal/devdata"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/store"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/tournament"
 	"github.com/veryCrunchy/aimmod-hub/api/internal/tournament/bracket"
 )
 
-type player struct {
-	externalID string
-	name       string
-	skill      float64 // 0.6 .. 1.15 multiplier on scenario base scores
-	activity   int     // runs per active day
-	focus      string  // preferred scenario type
-}
+type player = devdata.Player
+type scenario = devdata.Scenario
 
-type scenario struct {
-	name     string
-	kind     string
-	base     float64 // typical score for skill 1.0
-	accuracy float64 // typical accuracy for skill 1.0, percent
-	duration time.Duration
-}
-
-var players = []player{
-	{"devseed:kestrel", "Demo Kestrel", 1.12, 9, "Tracking"},
-	{"devseed:lumen", "Demo Lumen", 1.05, 7, "OneShotClicking"},
-	{"devseed:quartz", "Demo Quartz", 0.98, 6, "TargetSwitching"},
-	{"devseed:ember", "Demo Ember", 0.93, 8, "Tracking"},
-	{"devseed:nimbus", "Demo Nimbus", 0.88, 4, "OneShotClicking"},
-	{"devseed:sable", "Demo Sable", 0.84, 5, "TargetSwitching"},
-	{"devseed:vireo", "Demo Vireo", 0.79, 3, "Tracking"},
-	{"devseed:onyx", "Demo Onyx", 0.74, 3, "OneShotClicking"},
-	{"devseed:pike", "Demo Pike", 0.69, 2, "TargetSwitching"},
-	{"devseed:wren", "Demo Wren", 0.64, 2, "Tracking"},
-}
-
-var scenarios = []scenario{
-	{"Synthetic Smoothbot", "Tracking", 3200, 78, 60 * time.Second},
-	{"Synthetic Strafe Track", "Tracking", 2900, 74, 60 * time.Second},
-	{"Synthetic Air Track", "Tracking", 2600, 70, 60 * time.Second},
-	{"Synthetic Tile Click", "OneShotClicking", 1150, 92, 60 * time.Second},
-	{"Synthetic Micro Flick", "OneShotClicking", 980, 88, 60 * time.Second},
-	{"Synthetic Reflex Grid", "OneShotClicking", 1050, 86, 60 * time.Second},
-	{"Synthetic Switch Duo", "TargetSwitching", 780, 81, 60 * time.Second},
-	{"Synthetic Switch Wide", "TargetSwitching", 690, 79, 60 * time.Second},
-	{"Synthetic Bounce Switch", "TargetSwitching", 720, 76, 45 * time.Second},
-	{"Synthetic Long Track", "Tracking", 4100, 72, 90 * time.Second},
-}
+var players = devdata.Players
+var scenarios = devdata.Scenarios
 
 func main() {
 	databaseURL := flag.String("database-url", os.Getenv("AIMMOD_DEVSEED_DATABASE_URL"), "development database (defaults to AIMMOD_DEVSEED_DATABASE_URL)")
@@ -95,7 +65,7 @@ func main() {
 	if !*liveOnly {
 		for i, p := range players {
 			// A linked account gives each synthetic player a readable handle and name.
-			link := store.DiscordLink{UserExternalID: p.externalID, DiscordUserID: fmt.Sprintf("devseed-%02d", i), Username: handleFor(p), GlobalName: p.name}
+			link := store.DiscordLink{UserExternalID: p.ExternalID, DiscordUserID: fmt.Sprintf("devseed-%02d", i), Username: handleFor(p), GlobalName: p.Name}
 			if err := s.LinkDiscordAccount(ctx, link); err != nil {
 				log.Fatal(err)
 			}
@@ -139,16 +109,16 @@ func seedRuns(ctx context.Context, s *store.Store, rng *rand.Rand, now time.Time
 	for pi, p := range players {
 		// Each player improves a little over the window, so trends have a shape.
 		for d := days; d >= 0; d-- {
-			if rng.Float64() > 0.55+0.04*float64(p.activity) {
+			if rng.Float64() > 0.55+0.04*float64(p.Activity) {
 				continue
 			}
 			day := now.AddDate(0, 0, -d)
 			start := time.Date(day.Year(), day.Month(), day.Day(), 16+rng.Intn(5), rng.Intn(60), 0, 0, time.UTC)
 			progress := 1 - float64(d)/float64(days+1)
-			runs := 1 + rng.Intn(p.activity)
+			runs := 1 + rng.Intn(p.Activity)
 			for r := 0; r < runs; r++ {
 				sc := pickScenario(rng, p)
-				played := start.Add(time.Duration(r) * (sc.duration + 40*time.Second))
+				played := start.Add(time.Duration(r) * (sc.Duration + 40*time.Second))
 				if played.After(now) {
 					continue
 				}
@@ -157,7 +127,7 @@ func seedRuns(ctx context.Context, s *store.Store, rng *rand.Rand, now time.Time
 					return count, err
 				}
 				if err := s.SaveIngestedRun(ctx, run, nil); err != nil {
-					return count, fmt.Errorf("save run for %s: %w", p.name, err)
+					return count, fmt.Errorf("save run for %s: %w", p.Name, err)
 				}
 				count++
 			}
@@ -170,7 +140,7 @@ func pickScenario(rng *rand.Rand, p player) scenario {
 	if rng.Float64() < 0.6 {
 		var preferred []scenario
 		for _, sc := range scenarios {
-			if sc.kind == p.focus {
+			if sc.Kind == p.Focus {
 				preferred = append(preferred, sc)
 			}
 		}
@@ -180,18 +150,18 @@ func pickScenario(rng *rand.Rand, p player) scenario {
 }
 
 func buildRun(rng *rand.Rand, p player, pi int, sc scenario, played time.Time, progress float64, ordinal int) (store.IngestedRun, error) {
-	skill := p.skill * (0.92 + 0.1*progress) * (0.94 + 0.12*rng.Float64())
-	score := math.Round(sc.base * skill)
-	accuracy := math.Min(99.5, sc.accuracy*(0.9+0.12*skill/1.1)+rng.NormFloat64()*1.5)
-	seconds := int(sc.duration / time.Second)
+	skill := p.Skill * (0.92 + 0.1*progress) * (0.94 + 0.12*rng.Float64())
+	score := math.Round(sc.Base * skill)
+	accuracy := math.Min(99.5, sc.Accuracy*(0.9+0.12*skill/1.1)+rng.NormFloat64()*1.5)
+	seconds := int(sc.Duration / time.Second)
 	shotsPerSecond := 2.2 + rng.Float64()
-	if sc.kind == "Tracking" {
+	if sc.Kind == "Tracking" {
 		shotsPerSecond = 15
 	}
 	shots := uint32(float64(seconds) * shotsPerSecond)
 	hits := uint32(float64(shots) * accuracy / 100)
 	kills := uint32(0)
-	if sc.kind != "Tracking" {
+	if sc.Kind != "Tracking" {
 		kills = hits
 	}
 
@@ -207,7 +177,7 @@ func buildRun(rng *rand.Rand, p player, pi int, sc scenario, played time.Time, p
 		"avgKillsPerSecond":  number(float64(kills) / float64(seconds)),
 		"peakKillsPerSecond": number(float64(kills) / float64(seconds) * 1.3),
 	}
-	if sc.kind == "Tracking" {
+	if sc.Kind == "Tracking" {
 		possible := float64(seconds) * 100
 		done := possible * accuracy / 100
 		summary["damageDone"] = number(done)
@@ -250,22 +220,30 @@ func buildRun(rng *rand.Rand, p player, pi int, sc scenario, played time.Time, p
 	if err != nil {
 		return store.IngestedRun{}, err
 	}
-	return store.IngestedRun{
+	run := store.IngestedRun{
 		AppVersion:      "devseed",
 		SchemaVersion:   1,
-		UserExternalID:  p.externalID,
-		UserDisplayName: p.name,
+		UserExternalID:  p.ExternalID,
+		UserDisplayName: p.Name,
 		SessionID:       fmt.Sprintf("devseed-%02d-%s", pi, played.Format("20060102T150405")),
-		ScenarioName:    sc.name,
-		ScenarioType:    sc.kind,
+		ScenarioName:    sc.Name,
+		ScenarioType:    sc.Kind,
 		Score:           score,
 		Accuracy:        accuracy,
-		DurationMS:      uint64(sc.duration / time.Millisecond),
+		DurationMS:      uint64(sc.Duration / time.Millisecond),
 		PlayedAt:        played,
 		SummaryJSON:     summaryJSON,
 		FeatureJSON:     featureJSON,
 		Timeline:        timeline,
-	}, nil
+	}
+	if p.Linked {
+		// Synthetic accounts, as the in-game mod would report them.
+		run.SteamID = p.SteamID()
+		run.SteamDisplayName = p.Name
+		run.KovaaksUserID = "devseed-kovaaks-" + p.Handle()
+		run.KovaaksUsername = p.KovaaksUsername()
+	}
+	return run, nil
 }
 
 func userRef(ctx context.Context, s *store.Store, p player) (tournament.UserRef, error) {
@@ -279,7 +257,7 @@ func userRef(ctx context.Context, s *store.Store, p player) (tournament.UserRef,
 
 // handleFor is the synthetic player's linked username, which the Hub uses as the handle.
 func handleFor(p player) string {
-	return strings.ToLower(strings.ReplaceAll(p.name, " ", "-"))
+	return p.Handle()
 }
 
 func seedLive(ctx context.Context, s *store.Store, rng *rand.Rand) error {
@@ -302,13 +280,13 @@ func seedLive(ctx context.Context, s *store.Store, rng *rand.Rand) error {
 		sc := scenarios[st.scenario]
 		payload := store.LiveActivityPayload{GameStateCode: 1, GameState: st.state, RuntimeLoaded: true, BridgeConnected: true}
 		if st.state == "Playing" {
-			frac := st.elapsed / sc.duration.Seconds()
-			score := math.Round(sc.base * players[st.player].skill * frac)
-			acc := sc.accuracy * (0.95 + rng.Float64()*0.06)
-			remaining := sc.duration.Seconds() - st.elapsed
+			frac := st.elapsed / sc.Duration.Seconds()
+			score := math.Round(sc.Base * players[st.player].Skill * frac)
+			acc := sc.Accuracy * (0.95 + rng.Float64()*0.06)
+			remaining := sc.Duration.Seconds() - st.elapsed
 			kills := uint32(score / 100)
-			payload.ScenarioName = sc.name
-			payload.ScenarioType = sc.kind
+			payload.ScenarioName = sc.Name
+			payload.ScenarioType = sc.Kind
 			payload.Score = &score
 			payload.AccuracyPct = &acc
 			payload.Kills = &kills
@@ -331,7 +309,7 @@ func seedTournaments(ctx context.Context, s *store.Store, now time.Time) error {
 		refs[i] = ref
 	}
 	org := tournament.Actor{UserRef: refs[0], Verified: true}
-	pool := []tournament.PoolScenario{{Name: scenarios[0].name}, {Name: scenarios[3].name}, {Name: scenarios[6].name}}
+	pool := []tournament.PoolScenario{{Name: scenarios[0].Name}, {Name: scenarios[3].Name}, {Name: scenarios[6].Name}}
 	starts := now.Add(72 * time.Hour)
 
 	specs := []struct {
