@@ -163,6 +163,32 @@ message GetRunResponse {
 
 message GetScenarioPageRequest {
   string slug = 1;
+  // Optional AimMod handle; fills `viewer` with that player's standing.
+  string handle = 2;
+}
+
+message ScorePercentile {
+  // Percentile of players' best scores, e.g. 50 for the median.
+  uint32 percentile = 1;
+  double score = 2;
+}
+
+message PlayerScenarioStanding {
+  string user_handle = 1;
+  double best_score = 2;
+  // 1-based rank among AimMod players by best score.
+  uint32 rank = 3;
+  // Share of AimMod players this player beats, 0-100.
+  double percentile = 4;
+  uint32 run_count = 5;
+}
+
+message ScenarioBenchmarkMembership {
+  uint32 benchmark_id = 1;
+  string benchmark_name = 2;
+  string benchmark_icon_url = 3;
+  string category_name = 4;
+  repeated BenchmarkThreshold thresholds = 5;
 }
 
 message GetScenarioPageResponse {
@@ -180,6 +206,16 @@ message GetScenarioPageResponse {
   // Distinct players with a run on this scenario, and runs in the last seven days.
   uint32 player_count = 12;
   uint32 runs_last_7_days = 13;
+  // Percentiles of AimMod players' best scores.
+  repeated ScorePercentile percentiles = 14;
+  // Set when the request named a handle that has played this scenario.
+  PlayerScenarioStanding viewer = 15;
+  // KovaaK's public leaderboard for this scenario, when it exists.
+  uint32 kovaaks_leaderboard_id = 16;
+  uint64 kovaaks_plays = 17;
+  uint64 kovaaks_entries = 18;
+  // Benchmarks that include this scenario, with their rank thresholds.
+  repeated ScenarioBenchmarkMembership benchmarks = 19;
 }
 
 message GetProfileRequest {
@@ -372,17 +408,31 @@ message BenchmarkScenarioEntry {
   uint32 leaderboard_id = 6;
   BenchmarkRankVisual scenario_rank = 7;
   repeated BenchmarkThreshold thresholds = 8;
+  // "kovaaks" or "aimmod": which source the shown score came from.
+  string score_source = 9;
 }
 
 message BenchmarkCategoryPage {
   string category_name = 1;
   uint32 category_rank = 2;
   repeated BenchmarkScenarioEntry scenarios = 3;
+  double benchmark_progress = 4;
 }
 
 message GetBenchmarkPageRequest {
+  // AimMod handle. Ranks come only from that profile's linked accounts.
   string handle = 1;
   uint32 benchmark_id = 2;
+  // KovaaK's player by Steam id, used when handle is empty. Shows only
+  // KovaaK's public data; AimMod uploads are never mixed in.
+  string steam_id = 3;
+}
+
+message BenchmarkRankHistoryPoint {
+  string date_iso = 1;
+  uint32 overall_rank_index = 2;
+  double average_rank_index = 3;
+  uint32 ranked_scenarios = 4;
 }
 
 message GetBenchmarkPageResponse {
@@ -395,6 +445,19 @@ message GetBenchmarkPageResponse {
   string benchmark_type = 7;
   BenchmarkRankVisual overall_rank = 8;
   repeated BenchmarkCategoryPage categories = 9;
+  // Full rank ladder, lowest first (index 0 is the unranked entry).
+  repeated BenchmarkRankVisual ranks = 10;
+  // KovaaK's own progress figure for the player on this benchmark.
+  double benchmark_progress = 11;
+  // True when the page shows a KovaaK's player who is not on AimMod.
+  bool is_kovaaks_only = 12;
+  string steam_id = 13;
+  string kovaaks_username = 14;
+  string avatar_url = 15;
+  // Rank over time from the player's own AimMod uploads (linked profiles only).
+  repeated BenchmarkRankHistoryPoint rank_history = 16;
+  // AimMod handle linked to this Steam account, when one exists.
+  string aimmod_handle = 17;
 }
 
 message TypeProfileBand {
@@ -466,6 +529,13 @@ message BenchmarkListItem {
   string benchmark_author = 4;
   string benchmark_type = 5;
   uint32 player_count = 6;
+  uint32 scenario_count = 7;
+  // Approximate KovaaK's player count (entries on the benchmark's first
+  // scenario). Zero when not known yet.
+  uint64 kovaaks_players = 8;
+  // Hidden from the default catalog: empty, test-like or barely played.
+  bool hidden = 9;
+  string hidden_reason = 10;
 }
 
 message ListBenchmarksResponse {
@@ -483,6 +553,8 @@ message BenchmarkLeaderboardEntry {
   string overall_rank_name = 4;
   string overall_rank_icon_url = 5;
   uint32 overall_rank_index = 6;
+  double benchmark_progress = 7;
+  string overall_rank_color = 8;
 }
 
 message GetBenchmarkLeaderboardResponse {
@@ -627,6 +699,200 @@ message GetLearningTopicResponse {
   repeated string related_topics = 9;
 }
 
+message GetScenarioLeaderboardRequest {
+  // Identify the scenario by hub slug, exact name or KovaaK's leaderboard id.
+  string scenario_slug = 1;
+  string scenario_name = 2;
+  uint32 leaderboard_id = 3;
+  // "aimmod" (default): AimMod players' bests. "kovaaks": KovaaK's global board.
+  string source = 4;
+  // AimMod only: "7d", "30d", "90d" or "all" (default).
+  string range = 5;
+  uint32 page = 6;
+  uint32 page_size = 7;
+  // Jump to the page holding this AimMod player (aimmod) ...
+  string around_handle = 8;
+  // ... or this KovaaK's player (kovaaks).
+  string around_steam_id = 9;
+  // AimMod only: filter by player name.
+  string query = 10;
+  // AimMod only: "score" (default), "accuracy", "recent" or "runs".
+  string sort = 11;
+  // AimMod only: only players with a linked KovaaK's or Steam account.
+  bool linked_only = 12;
+}
+
+message ScenarioLeaderboardEntry {
+  uint32 rank = 1;
+  string user_handle = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string steam_id = 5;
+  string kovaaks_username = 6;
+  string country = 7;
+  double score = 8;
+  double accuracy = 9;
+  double cm360 = 10;
+  string played_at_iso = 11;
+  string run_id = 12;
+  uint32 run_count = 13;
+  // The row belongs to an AimMod profile (handle is set).
+  bool is_aimmod_player = 14;
+  // The AimMod profile has a linked KovaaK's or Steam account.
+  bool is_linked = 15;
+}
+
+message GetScenarioLeaderboardResponse {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  uint32 leaderboard_id = 3;
+  string source = 4;
+  uint32 total = 5;
+  uint32 page = 6;
+  uint32 page_size = 7;
+  repeated ScenarioLeaderboardEntry entries = 8;
+  // Rank of the around_* player when found, otherwise 0.
+  uint32 highlight_rank = 9;
+  string range = 10;
+  string sort = 11;
+}
+
+message QuickSearchRequest {
+  string query = 1;
+  uint32 limit = 2;
+  // Also ask KovaaK's for players and scenarios that are not on AimMod.
+  bool include_kovaaks = 3;
+}
+
+message QuickSearchResult {
+  // "player", "kovaaks_player", "scenario", "kovaaks_scenario" or "benchmark".
+  string kind = 1;
+  string title = 2;
+  string subtitle = 3;
+  string image_url = 4;
+  string badge = 5;
+  double relevance = 6;
+  string user_handle = 7;
+  string scenario_slug = 8;
+  string scenario_name = 9;
+  uint32 benchmark_id = 10;
+  string steam_id = 11;
+  uint64 count = 12;
+  string country = 13;
+}
+
+message QuickSearchResponse {
+  string query = 1;
+  repeated QuickSearchResult results = 2;
+  bool kovaaks_included = 3;
+}
+
+message GetPlayerScenarioStatsRequest {
+  string handle = 1;
+  // "7d", "30d", "90d" or "all" (default).
+  string range = 2;
+}
+
+message PlayerScenarioStat {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  uint32 run_count = 4;
+  double best_score = 5;
+  double average_score = 6;
+  double best_accuracy = 7;
+  string best_played_at_iso = 8;
+  string last_played_at_iso = 9;
+  // 0-100, higher is steadier: based on the spread of the last 20 runs.
+  double consistency = 10;
+  // Percent change of the last five runs' average against the five before.
+  double trend_pct = 11;
+  // Share of AimMod players whose best is lower, 0-100.
+  double percentile = 12;
+  uint32 hub_rank = 13;
+  uint32 hub_players = 14;
+  // Up to 20 most recent scores, oldest first.
+  repeated double recent_scores = 15;
+  uint64 total_duration_ms = 16;
+}
+
+message ActivityDay {
+  string date_iso = 1;
+  uint32 run_count = 2;
+  uint64 duration_ms = 3;
+}
+
+message GetPlayerScenarioStatsResponse {
+  string user_handle = 1;
+  repeated PlayerScenarioStat scenarios = 2;
+  repeated ActivityDay activity = 3;
+  string range = 4;
+}
+
+message ComparePlayersRequest {
+  string handle = 1;
+  string other_handle = 2;
+}
+
+message CompareScenario {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  string scenario_type = 3;
+  double score = 4;
+  double other_score = 5;
+  uint32 run_count = 6;
+  uint32 other_run_count = 7;
+}
+
+message ComparePlayer {
+  string user_handle = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  uint32 scenario_count = 4;
+  uint32 run_count = 5;
+}
+
+message ComparePlayersResponse {
+  ComparePlayer player = 1;
+  ComparePlayer other = 2;
+  repeated CompareScenario shared = 3;
+  uint32 wins = 4;
+  uint32 losses = 5;
+  uint32 ties = 6;
+}
+
+message GetKovaaksPlayerRequest {
+  // Steam64 id, Steam profile URL or vanity name, or KovaaK's username.
+  string query = 1;
+}
+
+message KovaaksPlayerScenario {
+  string scenario_name = 1;
+  string scenario_slug = 2;
+  uint32 leaderboard_id = 3;
+  uint64 plays = 4;
+  uint32 rank = 5;
+  double score = 6;
+  double cm360 = 7;
+  string played_at_iso = 8;
+}
+
+message GetKovaaksPlayerResponse {
+  string steam_id = 1;
+  string kovaaks_username = 2;
+  string steam_name = 3;
+  string avatar_url = 4;
+  string country = 5;
+  uint64 scenarios_played = 6;
+  string created_at_iso = 7;
+  string last_access_at_iso = 8;
+  // Set only when this account is linked to an AimMod profile.
+  string aimmod_handle = 9;
+  repeated BenchmarkSummary benchmarks = 10;
+  repeated KovaaksPlayerScenario scenarios = 11;
+  uint32 scenario_total = 12;
+}
+
 service HubService {
   rpc GetHealth(HealthRequest) returns (HealthResponse);
   rpc IngestSession(IngestSessionRequest) returns (IngestSessionResponse);
@@ -649,4 +915,9 @@ service HubService {
   rpc GetLearningIndex(GetLearningIndexRequest) returns (GetLearningIndexResponse);
   rpc GetLearningEntry(GetLearningEntryRequest) returns (GetLearningEntryResponse);
   rpc GetLearningTopic(GetLearningTopicRequest) returns (GetLearningTopicResponse);
+  rpc GetScenarioLeaderboard(GetScenarioLeaderboardRequest) returns (GetScenarioLeaderboardResponse);
+  rpc QuickSearch(QuickSearchRequest) returns (QuickSearchResponse);
+  rpc GetPlayerScenarioStats(GetPlayerScenarioStatsRequest) returns (GetPlayerScenarioStatsResponse);
+  rpc ComparePlayers(ComparePlayersRequest) returns (ComparePlayersResponse);
+  rpc GetKovaaksPlayer(GetKovaaksPlayerRequest) returns (GetKovaaksPlayerResponse);
 }

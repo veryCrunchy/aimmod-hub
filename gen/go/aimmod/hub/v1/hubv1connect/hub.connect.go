@@ -89,6 +89,20 @@ const (
 	// HubServiceGetLearningTopicProcedure is the fully-qualified name of the HubService's
 	// GetLearningTopic RPC.
 	HubServiceGetLearningTopicProcedure = "/aimmod.hub.v1.HubService/GetLearningTopic"
+	// HubServiceGetScenarioLeaderboardProcedure is the fully-qualified name of the HubService's
+	// GetScenarioLeaderboard RPC.
+	HubServiceGetScenarioLeaderboardProcedure = "/aimmod.hub.v1.HubService/GetScenarioLeaderboard"
+	// HubServiceQuickSearchProcedure is the fully-qualified name of the HubService's QuickSearch RPC.
+	HubServiceQuickSearchProcedure = "/aimmod.hub.v1.HubService/QuickSearch"
+	// HubServiceGetPlayerScenarioStatsProcedure is the fully-qualified name of the HubService's
+	// GetPlayerScenarioStats RPC.
+	HubServiceGetPlayerScenarioStatsProcedure = "/aimmod.hub.v1.HubService/GetPlayerScenarioStats"
+	// HubServiceComparePlayersProcedure is the fully-qualified name of the HubService's ComparePlayers
+	// RPC.
+	HubServiceComparePlayersProcedure = "/aimmod.hub.v1.HubService/ComparePlayers"
+	// HubServiceGetKovaaksPlayerProcedure is the fully-qualified name of the HubService's
+	// GetKovaaksPlayer RPC.
+	HubServiceGetKovaaksPlayerProcedure = "/aimmod.hub.v1.HubService/GetKovaaksPlayer"
 )
 
 // HubServiceClient is a client for the aimmod.hub.v1.HubService service.
@@ -114,6 +128,11 @@ type HubServiceClient interface {
 	GetLearningIndex(context.Context, *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error)
 	GetLearningEntry(context.Context, *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error)
 	GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error)
+	GetScenarioLeaderboard(context.Context, *connect.Request[v1.GetScenarioLeaderboardRequest]) (*connect.Response[v1.GetScenarioLeaderboardResponse], error)
+	QuickSearch(context.Context, *connect.Request[v1.QuickSearchRequest]) (*connect.Response[v1.QuickSearchResponse], error)
+	GetPlayerScenarioStats(context.Context, *connect.Request[v1.GetPlayerScenarioStatsRequest]) (*connect.Response[v1.GetPlayerScenarioStatsResponse], error)
+	ComparePlayers(context.Context, *connect.Request[v1.ComparePlayersRequest]) (*connect.Response[v1.ComparePlayersResponse], error)
+	GetKovaaksPlayer(context.Context, *connect.Request[v1.GetKovaaksPlayerRequest]) (*connect.Response[v1.GetKovaaksPlayerResponse], error)
 }
 
 // NewHubServiceClient constructs a client for the aimmod.hub.v1.HubService service. By default, it
@@ -253,6 +272,36 @@ func NewHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithSchema(hubServiceMethods.ByName("GetLearningTopic")),
 			connect.WithClientOptions(opts...),
 		),
+		getScenarioLeaderboard: connect.NewClient[v1.GetScenarioLeaderboardRequest, v1.GetScenarioLeaderboardResponse](
+			httpClient,
+			baseURL+HubServiceGetScenarioLeaderboardProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetScenarioLeaderboard")),
+			connect.WithClientOptions(opts...),
+		),
+		quickSearch: connect.NewClient[v1.QuickSearchRequest, v1.QuickSearchResponse](
+			httpClient,
+			baseURL+HubServiceQuickSearchProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("QuickSearch")),
+			connect.WithClientOptions(opts...),
+		),
+		getPlayerScenarioStats: connect.NewClient[v1.GetPlayerScenarioStatsRequest, v1.GetPlayerScenarioStatsResponse](
+			httpClient,
+			baseURL+HubServiceGetPlayerScenarioStatsProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioStats")),
+			connect.WithClientOptions(opts...),
+		),
+		comparePlayers: connect.NewClient[v1.ComparePlayersRequest, v1.ComparePlayersResponse](
+			httpClient,
+			baseURL+HubServiceComparePlayersProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("ComparePlayers")),
+			connect.WithClientOptions(opts...),
+		),
+		getKovaaksPlayer: connect.NewClient[v1.GetKovaaksPlayerRequest, v1.GetKovaaksPlayerResponse](
+			httpClient,
+			baseURL+HubServiceGetKovaaksPlayerProcedure,
+			connect.WithSchema(hubServiceMethods.ByName("GetKovaaksPlayer")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -279,6 +328,11 @@ type hubServiceClient struct {
 	getLearningIndex         *connect.Client[v1.GetLearningIndexRequest, v1.GetLearningIndexResponse]
 	getLearningEntry         *connect.Client[v1.GetLearningEntryRequest, v1.GetLearningEntryResponse]
 	getLearningTopic         *connect.Client[v1.GetLearningTopicRequest, v1.GetLearningTopicResponse]
+	getScenarioLeaderboard   *connect.Client[v1.GetScenarioLeaderboardRequest, v1.GetScenarioLeaderboardResponse]
+	quickSearch              *connect.Client[v1.QuickSearchRequest, v1.QuickSearchResponse]
+	getPlayerScenarioStats   *connect.Client[v1.GetPlayerScenarioStatsRequest, v1.GetPlayerScenarioStatsResponse]
+	comparePlayers           *connect.Client[v1.ComparePlayersRequest, v1.ComparePlayersResponse]
+	getKovaaksPlayer         *connect.Client[v1.GetKovaaksPlayerRequest, v1.GetKovaaksPlayerResponse]
 }
 
 // GetHealth calls aimmod.hub.v1.HubService.GetHealth.
@@ -386,6 +440,31 @@ func (c *hubServiceClient) GetLearningTopic(ctx context.Context, req *connect.Re
 	return c.getLearningTopic.CallUnary(ctx, req)
 }
 
+// GetScenarioLeaderboard calls aimmod.hub.v1.HubService.GetScenarioLeaderboard.
+func (c *hubServiceClient) GetScenarioLeaderboard(ctx context.Context, req *connect.Request[v1.GetScenarioLeaderboardRequest]) (*connect.Response[v1.GetScenarioLeaderboardResponse], error) {
+	return c.getScenarioLeaderboard.CallUnary(ctx, req)
+}
+
+// QuickSearch calls aimmod.hub.v1.HubService.QuickSearch.
+func (c *hubServiceClient) QuickSearch(ctx context.Context, req *connect.Request[v1.QuickSearchRequest]) (*connect.Response[v1.QuickSearchResponse], error) {
+	return c.quickSearch.CallUnary(ctx, req)
+}
+
+// GetPlayerScenarioStats calls aimmod.hub.v1.HubService.GetPlayerScenarioStats.
+func (c *hubServiceClient) GetPlayerScenarioStats(ctx context.Context, req *connect.Request[v1.GetPlayerScenarioStatsRequest]) (*connect.Response[v1.GetPlayerScenarioStatsResponse], error) {
+	return c.getPlayerScenarioStats.CallUnary(ctx, req)
+}
+
+// ComparePlayers calls aimmod.hub.v1.HubService.ComparePlayers.
+func (c *hubServiceClient) ComparePlayers(ctx context.Context, req *connect.Request[v1.ComparePlayersRequest]) (*connect.Response[v1.ComparePlayersResponse], error) {
+	return c.comparePlayers.CallUnary(ctx, req)
+}
+
+// GetKovaaksPlayer calls aimmod.hub.v1.HubService.GetKovaaksPlayer.
+func (c *hubServiceClient) GetKovaaksPlayer(ctx context.Context, req *connect.Request[v1.GetKovaaksPlayerRequest]) (*connect.Response[v1.GetKovaaksPlayerResponse], error) {
+	return c.getKovaaksPlayer.CallUnary(ctx, req)
+}
+
 // HubServiceHandler is an implementation of the aimmod.hub.v1.HubService service.
 type HubServiceHandler interface {
 	GetHealth(context.Context, *connect.Request[v1.HealthRequest]) (*connect.Response[v1.HealthResponse], error)
@@ -409,6 +488,11 @@ type HubServiceHandler interface {
 	GetLearningIndex(context.Context, *connect.Request[v1.GetLearningIndexRequest]) (*connect.Response[v1.GetLearningIndexResponse], error)
 	GetLearningEntry(context.Context, *connect.Request[v1.GetLearningEntryRequest]) (*connect.Response[v1.GetLearningEntryResponse], error)
 	GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error)
+	GetScenarioLeaderboard(context.Context, *connect.Request[v1.GetScenarioLeaderboardRequest]) (*connect.Response[v1.GetScenarioLeaderboardResponse], error)
+	QuickSearch(context.Context, *connect.Request[v1.QuickSearchRequest]) (*connect.Response[v1.QuickSearchResponse], error)
+	GetPlayerScenarioStats(context.Context, *connect.Request[v1.GetPlayerScenarioStatsRequest]) (*connect.Response[v1.GetPlayerScenarioStatsResponse], error)
+	ComparePlayers(context.Context, *connect.Request[v1.ComparePlayersRequest]) (*connect.Response[v1.ComparePlayersResponse], error)
+	GetKovaaksPlayer(context.Context, *connect.Request[v1.GetKovaaksPlayerRequest]) (*connect.Response[v1.GetKovaaksPlayerResponse], error)
 }
 
 // NewHubServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -544,6 +628,36 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithSchema(hubServiceMethods.ByName("GetLearningTopic")),
 		connect.WithHandlerOptions(opts...),
 	)
+	hubServiceGetScenarioLeaderboardHandler := connect.NewUnaryHandler(
+		HubServiceGetScenarioLeaderboardProcedure,
+		svc.GetScenarioLeaderboard,
+		connect.WithSchema(hubServiceMethods.ByName("GetScenarioLeaderboard")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceQuickSearchHandler := connect.NewUnaryHandler(
+		HubServiceQuickSearchProcedure,
+		svc.QuickSearch,
+		connect.WithSchema(hubServiceMethods.ByName("QuickSearch")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetPlayerScenarioStatsHandler := connect.NewUnaryHandler(
+		HubServiceGetPlayerScenarioStatsProcedure,
+		svc.GetPlayerScenarioStats,
+		connect.WithSchema(hubServiceMethods.ByName("GetPlayerScenarioStats")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceComparePlayersHandler := connect.NewUnaryHandler(
+		HubServiceComparePlayersProcedure,
+		svc.ComparePlayers,
+		connect.WithSchema(hubServiceMethods.ByName("ComparePlayers")),
+		connect.WithHandlerOptions(opts...),
+	)
+	hubServiceGetKovaaksPlayerHandler := connect.NewUnaryHandler(
+		HubServiceGetKovaaksPlayerProcedure,
+		svc.GetKovaaksPlayer,
+		connect.WithSchema(hubServiceMethods.ByName("GetKovaaksPlayer")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/aimmod.hub.v1.HubService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case HubServiceGetHealthProcedure:
@@ -588,6 +702,16 @@ func NewHubServiceHandler(svc HubServiceHandler, opts ...connect.HandlerOption) 
 			hubServiceGetLearningEntryHandler.ServeHTTP(w, r)
 		case HubServiceGetLearningTopicProcedure:
 			hubServiceGetLearningTopicHandler.ServeHTTP(w, r)
+		case HubServiceGetScenarioLeaderboardProcedure:
+			hubServiceGetScenarioLeaderboardHandler.ServeHTTP(w, r)
+		case HubServiceQuickSearchProcedure:
+			hubServiceQuickSearchHandler.ServeHTTP(w, r)
+		case HubServiceGetPlayerScenarioStatsProcedure:
+			hubServiceGetPlayerScenarioStatsHandler.ServeHTTP(w, r)
+		case HubServiceComparePlayersProcedure:
+			hubServiceComparePlayersHandler.ServeHTTP(w, r)
+		case HubServiceGetKovaaksPlayerProcedure:
+			hubServiceGetKovaaksPlayerHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -679,4 +803,24 @@ func (UnimplementedHubServiceHandler) GetLearningEntry(context.Context, *connect
 
 func (UnimplementedHubServiceHandler) GetLearningTopic(context.Context, *connect.Request[v1.GetLearningTopicRequest]) (*connect.Response[v1.GetLearningTopicResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetLearningTopic is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetScenarioLeaderboard(context.Context, *connect.Request[v1.GetScenarioLeaderboardRequest]) (*connect.Response[v1.GetScenarioLeaderboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetScenarioLeaderboard is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) QuickSearch(context.Context, *connect.Request[v1.QuickSearchRequest]) (*connect.Response[v1.QuickSearchResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.QuickSearch is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetPlayerScenarioStats(context.Context, *connect.Request[v1.GetPlayerScenarioStatsRequest]) (*connect.Response[v1.GetPlayerScenarioStatsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetPlayerScenarioStats is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) ComparePlayers(context.Context, *connect.Request[v1.ComparePlayersRequest]) (*connect.Response[v1.ComparePlayersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.ComparePlayers is not implemented"))
+}
+
+func (UnimplementedHubServiceHandler) GetKovaaksPlayer(context.Context, *connect.Request[v1.GetKovaaksPlayerRequest]) (*connect.Response[v1.GetKovaaksPlayerResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("aimmod.hub.v1.HubService.GetKovaaksPlayer is not implemented"))
 }

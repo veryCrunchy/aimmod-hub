@@ -25,6 +25,9 @@ func Main() error {
 	defer store.Close()
 
 	hub := service.NewHubServer(cfg.Version, store)
+	syncCtx, stopSync := context.WithCancel(ctx)
+	defer stopSync()
+	hub.StartBackgroundSync(syncCtx)
 	return httpserver.ListenAndServe(cfg, hub)
 }
 

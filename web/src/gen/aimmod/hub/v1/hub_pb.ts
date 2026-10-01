@@ -1182,6 +1182,13 @@ export class GetScenarioPageRequest extends Message<GetScenarioPageRequest> {
    */
   slug = "";
 
+  /**
+   * Optional AimMod handle; fills `viewer` with that player's standing.
+   *
+   * @generated from field: string handle = 2;
+   */
+  handle = "";
+
   constructor(data?: PartialMessage<GetScenarioPageRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1191,6 +1198,7 @@ export class GetScenarioPageRequest extends Message<GetScenarioPageRequest> {
   static readonly typeName = "aimmod.hub.v1.GetScenarioPageRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioPageRequest {
@@ -1207,6 +1215,177 @@ export class GetScenarioPageRequest extends Message<GetScenarioPageRequest> {
 
   static equals(a: GetScenarioPageRequest | PlainMessage<GetScenarioPageRequest> | undefined, b: GetScenarioPageRequest | PlainMessage<GetScenarioPageRequest> | undefined): boolean {
     return proto3.util.equals(GetScenarioPageRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ScorePercentile
+ */
+export class ScorePercentile extends Message<ScorePercentile> {
+  /**
+   * Percentile of players' best scores, e.g. 50 for the median.
+   *
+   * @generated from field: uint32 percentile = 1;
+   */
+  percentile = 0;
+
+  /**
+   * @generated from field: double score = 2;
+   */
+  score = 0;
+
+  constructor(data?: PartialMessage<ScorePercentile>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ScorePercentile";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "percentile", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScorePercentile {
+    return new ScorePercentile().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScorePercentile {
+    return new ScorePercentile().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScorePercentile {
+    return new ScorePercentile().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ScorePercentile | PlainMessage<ScorePercentile> | undefined, b: ScorePercentile | PlainMessage<ScorePercentile> | undefined): boolean {
+    return proto3.util.equals(ScorePercentile, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.PlayerScenarioStanding
+ */
+export class PlayerScenarioStanding extends Message<PlayerScenarioStanding> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: double best_score = 2;
+   */
+  bestScore = 0;
+
+  /**
+   * 1-based rank among AimMod players by best score.
+   *
+   * @generated from field: uint32 rank = 3;
+   */
+  rank = 0;
+
+  /**
+   * Share of AimMod players this player beats, 0-100.
+   *
+   * @generated from field: double percentile = 4;
+   */
+  percentile = 0;
+
+  /**
+   * @generated from field: uint32 run_count = 5;
+   */
+  runCount = 0;
+
+  constructor(data?: PartialMessage<PlayerScenarioStanding>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.PlayerScenarioStanding";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "best_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 3, name: "rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "percentile", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PlayerScenarioStanding {
+    return new PlayerScenarioStanding().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PlayerScenarioStanding {
+    return new PlayerScenarioStanding().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PlayerScenarioStanding {
+    return new PlayerScenarioStanding().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PlayerScenarioStanding | PlainMessage<PlayerScenarioStanding> | undefined, b: PlayerScenarioStanding | PlainMessage<PlayerScenarioStanding> | undefined): boolean {
+    return proto3.util.equals(PlayerScenarioStanding, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ScenarioBenchmarkMembership
+ */
+export class ScenarioBenchmarkMembership extends Message<ScenarioBenchmarkMembership> {
+  /**
+   * @generated from field: uint32 benchmark_id = 1;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string benchmark_name = 2;
+   */
+  benchmarkName = "";
+
+  /**
+   * @generated from field: string benchmark_icon_url = 3;
+   */
+  benchmarkIconUrl = "";
+
+  /**
+   * @generated from field: string category_name = 4;
+   */
+  categoryName = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkThreshold thresholds = 5;
+   */
+  thresholds: BenchmarkThreshold[] = [];
+
+  constructor(data?: PartialMessage<ScenarioBenchmarkMembership>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ScenarioBenchmarkMembership";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "benchmark_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "benchmark_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "category_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "thresholds", kind: "message", T: BenchmarkThreshold, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScenarioBenchmarkMembership {
+    return new ScenarioBenchmarkMembership().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScenarioBenchmarkMembership {
+    return new ScenarioBenchmarkMembership().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScenarioBenchmarkMembership {
+    return new ScenarioBenchmarkMembership().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ScenarioBenchmarkMembership | PlainMessage<ScenarioBenchmarkMembership> | undefined, b: ScenarioBenchmarkMembership | PlainMessage<ScenarioBenchmarkMembership> | undefined): boolean {
+    return proto3.util.equals(ScenarioBenchmarkMembership, a, b);
   }
 }
 
@@ -1281,6 +1460,44 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
    */
   runsLast7Days = 0;
 
+  /**
+   * Percentiles of AimMod players' best scores.
+   *
+   * @generated from field: repeated aimmod.hub.v1.ScorePercentile percentiles = 14;
+   */
+  percentiles: ScorePercentile[] = [];
+
+  /**
+   * Set when the request named a handle that has played this scenario.
+   *
+   * @generated from field: aimmod.hub.v1.PlayerScenarioStanding viewer = 15;
+   */
+  viewer?: PlayerScenarioStanding;
+
+  /**
+   * KovaaK's public leaderboard for this scenario, when it exists.
+   *
+   * @generated from field: uint32 kovaaks_leaderboard_id = 16;
+   */
+  kovaaksLeaderboardId = 0;
+
+  /**
+   * @generated from field: uint64 kovaaks_plays = 17;
+   */
+  kovaaksPlays = protoInt64.zero;
+
+  /**
+   * @generated from field: uint64 kovaaks_entries = 18;
+   */
+  kovaaksEntries = protoInt64.zero;
+
+  /**
+   * Benchmarks that include this scenario, with their rank thresholds.
+   *
+   * @generated from field: repeated aimmod.hub.v1.ScenarioBenchmarkMembership benchmarks = 19;
+   */
+  benchmarks: ScenarioBenchmarkMembership[] = [];
+
   constructor(data?: PartialMessage<GetScenarioPageResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1302,6 +1519,12 @@ export class GetScenarioPageResponse extends Message<GetScenarioPageResponse> {
     { no: 11, name: "score_distribution", kind: "message", T: ScoreBin, repeated: true },
     { no: 12, name: "player_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 13, name: "runs_last_7_days", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 14, name: "percentiles", kind: "message", T: ScorePercentile, repeated: true },
+    { no: 15, name: "viewer", kind: "message", T: PlayerScenarioStanding },
+    { no: 16, name: "kovaaks_leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 17, name: "kovaaks_plays", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 18, name: "kovaaks_entries", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 19, name: "benchmarks", kind: "message", T: ScenarioBenchmarkMembership, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioPageResponse {
@@ -2733,6 +2956,13 @@ export class BenchmarkScenarioEntry extends Message<BenchmarkScenarioEntry> {
    */
   thresholds: BenchmarkThreshold[] = [];
 
+  /**
+   * "kovaaks" or "aimmod": which source the shown score came from.
+   *
+   * @generated from field: string score_source = 9;
+   */
+  scoreSource = "";
+
   constructor(data?: PartialMessage<BenchmarkScenarioEntry>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2749,6 +2979,7 @@ export class BenchmarkScenarioEntry extends Message<BenchmarkScenarioEntry> {
     { no: 6, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 7, name: "scenario_rank", kind: "message", T: BenchmarkRankVisual },
     { no: 8, name: "thresholds", kind: "message", T: BenchmarkThreshold, repeated: true },
+    { no: 9, name: "score_source", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkScenarioEntry {
@@ -2787,6 +3018,11 @@ export class BenchmarkCategoryPage extends Message<BenchmarkCategoryPage> {
    */
   scenarios: BenchmarkScenarioEntry[] = [];
 
+  /**
+   * @generated from field: double benchmark_progress = 4;
+   */
+  benchmarkProgress = 0;
+
   constructor(data?: PartialMessage<BenchmarkCategoryPage>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2798,6 +3034,7 @@ export class BenchmarkCategoryPage extends Message<BenchmarkCategoryPage> {
     { no: 1, name: "category_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "category_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 3, name: "scenarios", kind: "message", T: BenchmarkScenarioEntry, repeated: true },
+    { no: 4, name: "benchmark_progress", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkCategoryPage {
@@ -2822,6 +3059,8 @@ export class BenchmarkCategoryPage extends Message<BenchmarkCategoryPage> {
  */
 export class GetBenchmarkPageRequest extends Message<GetBenchmarkPageRequest> {
   /**
+   * AimMod handle. Ranks come only from that profile's linked accounts.
+   *
    * @generated from field: string handle = 1;
    */
   handle = "";
@@ -2830,6 +3069,14 @@ export class GetBenchmarkPageRequest extends Message<GetBenchmarkPageRequest> {
    * @generated from field: uint32 benchmark_id = 2;
    */
   benchmarkId = 0;
+
+  /**
+   * KovaaK's player by Steam id, used when handle is empty. Shows only
+   * KovaaK's public data; AimMod uploads are never mixed in.
+   *
+   * @generated from field: string steam_id = 3;
+   */
+  steamId = "";
 
   constructor(data?: PartialMessage<GetBenchmarkPageRequest>) {
     super();
@@ -2841,6 +3088,7 @@ export class GetBenchmarkPageRequest extends Message<GetBenchmarkPageRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkPageRequest {
@@ -2857,6 +3105,61 @@ export class GetBenchmarkPageRequest extends Message<GetBenchmarkPageRequest> {
 
   static equals(a: GetBenchmarkPageRequest | PlainMessage<GetBenchmarkPageRequest> | undefined, b: GetBenchmarkPageRequest | PlainMessage<GetBenchmarkPageRequest> | undefined): boolean {
     return proto3.util.equals(GetBenchmarkPageRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.BenchmarkRankHistoryPoint
+ */
+export class BenchmarkRankHistoryPoint extends Message<BenchmarkRankHistoryPoint> {
+  /**
+   * @generated from field: string date_iso = 1;
+   */
+  dateIso = "";
+
+  /**
+   * @generated from field: uint32 overall_rank_index = 2;
+   */
+  overallRankIndex = 0;
+
+  /**
+   * @generated from field: double average_rank_index = 3;
+   */
+  averageRankIndex = 0;
+
+  /**
+   * @generated from field: uint32 ranked_scenarios = 4;
+   */
+  rankedScenarios = 0;
+
+  constructor(data?: PartialMessage<BenchmarkRankHistoryPoint>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.BenchmarkRankHistoryPoint";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "date_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "overall_rank_index", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "average_rank_index", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 4, name: "ranked_scenarios", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkRankHistoryPoint {
+    return new BenchmarkRankHistoryPoint().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BenchmarkRankHistoryPoint {
+    return new BenchmarkRankHistoryPoint().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BenchmarkRankHistoryPoint {
+    return new BenchmarkRankHistoryPoint().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BenchmarkRankHistoryPoint | PlainMessage<BenchmarkRankHistoryPoint> | undefined, b: BenchmarkRankHistoryPoint | PlainMessage<BenchmarkRankHistoryPoint> | undefined): boolean {
+    return proto3.util.equals(BenchmarkRankHistoryPoint, a, b);
   }
 }
 
@@ -2909,6 +3212,56 @@ export class GetBenchmarkPageResponse extends Message<GetBenchmarkPageResponse> 
    */
   categories: BenchmarkCategoryPage[] = [];
 
+  /**
+   * Full rank ladder, lowest first (index 0 is the unranked entry).
+   *
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkRankVisual ranks = 10;
+   */
+  ranks: BenchmarkRankVisual[] = [];
+
+  /**
+   * KovaaK's own progress figure for the player on this benchmark.
+   *
+   * @generated from field: double benchmark_progress = 11;
+   */
+  benchmarkProgress = 0;
+
+  /**
+   * True when the page shows a KovaaK's player who is not on AimMod.
+   *
+   * @generated from field: bool is_kovaaks_only = 12;
+   */
+  isKovaaksOnly = false;
+
+  /**
+   * @generated from field: string steam_id = 13;
+   */
+  steamId = "";
+
+  /**
+   * @generated from field: string kovaaks_username = 14;
+   */
+  kovaaksUsername = "";
+
+  /**
+   * @generated from field: string avatar_url = 15;
+   */
+  avatarUrl = "";
+
+  /**
+   * Rank over time from the player's own AimMod uploads (linked profiles only).
+   *
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkRankHistoryPoint rank_history = 16;
+   */
+  rankHistory: BenchmarkRankHistoryPoint[] = [];
+
+  /**
+   * AimMod handle linked to this Steam account, when one exists.
+   *
+   * @generated from field: string aimmod_handle = 17;
+   */
+  aimmodHandle = "";
+
   constructor(data?: PartialMessage<GetBenchmarkPageResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2926,6 +3279,14 @@ export class GetBenchmarkPageResponse extends Message<GetBenchmarkPageResponse> 
     { no: 7, name: "benchmark_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "overall_rank", kind: "message", T: BenchmarkRankVisual },
     { no: 9, name: "categories", kind: "message", T: BenchmarkCategoryPage, repeated: true },
+    { no: 10, name: "ranks", kind: "message", T: BenchmarkRankVisual, repeated: true },
+    { no: 11, name: "benchmark_progress", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 12, name: "is_kovaaks_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 13, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 14, name: "kovaaks_username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 15, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 16, name: "rank_history", kind: "message", T: BenchmarkRankHistoryPoint, repeated: true },
+    { no: 17, name: "aimmod_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBenchmarkPageResponse {
@@ -3461,6 +3822,31 @@ export class BenchmarkListItem extends Message<BenchmarkListItem> {
    */
   playerCount = 0;
 
+  /**
+   * @generated from field: uint32 scenario_count = 7;
+   */
+  scenarioCount = 0;
+
+  /**
+   * Approximate KovaaK's player count (entries on the benchmark's first
+   * scenario). Zero when not known yet.
+   *
+   * @generated from field: uint64 kovaaks_players = 8;
+   */
+  kovaaksPlayers = protoInt64.zero;
+
+  /**
+   * Hidden from the default catalog: empty, test-like or barely played.
+   *
+   * @generated from field: bool hidden = 9;
+   */
+  hidden = false;
+
+  /**
+   * @generated from field: string hidden_reason = 10;
+   */
+  hiddenReason = "";
+
   constructor(data?: PartialMessage<BenchmarkListItem>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3475,6 +3861,10 @@ export class BenchmarkListItem extends Message<BenchmarkListItem> {
     { no: 4, name: "benchmark_author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "benchmark_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "player_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "scenario_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "kovaaks_players", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 9, name: "hidden", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 10, name: "hidden_reason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkListItem {
@@ -3602,6 +3992,16 @@ export class BenchmarkLeaderboardEntry extends Message<BenchmarkLeaderboardEntry
    */
   overallRankIndex = 0;
 
+  /**
+   * @generated from field: double benchmark_progress = 7;
+   */
+  benchmarkProgress = 0;
+
+  /**
+   * @generated from field: string overall_rank_color = 8;
+   */
+  overallRankColor = "";
+
   constructor(data?: PartialMessage<BenchmarkLeaderboardEntry>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3616,6 +4016,8 @@ export class BenchmarkLeaderboardEntry extends Message<BenchmarkLeaderboardEntry
     { no: 4, name: "overall_rank_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "overall_rank_icon_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "overall_rank_index", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "benchmark_progress", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "overall_rank_color", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BenchmarkLeaderboardEntry {
@@ -4685,6 +5087,1311 @@ export class GetLearningTopicResponse extends Message<GetLearningTopicResponse> 
 
   static equals(a: GetLearningTopicResponse | PlainMessage<GetLearningTopicResponse> | undefined, b: GetLearningTopicResponse | PlainMessage<GetLearningTopicResponse> | undefined): boolean {
     return proto3.util.equals(GetLearningTopicResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetScenarioLeaderboardRequest
+ */
+export class GetScenarioLeaderboardRequest extends Message<GetScenarioLeaderboardRequest> {
+  /**
+   * Identify the scenario by hub slug, exact name or KovaaK's leaderboard id.
+   *
+   * @generated from field: string scenario_slug = 1;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_name = 2;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: uint32 leaderboard_id = 3;
+   */
+  leaderboardId = 0;
+
+  /**
+   * "aimmod" (default): AimMod players' bests. "kovaaks": KovaaK's global board.
+   *
+   * @generated from field: string source = 4;
+   */
+  source = "";
+
+  /**
+   * AimMod only: "7d", "30d", "90d" or "all" (default).
+   *
+   * @generated from field: string range = 5;
+   */
+  range = "";
+
+  /**
+   * @generated from field: uint32 page = 6;
+   */
+  page = 0;
+
+  /**
+   * @generated from field: uint32 page_size = 7;
+   */
+  pageSize = 0;
+
+  /**
+   * Jump to the page holding this AimMod player (aimmod) ...
+   *
+   * @generated from field: string around_handle = 8;
+   */
+  aroundHandle = "";
+
+  /**
+   * ... or this KovaaK's player (kovaaks).
+   *
+   * @generated from field: string around_steam_id = 9;
+   */
+  aroundSteamId = "";
+
+  /**
+   * AimMod only: filter by player name.
+   *
+   * @generated from field: string query = 10;
+   */
+  query = "";
+
+  /**
+   * AimMod only: "score" (default), "accuracy", "recent" or "runs".
+   *
+   * @generated from field: string sort = 11;
+   */
+  sort = "";
+
+  /**
+   * AimMod only: only players with a linked KovaaK's or Steam account.
+   *
+   * @generated from field: bool linked_only = 12;
+   */
+  linkedOnly = false;
+
+  constructor(data?: PartialMessage<GetScenarioLeaderboardRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetScenarioLeaderboardRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "source", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "range", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "page", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "page_size", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "around_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "around_steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "sort", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "linked_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioLeaderboardRequest {
+    return new GetScenarioLeaderboardRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetScenarioLeaderboardRequest {
+    return new GetScenarioLeaderboardRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetScenarioLeaderboardRequest {
+    return new GetScenarioLeaderboardRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetScenarioLeaderboardRequest | PlainMessage<GetScenarioLeaderboardRequest> | undefined, b: GetScenarioLeaderboardRequest | PlainMessage<GetScenarioLeaderboardRequest> | undefined): boolean {
+    return proto3.util.equals(GetScenarioLeaderboardRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ScenarioLeaderboardEntry
+ */
+export class ScenarioLeaderboardEntry extends Message<ScenarioLeaderboardEntry> {
+  /**
+   * @generated from field: uint32 rank = 1;
+   */
+  rank = 0;
+
+  /**
+   * @generated from field: string user_handle = 2;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string display_name = 3;
+   */
+  displayName = "";
+
+  /**
+   * @generated from field: string avatar_url = 4;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: string steam_id = 5;
+   */
+  steamId = "";
+
+  /**
+   * @generated from field: string kovaaks_username = 6;
+   */
+  kovaaksUsername = "";
+
+  /**
+   * @generated from field: string country = 7;
+   */
+  country = "";
+
+  /**
+   * @generated from field: double score = 8;
+   */
+  score = 0;
+
+  /**
+   * @generated from field: double accuracy = 9;
+   */
+  accuracy = 0;
+
+  /**
+   * @generated from field: double cm360 = 10;
+   */
+  cm360 = 0;
+
+  /**
+   * @generated from field: string played_at_iso = 11;
+   */
+  playedAtIso = "";
+
+  /**
+   * @generated from field: string run_id = 12;
+   */
+  runId = "";
+
+  /**
+   * @generated from field: uint32 run_count = 13;
+   */
+  runCount = 0;
+
+  /**
+   * The row belongs to an AimMod profile (handle is set).
+   *
+   * @generated from field: bool is_aimmod_player = 14;
+   */
+  isAimmodPlayer = false;
+
+  /**
+   * The AimMod profile has a linked KovaaK's or Steam account.
+   *
+   * @generated from field: bool is_linked = 15;
+   */
+  isLinked = false;
+
+  constructor(data?: PartialMessage<ScenarioLeaderboardEntry>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ScenarioLeaderboardEntry";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 2, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "kovaaks_username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "country", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 9, name: "accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 10, name: "cm360", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 11, name: "played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "run_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 14, name: "is_aimmod_player", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 15, name: "is_linked", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScenarioLeaderboardEntry {
+    return new ScenarioLeaderboardEntry().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScenarioLeaderboardEntry {
+    return new ScenarioLeaderboardEntry().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScenarioLeaderboardEntry {
+    return new ScenarioLeaderboardEntry().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ScenarioLeaderboardEntry | PlainMessage<ScenarioLeaderboardEntry> | undefined, b: ScenarioLeaderboardEntry | PlainMessage<ScenarioLeaderboardEntry> | undefined): boolean {
+    return proto3.util.equals(ScenarioLeaderboardEntry, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetScenarioLeaderboardResponse
+ */
+export class GetScenarioLeaderboardResponse extends Message<GetScenarioLeaderboardResponse> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: uint32 leaderboard_id = 3;
+   */
+  leaderboardId = 0;
+
+  /**
+   * @generated from field: string source = 4;
+   */
+  source = "";
+
+  /**
+   * @generated from field: uint32 total = 5;
+   */
+  total = 0;
+
+  /**
+   * @generated from field: uint32 page = 6;
+   */
+  page = 0;
+
+  /**
+   * @generated from field: uint32 page_size = 7;
+   */
+  pageSize = 0;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ScenarioLeaderboardEntry entries = 8;
+   */
+  entries: ScenarioLeaderboardEntry[] = [];
+
+  /**
+   * Rank of the around_* player when found, otherwise 0.
+   *
+   * @generated from field: uint32 highlight_rank = 9;
+   */
+  highlightRank = 0;
+
+  /**
+   * @generated from field: string range = 10;
+   */
+  range = "";
+
+  /**
+   * @generated from field: string sort = 11;
+   */
+  sort = "";
+
+  constructor(data?: PartialMessage<GetScenarioLeaderboardResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetScenarioLeaderboardResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "source", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "total", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "page", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "page_size", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 8, name: "entries", kind: "message", T: ScenarioLeaderboardEntry, repeated: true },
+    { no: 9, name: "highlight_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 10, name: "range", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "sort", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetScenarioLeaderboardResponse {
+    return new GetScenarioLeaderboardResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetScenarioLeaderboardResponse {
+    return new GetScenarioLeaderboardResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetScenarioLeaderboardResponse {
+    return new GetScenarioLeaderboardResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetScenarioLeaderboardResponse | PlainMessage<GetScenarioLeaderboardResponse> | undefined, b: GetScenarioLeaderboardResponse | PlainMessage<GetScenarioLeaderboardResponse> | undefined): boolean {
+    return proto3.util.equals(GetScenarioLeaderboardResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.QuickSearchRequest
+ */
+export class QuickSearchRequest extends Message<QuickSearchRequest> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  /**
+   * @generated from field: uint32 limit = 2;
+   */
+  limit = 0;
+
+  /**
+   * Also ask KovaaK's for players and scenarios that are not on AimMod.
+   *
+   * @generated from field: bool include_kovaaks = 3;
+   */
+  includeKovaaks = false;
+
+  constructor(data?: PartialMessage<QuickSearchRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.QuickSearchRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "limit", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "include_kovaaks", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuickSearchRequest {
+    return new QuickSearchRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuickSearchRequest {
+    return new QuickSearchRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuickSearchRequest {
+    return new QuickSearchRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuickSearchRequest | PlainMessage<QuickSearchRequest> | undefined, b: QuickSearchRequest | PlainMessage<QuickSearchRequest> | undefined): boolean {
+    return proto3.util.equals(QuickSearchRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.QuickSearchResult
+ */
+export class QuickSearchResult extends Message<QuickSearchResult> {
+  /**
+   * "player", "kovaaks_player", "scenario", "kovaaks_scenario" or "benchmark".
+   *
+   * @generated from field: string kind = 1;
+   */
+  kind = "";
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title = "";
+
+  /**
+   * @generated from field: string subtitle = 3;
+   */
+  subtitle = "";
+
+  /**
+   * @generated from field: string image_url = 4;
+   */
+  imageUrl = "";
+
+  /**
+   * @generated from field: string badge = 5;
+   */
+  badge = "";
+
+  /**
+   * @generated from field: double relevance = 6;
+   */
+  relevance = 0;
+
+  /**
+   * @generated from field: string user_handle = 7;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string scenario_slug = 8;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_name = 9;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: uint32 benchmark_id = 10;
+   */
+  benchmarkId = 0;
+
+  /**
+   * @generated from field: string steam_id = 11;
+   */
+  steamId = "";
+
+  /**
+   * @generated from field: uint64 count = 12;
+   */
+  count = protoInt64.zero;
+
+  /**
+   * @generated from field: string country = 13;
+   */
+  country = "";
+
+  constructor(data?: PartialMessage<QuickSearchResult>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.QuickSearchResult";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "kind", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "subtitle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "image_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "badge", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "relevance", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 7, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "benchmark_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 11, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "count", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 13, name: "country", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuickSearchResult {
+    return new QuickSearchResult().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuickSearchResult {
+    return new QuickSearchResult().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuickSearchResult {
+    return new QuickSearchResult().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuickSearchResult | PlainMessage<QuickSearchResult> | undefined, b: QuickSearchResult | PlainMessage<QuickSearchResult> | undefined): boolean {
+    return proto3.util.equals(QuickSearchResult, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.QuickSearchResponse
+ */
+export class QuickSearchResponse extends Message<QuickSearchResponse> {
+  /**
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.QuickSearchResult results = 2;
+   */
+  results: QuickSearchResult[] = [];
+
+  /**
+   * @generated from field: bool kovaaks_included = 3;
+   */
+  kovaaksIncluded = false;
+
+  constructor(data?: PartialMessage<QuickSearchResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.QuickSearchResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "results", kind: "message", T: QuickSearchResult, repeated: true },
+    { no: 3, name: "kovaaks_included", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): QuickSearchResponse {
+    return new QuickSearchResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): QuickSearchResponse {
+    return new QuickSearchResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): QuickSearchResponse {
+    return new QuickSearchResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: QuickSearchResponse | PlainMessage<QuickSearchResponse> | undefined, b: QuickSearchResponse | PlainMessage<QuickSearchResponse> | undefined): boolean {
+    return proto3.util.equals(QuickSearchResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetPlayerScenarioStatsRequest
+ */
+export class GetPlayerScenarioStatsRequest extends Message<GetPlayerScenarioStatsRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  /**
+   * "7d", "30d", "90d" or "all" (default).
+   *
+   * @generated from field: string range = 2;
+   */
+  range = "";
+
+  constructor(data?: PartialMessage<GetPlayerScenarioStatsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetPlayerScenarioStatsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "range", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPlayerScenarioStatsRequest {
+    return new GetPlayerScenarioStatsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPlayerScenarioStatsRequest {
+    return new GetPlayerScenarioStatsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPlayerScenarioStatsRequest {
+    return new GetPlayerScenarioStatsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPlayerScenarioStatsRequest | PlainMessage<GetPlayerScenarioStatsRequest> | undefined, b: GetPlayerScenarioStatsRequest | PlainMessage<GetPlayerScenarioStatsRequest> | undefined): boolean {
+    return proto3.util.equals(GetPlayerScenarioStatsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.PlayerScenarioStat
+ */
+export class PlayerScenarioStat extends Message<PlayerScenarioStat> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_type = 3;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: uint32 run_count = 4;
+   */
+  runCount = 0;
+
+  /**
+   * @generated from field: double best_score = 5;
+   */
+  bestScore = 0;
+
+  /**
+   * @generated from field: double average_score = 6;
+   */
+  averageScore = 0;
+
+  /**
+   * @generated from field: double best_accuracy = 7;
+   */
+  bestAccuracy = 0;
+
+  /**
+   * @generated from field: string best_played_at_iso = 8;
+   */
+  bestPlayedAtIso = "";
+
+  /**
+   * @generated from field: string last_played_at_iso = 9;
+   */
+  lastPlayedAtIso = "";
+
+  /**
+   * 0-100, higher is steadier: based on the spread of the last 20 runs.
+   *
+   * @generated from field: double consistency = 10;
+   */
+  consistency = 0;
+
+  /**
+   * Percent change of the last five runs' average against the five before.
+   *
+   * @generated from field: double trend_pct = 11;
+   */
+  trendPct = 0;
+
+  /**
+   * Share of AimMod players whose best is lower, 0-100.
+   *
+   * @generated from field: double percentile = 12;
+   */
+  percentile = 0;
+
+  /**
+   * @generated from field: uint32 hub_rank = 13;
+   */
+  hubRank = 0;
+
+  /**
+   * @generated from field: uint32 hub_players = 14;
+   */
+  hubPlayers = 0;
+
+  /**
+   * Up to 20 most recent scores, oldest first.
+   *
+   * @generated from field: repeated double recent_scores = 15;
+   */
+  recentScores: number[] = [];
+
+  /**
+   * @generated from field: uint64 total_duration_ms = 16;
+   */
+  totalDurationMs = protoInt64.zero;
+
+  constructor(data?: PartialMessage<PlayerScenarioStat>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.PlayerScenarioStat";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 5, name: "best_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "average_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 7, name: "best_accuracy", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "best_played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "last_played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "consistency", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 11, name: "trend_pct", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 12, name: "percentile", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 13, name: "hub_rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 14, name: "hub_players", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 15, name: "recent_scores", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, repeated: true },
+    { no: 16, name: "total_duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PlayerScenarioStat {
+    return new PlayerScenarioStat().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PlayerScenarioStat {
+    return new PlayerScenarioStat().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PlayerScenarioStat {
+    return new PlayerScenarioStat().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PlayerScenarioStat | PlainMessage<PlayerScenarioStat> | undefined, b: PlayerScenarioStat | PlainMessage<PlayerScenarioStat> | undefined): boolean {
+    return proto3.util.equals(PlayerScenarioStat, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ActivityDay
+ */
+export class ActivityDay extends Message<ActivityDay> {
+  /**
+   * @generated from field: string date_iso = 1;
+   */
+  dateIso = "";
+
+  /**
+   * @generated from field: uint32 run_count = 2;
+   */
+  runCount = 0;
+
+  /**
+   * @generated from field: uint64 duration_ms = 3;
+   */
+  durationMs = protoInt64.zero;
+
+  constructor(data?: PartialMessage<ActivityDay>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ActivityDay";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "date_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "duration_ms", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ActivityDay {
+    return new ActivityDay().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ActivityDay {
+    return new ActivityDay().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ActivityDay {
+    return new ActivityDay().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ActivityDay | PlainMessage<ActivityDay> | undefined, b: ActivityDay | PlainMessage<ActivityDay> | undefined): boolean {
+    return proto3.util.equals(ActivityDay, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetPlayerScenarioStatsResponse
+ */
+export class GetPlayerScenarioStatsResponse extends Message<GetPlayerScenarioStatsResponse> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.PlayerScenarioStat scenarios = 2;
+   */
+  scenarios: PlayerScenarioStat[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.ActivityDay activity = 3;
+   */
+  activity: ActivityDay[] = [];
+
+  /**
+   * @generated from field: string range = 4;
+   */
+  range = "";
+
+  constructor(data?: PartialMessage<GetPlayerScenarioStatsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetPlayerScenarioStatsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenarios", kind: "message", T: PlayerScenarioStat, repeated: true },
+    { no: 3, name: "activity", kind: "message", T: ActivityDay, repeated: true },
+    { no: 4, name: "range", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPlayerScenarioStatsResponse {
+    return new GetPlayerScenarioStatsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPlayerScenarioStatsResponse {
+    return new GetPlayerScenarioStatsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPlayerScenarioStatsResponse {
+    return new GetPlayerScenarioStatsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPlayerScenarioStatsResponse | PlainMessage<GetPlayerScenarioStatsResponse> | undefined, b: GetPlayerScenarioStatsResponse | PlainMessage<GetPlayerScenarioStatsResponse> | undefined): boolean {
+    return proto3.util.equals(GetPlayerScenarioStatsResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ComparePlayersRequest
+ */
+export class ComparePlayersRequest extends Message<ComparePlayersRequest> {
+  /**
+   * @generated from field: string handle = 1;
+   */
+  handle = "";
+
+  /**
+   * @generated from field: string other_handle = 2;
+   */
+  otherHandle = "";
+
+  constructor(data?: PartialMessage<ComparePlayersRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ComparePlayersRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "other_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ComparePlayersRequest {
+    return new ComparePlayersRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ComparePlayersRequest {
+    return new ComparePlayersRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ComparePlayersRequest {
+    return new ComparePlayersRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ComparePlayersRequest | PlainMessage<ComparePlayersRequest> | undefined, b: ComparePlayersRequest | PlainMessage<ComparePlayersRequest> | undefined): boolean {
+    return proto3.util.equals(ComparePlayersRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.CompareScenario
+ */
+export class CompareScenario extends Message<CompareScenario> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: string scenario_type = 3;
+   */
+  scenarioType = "";
+
+  /**
+   * @generated from field: double score = 4;
+   */
+  score = 0;
+
+  /**
+   * @generated from field: double other_score = 5;
+   */
+  otherScore = 0;
+
+  /**
+   * @generated from field: uint32 run_count = 6;
+   */
+  runCount = 0;
+
+  /**
+   * @generated from field: uint32 other_run_count = 7;
+   */
+  otherRunCount = 0;
+
+  constructor(data?: PartialMessage<CompareScenario>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.CompareScenario";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "scenario_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "other_score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 6, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 7, name: "other_run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CompareScenario {
+    return new CompareScenario().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CompareScenario {
+    return new CompareScenario().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CompareScenario {
+    return new CompareScenario().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CompareScenario | PlainMessage<CompareScenario> | undefined, b: CompareScenario | PlainMessage<CompareScenario> | undefined): boolean {
+    return proto3.util.equals(CompareScenario, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ComparePlayer
+ */
+export class ComparePlayer extends Message<ComparePlayer> {
+  /**
+   * @generated from field: string user_handle = 1;
+   */
+  userHandle = "";
+
+  /**
+   * @generated from field: string display_name = 2;
+   */
+  displayName = "";
+
+  /**
+   * @generated from field: string avatar_url = 3;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: uint32 scenario_count = 4;
+   */
+  scenarioCount = 0;
+
+  /**
+   * @generated from field: uint32 run_count = 5;
+   */
+  runCount = 0;
+
+  constructor(data?: PartialMessage<ComparePlayer>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ComparePlayer";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "scenario_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 5, name: "run_count", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ComparePlayer {
+    return new ComparePlayer().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ComparePlayer {
+    return new ComparePlayer().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ComparePlayer {
+    return new ComparePlayer().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ComparePlayer | PlainMessage<ComparePlayer> | undefined, b: ComparePlayer | PlainMessage<ComparePlayer> | undefined): boolean {
+    return proto3.util.equals(ComparePlayer, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.ComparePlayersResponse
+ */
+export class ComparePlayersResponse extends Message<ComparePlayersResponse> {
+  /**
+   * @generated from field: aimmod.hub.v1.ComparePlayer player = 1;
+   */
+  player?: ComparePlayer;
+
+  /**
+   * @generated from field: aimmod.hub.v1.ComparePlayer other = 2;
+   */
+  other?: ComparePlayer;
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.CompareScenario shared = 3;
+   */
+  shared: CompareScenario[] = [];
+
+  /**
+   * @generated from field: uint32 wins = 4;
+   */
+  wins = 0;
+
+  /**
+   * @generated from field: uint32 losses = 5;
+   */
+  losses = 0;
+
+  /**
+   * @generated from field: uint32 ties = 6;
+   */
+  ties = 0;
+
+  constructor(data?: PartialMessage<ComparePlayersResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.ComparePlayersResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "player", kind: "message", T: ComparePlayer },
+    { no: 2, name: "other", kind: "message", T: ComparePlayer },
+    { no: 3, name: "shared", kind: "message", T: CompareScenario, repeated: true },
+    { no: 4, name: "wins", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 5, name: "losses", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "ties", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ComparePlayersResponse {
+    return new ComparePlayersResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ComparePlayersResponse {
+    return new ComparePlayersResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ComparePlayersResponse {
+    return new ComparePlayersResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ComparePlayersResponse | PlainMessage<ComparePlayersResponse> | undefined, b: ComparePlayersResponse | PlainMessage<ComparePlayersResponse> | undefined): boolean {
+    return proto3.util.equals(ComparePlayersResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetKovaaksPlayerRequest
+ */
+export class GetKovaaksPlayerRequest extends Message<GetKovaaksPlayerRequest> {
+  /**
+   * Steam64 id, Steam profile URL or vanity name, or KovaaK's username.
+   *
+   * @generated from field: string query = 1;
+   */
+  query = "";
+
+  constructor(data?: PartialMessage<GetKovaaksPlayerRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetKovaaksPlayerRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetKovaaksPlayerRequest {
+    return new GetKovaaksPlayerRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetKovaaksPlayerRequest {
+    return new GetKovaaksPlayerRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetKovaaksPlayerRequest {
+    return new GetKovaaksPlayerRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetKovaaksPlayerRequest | PlainMessage<GetKovaaksPlayerRequest> | undefined, b: GetKovaaksPlayerRequest | PlainMessage<GetKovaaksPlayerRequest> | undefined): boolean {
+    return proto3.util.equals(GetKovaaksPlayerRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.KovaaksPlayerScenario
+ */
+export class KovaaksPlayerScenario extends Message<KovaaksPlayerScenario> {
+  /**
+   * @generated from field: string scenario_name = 1;
+   */
+  scenarioName = "";
+
+  /**
+   * @generated from field: string scenario_slug = 2;
+   */
+  scenarioSlug = "";
+
+  /**
+   * @generated from field: uint32 leaderboard_id = 3;
+   */
+  leaderboardId = 0;
+
+  /**
+   * @generated from field: uint64 plays = 4;
+   */
+  plays = protoInt64.zero;
+
+  /**
+   * @generated from field: uint32 rank = 5;
+   */
+  rank = 0;
+
+  /**
+   * @generated from field: double score = 6;
+   */
+  score = 0;
+
+  /**
+   * @generated from field: double cm360 = 7;
+   */
+  cm360 = 0;
+
+  /**
+   * @generated from field: string played_at_iso = 8;
+   */
+  playedAtIso = "";
+
+  constructor(data?: PartialMessage<KovaaksPlayerScenario>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.KovaaksPlayerScenario";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scenario_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "scenario_slug", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "leaderboard_id", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 4, name: "plays", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 5, name: "rank", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "score", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 7, name: "cm360", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 8, name: "played_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): KovaaksPlayerScenario {
+    return new KovaaksPlayerScenario().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): KovaaksPlayerScenario {
+    return new KovaaksPlayerScenario().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): KovaaksPlayerScenario {
+    return new KovaaksPlayerScenario().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: KovaaksPlayerScenario | PlainMessage<KovaaksPlayerScenario> | undefined, b: KovaaksPlayerScenario | PlainMessage<KovaaksPlayerScenario> | undefined): boolean {
+    return proto3.util.equals(KovaaksPlayerScenario, a, b);
+  }
+}
+
+/**
+ * @generated from message aimmod.hub.v1.GetKovaaksPlayerResponse
+ */
+export class GetKovaaksPlayerResponse extends Message<GetKovaaksPlayerResponse> {
+  /**
+   * @generated from field: string steam_id = 1;
+   */
+  steamId = "";
+
+  /**
+   * @generated from field: string kovaaks_username = 2;
+   */
+  kovaaksUsername = "";
+
+  /**
+   * @generated from field: string steam_name = 3;
+   */
+  steamName = "";
+
+  /**
+   * @generated from field: string avatar_url = 4;
+   */
+  avatarUrl = "";
+
+  /**
+   * @generated from field: string country = 5;
+   */
+  country = "";
+
+  /**
+   * @generated from field: uint64 scenarios_played = 6;
+   */
+  scenariosPlayed = protoInt64.zero;
+
+  /**
+   * @generated from field: string created_at_iso = 7;
+   */
+  createdAtIso = "";
+
+  /**
+   * @generated from field: string last_access_at_iso = 8;
+   */
+  lastAccessAtIso = "";
+
+  /**
+   * Set only when this account is linked to an AimMod profile.
+   *
+   * @generated from field: string aimmod_handle = 9;
+   */
+  aimmodHandle = "";
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.BenchmarkSummary benchmarks = 10;
+   */
+  benchmarks: BenchmarkSummary[] = [];
+
+  /**
+   * @generated from field: repeated aimmod.hub.v1.KovaaksPlayerScenario scenarios = 11;
+   */
+  scenarios: KovaaksPlayerScenario[] = [];
+
+  /**
+   * @generated from field: uint32 scenario_total = 12;
+   */
+  scenarioTotal = 0;
+
+  constructor(data?: PartialMessage<GetKovaaksPlayerResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "aimmod.hub.v1.GetKovaaksPlayerResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "steam_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "kovaaks_username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "steam_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "country", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "scenarios_played", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+    { no: 7, name: "created_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "last_access_at_iso", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "aimmod_handle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "benchmarks", kind: "message", T: BenchmarkSummary, repeated: true },
+    { no: 11, name: "scenarios", kind: "message", T: KovaaksPlayerScenario, repeated: true },
+    { no: 12, name: "scenario_total", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetKovaaksPlayerResponse {
+    return new GetKovaaksPlayerResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetKovaaksPlayerResponse {
+    return new GetKovaaksPlayerResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetKovaaksPlayerResponse {
+    return new GetKovaaksPlayerResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetKovaaksPlayerResponse | PlainMessage<GetKovaaksPlayerResponse> | undefined, b: GetKovaaksPlayerResponse | PlainMessage<GetKovaaksPlayerResponse> | undefined): boolean {
+    return proto3.util.equals(GetKovaaksPlayerResponse, a, b);
   }
 }
 

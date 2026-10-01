@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetBenchmarkLeaderboardRequest, GetBenchmarkLeaderboardResponse, GetBenchmarkPageRequest, GetBenchmarkPageResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetLearningEntryRequest, GetLearningEntryResponse, GetLearningIndexRequest, GetLearningIndexResponse, GetLearningTopicRequest, GetLearningTopicResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListBenchmarksRequest, ListBenchmarksResponse, ListReplaysRequest, ListReplaysResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
+import { ComparePlayersRequest, ComparePlayersResponse, GetAimFingerprintRequest, GetAimFingerprintResponse, GetAimProfileRequest, GetAimProfileResponse, GetBenchmarkLeaderboardRequest, GetBenchmarkLeaderboardResponse, GetBenchmarkPageRequest, GetBenchmarkPageResponse, GetKovaaksPlayerRequest, GetKovaaksPlayerResponse, GetLeaderboardRequest, GetLeaderboardResponse, GetLearningEntryRequest, GetLearningEntryResponse, GetLearningIndexRequest, GetLearningIndexResponse, GetLearningTopicRequest, GetLearningTopicResponse, GetMousePathRequest, GetMousePathResponse, GetOverviewRequest, GetOverviewResponse, GetPlayerScenarioHistoryRequest, GetPlayerScenarioHistoryResponse, GetPlayerScenarioStatsRequest, GetPlayerScenarioStatsResponse, GetProfileRequest, GetProfileResponse, GetReplayMediaRequest, GetReplayMediaResponse, GetRunRequest, GetRunResponse, GetScenarioLeaderboardRequest, GetScenarioLeaderboardResponse, GetScenarioPageRequest, GetScenarioPageResponse, HealthRequest, HealthResponse, IngestSessionRequest, IngestSessionResponse, LinkDiscordAccountRequest, LinkDiscordAccountResponse, ListBenchmarksRequest, ListBenchmarksResponse, ListReplaysRequest, ListReplaysResponse, QuickSearchRequest, QuickSearchResponse, SearchRequest, SearchResponse } from "./hub_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -199,6 +199,51 @@ export const HubService = {
       name: "GetLearningTopic",
       I: GetLearningTopicRequest,
       O: GetLearningTopicResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetScenarioLeaderboard
+     */
+    getScenarioLeaderboard: {
+      name: "GetScenarioLeaderboard",
+      I: GetScenarioLeaderboardRequest,
+      O: GetScenarioLeaderboardResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.QuickSearch
+     */
+    quickSearch: {
+      name: "QuickSearch",
+      I: QuickSearchRequest,
+      O: QuickSearchResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetPlayerScenarioStats
+     */
+    getPlayerScenarioStats: {
+      name: "GetPlayerScenarioStats",
+      I: GetPlayerScenarioStatsRequest,
+      O: GetPlayerScenarioStatsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.ComparePlayers
+     */
+    comparePlayers: {
+      name: "ComparePlayers",
+      I: ComparePlayersRequest,
+      O: ComparePlayersResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc aimmod.hub.v1.HubService.GetKovaaksPlayer
+     */
+    getKovaaksPlayer: {
+      name: "GetKovaaksPlayer",
+      I: GetKovaaksPlayerRequest,
+      O: GetKovaaksPlayerResponse,
       kind: MethodKind.Unary,
     },
   }
