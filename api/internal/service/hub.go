@@ -497,6 +497,10 @@ func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) (
 	if err != nil {
 		return nil, nil, err
 	}
+	if strings.TrimSpace(identity.KovaaksUsername) == "" && strings.TrimSpace(identity.SteamID) == "" {
+		// Without a linked KovaaK's or Steam account there are no ranks to look up.
+		return nil, nil, nil
+	}
 
 	items, listErr := s.benchmarks.ListPlayerBenchmarks(ctx, identity.KovaaksUsername)
 	if strings.TrimSpace(identity.SteamID) == "" {
@@ -612,6 +616,9 @@ func (s *HubServer) fetchScenarioBenchmarkRanks(
 	identity, err := s.store.GetBenchmarkIdentityByHandle(ctx, handle)
 	if err != nil {
 		return nil, err
+	}
+	if strings.TrimSpace(identity.KovaaksUsername) == "" && strings.TrimSpace(identity.SteamID) == "" {
+		return nil, nil
 	}
 	items := preloaded
 	if len(items) == 0 {

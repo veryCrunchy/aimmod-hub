@@ -104,9 +104,8 @@ func (s *Store) GetBenchmarkIdentityByHandle(ctx context.Context, handle string)
 		return result, fmt.Errorf("iterate benchmark identity: %w", err)
 	}
 
-	if result.KovaaksUsername == "" {
-		result.KovaaksUsername = resolvedUser.UserHandle
-	}
+	// No fallback to the Hub handle: a handle is not a KovaaK's account, and
+	// looking it up would show a stranger's benchmark ranks on this profile.
 	return result, nil
 }
 
