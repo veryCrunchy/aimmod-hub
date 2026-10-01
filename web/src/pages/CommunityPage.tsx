@@ -93,22 +93,22 @@ export function CommunityPage() {
           {scenarioTypes.length > 1 && <TypeFilterBar types={scenarioTypes} active={typeFilter} onChange={setScenarioTypeFilter} className="mb-3" />}
           {scenarios.length ? (
             <div className="overflow-x-auto rounded-md border border-line">
-              <table className="w-full min-w-[420px] text-left text-sm">
+              <table className="w-full sm:min-w-[420px] text-left text-sm">
                 <thead className="border-b border-line text-xs text-muted">
                   <tr>
                     <SortableTh label="Scenario" field="name" sortField={sortField} sortDir={sortDir} onSort={handleScenarioSort} />
-                    <th scope="col" className="px-3 py-2 font-medium">Type</th>
+                    <th scope="col" className="px-3 py-2 font-medium max-sm:hidden">Type</th>
                     <SortableTh label="Runs" field="runCount" sortField={sortField} sortDir={sortDir} onSort={handleScenarioSort} className="text-right" />
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Share</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Share</th>
                   </tr>
                 </thead>
                 <tbody>
                   {scenarios.map((scenario) => (
                     <tr key={scenario.scenarioSlug} className="border-b border-line/60 last:border-b-0 hover:bg-white/[0.02]">
                       <td className="max-w-[280px] truncate px-3 py-2"><Link className="text-text hover:text-cyan" to={`/scenarios/${scenario.scenarioSlug}`}>{scenario.scenarioName}</Link></td>
-                      <td className="px-3 py-2 text-muted">{displayScenarioType(scenario.scenarioType) ?? "Other"}</td>
+                      <td className="px-3 py-2 text-muted max-sm:hidden">{displayScenarioType(scenario.scenarioType) ?? "Other"}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{scenario.runCount.toLocaleString()}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted">{((Number(scenario.runCount) / totalRuns) * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted max-sm:hidden">{((Number(scenario.runCount) / totalRuns) * 100).toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -120,13 +120,13 @@ export function CommunityPage() {
         <Section id="players" title="Most active players" aside={`${players.length.toLocaleString()} shown`}>
           {players.length ? (
             <div className="overflow-x-auto rounded-md border border-line">
-              <table className="w-full min-w-[380px] text-left text-sm">
+              <table className="w-full sm:min-w-[380px] text-left text-sm">
                 <thead className="border-b border-line text-xs text-muted">
                   <tr>
                     <th scope="col" className="px-3 py-2 font-medium">Player</th>
                     <th scope="col" className="px-3 py-2 text-right font-medium">Runs</th>
                     <th scope="col" className="px-3 py-2 text-right font-medium">Scenarios</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Plays most</th>
+                    <th scope="col" className="px-3 py-2 font-medium max-sm:hidden">Plays most</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -140,7 +140,7 @@ export function CommunityPage() {
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">{profile.runCount.toLocaleString()}</td>
                       <td className="px-3 py-2 text-right tabular-nums text-muted">{profile.scenarioCount.toLocaleString()}</td>
-                      <td className="px-3 py-2 text-muted">{displayScenarioType(profile.primaryScenarioType) ?? "Mixed"}</td>
+                      <td className="px-3 py-2 text-muted max-sm:hidden">{displayScenarioType(profile.primaryScenarioType) ?? "Mixed"}</td>
                     </tr>
                   ))}
                 </tbody>

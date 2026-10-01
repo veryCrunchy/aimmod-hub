@@ -152,14 +152,14 @@ export function ProfilePage() {
         <Section title="Personal bests" aside={personalBests.length ? "Most played first" : undefined}>
           {personalBests.length ? (
             <div className="overflow-x-auto rounded-md border border-line">
-              <table className="w-full min-w-[480px] text-left text-sm">
+              <table className="w-full sm:min-w-[480px] text-left text-sm">
                 <thead className="border-b border-line text-xs text-muted">
                   <tr>
                     <th scope="col" className="px-3 py-2 font-medium">Scenario</th>
                     <th scope="col" className="px-3 py-2 text-right font-medium">Best</th>
                     <th scope="col" className="px-3 py-2 text-right font-medium">Accuracy</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Runs</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Set</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Runs</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Set</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,13 +167,13 @@ export function ProfilePage() {
                     const slug = profile.topScenarios.find((s) => s.scenarioName === pb.scenarioName)?.scenarioSlug;
                     return (
                       <tr key={pb.runId || pb.sessionId} className="border-b border-line/60 last:border-b-0 hover:bg-white/[0.02]">
-                        <td className="max-w-[260px] truncate px-3 py-2">
+                        <td className="max-w-[160px] truncate px-3 py-2 sm:max-w-[260px]">
                           <Link className="text-text hover:text-cyan" to={`/profiles/${profile.userHandle}/scenarios/${slug ?? pb.scenarioName}`} title="Progress on this scenario">{pb.scenarioName}</Link>
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums"><Link className="font-medium text-gold hover:text-cyan" to={`/runs/${pb.runId || pb.sessionId}`}>{formatScore(pb.score)}</Link></td>
                         <td className="px-3 py-2 text-right tabular-nums text-muted">{formatAccuracy(pb.accuracy)}</td>
-                        <td className="px-3 py-2 text-right tabular-nums text-muted">{runsByScenario.get(pb.scenarioName)?.toLocaleString() ?? "—"}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted">{formatRelativeTime(pb.playedAtIso)}</td>
+                        <td className="px-3 py-2 text-right tabular-nums text-muted max-sm:hidden">{runsByScenario.get(pb.scenarioName)?.toLocaleString() ?? "—"}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted max-sm:hidden">{formatRelativeTime(pb.playedAtIso)}</td>
                       </tr>
                     );
                   })}

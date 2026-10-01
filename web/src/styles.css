@@ -117,6 +117,8 @@
 @media (max-width: 420px) {
   .hub-header { gap: 8px; }
   .hub-brand-label { display: none; }
-  .hub-game-selector { order: 4; flex: 0 0 100%; max-width: none; }
-  .hub-header-search { order: 5; }
+  /* Game and search share one row so the page starts sooner on phones. */
+  .hub-game-selector { order: 4; flex: 0 0 auto; max-width: 118px; }
+  .hub-header-search { order: 5; flex: 1 1 0; min-width: 0; }
+  .hub-header::before { content: ""; order: 3; flex-basis: 100%; height: 0; }
 }

@@ -97,15 +97,15 @@ export function LeaderboardPage() {
 
           {activeList.length > 0 ? (
             <div className="overflow-x-auto rounded-md border border-line">
-              <table className="w-full min-w-[560px] text-left text-sm">
+              <table className="w-full sm:min-w-[560px] text-left text-sm">
                 <thead className="border-b border-line text-xs text-muted">
                   <tr>
                     {showRank && <th scope="col" className="w-10 px-3 py-2 font-medium">#</th>}
                     <th scope="col" className="px-3 py-2 font-medium">Scenario</th>
                     <th scope="col" className="px-3 py-2 font-medium">{tab === "records" ? "Record holder" : "Player"}</th>
                     <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Accuracy</th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">Set</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Accuracy</th>
+                    <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Set</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -115,11 +115,11 @@ export function LeaderboardPage() {
                     return (
                       <tr key={`${entry.runId || entry.sessionId}-${idx}`} className="border-b border-line/60 last:border-b-0 hover:bg-white/[0.02]">
                         {showRank && <td className={cn("px-3 py-2 tabular-nums", rank <= 3 ? "text-gold" : "text-muted-2")}>{rank}</td>}
-                        <td className="max-w-[280px] px-3 py-2">
+                        <td className="max-w-[160px] px-3 py-2 sm:max-w-[280px]">
                           <Link className="block truncate text-text hover:text-cyan" to={`/scenarios/${slug}`}>{entry.scenarioName}</Link>
                           <span className="text-xs text-muted-2">{displayScenarioType(entry.scenarioType) ?? "Other"}</span>
                         </td>
-                        <td className="max-w-[200px] truncate px-3 py-2">
+                        <td className="max-w-[120px] truncate px-3 py-2 sm:max-w-[200px]">
                           <Link className="text-text hover:text-cyan" to={`/profiles/${entry.userHandle}/scenarios/${slug}`} title="Player's history on this scenario">
                             {entry.userDisplayName || entry.userHandle}
                           </Link>
@@ -127,8 +127,8 @@ export function LeaderboardPage() {
                         <td className="px-3 py-2 text-right tabular-nums">
                           <Link className="font-medium text-text hover:text-cyan" to={runHref(entry)} title="Open run">{formatScore(entry.score)}</Link>
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-muted">{formatAccuracy(entry.accuracy)}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted" title={new Date(entry.playedAtIso).toLocaleString()}>{formatRelativeTime(entry.playedAtIso)}</td>
+                        <td className="px-3 py-2 text-right tabular-nums text-muted max-sm:hidden">{formatAccuracy(entry.accuracy)}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted max-sm:hidden" title={new Date(entry.playedAtIso).toLocaleString()}>{formatRelativeTime(entry.playedAtIso)}</td>
                       </tr>
                     );
                   })}

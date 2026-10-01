@@ -29,7 +29,7 @@ export function runHref(run: Pick<RunPreview, "runId" | "sessionId">) {
 export function RunTable({ runs, player = true, scenario = true, duration = false, when = true, ranked = false, bestScore, playerHref, caption, className }: RunTableProps) {
   return (
     <div className={cn("overflow-x-auto rounded-md border border-line", className)}>
-      <table className="w-full min-w-[480px] text-left text-sm">
+      <table className="w-full sm:min-w-[480px] text-left text-sm">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead className="border-b border-line text-xs text-muted">
           <tr>
@@ -38,8 +38,8 @@ export function RunTable({ runs, player = true, scenario = true, duration = fals
             {player && <th scope="col" className="px-3 py-2 font-medium">Player</th>}
             <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
             <th scope="col" className="px-3 py-2 text-right font-medium">Accuracy</th>
-            {duration && <th scope="col" className="px-3 py-2 text-right font-medium">Length</th>}
-            {when && <th scope="col" className="px-3 py-2 text-right font-medium">Played</th>}
+            {duration && <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Length</th>}
+            {when && <th scope="col" className="px-3 py-2 text-right font-medium max-sm:hidden">Played</th>}
           </tr>
         </thead>
         <tbody>
@@ -50,12 +50,12 @@ export function RunTable({ runs, player = true, scenario = true, duration = fals
               <tr key={run.runId || run.sessionId} className="border-b border-line/60 last:border-b-0 hover:bg-white/[0.02]">
                 {ranked && <td className={cn("px-3 py-2 tabular-nums", index === 0 ? "text-gold" : "text-muted-2")}>{index + 1}</td>}
                 {scenario && (
-                  <td className="max-w-[260px] truncate px-3 py-2">
+                  <td className="max-w-[160px] truncate px-3 py-2 sm:max-w-[260px]">
                     <Link className="text-text hover:text-cyan" to={`/scenarios/${slugifyScenarioName(run.scenarioName)}`}>{run.scenarioName}</Link>
                   </td>
                 )}
                 {player && (
-                  <td className="max-w-[200px] truncate px-3 py-2">
+                  <td className="max-w-[120px] truncate px-3 py-2 sm:max-w-[200px]">
                     <Link className="text-text hover:text-cyan" to={playerHref ? playerHref(run) : `/profiles/${handle}`}>{run.userDisplayName || run.userHandle}</Link>
                   </td>
                 )}
@@ -66,8 +66,8 @@ export function RunTable({ runs, player = true, scenario = true, duration = fals
                   {best ? <span className="ml-1.5 text-xs text-gold">best</span> : null}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums text-muted">{formatAccuracy(run.accuracy)}</td>
-                {duration && <td className="px-3 py-2 text-right tabular-nums text-muted">{formatDurationMs(run.durationMs)}</td>}
-                {when && <td className="whitespace-nowrap px-3 py-2 text-right text-muted" title={new Date(run.playedAtIso).toLocaleString()}>{formatRelativeTime(run.playedAtIso)}</td>}
+                {duration && <td className="px-3 py-2 text-right tabular-nums text-muted max-sm:hidden">{formatDurationMs(run.durationMs)}</td>}
+                {when && <td className="whitespace-nowrap px-3 py-2 text-right text-muted max-sm:hidden" title={new Date(run.playedAtIso).toLocaleString()}>{formatRelativeTime(run.playedAtIso)}</td>}
               </tr>
             );
           })}
