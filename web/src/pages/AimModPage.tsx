@@ -1,264 +1,138 @@
-import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "../lib/helmet";
 import { Button } from "../components/ui/Button";
-import { PageSection } from "../components/ui/PageSection";
-import { Grid, PageStack } from "../components/ui/Stack";
-import { SectionHeader } from "../components/SectionHeader";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Section } from "../components/ui/Section";
+import { PageStack } from "../components/ui/Stack";
 
-const LATEST_RELEASE_URL = "https://github.com/veryCrunchy/aimmod/releases";
-const REPO_URL = "https://github.com/veryCrunchy/aimmod";
-const HOMEPAGE_URL = "https://aimmod.app";
+const RELEASES = "https://github.com/verycrunchy/aimmod/releases";
+// Permanent channel links: each always serves the newest installer of its channel.
+export const BETA_SETUP_URL = "https://github.com/verycrunchy/aimmod/releases/download/aimmod-ingame-beta/AimMod-Setup.exe";
+export const STABLE_SETUP_URL = "https://github.com/verycrunchy/aimmod/releases/download/aimmod-ingame-stable/AimMod-Setup.exe";
+// Flip once the first Stable in-game release is published.
+const STABLE_AVAILABLE = false;
 
-function useLatestRelease() {
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [version, setVersion] = useState<string | null>(null);
+const steps = [
+  { title: "Download AimMod-Setup.exe", body: "One small file. It carries no game files itself: it always downloads the newest AimMod release for the channel you pick." },
+  { title: "Run it and allow SmartScreen", body: "The installer is not code-signed, so Windows may say \"Windows protected your PC\". Click More info, check the file name is AimMod-Setup.exe, then Run anyway." },
+  { title: "Let it find KovaaK's", body: "It finds the game through your Steam library, or you pick the folder. No administrator rights are needed unless the game folder is protected." },
+  { title: "Install, then start KovaaK's from Steam", body: "Close KovaaK's first; if it is running, the installer waits and continues once the game closes. AimMod starts with the game from then on." },
+];
 
-  useEffect(() => {
-    fetch("https://api.github.com/repos/veryCrunchy/aimmod/releases?per_page=10", {
-      headers: { Accept: "application/vnd.github+json" },
-    })
-      .then((r) => r.json())
-      .then((releases: { tag_name: string; prerelease: boolean; assets: { name: string; browser_download_url: string }[] }[]) => {
-        const stableReleases = releases.filter((r) => !r.prerelease && /^v\d/.test(r.tag_name));
-        for (const release of stableReleases) {
-          const exe = release.assets.find(
-            (a) => a.name.endsWith(".exe") && !a.name.includes("debug")
-          );
-          if (exe) {
-            setVersion(release.tag_name);
-            setDownloadUrl(exe.browser_download_url);
-            return;
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
+const inGame = [
+  { title: "Workspace in the game menu", body: "Score history and trends for 7, 30 and 90 days, practice time, per-run analysis and coaching cards, opened from KovaaK's own menu." },
+  { title: "Live stats HUD", body: "Score, accuracy, score per minute, kills per second and time left while you play, in a compact bar you can move." },
+  { title: "Hub sync", body: "Link the game to your Hub account once. Runs upload as you play, your live status shows on the Hub, and your KovaaK's account links to your profile so benchmark ranks appear." },
+  { title: "Benchmark ranks in game", body: "Search your benchmark ranks and see each scenario's thresholds without leaving KovaaK's." },
+  { title: "Discord presence", body: "Shows your scenario, state, timer and, if you allow it, score and personal best." },
+  { title: "Replays", body: "A native replay recorder is in development in the Beta channel; expect changes." },
+];
 
-  return { downloadUrl, version };
+const lifecycle = [
+  { title: "Updates", body: "AimMod checks for updates when the game starts and every few hours, downloads in the background and installs after you close KovaaK's. The workspace shows \"Update ready\" first. Turn updates off or switch channel in Settings > Updates & repair." },
+  { title: "Verified downloads", body: "Every download is checked against SHA-256 hashes published with the release: the package, its manifest and every installed file. Anything that does not match is refused and nothing is installed." },
+  { title: "After a game update", body: "If a KovaaK's update or \"Verify integrity of game files\" breaks the mod, AimMod offers a one-click repair. If it does not load at all, run %LOCALAPPDATA%\\AimMod\\Repair-AimMod.cmd with the game closed; it reinstalls from the copy saved at install time." },
+  { title: "Uninstall", body: "Use AimMod-Setup.exe > Uninstall or Windows Settings > Apps > AimMod for KovaaK's. Files AimMod replaced are restored. Your history, replays and settings stay unless you tick \"Also remove my AimMod data\"." },
+];
+
+function Card({ title, body }: { title: string; body: string }) {
+  return (
+    <li className="rounded-md border border-line bg-panel px-4 py-3">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <p className="mt-1 text-sm leading-6 text-muted">{body}</p>
+    </li>
+  );
 }
 
-const SCREENSHOTS = [
-  { src: "https://raw.githubusercontent.com/veryCrunchy/aimmod/main/public/NzXmg9xdc9.png", label: "Live challenge HUD" },
-  { src: "https://raw.githubusercontent.com/veryCrunchy/aimmod/main/public/cD4yvwyuz8.png", label: "Scenario summary" },
-  { src: "https://raw.githubusercontent.com/veryCrunchy/aimmod/main/public/tvxcCZoOfC.png", label: "Scenario coaching" },
-  { src: "https://raw.githubusercontent.com/veryCrunchy/aimmod/main/public/uSIwrmIcw1.png", label: "Focused replay moment" },
-  { src: "https://raw.githubusercontent.com/veryCrunchy/aimmod/main/public/WuKkgKOWX6.png", label: "Full-run replay review" },
-];
-
-const FEATURES = [
-  {
-    eyebrow: "In-game overlay",
-    title: "Real-time HUDs while you play",
-    body: "Live challenge HUDs for score, timing, pace, accuracy, and scenario state. Smoothness and mouse-control feedback during runs, coaching toasts, and a post-session overview. Drag-and-scale layout mode with saved positions.",
-    accent: "cyan" as const,
-  },
-  {
-    eyebrow: "Session stats",
-    title: "Deep per-scenario analysis",
-    body: "Global overview of all your recent practice. Per-scenario pages for summary, mechanics, coaching, replay, and leaderboard views. Practice profile, scenario comparison tools, and SQL-backed session history.",
-    accent: "mint" as const,
-  },
-  {
-    eyebrow: "Replay analysis",
-    title: "Review every moment in detail",
-    body: "Mouse path replay for the full run or selected moments. Saved focus moments, quick notes, and replay navigation. Timeline-by-second review, shot detail context, and video replay capture alongside the mouse path.",
-    accent: "gold" as const,
-  },
-  {
-    eyebrow: "Coaching and profiling",
-    title: "Understand your aim style",
-    body: "Aim fingerprint and aim-style summaries. Warm-up and practice-pattern insights. Scenario-specific coaching cards. Trend, floor, peak-zone, and consistency views.",
-    accent: "violet" as const,
-  },
-];
-
-const HOTKEYS = [
-  { key: "F8", action: "Open settings" },
-  { key: "F10", action: "Toggle HUD layout mode" },
-];
-
-const ACCENT_CLASSES = {
-  cyan: "text-cyan border-cyan/20 bg-cyan/5",
-  mint: "text-mint border-mint/20 bg-mint/5",
-  gold: "text-gold border-[rgba(212,175,55,0.2)] bg-[rgba(212,175,55,0.05)]",
-  violet: "text-violet border-violet/20 bg-violet/5",
-};
-
 export function AimModPage() {
-  const [activeScreenshot, setActiveScreenshot] = useState(0);
-  const { downloadUrl, version } = useLatestRelease();
-
+  const [params] = useSearchParams();
+  const claim = params.get("claim")?.trim() ?? "";
   return (
     <PageStack>
       <Helmet>
         <title>AimMod for KovaaK's · Windows</title>
-        <meta name="description" content="Download AimMod for KovaaK's on Windows for live HUDs, replay review, and coaching." />
+        <meta name="description" content="Install AimMod in KovaaK's with AimMod-Setup.exe: a workspace in the game menu, a live stats HUD and Hub sync. Updates install themselves after you close the game." />
         <meta property="og:title" content="AimMod for KovaaK's · Windows" />
-        <meta property="og:description" content="KovaaK's overlay, replay, and coaching suite. Download the latest release for Windows." />
+        <meta property="og:description" content="AimMod runs inside KovaaK's. One installer, verified downloads, automatic updates." />
       </Helmet>
-      {/* Hero */}
-      <PageSection className="relative overflow-hidden border-cyan/20 bg-[radial-gradient(circle_at_top_left,rgba(0,200,255,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(121,201,151,0.1),transparent_22%),linear-gradient(135deg,rgba(6,18,24,0.99),rgba(4,12,9,0.97)_55%,rgba(3,8,6,0.98))] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
-        <div className="absolute inset-y-0 right-[6%] w-[32%] rounded-full bg-[radial-gradient(circle,rgba(0,200,255,0.1),transparent_65%)] blur-3xl" />
-        <div className="relative text-[11px] uppercase tracking-[0.1em] text-cyan">AimMod for KovaaK's {version ?? ""}</div>
-        <h1 className="my-2.5 max-w-[18ch] break-words text-[clamp(26px,4.8vw,56px)] leading-[0.94] tracking-[-0.05em]">
-          KovaaK's overlay, replay, and coaching suite.
-        </h1>
-        <p className="max-w-[680px] text-[14px] leading-6 text-[#cbe4d7] md:text-[16px] md:leading-7">
-          AimMod runs a live in-session HUD while you play and a full post-session stats window for replay review, coaching, and scenario analysis — all synced to the same run.
-        </p>
-        <div className="relative mt-4 flex flex-wrap gap-2">
-          <Button
-            href={downloadUrl ?? LATEST_RELEASE_URL}
-            download={downloadUrl ? true : undefined}
-            target="_blank"
-            rel="noreferrer"
-            variant="primary"
-          >
-            Download latest release
-          </Button>
-          <Button href={HOMEPAGE_URL} target="_blank" rel="noreferrer">
-            aimmod.app
-          </Button>
-          <Button href={REPO_URL} target="_blank" rel="noreferrer">
-            GitHub
-          </Button>
-          <Button to="/app/osu">
-            Looking for osu!?
-          </Button>
-        </div>
-        <div className="relative mt-4 flex flex-wrap items-center gap-3 text-[12px] text-muted">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-mint/70" />
-            Windows 10 / 11
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan/70" />
-            KovaaK's Aim Trainer (Steam)
-          </span>
-        </div>
-      </PageSection>
 
-      {/* Screenshots */}
-      <PageSection>
-        <SectionHeader
-          eyebrow="Screenshots"
-          title="See it in action"
-        />
-        <div className="grid gap-3">
-          <div className="flex items-center justify-center overflow-hidden rounded-[14px] border border-line bg-black/40">
-            <img
-              src={SCREENSHOTS[activeScreenshot].src}
-              alt={SCREENSHOTS[activeScreenshot].label}
-              className="block h-auto max-h-[520px] w-full object-contain"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {SCREENSHOTS.map((shot, i) => (
-              <button
-                key={shot.label}
-                onClick={() => setActiveScreenshot(i)}
-                className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
-                  i === activeScreenshot
-                    ? "border-cyan/40 bg-cyan/10 text-cyan"
-                    : "border-line bg-white/2 text-muted hover:border-line-strong hover:text-text"
-                }`}
-              >
-                {shot.label}
-              </button>
-            ))}
-          </div>
+      <PageHeader
+        title="AimMod for KovaaK's"
+        meta="Runs inside the game · Windows 10 and 11 · KovaaK's on Steam"
+      />
+
+      <section className="grid gap-4 rounded-md border border-mint/30 bg-mint/[0.04] p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-5">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold">Get the installer</h2>
+          <p className="mt-1 max-w-[62ch] text-sm leading-6 text-muted">
+            AimMod-Setup.exe installs UE4SS and the AimMod mods into your KovaaK's folder, keeps a backup of every file it replaces, and adds AimMod to Windows Apps so it can be removed like any program.
+          </p>
+          <p className="mt-2 text-xs text-muted-2">
+            {STABLE_AVAILABLE ? "Stable is recommended. Beta gets new features first." : "AimMod in KovaaK's is in Beta. A Stable channel follows; the installer can switch channels at any time."}
+          </p>
         </div>
-      </PageSection>
+        <div className="flex flex-wrap gap-2 md:justify-end">
+          {STABLE_AVAILABLE ? <Button href={STABLE_SETUP_URL} variant="primary">Download Stable</Button> : null}
+          <Button href={BETA_SETUP_URL} variant={STABLE_AVAILABLE ? "secondary" : "primary"}>Download Beta</Button>
+          <Button href={RELEASES} target="_blank" rel="noreferrer">All releases</Button>
+        </div>
+      </section>
 
-      {/* Features */}
-      <Grid className="grid-cols-2 max-[900px]:grid-cols-1">
-        {FEATURES.map((feature) => (
-          <PageSection key={feature.eyebrow}>
-            <div className={`mb-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] ${ACCENT_CLASSES[feature.accent]}`}>
-              {feature.eyebrow}
-            </div>
-            <h2 className="mb-2 text-[clamp(16px,2vw,22px)] font-medium leading-[1.1] tracking-[-0.025em]">
-              {feature.title}
-            </h2>
-            <p className="text-[13px] leading-[1.65] text-muted">{feature.body}</p>
-          </PageSection>
-        ))}
-      </Grid>
-
-      {/* Quick start + hotkeys */}
-      <Grid className="grid-cols-2 max-[800px]:grid-cols-1">
-        <PageSection>
-          <SectionHeader
-            eyebrow="Quick start"
-            title="Up and running in minutes"
-          />
-          <ol className="grid gap-3">
-            {[
-              "Download the latest build from the Releases page.",
-              "Launch AimMod.",
-              "Start KovaaK's.",
-              "Open settings to choose which HUDs are visible or reposition them.",
-              "Play a scenario.",
-              "Open the stats window to review the run, replay key moments, and inspect scenario-specific coaching.",
-            ].map((step, i) => (
-              <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-muted">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-line bg-white/3 text-[11px] text-text">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
+      {claim ? (
+        <section id="link-account" className="rounded-md border border-cyan/40 bg-cyan/[0.05] p-4">
+          <h2 className="text-base font-semibold">Linking your KovaaK's account</h2>
+          <p className="mt-1 max-w-[70ch] text-sm leading-6 text-muted">
+            The Hub links a KovaaK's account when AimMod sees you play signed in to that Steam account, so nobody can claim someone else's ranks. To link this account:
+          </p>
+          <ol className="mt-2 grid list-decimal gap-1 pl-5 text-sm text-muted">
+            <li>Sign in to the Hub with Discord.</li>
+            <li>Install AimMod with the installer above and start KovaaK's on the Steam account you want to link.</li>
+            <li>Open the AimMod workspace in the game and link it to your Hub account.</li>
+            <li>Play any scenario. Your profile then shows your benchmark ranks and uploaded runs.</li>
           </ol>
-          <div className="mt-4">
-            <Button
-              href={downloadUrl ?? LATEST_RELEASE_URL}
-              download={downloadUrl ? true : undefined}
-              target="_blank"
-              rel="noreferrer"
-              variant="primary"
-            >
-              Download now
-            </Button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button to="/account">Sign in or open your account</Button>
+            <Button to={`/u/${encodeURIComponent(claim)}`}>Back to the KovaaK's player page</Button>
           </div>
-        </PageSection>
+        </section>
+      ) : null}
 
-        <PageSection>
-          <SectionHeader
-            eyebrow="Default hotkeys"
-            title="Keyboard shortcuts"
-          />
-          <div className="grid gap-2">
-            {HOTKEYS.map(({ key, action }) => (
-              <div key={key} className="flex items-center justify-between rounded-[12px] border border-line bg-white/2 px-4 py-3">
-                <span className="text-[13px] text-muted">{action}</span>
-                <kbd className="rounded-md border border-line bg-white/5 px-2.5 py-1 font-mono text-[12px] text-text">
-                  {key}
-                </kbd>
+      <Section title="Install in four steps">
+        <ol className="grid gap-2 md:grid-cols-2">
+          {steps.map((step, i) => (
+            <li key={step.title} className="flex gap-3 rounded-md border border-line bg-panel px-4 py-3">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-line text-xs tabular-nums">{i + 1}</span>
+              <div>
+                <h3 className="text-sm font-semibold">{step.title}</h3>
+                <p className="mt-1 text-sm leading-6 text-muted">{step.body}</p>
               </div>
-            ))}
-          </div>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-2 text-xs text-muted-2">
+          Without the installer: unzip AimMod-InGame-&lt;version&gt;.zip from a release, close KovaaK's and run Install-AimMod.cmd.
+        </p>
+      </Section>
 
-          <div className="mt-5 border-t border-line pt-4">
-            <SectionHeader
-              eyebrow="Integration"
-              title="Plays well with others"
-              className="mb-3"
-            />
-            <ul className="grid gap-2 text-[13px] text-muted">
-              {[
-                "Discord Rich Presence — show your current scenario and stats",
-                "UE4SS runtime bridge into KovaaK's for live data access",
-                "Automatic stats import from KovaaK's run results",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan/60" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </PageSection>
-      </Grid>
+      <Section title="What it adds to KovaaK's">
+        <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+          {inGame.map((item) => <Card key={item.title} {...item} />)}
+        </ul>
+        <p className="mt-2 text-xs text-muted-2">AimMod never changes ranked runs or KovaaK's leaderboards.</p>
+      </Section>
+
+      <Section title="Updates, repair and uninstall">
+        <ul className="grid gap-2 md:grid-cols-2">
+          {lifecycle.map((item) => <Card key={item.title} {...item} />)}
+        </ul>
+        <p className="mt-2 text-xs text-muted-2">
+          Something wrong? The install log is in %LOCALAPPDATA%\AimMod\KovaaksNative\updates\install.log. Ask in the AimMod Discord.
+        </p>
+      </Section>
+
+      <p className="text-sm text-muted">
+        Looking for osu!? <Link className="text-cyan hover:underline" to="/app/osu">AimMod for osu!</Link>
+      </p>
     </PageStack>
   );
 }

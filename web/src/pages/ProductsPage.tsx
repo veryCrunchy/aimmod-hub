@@ -15,10 +15,10 @@ const products = [
   },
   {
     name: "AimMod for KovaaK's",
-    platform: "Desktop companion · Windows",
-    body: "Capture live runs, study mouse-path replays, understand your aim fingerprint, and turn scenario history into practical coaching.",
+    platform: "Runs inside KovaaK's · Windows · Beta",
+    body: "One installer adds a workspace to KovaaK's menu, a live stats HUD and Hub sync for runs and benchmark ranks. Updates install themselves after you close the game.",
     to: "/app/kovaaks",
-    action: "Explore KovaaK's",
+    action: "Get AimMod for KovaaK's",
     accent: "border-mint/25 bg-mint/5",
     label: "text-cyan",
   },
