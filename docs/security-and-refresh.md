@@ -4,7 +4,7 @@ Uploads require an upload token obtained through the existing device linking flo
 
 Set `STEAM_OPENID_REALM` to the public HTTPS API origin, without a trailing slash, to enable Steam verification. The callback is `/auth/steam/callback` on that origin. No Steam API key is required. Signed-in users start verification from Account and return there after server-side verification. Discord and Steam verification cookies require HTTPS, including local testing through an HTTPS endpoint.
 
-Schema upgrades run through the existing startup migration mechanism. The ownership upgrade preserves observed identities, adds an ownership proof field, and downgrades historical Steam and KovaaK's links because uploads were their only proof. Discord links and run history remain. Existing merged accounts cannot be reconstructed automatically.
+Schema upgrades run through the existing startup migration mechanism. The ownership upgrade preserves observed identities, and adds an ownership proof field. Links that existed before the upgrade keep their verified state; only new links made from uploads start unverified until the player verifies with Steam. Discord links and run history remain. Existing merged accounts cannot be reconstructed automatically.
 
 Benchmark sync keeps `definition_synced_at` as last success and adds `last_attempt`, `next_retry`, and `failure_count`. Failed definitions retry after 60 seconds with exponential backoff capped at six hours. Provider backoff stops the batch.
 

@@ -609,7 +609,6 @@ func (s *Store) ensureSchema(ctx context.Context) error {
  DO $$ BEGIN
  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'linked_accounts' AND column_name = 'ownership_proof') THEN
  ALTER TABLE linked_accounts ADD COLUMN ownership_proof TEXT NOT NULL DEFAULT '';
- UPDATE linked_accounts SET verified = FALSE WHERE provider IN ('steam', 'kovaaks');
  END IF;
  END $$;
  `); err != nil {
