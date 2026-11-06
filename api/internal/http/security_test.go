@@ -40,9 +40,11 @@ func TestOversizedBody(t *testing.T) {
 
 func TestBatchEndpointLimits(t *testing.T) {
 	mux := NewMux(Config{MediaDir: t.TempDir()}, service.NewHubServer("test", nil))
-	for _, body := range []string{`{"sessions":[` + strings.Repeat(`{},`, 100) + `{}]}`, `{"sessions":[],"padding":"` + strings.Repeat("x", int(maxIngestBytes)) + `"}`} {
+	for _, body := range []string{`{"sessions":[` + strings.Repeat(`{},`, 100) + `{}]}`, `{"sessions":[],"padding":"` + strings.Repeat("x", int(maxIngestBytes)) + `"}`, `{"sessions":[]}` + strings.Repeat(" ", int(maxIngestBytes))} {
 		w := httptest.NewRecorder()
-		mux.ServeHTTP(w, httptest.NewRequest("POST", "/ingest/batch", strings.NewReader(body)))
+		request := httptest.NewRequest("POST", "/ingest/batch", strings.NewReader(body))
+		request.ContentLength = -1
+		mux.ServeHTTP(w, request)
 		if w.Code != 413 {
 			t.Fatalf("got %d", w.Code)
 		}
