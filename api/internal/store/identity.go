@@ -246,10 +246,18 @@ func upsertLinkedIdentityTx(
 		return err
 	}
 	if found && owner.UserID != targetUserID {
+		if !verified {
+			return nil
+		}
 		if owner.Verified {
 			return fmt.Errorf("%s account is already verified on another profile", identity.Provider)
 		}
-		if err := mergeUsersTx(ctx, tx, targetUserID, owner.UserID); err != nil {
+		if _, err := tx.Exec(ctx, `INSERT INTO observed_accounts (user_id, provider, provider_account_id, username, display_name, avatar_url)
+ SELECT user_id, provider, provider_account_id, username, display_name, avatar_url FROM linked_accounts WHERE provider = $1 AND provider_account_id = $2
+ ON CONFLICT (user_id, provider, provider_account_id) DO NOTHING`, identity.Provider, identity.ProviderAccountID); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM linked_accounts WHERE provider = $1 AND provider_account_id = $2 AND NOT verified`, identity.Provider, identity.ProviderAccountID); err != nil {
 			return err
 		}
 	}
@@ -266,7 +274,13 @@ func upsertLinkedIdentityTx(
 	if err != nil && err != pgx.ErrNoRows {
 		return fmt.Errorf("load target provider link: %w", err)
 	}
+	if err == nil && existingTargetVerified && !verified {
+		return nil
+	}
 	if err == nil && existingTargetAccountID != identity.ProviderAccountID {
+		if existingTargetVerified && !verified {
+			return nil
+		}
 		if existingTargetVerified && verified {
 			return fmt.Errorf("%s provider is already linked to a different verified account", identity.Provider)
 		}
@@ -303,6 +317,7 @@ func upsertLinkedIdentityTx(
 			avatar_url = EXCLUDED.avatar_url,
 			verified = linked_accounts.verified OR EXCLUDED.verified,
 			updated_at = NOW()
+ WHERE linked_accounts.user_id = EXCLUDED.user_id
 	`, targetUserID, identity.Provider, identity.ProviderAccountID, identity.Username, identity.DisplayName, identity.AvatarURL, verified); err != nil {
 		return fmt.Errorf("upsert linked account identity: %w", err)
 	}
@@ -320,7 +335,10 @@ func resolveIngestUserTx(
 
 	if authUser != nil {
 		for _, identity := range identities {
-			if err := upsertLinkedIdentityTx(ctx, tx, authUser.UserID, identity, true); err != nil {
+			if _, err := tx.Exec(ctx, `INSERT INTO observed_accounts (user_id, provider, provider_account_id, username, display_name, avatar_url) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (user_id,provider,provider_account_id) DO UPDATE SET username=EXCLUDED.username, display_name=EXCLUDED.display_name, avatar_url=EXCLUDED.avatar_url`, authUser.UserID, identity.Provider, identity.ProviderAccountID, identity.Username, identity.DisplayName, identity.AvatarURL); err != nil {
+				return 0, "", err
+			}
+			if err := upsertLinkedIdentityTx(ctx, tx, authUser.UserID, identity, false); err != nil {
 				return 0, "", err
 			}
 		}
@@ -345,77 +363,23 @@ func resolveIngestUserTx(
 		return authUser.UserID, externalID, nil
 	}
 
-	if len(identities) == 0 {
-		externalID := preferredExternalID(run)
-		if externalID == "" {
-			return 0, "", fmt.Errorf("user identity is required")
-		}
-		userID, err := ensureHubUserTx(ctx, tx, externalID)
-		if err != nil {
-			return 0, "", err
-		}
-		return userID, externalID, nil
-	}
+	return 0, "", fmt.Errorf("authenticated upload identity required")
+}
 
-	seenUsers := make(map[int64]bool)
-	var matched []matchedIdentityOwner
-	for _, identity := range identities {
-		owner, found, err := loadIdentityOwnerTx(ctx, tx, identity)
-		if err != nil {
-			return 0, "", err
-		}
-		if !found {
-			continue
-		}
-		if _, ok := seenUsers[owner.UserID]; ok {
-			continue
-		}
-		seenUsers[owner.UserID] = owner.Verified
-		matched = append(matched, owner)
-	}
-
-	var finalUserID int64
-	for _, owner := range matched {
-		if owner.Verified {
-			return 0, "", fmt.Errorf("identity belongs to a verified profile; link your AimMod account to upload")
-		}
-	}
-	if finalUserID == 0 && len(matched) > 0 {
-		finalUserID = matched[0].UserID
-	}
-	if finalUserID == 0 {
-		externalID := preferredExternalID(run)
-		if externalID == "" {
-			return 0, "", fmt.Errorf("user identity is required")
-		}
-		userID, err := ensureHubUserTx(ctx, tx, externalID)
-		if err != nil {
-			return 0, "", err
-		}
-		finalUserID = userID
-	}
-
-	for _, owner := range matched {
-		if owner.UserID == finalUserID {
-			continue
-		}
-		if err := mergeUsersTx(ctx, tx, finalUserID, owner.UserID); err != nil {
-			return 0, "", err
-		}
-	}
-
-	for _, identity := range identities {
-		if err := upsertLinkedIdentityTx(ctx, tx, finalUserID, identity, false); err != nil {
-			return 0, "", err
-		}
-	}
-
-	externalID, err := loadUserExternalIDTx(ctx, tx, finalUserID)
+func (s *Store) VerifySteamIdentity(ctx context.Context, userID int64, steamID string) error {
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return 0, "", err
+		return err
 	}
-	if _, err := ensureProfileHandleTx(ctx, tx, finalUserID, externalID); err != nil {
-		return 0, "", err
+	defer tx.Rollback(ctx)
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, "steam:"+steamID); err != nil {
+		return err
 	}
-	return finalUserID, externalID, nil
+	if err := upsertLinkedIdentityTx(ctx, tx, userID, LinkedAccountIdentity{Provider: "steam", ProviderAccountID: steamID}, true); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE linked_accounts SET ownership_proof = 'steam-openid' WHERE user_id = $1 AND provider = 'steam' AND provider_account_id = $2`, userID, steamID); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

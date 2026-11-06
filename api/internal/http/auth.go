@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"bytes"
 	"context"
+	"crypto/subtle"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -161,6 +162,8 @@ func newAuthHandler(cfg Config, store *store.Store, events *service.EventBroker)
 }
 
 func (h *authHandler) register(mux *http.ServeMux) {
+	mux.HandleFunc("/auth/steam/start", h.handleSteamStart)
+	mux.HandleFunc("/auth/steam/callback", h.handleSteamCallback)
 	mux.Handle("/auth/discord/start", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDiscordStart)))
 	mux.Handle("/auth/discord/callback", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleDiscordCallback)))
 	mux.Handle("/auth/session", withAuthCORS(h.cfg.AllowedWebOrigin, http.HandlerFunc(h.handleSession)))
@@ -201,12 +204,17 @@ func (h *authHandler) handleDiscordStart(w http.ResponseWriter, r *http.Request)
 	if returnTo == "" {
 		returnTo = defaultReturnToPath
 	}
+	if !validReturnTo(returnTo) {
+		http.Error(w, "invalid return_to", http.StatusBadRequest)
+		return
+	}
 	state, err := h.store.CreateAuthState(r.Context(), returnTo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{Name: "aimmod_oauth_nonce", Value: state, Path: "/auth/discord", HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: 600})
 	values := url.Values{}
 	values.Set("client_id", h.cfg.DiscordClientID)
 	values.Set("response_type", "code")
@@ -225,6 +233,12 @@ func (h *authHandler) handleDiscordCallback(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	cookie, cookieErr := r.Cookie("aimmod_oauth_nonce")
+	if cookieErr != nil || subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(state)) != 1 {
+		http.Error(w, "invalid browser nonce", http.StatusBadRequest)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{Name: "aimmod_oauth_nonce", Path: "/auth/discord", HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: -1})
 	returnTo, err := h.store.ConsumeAuthState(r.Context(), state)
 	if err != nil {
 		http.Error(w, "invalid auth state", http.StatusBadRequest)
@@ -269,7 +283,10 @@ func (h *authHandler) handleDiscordCallback(w http.ResponseWriter, r *http.Reque
 		MaxAge:   60 * 60 * 24 * 30,
 	})
 
-	redirectTo := strings.TrimSpace(returnTo)
+	redirectTo := returnTo
+	if !validReturnTo(redirectTo) {
+		redirectTo = defaultReturnToPath
+	}
 	if redirectTo == "" {
 		redirectTo = defaultReturnToPath
 	}
@@ -459,6 +476,11 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	if r.ContentLength > maxVideoBytes {
+		http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+
 	authUser, err := h.store.GetUserByUploadToken(r.Context(), r.Header.Get("Authorization"))
 	if err != nil {
 		http.Error(w, "unauthenticated", http.StatusUnauthorized)
@@ -488,17 +510,34 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 	previousMeta, _ := h.store.GetReplayMediaMetaByStoredSessionID(r.Context(), target.StoredSessionID)
 
 	storageKey := strings.TrimPrefix(fmt.Sprintf("replays/%s/%s.mp4", target.PublicRunID, quality), "/")
-	buffer, err := io.ReadAll(r.Body)
+	r.Body = http.MaxBytesReader(w, r.Body, maxVideoBytes)
+	file, err := os.CreateTemp("", "replay-*.mp4")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "temporary storage unavailable", 500)
 		return
 	}
-	written := int64(len(buffer))
+	defer os.Remove(file.Name())
+	defer file.Close()
+	written, err := io.Copy(file, r.Body)
+	if err != nil {
+		bodyError(w, err)
+		return
+	}
 	if written <= 0 {
 		http.Error(w, "empty replay media upload", http.StatusBadRequest)
 		return
 	}
-	if err := h.media.Put(r.Context(), storageKey, contentType, bytes.NewReader(buffer), written); err != nil {
+	release, err := h.store.CheckVideoQuota(r.Context(), authUser.UserID, target.StoredSessionID, written)
+	if err != nil {
+		http.Error(w, "video quota exceeded or unavailable", http.StatusRequestEntityTooLarge)
+		return
+	}
+	defer release()
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		http.Error(w, "temporary storage unavailable", 500)
+		return
+	}
+	if err := h.media.Put(r.Context(), storageKey, contentType, file, written); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

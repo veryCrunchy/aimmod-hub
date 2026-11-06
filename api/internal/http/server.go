@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"connectrpc.com/connect"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -49,6 +50,7 @@ type Config struct {
 	// with server-side meta tag injection. Set AIMMOD_HUB_STATIC_DIR to enable.
 	StaticDir                              string
 	DatabaseURL                            string
+	SteamOpenIDRealm                       string
 	DiscordClientID                        string
 	DiscordClientSecret                    string
 	DiscordRedirectURI                     string
@@ -92,7 +94,7 @@ type Config struct {
 func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux := http.NewServeMux()
 	auth := newAuthHandler(cfg, hub.Store(), hub.Events())
-	path, handler := hubv1connect.NewHubServiceHandler(hub)
+	path, handler := hubv1connect.NewHubServiceHandler(hub, connect.WithReadMaxBytes(int(maxIngestBytes)))
 	mux.Handle(path, withCORS(cfg.AllowedWebOrigin, handler))
 	osuServer, err := osuservice.NewServer(osuservice.Config{
 		OfficialClientID:          cfg.OsuClientID,
@@ -141,12 +143,17 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 			return
 		}
 
+		r.Body = http.MaxBytesReader(w, r.Body, maxIngestBytes)
 		var req ingestBatchRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			bodyError(w, err)
 			return
 		}
 
+		if len(req.Sessions) > 100 {
+			http.Error(w, "too many sessions", http.StatusRequestEntityTooLarge)
+			return
+		}
 		result := ingestBatchResponse{
 			UploadedSessionIDs: []string{},
 			Failures:           []ingestBatchFailure{},
@@ -161,6 +168,10 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 					Message: "invalid JSON payload: " + err.Error(),
 				})
 				continue
+			}
+			if err := service.ValidateIngestCollections(session); err != nil {
+				http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
+				return
 			}
 			resp, err := hub.IngestAuthorized(r.Context(), r.Header.Get("Authorization"), session)
 			if err != nil {
@@ -226,7 +237,7 @@ func NewMux(cfg Config, hub *service.HubServer) http.Handler {
 	mux.Handle("/sitemaps/", sitemaps)
 	mux.Handle("/social-preview.png", newSocialPreviewHandler(hub.Store()))
 	mux.Handle("/og/maps/", newOgMapHandler())
-	mux.Handle("/og/invite.png",newInviteCardHandler(newWorkshopArtwork("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", nil).Get))
+	mux.Handle("/og/invite.png", newInviteCardHandler(newWorkshopArtwork("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", nil).Get))
 	if hasLLMManifest(cfg) {
 		mux.Handle("/llm/manifest.json", newLLMManifestHandler(cfg))
 	}
@@ -293,6 +304,7 @@ func DefaultConfig() Config {
 		WebAppOrigin:                           envOrDefault("AIMMOD_HUB_WEB_ORIGIN", "http://localhost:5173"),
 		ProfileSubdomainHost:                   strings.TrimSpace(os.Getenv("AIMMOD_HUB_PROFILE_SUBDOMAIN_HOST")),
 		DatabaseURL:                            envOrDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/aimmod_hub?sslmode=disable"),
+		SteamOpenIDRealm:                       strings.TrimRight(os.Getenv("STEAM_OPENID_REALM"), "/"),
 		DiscordClientID:                        os.Getenv("DISCORD_CLIENT_ID"),
 		DiscordClientSecret:                    os.Getenv("DISCORD_CLIENT_SECRET"),
 		DiscordRedirectURI:                     os.Getenv("DISCORD_REDIRECT_URI"),
@@ -393,9 +405,9 @@ func withCORS(origin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Connect-Protocol-Version,Connect-Timeout-Ms,Authorization,Idempotency-Key,X-Content-SHA256")
+		w.Header().Set("Access-Control-Allow-Headers", "X-Page,X-Page-Size,X-Page-Query,Content-Type,Connect-Protocol-Version,Connect-Timeout-Ms,Authorization,Idempotency-Key,X-Content-SHA256")
 		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-		w.Header().Set("Access-Control-Expose-Headers", "Grpc-Status,Grpc-Message,Grpc-Status-Details-Bin")
+		w.Header().Set("Access-Control-Expose-Headers", "X-Snapshot-Updated,X-Snapshot-Partial,X-Snapshot-Pending,X-Total-Count,X-Page,Grpc-Status,Grpc-Message,Grpc-Status-Details-Bin")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return

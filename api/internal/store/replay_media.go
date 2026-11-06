@@ -395,3 +395,27 @@ func (s *Store) GetMousePath(ctx context.Context, runID string) (MousePathData, 
 	)
 	return normalized, nil
 }
+
+// CheckVideoQuota serializes quota checks and writes across server instances.
+func (s *Store) CheckVideoQuota(ctx context.Context, userID int64, sessionID string, size int64) (func(), error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	release := func() { _ = tx.Rollback(context.Background()) }
+	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, userID); err != nil {
+		release()
+		return nil, err
+	}
+	var used int64
+	err = tx.QueryRow(ctx, `SELECT COALESCE(SUM(m.byte_size), 0) FROM replay_media_assets m JOIN scenario_runs r ON r.session_id = m.session_id WHERE r.user_id = $1 AND r.session_id <> $2`, userID, sessionID).Scan(&used)
+	if err != nil {
+		release()
+		return nil, err
+	}
+	if size > (2<<30)-used {
+		release()
+		return nil, fmt.Errorf("video quota exceeded")
+	}
+	return release, nil
+}

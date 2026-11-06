@@ -88,6 +88,9 @@ func (s *HubServer) IngestAuthorized(
 	req *hubv1.IngestSessionRequest,
 ) (*hubv1.IngestSessionResponse, error) {
 	authHeader = strings.TrimSpace(authHeader)
+	if authHeader == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("upload token required"))
+	}
 	var authUser *store.AuthUser
 	if authHeader != "" {
 		resolvedUser, err := s.store.GetUserByUploadToken(ctx, authHeader)
@@ -169,15 +172,15 @@ func (s *HubServer) GetOverview(
 	}
 
 	return connect.NewResponse(&hubv1.GetOverviewResponse{
-		TotalRuns:      overview.TotalRuns,
-		TotalScenarios: overview.TotalScenarios,
-		TotalPlayers:   overview.TotalPlayers,
+		TotalRuns:         overview.TotalRuns,
+		TotalScenarios:    overview.TotalScenarios,
+		TotalPlayers:      overview.TotalPlayers,
 		RunsLast_7Days:    overview.RunsLast7Days,
 		PlayersLast_7Days: overview.PlayersLast7Days,
 		TotalDurationMs:   overview.TotalDurationMS,
-		RecentRuns:     overview.RecentRuns,
-		TopScenarios:   overview.TopScenarios,
-		ActiveProfiles: overview.ActiveProfiles,
+		RecentRuns:        overview.RecentRuns,
+		TopScenarios:      overview.TopScenarios,
+		ActiveProfiles:    overview.ActiveProfiles,
 	}), nil
 }
 
@@ -224,7 +227,6 @@ func (s *HubServer) GetRun(
 		BenchmarkRanks:  benchmarkRanks,
 	}), nil
 }
-
 
 func (s *HubServer) GetProfile(
 	ctx context.Context,
@@ -405,8 +407,6 @@ func benchmarkThreshold(threshold kovaaksbenchmarks.BenchmarkThreshold) *hubv1.B
 	}
 }
 
-
-
 func mergeBenchmarkMetadata(
 	current kovaaksbenchmarks.ProfileBenchmarkSummary,
 	candidate kovaaksbenchmarks.ProfileBenchmarkSummary,
@@ -425,7 +425,6 @@ func mergeBenchmarkMetadata(
 	}
 	return current
 }
-
 
 func (s *HubServer) fetchScenarioBenchmarkRanks(
 	ctx context.Context,
@@ -457,9 +456,6 @@ func (s *HubServer) fetchScenarioBenchmarkRanks(
 	}
 	return out, nil
 }
-
-
-
 
 func (s *HubServer) loadBenchmarkList(ctx context.Context) ([]*hubv1.BenchmarkListItem, error) {
 	users, err := s.store.ListUsersWithBenchmarkIdentity(ctx)
@@ -636,7 +632,6 @@ func (s *HubServer) ListBenchmarks(
 	}
 	return connect.NewResponse(&hubv1.ListBenchmarksResponse{Benchmarks: out}), nil
 }
-
 
 func (s *HubServer) Search(
 	ctx context.Context,

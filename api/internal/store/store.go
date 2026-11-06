@@ -598,6 +598,23 @@ func (s *Store) ensureSchema(ctx context.Context) error {
 	if err := s.ensureTournamentSchema(ctx); err != nil {
 		return err
 	}
+	if _, err := s.pool.Exec(ctx, `
+ CREATE TABLE IF NOT EXISTS observed_accounts (
+ user_id BIGINT NOT NULL REFERENCES hub_users(id) ON DELETE CASCADE,
+ provider TEXT NOT NULL, provider_account_id TEXT NOT NULL,
+ username TEXT NOT NULL DEFAULT '', display_name TEXT NOT NULL DEFAULT '', avatar_url TEXT NOT NULL DEFAULT '',
+ PRIMARY KEY(user_id,provider,provider_account_id)
+ );
+ INSERT INTO observed_accounts SELECT user_id,provider,provider_account_id,username,display_name,avatar_url FROM linked_accounts WHERE provider IN ('steam','kovaaks') ON CONFLICT DO NOTHING;
+ DO $$ BEGIN
+ IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'linked_accounts' AND column_name = 'ownership_proof') THEN
+ ALTER TABLE linked_accounts ADD COLUMN ownership_proof TEXT NOT NULL DEFAULT '';
+ UPDATE linked_accounts SET verified = FALSE WHERE provider IN ('steam', 'kovaaks');
+ END IF;
+ END $$;
+ `); err != nil {
+		return fmt.Errorf("migrate identity proof: %w", err)
+	}
 	if _, err := s.pool.Exec(ctx, kovaaksBenchmarkSchemaSQL); err != nil {
 		return fmt.Errorf("ensure kovaaks benchmark schema: %w", err)
 	}

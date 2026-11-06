@@ -570,6 +570,7 @@ func (s *Store) ConsumeAuthState(ctx context.Context, state string) (string, err
 		SELECT return_to, expires_at
 		FROM auth_states
 		WHERE state = $1
+ FOR UPDATE
 	`, state).Scan(&returnTo, &expiresAt); err != nil {
 		return "", fmt.Errorf("load auth state: %w", err)
 	}

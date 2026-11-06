@@ -28,9 +28,9 @@ func (s *Store) ListUsersWithBenchmarkIdentity(ctx context.Context) ([]Benchmark
 			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		JOIN linked_accounts steam
-			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
+			ON steam.user_id = hui.user_id AND steam.provider = 'steam' AND steam.verified
 		LEFT JOIN linked_accounts kovaaks
-			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks'
+			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks' AND kovaaks.verified
 		WHERE TRIM(steam.provider_account_id) != ''
 		ORDER BY hui.user_handle
 	`)
@@ -68,7 +68,7 @@ func (s *Store) GetBenchmarkIdentityByHandle(ctx context.Context, handle string)
 	rows, err := s.pool.Query(ctx, `
 		SELECT provider, provider_account_id, username, display_name
 		FROM linked_accounts
-		WHERE user_id = $1
+		WHERE user_id = $1 AND verified
 	`, resolvedUser.UserID)
 	if err != nil {
 		return result, fmt.Errorf("load benchmark identity: %w", err)
@@ -126,9 +126,9 @@ func (s *Store) GetBenchmarkIdentityByKovaaksUsername(ctx context.Context, usern
 			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		LEFT JOIN linked_accounts steam
-			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
+			ON steam.user_id = hui.user_id AND steam.provider = 'steam' AND steam.verified
 		JOIN linked_accounts kovaaks
-			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks'
+			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks' AND kovaaks.verified
 		WHERE LOWER(TRIM(kovaaks.username)) = LOWER($1)
 		   OR LOWER(TRIM(kovaaks.display_name)) = LOWER($1)
 		LIMIT 1
@@ -159,9 +159,9 @@ func (s *Store) GetBenchmarkIdentityBySteamId(ctx context.Context, steamId strin
 			COALESCE(NULLIF(TRIM(kovaaks.username), ''), NULLIF(TRIM(kovaaks.display_name), ''), kovaaks.provider_account_id, '') AS kovaaks_username
 		FROM hub_user_identity hui
 		JOIN linked_accounts steam
-			ON steam.user_id = hui.user_id AND steam.provider = 'steam'
+			ON steam.user_id = hui.user_id AND steam.provider = 'steam' AND steam.verified
 		LEFT JOIN linked_accounts kovaaks
-			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks'
+			ON kovaaks.user_id = hui.user_id AND kovaaks.provider = 'kovaaks' AND kovaaks.verified
 		WHERE TRIM(steam.provider_account_id) = $1
 		LIMIT 1
 	`, steamId)

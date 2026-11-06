@@ -13,7 +13,22 @@ import (
 	hubv1 "github.com/veryCrunchy/aimmod-hub/gen/go/aimmod/hub/v1"
 )
 
+func ValidateIngestCollections(req *hubv1.IngestSessionRequest) error {
+	if len(req.GetTimelineSeconds()) > 7200 || len(req.GetContextWindows()) > 2000 || len(req.GetSummary()) > 256 || len(req.GetFeatureSet()) > 256 {
+		return fmt.Errorf("ingest collections exceed limits")
+	}
+	for _, window := range req.GetContextWindows() {
+		if len(window.GetFeatureSummary()) > 256 || len(window.GetCoachingTags()) > 64 {
+			return fmt.Errorf("context collections exceed limits")
+		}
+	}
+	return nil
+}
 func validateIngestRequest(req *hubv1.IngestSessionRequest) error {
+	if err := ValidateIngestCollections(req); err != nil {
+		return err
+	}
+
 	if strings.TrimSpace(req.GetUserExternalId()) == "" &&
 		strings.TrimSpace(req.GetKovaaksUserId()) == "" &&
 		strings.TrimSpace(req.GetKovaaksUsername()) == "" &&
