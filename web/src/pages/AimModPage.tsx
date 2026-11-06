@@ -16,7 +16,7 @@ const steps = [
   { title: "Download AimMod-Setup.exe", body: "One small file. It carries no game files itself: it always downloads the newest AimMod release for the channel you pick." },
   { title: "Run it and allow SmartScreen", body: "The installer is not code-signed, so Windows may say \"Windows protected your PC\". Click More info, check the file name is AimMod-Setup.exe, then Run anyway." },
   { title: "Let it find KovaaK's", body: "It finds the game through your Steam library, or you pick the folder. No administrator rights are needed unless the game folder is protected." },
-  { title: "Install, then start KovaaK's from Steam", body: "Close KovaaK's first; if it is running, the installer waits and continues once the game closes. AimMod starts with the game from then on." },
+  { title: "Install, then start KovaaK's from Steam", body: "Close KovaaK's first; if it is running, the installer waits and continues once the game closes. AimMod starts with the game from then on. In KovaaK's press Esc and click AIMMOD, or press F7." },
 ];
 
 const inGame = [

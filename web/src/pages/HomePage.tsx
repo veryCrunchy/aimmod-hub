@@ -64,9 +64,11 @@ export function HomePage() {
     </Helmet>
   );
 
+  const lookup = <Section title="Look up a KovaaK's player"><PlayerLookup /><p className="mt-3"><Link to="/benchmarks" className="text-cyan hover:underline">Browse the benchmark catalog</Link></p><p className="mt-3"><Link to="/app/kovaaks">See your history and trends automatically</Link></p></Section>;
   if (!overview) {
     return <PageStack>
       {head}
+      {lookup}
       {error
         ? <><PageHeader title="KovaaK's" /><EmptyState title="Stats could not be loaded."><Button onClick={load}>Try again</Button></EmptyState></>
         : <PageSkeleton label="Loading overview" />}
@@ -80,6 +82,7 @@ export function HomePage() {
   return (
     <PageStack>
       {head}
+      {lookup}
       <PageHeader
         title="KovaaK's"
         meta={`${overview.totalPlayers.toLocaleString()} players · ${totalRuns.toLocaleString()} runs shared through AimMod`}
@@ -143,9 +146,6 @@ export function HomePage() {
         </div>
       </div>
 
-      <Section title="Look up a KovaaK's player">
-        <PlayerLookup />
-      </Section>
     </PageStack>
   );
 }

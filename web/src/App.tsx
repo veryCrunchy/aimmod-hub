@@ -1,3 +1,4 @@
+import { FairPlayPage } from "./pages/FairPlayPage";
 import { Suspense, lazy, type ComponentType, type PropsWithChildren } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
@@ -105,6 +106,7 @@ function AppRoutes() {
           <Route path="/profiles/:handle/benchmarks/:benchmarkId" element={<BenchmarkPage />} />
           <Route path="/profiles/:handle/benchmarks" element={<BenchmarksPage />} />
           <Route path="/replays" element={<ReplayHubPage />} />
+          <Route path="/fair-play" element={<FairPlayPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/coaching" element={<AdminCoachingPage />} />

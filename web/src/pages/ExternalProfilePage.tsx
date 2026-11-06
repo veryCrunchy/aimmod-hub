@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Code, ConnectError } from "@connectrpc/connect";
+import { Button } from "../components/ui/Button";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { BenchmarkListItem, GetKovaaksPlayerResponse } from "../gen/aimmod/hub/v1/hub_pb";
 import { KovaaksPlayerNotice } from "../components/KovaaksPlayerNotice";
@@ -18,15 +20,16 @@ import { useUrlState } from "../lib/urlState";
 export function ExternalKovaaksPage() {
   const { kovaaksUsername = "" } = useParams();
   const navigate = useNavigate();
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
     let cancelled = false;
     void fetchKovaaksPlayer(kovaaksUsername)
       .then((player) => { if (!cancelled) navigate(`/u/${player.steamId}`, { replace: true }); })
-      .catch(() => { if (!cancelled) setFailed(true); });
+      .catch((err) => { if (!cancelled) setFailed(ConnectError.from(err).code === Code.NotFound ? "No KovaaK's player matches that name." : "KovaaK's is unreachable. Try again."); });
     return () => { cancelled = true; };
-  }, [kovaaksUsername, navigate]);
-  if (failed) return <PageStack><EmptyState title="No KovaaK's player matches that name." /></PageStack>;
+  }, [kovaaksUsername, navigate, retry]);
+  if (failed) return <PageStack><EmptyState title={failed}><Button onClick={() => { setFailed(null); setRetry((v) => v + 1); }}>Try again</Button></EmptyState></PageStack>;
   return <PageStack><PageSkeleton label="Looking up player" /></PageStack>;
 }
 
@@ -35,17 +38,18 @@ export function ExternalProfilePage() {
   const { steamId = "" } = useParams();
   const [player, setPlayer] = useState<GetKovaaksPlayerResponse | null>(null);
   const [catalog, setCatalog] = useState<BenchmarkListItem[]>([]);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const [state, setState] = useUrlState({ all: "", q: "" });
 
   useEffect(() => {
     let cancelled = false;
     setPlayer(null);
-    setError(false);
-    void fetchKovaaksPlayer(steamId).then((next) => { if (!cancelled) setPlayer(next); }).catch(() => { if (!cancelled) setError(true); });
+    setError(null);
+    void fetchKovaaksPlayer(steamId).then((next) => { if (!cancelled) setPlayer(next); }).catch((err) => { if (!cancelled) setError(ConnectError.from(err).code === Code.NotFound ? "No KovaaK's player found." : "KovaaK's is unreachable. Try again."); });
     void fetchBenchmarkList().then((r) => { if (!cancelled) setCatalog(r.benchmarks); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [steamId]);
+  }, [steamId, retry]);
 
   const hidden = useMemo(() => new Set(catalog.filter((b) => b.hidden).map((b) => b.benchmarkId)), [catalog]);
   const benchmarks = useMemo(() => {
@@ -60,7 +64,7 @@ export function ExternalProfilePage() {
   if (error) {
     return (
       <PageStack>
-        <EmptyState title="No KovaaK's player found." body="Check the Steam id, Steam profile link or KovaaK's username." />
+        <EmptyState title={error}><Button onClick={() => setRetry((v) => v + 1)}>Try again</Button></EmptyState>
       </PageStack>
     );
   }

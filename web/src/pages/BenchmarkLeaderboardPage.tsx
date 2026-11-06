@@ -1,3 +1,5 @@
+import { snapshotStatus } from "../lib/snapshotStatus";
+import { Code, ConnectError } from "@connectrpc/connect";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { BenchmarkLeaderboardEntry, BenchmarkListItem } from "../gen/aimmod/hub/v1/hub_pb";
@@ -20,19 +22,20 @@ import { intParam, useUrlState } from "../lib/urlState";
 function KovaaksLookup({ benchmarkId }: { benchmarkId: string }) {
   const navigate = useNavigate();
   const [value, setValue] = useState("");
-  const [state, setState] = useState<"idle" | "busy" | "missing">("idle");
+  const [state, setState] = useState<"idle" | "busy" | "missing" | "unreachable">("idle");
   return (
     <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => {
       e.preventDefault();
       const q = value.trim();
       if (!q) return;
       setState("busy");
-      void fetchKovaaksPlayer(q).then((p) => navigate(`/u/${p.steamId}/benchmarks/${benchmarkId}`)).catch(() => setState("missing"));
+      void fetchKovaaksPlayer(q).then((p) => navigate(`/u/${p.steamId}/benchmarks/${benchmarkId}`)).catch((err) => setState(ConnectError.from(err).code === Code.NotFound ? "missing" : "unreachable"));
     }}>
       <label htmlFor="kovaaks-lookup" className="text-sm text-muted">Any KovaaK's player</label>
       <input id="kovaaks-lookup" value={value} onChange={(e) => { setValue(e.target.value); setState("idle"); }} placeholder="KovaaK's name, Steam id or profile link"
         className="min-h-9 w-full rounded-md border border-line bg-panel px-3 text-sm placeholder:text-muted sm:w-72" />
       <Button type="submit" disabled={state === "busy"}>{state === "busy" ? "Looking up" : "Open sheet"}</Button>
+      {state === "unreachable" ? <span role="alert">KovaaK's is unreachable. Try again.</span> : null}
       {state === "missing" ? <span role="status" className="text-sm text-muted">No KovaaK's player matches that.</span> : null}
     </form>
   );
@@ -43,6 +46,8 @@ export function BenchmarkLeaderboardPage() {
   const { benchmarkId = "" } = useParams();
   const navigate = useNavigate();
   const [entries, setEntries] = useState<BenchmarkLeaderboardEntry[] | null>(null);
+  const [snapshot, setSnapshot] = useState({ updated: "", partial: false, pending: false, total: 0, page: 1 });
+  const [refresh, setRefresh] = useState(0);
   const [benchmarkName, setBenchmarkName] = useState("");
   const [allBenchmarks, setAllBenchmarks] = useState<BenchmarkListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +62,11 @@ export function BenchmarkLeaderboardPage() {
     setEntries(null);
     setError(null);
 
-    const leaderboardP = fetchBenchmarkLeaderboard(Number(benchmarkId))
+    const leaderboardP = fetchBenchmarkLeaderboard(Number(benchmarkId), intParam(state.page, 1, 1), intParam(state.size, 50, 10, 100), state.q)
       .then((res) => {
         if (!cancelled) {
           setEntries(res.entries ?? []);
+          setSnapshot(res);
           setBenchmarkName(res.benchmarkName || `Benchmark #${benchmarkId}`);
         }
       });
@@ -74,7 +80,8 @@ export function BenchmarkLeaderboardPage() {
     });
 
     return () => { cancelled = true; };
-  }, [benchmarkId]);
+  }, [benchmarkId, state.page, state.size, state.q, refresh]);
+  useEffect(() => { if (!snapshot.pending) return; const timer = setTimeout(() => setRefresh((v) => v + 1), 5000); return () => clearTimeout(timer); }, [snapshot.pending, refresh]);
 
   // Find sibling benchmarks in the same series
   const siblings = useMemo(() => {
@@ -86,20 +93,17 @@ export function BenchmarkLeaderboardPage() {
     return group && group.variants.length > 1 ? group : null;
   }, [allBenchmarks, benchmarkName, benchmarkId]);
 
-  const ranked = (entries ?? []).map((entry, i) => ({ entry, position: i + 1 }));
-  const query = state.q.trim().toLowerCase();
-  const filtered = query ? ranked.filter(({ entry }) => `${entry.displayName} ${entry.userHandle}`.toLowerCase().includes(query)) : ranked;
   const pageSize = intParam(state.size, 50, 10, 100);
-  const page = Math.min(intParam(state.page, 1, 1) - 1, Math.max(0, Math.ceil(filtered.length / pageSize) - 1));
-  const visible = filtered.slice(page * pageSize, (page + 1) * pageSize);
-  const myIndex = me ? ranked.findIndex(({ entry }) => entry.userHandle.toLowerCase() === me) : -1;
+  const page = snapshot.page - 1;
+  const ranked = (entries ?? []).map((entry, i) => ({ entry, position: page * pageSize + i + 1 }));
+  const visible = ranked;
 
   if (error) {
     return (
       <PageStack>
         <PageHeader title="Benchmark" />
         <EmptyState title="This benchmark leaderboard could not be loaded.">
-          <Button to="/benchmarks">All benchmarks</Button>
+          <Button onClick={() => setRefresh((v) => v + 1)}>Try again</Button><Button to="/benchmarks">All benchmarks</Button>
         </EmptyState>
       </PageStack>
     );
@@ -126,9 +130,13 @@ export function BenchmarkLeaderboardPage() {
         <PageHeader
           before={<Breadcrumb crumbs={[{ label: "Benchmarks", to: "/benchmarks" }, { label: title }]} />}
           title={currentDifficulty && siblings ? `${title} · ${currentDifficulty}` : title}
-          meta={`${entries.length.toLocaleString()} ranked AimMod ${entries.length === 1 ? "player" : "players"} · ordered by overall rank, then KovaaK's progress`}
+          meta={`${snapshot.total.toLocaleString()} ranked AimMod ${entries.length === 1 ? "player" : "players"} · ordered by overall rank, then KovaaK's progress`}
         />
+        <p role="status" className="mt-3 text-sm text-muted">{snapshotStatus(snapshot.updated, snapshot.pending)}</p>
+        {snapshot.partial && !snapshot.pending ? <p role="status">Some players couldn't be refreshed.</p> : null}
         <div className="mt-4"><KovaaksLookup benchmarkId={benchmarkId} /></div>
+        <input type="search" value={state.q} onChange={(e) => setState({ q: e.target.value, page: "1" })} placeholder="Find a player" aria-label="Find a player"
+          className="mt-4 min-h-9 w-full rounded-md border border-line bg-panel px-3 text-sm placeholder:text-muted sm:w-56" />
         {/* Difficulty tabs — only shown when the benchmark has variants */}
         {siblings && (
           <div className="mt-4 flex flex-wrap gap-2">
@@ -179,11 +187,9 @@ export function BenchmarkLeaderboardPage() {
             </ul>
           )}
           <div className="flex flex-wrap items-center gap-2">
-            <input type="search" value={state.q} onChange={(e) => setState({ q: e.target.value, page: "1" })} placeholder="Find a player" aria-label="Find a player"
-              className="min-h-9 w-full rounded-md border border-line bg-panel px-3 text-sm placeholder:text-muted sm:w-56" />
-            {myIndex >= 0 ? (
-              <button type="button" onClick={() => setState({ q: "", page: String(Math.floor(myIndex / pageSize) + 1) })}
-                className="ml-auto inline-flex min-h-9 items-center rounded-md border border-mint/50 bg-mint/10 px-3 text-sm font-medium hover:bg-mint/20">Jump to me</button>
+            {me !== "" ? (
+              <button type="button" onClick={() => setState({ q: me, page: "1" })}
+                className="ml-auto inline-flex min-h-9 items-center rounded-md border border-mint/50 bg-mint/10 px-3 text-sm font-medium hover:bg-mint/20">Find me</button>
             ) : null}
           </div>
           <div className="overflow-x-auto rounded-md border border-line">
@@ -222,8 +228,8 @@ export function BenchmarkLeaderboardPage() {
               </tbody>
             </table>
           </div>
-          {filtered.length > pageSize ? (
-            <Pager page={page} pageSize={pageSize} total={filtered.length} onPage={(p) => setState({ page: String(p + 1) })}
+          {snapshot.total > pageSize ? (
+            <Pager page={page} pageSize={pageSize} total={snapshot.total} onPage={(p) => setState({ page: String(p + 1) })}
               pageSizes={[25, 50, 100]} onPageSize={(size) => setState({ size: String(size), page: "1" })} />
           ) : null}
         </PageSection>

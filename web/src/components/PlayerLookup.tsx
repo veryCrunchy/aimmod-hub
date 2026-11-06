@@ -63,7 +63,7 @@ export function PlayerLookup({ placeholder }: { placeholder?: string }) {
         setResults(r);
         setOpen(r.length > 0);
         setActiveIndex(0);
-      });
+      }).catch(() => setError("KovaaK's is unreachable. Try again."));
     }, 250);
     return () => clearTimeout(tid);
   }, [value]);

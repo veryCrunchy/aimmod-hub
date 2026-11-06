@@ -100,7 +100,7 @@ export function AppShell({ children }: PropsWithChildren) {
       {!choosing && <aside className="hub-sidebar"><nav aria-label="Primary">{navigation()}</nav></aside>}
       <div className="hub-content">
         <main id="main-content" tabIndex={-1}>{children}</main>
-        <footer className="hub-footer"><span>AimMod Hub</span><div><a href="/join" target="_blank" rel="noopener noreferrer">Join Discord</a><Link to="/osu/help">App guide</Link><Link to="/branding">Branding</Link><a href="https://ko-fi.com/verycrunchy" target="_blank" rel="noreferrer">Support AimMod</a><a href="https://github.com/veryCrunchy/aimmod" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/sponsors/veryCrunchy" target="_blank" rel="noreferrer">Sponsors</a></div></footer>
+        <footer className="hub-footer"><span>AimMod Hub</span><div><a href="/join" target="_blank" rel="noopener noreferrer">Join Discord</a><Link to="/osu/help">App guide</Link><Link to="/branding">Branding</Link><Link to="/fair-play">Fair play</Link><a href="https://ko-fi.com/verycrunchy" target="_blank" rel="noreferrer">Support AimMod</a><a href="https://github.com/veryCrunchy/aimmod" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/sponsors/veryCrunchy" target="_blank" rel="noreferrer">Sponsors</a></div></footer>
       </div>
     </div>
   );

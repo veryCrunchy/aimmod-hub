@@ -538,8 +538,13 @@ export function fetchLeaderboard(scenarioType = "") {
   return leaderboardQuery(scenarioType, () => hubClient.getLeaderboard(new GetLeaderboardRequest({ scenarioType })));
 }
 
-export async function fetchBenchmarkLeaderboard(benchmarkId: number) {
-  return hubClient.getBenchmarkLeaderboard(new GetBenchmarkLeaderboardRequest({ benchmarkId }));
+export async function fetchBenchmarkLeaderboard(benchmarkId: number, page = 1, size = 50, query = "") {
+  let metadata = new Headers();
+  const result = await hubClient.getBenchmarkLeaderboard(new GetBenchmarkLeaderboardRequest({ benchmarkId }), {
+    headers: { "X-Page": String(page), "X-Page-Size": String(size), "X-Page-Query": encodeURIComponent(query) },
+    onHeader: (headers) => { metadata = headers; },
+  });
+  return { ...result, updated: metadata.get("X-Snapshot-Updated") ?? "", partial: metadata.get("X-Snapshot-Partial") === "true", pending: metadata.get("X-Snapshot-Pending") === "true", total: Number(metadata.get("X-Total-Count") ?? 0), page: Number(metadata.get("X-Page") ?? 1) };
 }
 
 const scenarioLeaderboardQuery = createPublicQuery<Awaited<ReturnType<typeof hubClient.getScenarioLeaderboard>>>(15_000);
