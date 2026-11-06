@@ -268,12 +268,14 @@ type workshopArtworkCache struct {
 	mu       sync.Mutex
 	entries  map[string]workshopArtworkEntry
 	order    []string
+	bytes    int64
 	now      func() time.Time
 }
 
 type workshopArtworkEntry struct {
-	img image.Image
-	at  time.Time
+	img   image.Image
+	at    time.Time
+	bytes int64
 }
 
 func newWorkshopArtwork(endpoint string, client *http.Client) *workshopArtworkCache {
@@ -316,8 +318,15 @@ func (c *workshopArtworkCache) Get(ctx context.Context, item string) (image.Imag
 		if _, seen := c.entries[item]; !seen {
 			c.order = append(c.order, item)
 		}
-		c.entries[item] = workshopArtworkEntry{img: img, at: c.now()}
-		for len(c.order) > 128 {
+		size := int64(0)
+		if img != nil {
+			size = int64(img.Bounds().Dx()) * int64(img.Bounds().Dy()) * 4
+		}
+		c.bytes -= c.entries[item].bytes
+		c.entries[item] = workshopArtworkEntry{img: img, at: c.now(), bytes: size}
+		c.bytes += size
+		for len(c.order) > 128 || c.bytes > 32<<20 {
+			c.bytes -= c.entries[c.order[0]].bytes
 			delete(c.entries, c.order[0])
 			c.order = c.order[1:]
 		}
@@ -386,12 +395,24 @@ func (c *workshopArtworkCache) fetch(ctx context.Context, item string) (image.Im
 		return nil, errPreviewUnavailable
 	}
 	config, format, err := image.DecodeConfig(bytes.NewReader(data))
-	if err != nil || (format != "png" && format != "jpeg") || config.Width <= 0 || config.Height <= 0 || config.Width > workshopPreviewPixels || config.Height > workshopPreviewPixels {
+	if err != nil || (format != "png" && format != "jpeg") || config.Width <= 0 || config.Height <= 0 || config.Width > workshopPreviewPixels || config.Height > workshopPreviewPixels || int64(config.Width)*int64(config.Height) > 4<<20 {
 		return nil, errPreviewUnavailable
 	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, errPreviewUnavailable
 	}
-	return img, nil
+	bounds := img.Bounds()
+	width, height := bounds.Dx(), bounds.Dy()
+	if width > 512 || height > 512 {
+		scale := 512.0 / float64(max(width, height))
+		width, height = max(1, int(float64(width)*scale)), max(1, int(float64(height)*scale))
+	}
+	resized := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			resized.Set(x, y, img.At(bounds.Min.X+x*bounds.Dx()/width, bounds.Min.Y+y*bounds.Dy()/height))
+		}
+	}
+	return resized, nil
 }

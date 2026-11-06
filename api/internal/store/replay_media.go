@@ -397,25 +397,35 @@ func (s *Store) GetMousePath(ctx context.Context, runID string) (MousePathData, 
 }
 
 // CheckVideoQuota serializes quota checks and writes across server instances.
-func (s *Store) CheckVideoQuota(ctx context.Context, userID int64, sessionID string, size int64) (func(), error) {
+func (s *Store) CheckVideoQuota(ctx context.Context, userID int64, sessionID string, size int64) (func(string, string, string) error, func(), error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	release := func() { _ = tx.Rollback(context.Background()) }
 	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, userID); err != nil {
 		release()
-		return nil, err
+		return nil, nil, err
 	}
 	var used int64
 	err = tx.QueryRow(ctx, `SELECT COALESCE(SUM(m.byte_size), 0) FROM replay_media_assets m JOIN scenario_runs r ON r.session_id = m.session_id WHERE r.user_id = $1 AND r.session_id <> $2`, userID, sessionID).Scan(&used)
 	if err != nil {
 		release()
-		return nil, err
+		return nil, nil, err
 	}
 	if size > (2<<30)-used {
 		release()
-		return nil, fmt.Errorf("video quota exceeded")
+		return nil, nil, fmt.Errorf("video quota exceeded")
 	}
-	return release, nil
+	save := func(quality, key, contentType string) error {
+		_, err := tx.Exec(ctx, `INSERT INTO replay_media_assets(session_id, quality, storage_key, content_type, byte_size)
+		VALUES($1,$2,$3,$4,$5) ON CONFLICT(session_id) DO UPDATE SET quality=EXCLUDED.quality,
+		storage_key=EXCLUDED.storage_key, content_type=EXCLUDED.content_type, byte_size=EXCLUDED.byte_size, updated_at=NOW()`,
+			sessionID, normalizeReplayMediaQuality(quality), key, contentType, size)
+		if err != nil {
+			return err
+		}
+		return tx.Commit(ctx)
+	}
+	return save, release, nil
 }

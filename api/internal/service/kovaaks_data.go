@@ -541,22 +541,22 @@ func (s *HubServer) GetPlayerScenarioStats(
 			oldestFirst[len(recent)-1-i] = recent[i]
 		}
 		resp.Scenarios = append(resp.Scenarios, &hubv1.PlayerScenarioStat{
-			ScenarioName:     record.ScenarioName,
-			ScenarioSlug:     store.ScenarioSlug(record.ScenarioName),
-			ScenarioType:     record.ScenarioType,
-			RunCount:         record.RunCount,
-			BestScore:        record.BestScore,
-			AverageScore:     record.AverageScore,
-			BestAccuracy:     record.BestAccuracy,
-			BestPlayedAtIso:  isoTime(record.BestPlayedAt),
-			LastPlayedAtIso:  isoTime(record.LastPlayedAt),
-			Consistency:      consistencyScore(recent),
-			TrendPct:         trendPercent(recent),
-			Percentile:       beatsShare(record.HubBelow, record.HubPlayers),
-			HubRank:          record.HubRank,
-			HubPlayers:       record.HubPlayers,
-			RecentScores:     oldestFirst,
-			TotalDurationMs:  record.TotalDurationMS,
+			ScenarioName:    record.ScenarioName,
+			ScenarioSlug:    store.ScenarioSlug(record.ScenarioName),
+			ScenarioType:    record.ScenarioType,
+			RunCount:        record.RunCount,
+			BestScore:       record.BestScore,
+			AverageScore:    record.AverageScore,
+			BestAccuracy:    record.BestAccuracy,
+			BestPlayedAtIso: isoTime(record.BestPlayedAt),
+			LastPlayedAtIso: isoTime(record.LastPlayedAt),
+			Consistency:     consistencyScore(recent),
+			TrendPct:        trendPercent(recent),
+			Percentile:      beatsShare(record.HubBelow, record.HubPlayers),
+			HubRank:         record.HubRank,
+			HubPlayers:      record.HubPlayers,
+			RecentScores:    oldestFirst,
+			TotalDurationMs: record.TotalDurationMS,
 		})
 	}
 	if days, err := s.store.PlayerActivity(ctx, resolved, time.Now().AddDate(0, 0, -182)); err == nil {
@@ -633,12 +633,19 @@ func (s *HubServer) GetKovaaksPlayer(
 	if query == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("query is required"))
 	}
-	steamID, username := s.resolveKovaaksPlayer(ctx, query)
+	steamID, username, err := s.resolveKovaaksPlayer(ctx, query)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnavailable, errors.New("KovaaK's is unreachable; retry"))
+	}
 	if username == "" {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("no KovaaK's player matches that"))
 	}
 	resp := &hubv1.GetKovaaksPlayerResponse{SteamId: steamID, KovaaksUsername: username}
-	if profile, err := s.benchmarks.GetUserProfile(ctx, username); err == nil && profile != nil {
+	profile, profileErr := s.benchmarks.GetUserProfile(ctx, username)
+	if profileErr != nil && !errors.Is(profileErr, kovaaksbenchmarks.ErrNotFound) {
+		return nil, connect.NewError(connect.CodeUnavailable, profileErr)
+	}
+	if profile != nil {
 		if steamID != "" && profile.SteamID != steamID {
 			// The username belongs to someone else; keep the Steam identity.
 			profile = nil
@@ -694,15 +701,18 @@ func (s *HubServer) GetKovaaksPlayer(
 
 // resolveKovaaksPlayer turns a Steam id, Steam URL, vanity or KovaaK's
 // username into a Steam id and KovaaK's username.
-func (s *HubServer) resolveKovaaksPlayer(ctx context.Context, query string) (string, string) {
+func (s *HubServer) resolveKovaaksPlayer(ctx context.Context, query string) (string, string, error) {
 	if looksLikeSteam64(query) || strings.Contains(query, "steamcommunity.com") {
-		resolved, _ := s.benchmarks.ResolveSteamInput(ctx, query)
+		resolved, err := s.benchmarks.ResolveSteamInput(ctx, query)
+		if err != nil {
+			return "", "", err
+		}
 		steamID := resolved.Steam64
 		if steamID == "" {
-			return "", ""
+			return "", "", nil
 		}
 		if cached, err := s.store.GetKovaaksUserBySteamId(ctx, steamID); err == nil && cached != nil && cached.Username != "" {
-			return steamID, cached.Username
+			return steamID, cached.Username, nil
 		}
 		// The Steam persona name is only a guess at the KovaaK's username;
 		// confirm it through KovaaK's search by matching the Steam id.
@@ -710,20 +720,28 @@ func (s *HubServer) resolveKovaaksPlayer(ctx context.Context, query string) (str
 			if candidate == "" {
 				continue
 			}
-			if users, err := s.benchmarks.SearchUsers(ctx, candidate, 10); err == nil {
+			users, err := s.benchmarks.SearchUsers(ctx, candidate, 10)
+			if err != nil {
+				return "", "", err
+			}
+			{
 				for _, user := range users {
 					if user.SteamID == steamID && user.Username != "" {
-						return steamID, user.Username
+						return steamID, user.Username, nil
 					}
 				}
 			}
 		}
-		return steamID, resolved.KovaaksUsername
+		return steamID, resolved.KovaaksUsername, nil
 	}
-	if profile, err := s.benchmarks.GetUserProfile(ctx, query); err == nil && profile != nil {
-		return profile.SteamID, profile.KovaaksUsername
+	profile, err := s.benchmarks.GetUserProfile(ctx, query)
+	if err != nil && !errors.Is(err, kovaaksbenchmarks.ErrNotFound) {
+		return "", "", err
 	}
-	return "", ""
+	if profile != nil {
+		return profile.SteamID, profile.KovaaksUsername, nil
+	}
+	return "", "", nil
 }
 
 // capSearchResults keeps the best results within limit while reserving up

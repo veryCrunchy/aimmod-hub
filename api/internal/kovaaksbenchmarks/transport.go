@@ -28,6 +28,8 @@ const (
 
 // ErrRateLimited is returned when the provider asked us to back off and no
 // cached response is available.
+var ErrNotFound = errors.New("player not found")
+
 var ErrRateLimited = errors.New("kovaak's is rate limiting requests; try again shortly")
 
 // envOr returns the trimmed environment value or the fallback.
@@ -200,4 +202,21 @@ func (c *responseCache) put(key string, raw []byte, at time.Time) {
 		}
 	}
 	c.entries[key] = cachedResponse{raw: raw, fetchedAt: at}
+}
+
+func (c *Client) ProviderBackoff() bool {
+	c.limiter.mu.Lock()
+	defer c.limiter.mu.Unlock()
+	return time.Now().Before(c.limiter.blocked)
+}
+
+type freshResultsKey struct{}
+
+// FreshResults requires provider refreshes to report errors instead of stale fallback data.
+func FreshResults(ctx context.Context) context.Context {
+	return context.WithValue(ctx, freshResultsKey{}, true)
+}
+func requiresFreshResults(ctx context.Context) bool {
+	value, _ := ctx.Value(freshResultsKey{}).(bool)
+	return value
 }

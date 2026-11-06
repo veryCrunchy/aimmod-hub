@@ -450,7 +450,7 @@ func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) (
 		rank    kovaaksbenchmarks.BenchmarkRankVisual
 	}
 	results := make(chan benchmarkResult, len(candidates))
-	sem := make(chan struct{}, 6)
+	sem := make(chan struct{}, 2)
 	var wg sync.WaitGroup
 	for _, item := range candidates {
 		wg.Add(1)
@@ -495,7 +495,7 @@ func (s *HubServer) fetchProfileBenchmarks(ctx context.Context, handle string) (
 	return out, preloaded, nil
 }
 
-func (s *HubServer) GetBenchmarkLeaderboard(
+func (s *HubServer) rebuildBenchmarkLeaderboard(
 	ctx context.Context,
 	req *connect.Request[hubv1.GetBenchmarkLeaderboardRequest],
 ) (*connect.Response[hubv1.GetBenchmarkLeaderboardResponse], error) {
@@ -508,23 +508,28 @@ func (s *HubServer) GetBenchmarkLeaderboard(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	type fetchResult struct {
-		entry *hubv1.BenchmarkLeaderboardEntry
+		entry  *hubv1.BenchmarkLeaderboardEntry
+		failed bool
 	}
 	results := make(chan fetchResult, len(users))
 	sem := make(chan struct{}, 6)
 	var wg sync.WaitGroup
 	for _, u := range users {
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
 		wg.Add(1)
 		go func(u store.BenchmarkUserIdentity) {
 			defer wg.Done()
-			select {
-			case sem <- struct{}{}:
-			case <-ctx.Done():
-				return
-			}
 			defer func() { <-sem }()
 			detail, err := s.benchmarks.GetBenchmarkDetail(ctx, benchmarkID, u.SteamID)
-			if err != nil || detail == nil || detail.OverallRank == 0 {
+			if err != nil || detail == nil {
+				results <- fetchResult{failed: true}
+				return
+			}
+			if detail.OverallRank == 0 {
 				return
 			}
 			rv := kovaaksbenchmarks.RankVisualFromDetail(detail, detail.OverallRank)
@@ -542,8 +547,13 @@ func (s *HubServer) GetBenchmarkLeaderboard(
 	}
 	go func() { wg.Wait(); close(results) }()
 
+	partial := false
 	var entries []*hubv1.BenchmarkLeaderboardEntry
 	for r := range results {
+		if r.failed {
+			partial = true
+			continue
+		}
 		entries = append(entries, r.entry)
 	}
 	sortBenchmarkLeaderboard(entries)
@@ -553,7 +563,11 @@ func (s *HubServer) GetBenchmarkLeaderboard(
 		resp.BenchmarkName = meta.BenchmarkName
 		resp.BenchmarkIconUrl = meta.BenchmarkIconURL
 	}
-	return connect.NewResponse(resp), nil
+	response := connect.NewResponse(resp)
+	if partial {
+		response.Header().Set("X-Snapshot-Partial", "true")
+	}
+	return response, nil
 }
 
 // sortBenchmarkLeaderboard orders by rank, then KovaaK's progress, then name.

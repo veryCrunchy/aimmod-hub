@@ -19,6 +19,7 @@ import (
 )
 
 type HubServer struct {
+	snapshots        benchmarkSnapshots
 	version          string
 	store            *store.Store
 	benchmarks       *kovaaksbenchmarks.Client

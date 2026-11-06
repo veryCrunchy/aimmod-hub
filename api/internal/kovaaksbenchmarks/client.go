@@ -322,6 +322,7 @@ func (c *Client) listBenchmarkCatalog(ctx context.Context, username string, obse
 	}
 
 	c.mu.Lock()
+	pruneTypedCache(c.listCache, func(v cachedProfileBenchmarks) time.Time { return v.expiresAt })
 	c.listCache[strings.ToLower(normalized)] = cachedProfileBenchmarks{
 		expiresAt: time.Now().Add(cacheTTL),
 		items:     append([]ProfileBenchmarkSummary(nil), items...),
@@ -421,6 +422,7 @@ func (c *Client) ListScenarioRanks(
 	}
 
 	c.mu.Lock()
+	pruneTypedCache(c.rankCache, func(v cachedScenarioRanks) time.Time { return v.expiresAt })
 	c.rankCache[cacheKey] = cachedScenarioRanks{
 		expiresAt: time.Now().Add(cacheTTL),
 		items:     append([]ScenarioBenchmarkRank(nil), matches...),
@@ -552,7 +554,7 @@ func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, ste
 	cacheKey := fmt.Sprintf("%d:%s", benchmarkID, strings.TrimSpace(steamID))
 
 	c.mu.RLock()
-	if cached, ok := c.detailCache[cacheKey]; ok && time.Now().Before(cached.expiresAt) {
+	if cached, ok := c.detailCache[cacheKey]; ok && !requiresFreshResults(ctx) && time.Now().Before(cached.expiresAt) {
 		c.mu.RUnlock()
 		return cached.detail, nil
 	}
@@ -570,6 +572,7 @@ func (c *Client) GetBenchmarkDetail(ctx context.Context, benchmarkID uint32, ste
 		return nil, err
 	}
 	c.mu.Lock()
+	pruneTypedCache(c.detailCache, func(v cachedBenchmarkDetail) time.Time { return v.expiresAt })
 	c.detailCache[cacheKey] = cachedBenchmarkDetail{
 		expiresAt: time.Now().Add(cacheTTL),
 		detail:    detail,
@@ -780,14 +783,17 @@ func (c *Client) storeResolvedIdentity(steam64, altKey string, identity Resolved
 	defer c.mu.Unlock()
 	entry := cachedResolvedIdentity{expiresAt: expires, identity: identity}
 	if steam64 != "" {
+		pruneTypedCache(c.resolveCache, func(v cachedResolvedIdentity) time.Time { return v.expiresAt })
 		c.resolveCache[steam64] = entry
 	}
 	if altKey != "" && altKey != steam64 {
+		pruneTypedCache(c.resolveCache, func(v cachedResolvedIdentity) time.Time { return v.expiresAt })
 		c.resolveCache[altKey] = entry
 	}
 	if identity.KovaaksUsername != "" {
 		k := strings.ToLower(identity.KovaaksUsername)
 		if k != steam64 && k != altKey {
+			pruneTypedCache(c.resolveCache, func(v cachedResolvedIdentity) time.Time { return v.expiresAt })
 			c.resolveCache[k] = entry
 		}
 	}
@@ -929,6 +935,7 @@ func (c *Client) SearchUsers(ctx context.Context, query string, max int) ([]Kova
 	}
 
 	c.mu.Lock()
+	pruneTypedCache(c.searchCache, func(v cachedUserSearch) time.Time { return v.expiresAt })
 	c.searchCache[cacheKey] = cachedUserSearch{
 		expiresAt: time.Now().Add(cacheTTL),
 		results:   append([]KovaaksUserResult(nil), results...),
@@ -957,7 +964,7 @@ func (c *Client) fetchJSON(ctx context.Context, base string, query url.Values, t
 		endpoint += "?" + encoded
 	}
 	cached, hasCached := c.responses.get(endpoint)
-	if hasCached && ttl > 0 && time.Since(cached.fetchedAt) < ttl {
+	if !requiresFreshResults(ctx) && hasCached && ttl > 0 && time.Since(cached.fetchedAt) < ttl {
 		return decodeProviderJSON(cached.raw, out)
 	}
 
@@ -981,6 +988,9 @@ func (c *Client) fetchJSON(ctx context.Context, base string, query url.Values, t
 			c.limiter.backOff(time.Now().Add(retryAfter(resp)))
 			return nil, ErrRateLimited
 		}
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			return nil, fmt.Errorf("benchmark request failed: %s", resp.Status)
 		}
@@ -996,7 +1006,7 @@ func (c *Client) fetchJSON(ctx context.Context, base string, query url.Values, t
 		return ctx.Err()
 	case result := <-result:
 		if result.Err != nil {
-			if hasCached && time.Since(cached.fetchedAt) < staleTTL {
+			if !requiresFreshResults(ctx) && hasCached && time.Since(cached.fetchedAt) < staleTTL {
 				return decodeProviderJSON(cached.raw, out)
 			}
 			return result.Err

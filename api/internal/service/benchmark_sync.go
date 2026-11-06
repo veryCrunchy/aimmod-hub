@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"strings"
@@ -58,6 +59,9 @@ func (b *benchmarkSyncer) run(ctx context.Context) {
 // step refreshes the catalog when due and syncs one batch of definitions.
 // It reports whether any definition was processed.
 func (b *benchmarkSyncer) step(ctx context.Context) bool {
+	if b.client.ProviderBackoff() {
+		return false
+	}
 	if time.Since(b.lastCat) > benchmarkCatalogRefresh {
 		if err := b.refreshCatalog(ctx); err != nil {
 			log.Printf("benchmark sync: catalog refresh failed: %v", err)
@@ -65,16 +69,24 @@ func (b *benchmarkSyncer) step(ctx context.Context) bool {
 			b.lastCat = time.Now()
 		}
 	}
+	if b.client.ProviderBackoff() {
+		return false
+	}
 	ids, err := b.store.ListKovaaksBenchmarksNeedingSync(ctx, benchmarkDefinitionMaxAge, benchmarkSyncBatch)
 	if err != nil {
 		log.Printf("benchmark sync: %v", err)
 		return false
 	}
 	for _, id := range ids {
+		if b.client.ProviderBackoff() {
+			return false
+		}
 		if ctx.Err() != nil {
 			return true
 		}
-		b.syncDefinition(ctx, id)
+		if errors.Is(b.syncDefinition(ctx, id), kovaaksbenchmarks.ErrRateLimited) {
+			return false
+		}
 		select {
 		case <-ctx.Done():
 		case <-time.After(b.pause):
@@ -98,15 +110,15 @@ func (b *benchmarkSyncer) refreshCatalog(ctx context.Context) error {
 	return b.store.UpsertKovaaksBenchmarkCatalog(ctx, meta)
 }
 
-func (b *benchmarkSyncer) syncDefinition(ctx context.Context, id uint32) {
-	detail, err := b.client.GetBenchmarkDefinition(ctx, id)
+func (b *benchmarkSyncer) syncDefinition(ctx context.Context, id uint32) error {
+	detail, err := b.client.GetBenchmarkDefinition(kovaaksbenchmarks.FreshResults(ctx), id)
 	if err != nil || detail == nil {
 		reason := "definition unavailable"
 		if err != nil {
 			reason = err.Error()
 		}
 		_ = b.store.MarkKovaaksBenchmarkSyncFailed(ctx, id, reason)
-		return
+		return err
 	}
 	ranks, scenarios := definitionRows(detail)
 	var estimate *int64
@@ -119,6 +131,7 @@ func (b *benchmarkSyncer) syncDefinition(ctx context.Context, id uint32) {
 	if err := b.store.SaveKovaaksBenchmarkDefinition(ctx, id, ranks, scenarios, estimate); err != nil {
 		log.Printf("benchmark sync: save %d: %v", id, err)
 	}
+	return nil
 }
 
 // definitionRows flattens a provider detail into stored rows, keeping order.

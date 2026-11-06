@@ -26,6 +26,11 @@ CREATE TABLE IF NOT EXISTS kovaaks_benchmarks (
   listed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE kovaaks_benchmarks ADD COLUMN IF NOT EXISTS last_attempt TIMESTAMPTZ;
+ALTER TABLE kovaaks_benchmarks ADD COLUMN IF NOT EXISTS next_retry TIMESTAMPTZ;
+ALTER TABLE kovaaks_benchmarks ADD COLUMN IF NOT EXISTS failure_count INT NOT NULL DEFAULT 0;
+UPDATE kovaaks_benchmarks SET definition_synced_at = NULL WHERE definition_error <> '' AND last_attempt IS NULL;
+
 CREATE TABLE IF NOT EXISTS kovaaks_benchmark_scenarios (
   benchmark_id BIGINT NOT NULL REFERENCES kovaaks_benchmarks(benchmark_id) ON DELETE CASCADE,
   position INT NOT NULL,
@@ -126,14 +131,14 @@ func (s *Store) SaveKovaaksBenchmarkDefinition(
 	}
 	defer tx.Rollback(ctx)
 	if _, err := tx.Exec(ctx, `
-		INSERT INTO kovaaks_benchmarks (benchmark_id, ranks_json, scenario_count, player_estimate, definition_synced_at, definition_error)
-		VALUES ($1, $2, $3, $4, NOW(), '')
+		INSERT INTO kovaaks_benchmarks (benchmark_id, ranks_json, scenario_count, player_estimate, definition_synced_at, definition_error, last_attempt)
+		VALUES ($1, $2, $3, $4, NOW(), '', NOW())
 		ON CONFLICT (benchmark_id) DO UPDATE SET
 			ranks_json = EXCLUDED.ranks_json,
 			scenario_count = EXCLUDED.scenario_count,
 			player_estimate = COALESCE(EXCLUDED.player_estimate, kovaaks_benchmarks.player_estimate),
 			definition_synced_at = NOW(),
-			definition_error = ''
+			definition_error = '', last_attempt = NOW(), next_retry = NULL, failure_count = 0
 	`, int64(benchmarkID), string(ranksJSON), len(scenarios), playerEstimate); err != nil {
 		return fmt.Errorf("save benchmark definition: %w", err)
 	}
@@ -163,7 +168,9 @@ func (s *Store) MarkKovaaksBenchmarkSyncFailed(ctx context.Context, benchmarkID 
 	}
 	_, err := s.pool.Exec(ctx, `
 		UPDATE kovaaks_benchmarks
-		SET definition_synced_at = NOW(), definition_error = $2
+		SET last_attempt = NOW(), definition_error = $2,
+ next_retry = NOW() + make_interval(secs => LEAST(21600, 60 * POWER(2, LEAST(failure_count, 9)))::int),
+ failure_count = LEAST(failure_count + 1, 10)
 		WHERE benchmark_id = $1
 	`, int64(benchmarkID), reason)
 	return err
@@ -174,8 +181,8 @@ func (s *Store) MarkKovaaksBenchmarkSyncFailed(ctx context.Context, benchmarkID 
 func (s *Store) ListKovaaksBenchmarksNeedingSync(ctx context.Context, maxAge time.Duration, limit int) ([]uint32, error) {
 	rows, err := s.pool.Query(ctx, `
 		SELECT benchmark_id FROM kovaaks_benchmarks
-		WHERE definition_synced_at IS NULL
-		   OR definition_synced_at < NOW() - make_interval(secs => $1)
+		WHERE (next_retry IS NULL OR next_retry <= NOW())
+ AND (definition_synced_at IS NULL OR definition_synced_at < NOW() - make_interval(secs => $1))
 		ORDER BY definition_synced_at NULLS FIRST, benchmark_id
 		LIMIT $2
 	`, maxAge.Seconds(), limit)

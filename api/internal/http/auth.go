@@ -527,7 +527,7 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 		http.Error(w, "empty replay media upload", http.StatusBadRequest)
 		return
 	}
-	release, err := h.store.CheckVideoQuota(r.Context(), authUser.UserID, target.StoredSessionID, written)
+	saveMedia, release, err := h.store.CheckVideoQuota(r.Context(), authUser.UserID, target.StoredSessionID, written)
 	if err != nil {
 		http.Error(w, "video quota exceeded or unavailable", http.StatusRequestEntityTooLarge)
 		return
@@ -542,7 +542,7 @@ func (h *authHandler) handleReplayMediaUpload(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if err := h.store.UpsertReplayMediaAsset(r.Context(), target.StoredSessionID, quality, storageKey, contentType, written); err != nil {
+	if err := saveMedia(quality, storageKey, contentType); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
