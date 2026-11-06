@@ -137,25 +137,14 @@ func (s *HubServer) IngestSession(
 	return connect.NewResponse(resp), nil
 }
 
+// LinkDiscordAccount is retired: it took the account and Discord ids from the request with no
+// proof of either, so anyone could attach any Discord identity to any account. Discord links are
+// made only by the OAuth sign-in flow.
 func (s *HubServer) LinkDiscordAccount(
-	ctx context.Context,
-	req *connect.Request[hubv1.LinkDiscordAccountRequest],
+	context.Context,
+	*connect.Request[hubv1.LinkDiscordAccountRequest],
 ) (*connect.Response[hubv1.LinkDiscordAccountResponse], error) {
-	link, err := buildDiscordLink(req.Msg)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.store.LinkDiscordAccount(ctx, link); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return connect.NewResponse(&hubv1.LinkDiscordAccountResponse{
-		Linked:         true,
-		UserExternalId: link.UserExternalID,
-		DiscordUserId:  link.DiscordUserID,
-		Message:        "Discord account linked.",
-	}), nil
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("Discord accounts are linked by signing in with Discord"))
 }
 
 func (s *HubServer) recordIngestFailure(ctx context.Context, req *hubv1.IngestSessionRequest, err error) {

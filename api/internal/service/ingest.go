@@ -355,29 +355,3 @@ func buildIngestedRun(req *hubv1.IngestSessionRequest) (store.IngestedRun, error
 		ContextWindows:   contextWindows,
 	}, nil
 }
-
-func validateDiscordLink(req *hubv1.LinkDiscordAccountRequest) error {
-	if strings.TrimSpace(req.GetUserExternalId()) == "" {
-		return fmt.Errorf("user_external_id is required")
-	}
-	if strings.TrimSpace(req.GetDiscordUserId()) == "" {
-		return fmt.Errorf("discord_user_id is required")
-	}
-	if strings.TrimSpace(req.GetUsername()) == "" {
-		return fmt.Errorf("username is required")
-	}
-	return nil
-}
-
-func buildDiscordLink(req *hubv1.LinkDiscordAccountRequest) (store.DiscordLink, error) {
-	if err := validateDiscordLink(req); err != nil {
-		return store.DiscordLink{}, invalidArgument(err)
-	}
-	return store.DiscordLink{
-		UserExternalID: req.GetUserExternalId(),
-		DiscordUserID:  req.GetDiscordUserId(),
-		Username:       req.GetUsername(),
-		GlobalName:     req.GetGlobalName(),
-		AvatarURL:      req.GetAvatarUrl(),
-	}, nil
-}
