@@ -137,7 +137,14 @@ export function AccountPage() {
             {profileSubdomainUrl ? <p className="mt-2 text-xs text-muted">Handle subdomain: {profileSubdomainUrl}</p> : null}
             {discordWellKnownUrl ? <p className="mt-2 text-xs text-muted">Discord verification URL: {discordWellKnownUrl}</p> : null}
             <p className="mt-2 text-xs text-muted">Paste the token Discord gives you. AimMod serves it from `/.well-known/discord` on your handle subdomain as `dh=&lt;token&gt;`.</p>
-            <p className="mt-3 text-sm leading-6 text-muted">Accounts observed by AimMod are unverified until you prove ownership.</p><a className="text-cyan hover:underline" href={`${API_BASE_URL}/auth/steam/start`}>Verify Steam account</a>
+            {auth.user.steamVerified ? (
+              <p className="mt-3 text-sm leading-6 text-mint">Steam account verified{auth.user.steamId ? ` (${auth.user.steamId})` : ""}.</p>
+            ) : (
+              <>
+                <p className="mt-3 text-sm leading-6 text-muted">Accounts observed by AimMod are unverified until you prove ownership.</p>
+                <a className="text-cyan hover:underline" href={`${API_BASE_URL}/auth/steam/start`}>Verify Steam account</a>
+              </>
+            )}
           </div>
           <div className="rounded-[18px] border border-line bg-white/2 p-[18px]">
             <div className="text-[12px] uppercase tracking-[0.1em] text-cyan">Linked identities</div>

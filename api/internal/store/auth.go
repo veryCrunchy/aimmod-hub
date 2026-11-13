@@ -26,6 +26,7 @@ type AuthUser struct {
 	AvatarURL          string `json:"avatarUrl"`
 	SteamID            string `json:"steamId"`
 	SteamDisplayName   string `json:"steamDisplayName"`
+	SteamVerified      bool   `json:"steamVerified"`
 	KovaaksUserID      string `json:"kovaaksUserId"`
 	KovaaksUsername    string `json:"kovaaksUsername"`
 	ProfileHandle      string `json:"profileHandle"`
@@ -145,6 +146,7 @@ func loadAuthUserByUserIDTx(
 			COALESCE(discord.avatar_url, ''),
 			COALESCE(steam.provider_account_id, ''),
 			COALESCE(steam.display_name, ''),
+			COALESCE(steam.verified AND steam.ownership_proof = 'steam-openid', FALSE),
 			COALESCE(kovaaks.provider_account_id, ''),
 			COALESCE(NULLIF(kovaaks.username, ''), kovaaks.display_name, ''),
 			hui.user_handle,
@@ -166,7 +168,7 @@ func loadAuthUserByUserIDTx(
 		&user.DisplayName,
 		&user.AvatarURL,
 		&user.SteamID,
-		&user.SteamDisplayName,
+		&user.SteamDisplayName, &user.SteamVerified,
 		&user.KovaaksUserID,
 		&user.KovaaksUsername,
 		&user.ProfileHandle,
@@ -691,6 +693,7 @@ func (s *Store) GetUserBySession(ctx context.Context, sessionID string) (AuthUse
 			COALESCE(discord.avatar_url, ''),
 			COALESCE(steam.provider_account_id, ''),
 			COALESCE(steam.display_name, ''),
+			COALESCE(steam.verified AND steam.ownership_proof = 'steam-openid', FALSE),
 			COALESCE(kovaaks.provider_account_id, ''),
 			COALESCE(NULLIF(kovaaks.username, ''), kovaaks.display_name, ''),
 			hui.user_handle,
@@ -704,7 +707,7 @@ func (s *Store) GetUserBySession(ctx context.Context, sessionID string) (AuthUse
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE s.session_id = $1
-	`, sessionID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified, &expiresAt); err != nil {
+	`, sessionID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.SteamVerified, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified, &expiresAt); err != nil {
 		return AuthUser{}, fmt.Errorf("load session user: %w", err)
 	}
 	if expiresAt.Before(time.Now().UTC()) {
@@ -809,6 +812,7 @@ func (s *Store) GetUserByUploadToken(ctx context.Context, rawToken string) (Auth
 			COALESCE(discord.avatar_url, ''),
 			COALESCE(steam.provider_account_id, ''),
 			COALESCE(steam.display_name, ''),
+			COALESCE(steam.verified AND steam.ownership_proof = 'steam-openid', FALSE),
 			COALESCE(kovaaks.provider_account_id, ''),
 			COALESCE(NULLIF(kovaaks.username, ''), kovaaks.display_name, ''),
 			hui.user_handle,
@@ -821,7 +825,7 @@ func (s *Store) GetUserByUploadToken(ctx context.Context, rawToken string) (Auth
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE t.token_hash = $1 AND t.revoked_at IS NULL
-	`, tokenHash(token)).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+	`, tokenHash(token)).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.SteamVerified, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 		return AuthUser{}, fmt.Errorf("load upload token user: %w", err)
 	}
 	if _, err := s.pool.Exec(ctx, `UPDATE upload_tokens SET last_used_at = NOW() WHERE token_hash = $1`, tokenHash(token)); err != nil {
@@ -932,6 +936,7 @@ func (s *Store) ApproveDeviceLink(ctx context.Context, userID int64, userCode st
 			COALESCE(discord.avatar_url, ''),
 			COALESCE(steam.provider_account_id, ''),
 			COALESCE(steam.display_name, ''),
+			COALESCE(steam.verified AND steam.ownership_proof = 'steam-openid', FALSE),
 			COALESCE(kovaaks.provider_account_id, ''),
 			COALESCE(NULLIF(kovaaks.username, ''), kovaaks.display_name, ''),
 			hui.user_handle,
@@ -943,7 +948,7 @@ func (s *Store) ApproveDeviceLink(ctx context.Context, userID int64, userCode st
 		LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 		JOIN hub_user_identity hui ON hui.user_id = hu.id
 		WHERE hu.id = $1
-		`, userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+		`, userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.SteamVerified, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 		return DeviceLinkPollResult{}, fmt.Errorf("load approved device link user: %w", err)
 	}
 
@@ -1001,6 +1006,7 @@ func (s *Store) PollDeviceLink(ctx context.Context, deviceCode string) (DeviceLi
 				COALESCE(discord.avatar_url, ''),
 				COALESCE(steam.provider_account_id, ''),
 				COALESCE(steam.display_name, ''),
+				COALESCE(steam.verified AND steam.ownership_proof = 'steam-openid', FALSE),
 				COALESCE(kovaaks.provider_account_id, ''),
 				COALESCE(NULLIF(kovaaks.username, ''), kovaaks.display_name, ''),
 				hui.user_handle,
@@ -1012,7 +1018,7 @@ func (s *Store) PollDeviceLink(ctx context.Context, deviceCode string) (DeviceLi
 			LEFT JOIN linked_accounts kovaaks ON kovaaks.user_id = hu.id AND kovaaks.provider = 'kovaaks'
 			JOIN hub_user_identity hui ON hui.user_id = hu.id
 			WHERE hu.id = $1
-		`, *userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
+		`, *userID).Scan(&user.UserID, &user.UserExternalID, &user.AimmodUserID, &user.DiscordDomainToken, &user.DiscordUserID, &user.Username, &user.DisplayName, &user.AvatarURL, &user.SteamID, &user.SteamDisplayName, &user.SteamVerified, &user.KovaaksUserID, &user.KovaaksUsername, &user.ProfileHandle, &user.ProfileDisplayName, &user.ProfileVerified); err != nil {
 			return DeviceLinkPollResult{}, fmt.Errorf("load device link user: %w", err)
 		}
 		result.User = &user
