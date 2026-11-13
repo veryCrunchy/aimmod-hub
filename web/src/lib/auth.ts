@@ -11,6 +11,7 @@ export type AuthUser = {
   avatarUrl: string;
   steamId: string;
   steamDisplayName: string;
+  steamVerified?: boolean;
   kovaaksUserId: string;
   kovaaksUsername: string;
   profileHandle: string;
